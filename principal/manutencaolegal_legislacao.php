@@ -7,6 +7,8 @@ require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPA
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'PermissaoTransacao.php';
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'botoes_crud.php';
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'TransactionSecurity.php';
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'LegislacaoAssociacoes.php'; // migração 382
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'LegislacaoEmpresas.php'; // migração 384
 
 if (empty($_SESSION['autenticado'])) { header('Location: ../index.php?erro=sessao_expirada'); exit; }
 $config = [];
@@ -20,33 +22,12 @@ if (!UsuarioSessao::atualizar($tenantPdo, $_SESSION)) { header('Location: ../ind
 $tenantPdo = TransactionSecurity::connect('LEGISLACAO');
 $isAdmin = ($_SESSION['usuario']['codigo_perfil'] ?? '') === 'ADMINISTRADOR';
 $gridPermission = PermissaoTransacao::obter('LEGISLACAO');
-$hasViewPermission = $isAdmin;
-foreach ((array)($_SESSION['permissoes'] ?? []) as $permission) {
-    if (strtoupper((string)($permission['menu_codigo'] ?? '')) === 'LEGISLACAO' && (int)($permission['pode_visualizar'] ?? 0) === 1) $hasViewPermission = true;
-}
-if (!$hasViewPermission) { http_response_code(403); exit('Seu perfil nao possui permissao para visualizar esta transacao.'); }
+// Migração 384: transação exclusiva do perfil ADMINISTRADOR (administra a legislação de todas as empresas migradas)
+if (!$isAdmin) { http_response_code(403); exit('Transação exclusiva do perfil ADMINISTRADOR.'); }
 
 $legislacao = new LegislacaoGridService(new PDO('mysql:host=' . ($config['GLEGISLACAO_DB_HOST'] ?? '127.0.0.1') . ';port=' . ($config['GLEGISLACAO_DB_PORT'] ?? '3306') . ';dbname=' . ($config['GLEGISLACAO_DB_DATABASE'] ?? 'glegislacao_dbp') . ';charset=utf8mb4', $config['GLEGISLACAO_DB_USERNAME'] ?? '', $config['GLEGISLACAO_DB_PASSWORD'] ?? '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]));
-$universalPdo = new PDO('mysql:host=' . ($config['GUNIVERSAL_DB_HOST'] ?? '127.0.0.1') . ';port=' . ($config['GUNIVERSAL_DB_PORT'] ?? '3306') . ';dbname=' . ($config['GUNIVERSAL_DB_DATABASE'] ?? 'guniversal_dbp') . ';charset=utf8mb4', $config['GUNIVERSAL_DB_USERNAME'] ?? '', $config['GUNIVERSAL_DB_PASSWORD'] ?? '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
 $callTenant = static function (PDO $pdo, string $sql, array $params = []): array { $statement = $pdo->prepare($sql); $statement->execute($params); $rows = $statement->fetchAll(PDO::FETCH_ASSOC); $statement->closeCursor(); return $rows; };
 $idioma = strtolower((string)($_SESSION['idioma'] ?? 'pt'));
-$ambitos = $legislacao->call('CALL sp_crud_select(:tabela,:filtros,:busca,10000,0)', ['tabela' => 'ambitos', 'filtros' => '{}', 'busca' => '']);
-$tipos = $legislacao->call('CALL sp_crud_select(:tabela,:filtros,:busca,10000,0)', ['tabela' => 'tipos', 'filtros' => '{}', 'busca' => '']);
-usort($tipos, static function (array $left, array $right): int {
-    return strnatcasecmp((string)($left['DSCTIPO'] ?? ''), (string)($right['DSCTIPO'] ?? ''));
-});
-$companiesStatement = $universalPdo->prepare('CALL sp_crud_select(:tabela,:filtros,:busca,1000,0)');
-$companiesStatement->execute(['tabela' => 'empresa', 'filtros' => json_encode(['status' => 'ATIVA'], JSON_UNESCAPED_UNICODE), 'busca' => '']);
-$companies = $companiesStatement->fetchAll(PDO::FETCH_ASSOC); $companiesStatement->closeCursor();
-$units = $callTenant($tenantPdo, 'CALL sp_crud_select(:tabela,:filtros,:busca,1000,0)', ['tabela' => 'unidades', 'filtros' => '{}', 'busca' => '']);
-$companyRelations = [];
-for ($relationOffset = 0; $relationOffset < 10000; $relationOffset += 1000) {
-    $relationPage = $callTenant($tenantPdo, 'CALL sp_crud_select(:tabela,:filtros,:busca,1000,:offset)', ['tabela' => 'legislacaoxempresa', 'filtros' => '{}', 'busca' => '', 'offset' => $relationOffset]);
-    if (!$relationPage) break;
-    $companyRelations = array_merge($companyRelations, $relationPage);
-    if (count($relationPage) < 1000) break;
-}
-$periodRows = $legislacao->call('CALL sp_crud_select(:tabela,:filtros,:busca,1000,0)', ['tabela' => 'vw_legislacao_periodos', 'filtros' => '{}', 'busca' => '']);
 $formatDate = static function (mixed $value, string $language): string {
     $text = trim((string)$value);
     if ($text === '') return '';
@@ -61,13 +42,6 @@ $parseDate = static function (mixed $value, string $language): ?string {
     foreach ($formats as $format) { $date = DateTime::createFromFormat('!' . $format, $text); if ($date instanceof DateTime && DateTime::getLastErrors() === false) return $date->format('Y-m-d H:i:s'); }
     return null;
 };
-$periodOptions = [];
-foreach ($periodRows as $periodRow) {
-    $period = trim((string)($periodRow['periodo'] ?? ''));
-    if (!preg_match('/^\d{4}-\d{2}$/', $period)) continue;
-    $periodOptions[$period] = substr($period, 5, 2) . '/' . substr($period, 0, 4);
-}
-uksort($periodOptions, static fn(string $left, string $right): int => strcmp($right, $left));
 $uid = (int)$_SESSION['usuario']['codusuario'];
 $json = static fn(mixed $value): string => LegislacaoGridService::json($value);
 $legislationFilterParams = static function (array $filters, string $search = ''): array {
@@ -78,11 +52,77 @@ $legislationFilterParams = static function (array $filters, string $search = '')
     };
     $normalized = [];
     foreach ($filters as $key => $raw) {
+        // filtros das colunas chegam como {"value": "1", "exact": true} (grid-pagination.js); Empresa/Unidade/Mês como texto
+        if (is_array($raw)) $raw = $raw['value'] ?? null;
         if (!is_scalar($raw)) continue;
         $text = trim((string)$raw, "| \t\n\r\0\x0B");
         if ($text !== '') $normalized[(string)$key] = $text;
     }
     return ['empresa' => $value($filters['CODEMPRESA'] ?? null, true), 'unidade' => $value($filters['CODUNIDADE'] ?? null, true), 'periodo' => $value($filters['MES_ANO_ATUALIZACAO'] ?? null), 'padrao' => trim((string)($filters['PADRAO'] ?? '')) ?: null, 'busca' => trim($search) ?: null, 'filtros' => json_encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)];
+};
+// Migração 383: Empresa e Unidade vêm do vínculo do banco da empresa logada (legislacaoxempresa), na MESMA linha.
+// As procedures *_ids recebem a lista de leis já filtrada (NULL = sem filtro de empresa/unidade).
+$legislationQuery = static function (array $params, bool $count, int $limit = 25, int $offset = 0) use ($legislacao): array {
+    $ids = null;
+    if ($params['empresa'] !== null || $params['unidade'] !== null) {
+        // vínculo lei × empresa/unidade no banco da empresa escolhida (empresa e unidade na mesma linha); sem empresa a unidade não vale
+        try { $ids = $params['empresa'] !== null ? LegislacaoEmpresas::leis((int)$params['empresa'], $params['unidade'] !== null ? (int)$params['unidade'] : null) : null; }
+        catch (InvalidArgumentException) { $ids = []; }
+    }
+    $args = ['ids' => $ids === null ? null : json_encode($ids), 'periodo' => $params['periodo'], 'padrao' => $params['padrao'], 'busca' => $params['busca'], 'filtros' => $params['filtros']];
+    try {
+        if ($count) return $legislacao->call('CALL sp_legislacao_count_ids(:ids,:periodo,:padrao,:busca,:filtros)', $args);
+        return $legislacao->call('CALL sp_legislacao_select_ids(:ids,:periodo,:padrao,:busca,:filtros,' . max(1, min(1000, $limit)) . ',:offset)', $args + ['offset' => max(0, $offset)]);
+    } catch (PDOException $error) {
+        if (!str_contains($error->getMessage(), '_ids')) throw $error; // antes da migração 383: procedures antigas
+        if ($count) return $legislacao->call('CALL sp_legislacao_count(:empresa,:unidade,:periodo,:padrao,:busca,:filtros)', $params);
+        return $legislacao->call('CALL sp_legislacao_select(:empresa,:unidade,:periodo,:padrao,:busca,:filtros,' . max(1, min(1000, $limit)) . ',:offset)', $params + ['offset' => max(0, $offset)]);
+    }
+};
+// Migração 390: os filtros das colunas com lista mostram só os valores das leis que passam nos OUTROS filtros
+// (Empresa, Unidade, Mês/Ano, Padrão, busca e as demais colunas), como o filtro automático do Excel.
+$optionColumns = ['CODAMBITO', 'CODTIPO', 'MEIO_AMBIENTE', 'SEGURANCA', 'QUALIDADE', 'RESPOSABILIDADE', 'situacao_da_lei', 'devido_da_lei'];
+$optionKey = static function (mixed $value, string $column): string {
+    $text = trim((string)$value, "| \t\n\r\0\x0B");
+    if ($column === 'CODAMBITO' || $column === 'CODTIPO') return ctype_digit($text) ? (string)(int)$text : $text;
+    // sem acento e em minúsculas, igual ao optionKey do legislacao-grid.js (mapa fixo: o iconv do Windows translitera diferente)
+    return strtr(mb_strtolower($text, 'UTF-8'), ['á' => 'a', 'à' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e', 'í' => 'i', 'ì' => 'i', 'î' => 'i', 'ï' => 'i', 'ó' => 'o', 'ò' => 'o', 'ô' => 'o', 'õ' => 'o', 'ö' => 'o', 'ú' => 'u', 'ù' => 'u', 'û' => 'u', 'ü' => 'u', 'ç' => 'c', 'ñ' => 'n']);
+};
+$availableOptions = static function (array $filters, string $search) use ($legislationFilterParams, $legislacao, $optionColumns, $optionKey): ?array {
+    $base = $filters; $wanted = [];
+    foreach ($optionColumns as $column) {
+        $raw = $filters[$column] ?? '';
+        if (is_array($raw)) $raw = $raw['value'] ?? '';
+        $key = is_scalar($raw) ? $optionKey($raw, $column) : '';
+        if ($key !== '') $wanted[$column] = $key;
+        unset($base[$column]);
+    }
+    $params = $legislationFilterParams($base, $search);
+    $ids = null;
+    if ($params['empresa'] !== null) {
+        try { $ids = LegislacaoEmpresas::leis((int)$params['empresa'], $params['unidade'] !== null ? (int)$params['unidade'] : null); }
+        catch (InvalidArgumentException) { $ids = []; }
+    }
+    try {
+        $groups = $legislacao->call('CALL sp_legislacao_opcoes_ids(:ids,:periodo,:padrao,:busca,:filtros)', ['ids' => $ids === null ? null : json_encode($ids), 'periodo' => $params['periodo'], 'padrao' => $params['padrao'], 'busca' => $params['busca'], 'filtros' => $params['filtros']]);
+    } catch (PDOException $error) {
+        if (str_contains($error->getMessage(), 'sp_legislacao_opcoes_ids')) return null; // antes da migração 390: listas completas
+        throw $error;
+    }
+    $out = array_fill_keys($optionColumns, []);
+    foreach ($groups as $group) {
+        $keys = [];
+        foreach ($optionColumns as $column) $keys[$column] = $optionKey($group[$column] ?? '', $column);
+        $misses = [];
+        foreach ($wanted as $column => $value) if ($keys[$column] !== $value) $misses[] = $column;
+        if (count($misses) > 1) continue;
+        foreach ($optionColumns as $column) {
+            if ($keys[$column] === '') continue;
+            if ($misses && $misses[0] !== $column) continue; // a linha só falha no filtro desta coluna: o valor dela continua disponível
+            $out[$column][$keys[$column]] = true;
+        }
+    }
+    return array_map('array_keys', $out);
 };
 $isAjax = ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'XMLHttpRequest' || ($_POST['ajax'] ?? '') === '1';
 if ($isAjax && ($_POST['action'] ?? '') === 'load_assuntos' && ctype_digit((string)($_POST['CODLEGISLACAO'] ?? ''))) {
@@ -102,7 +142,7 @@ if ($isAjax && ($_POST['action'] ?? '') === 'save_assuntos' && ctype_digit((stri
     $updated = $legislacao->call('CALL sp_crud_select(:tabela,:filtros,NULL,1,0)', ['tabela' => 'vw_legislacao_grid', 'filtros' => $json(['CODLEGISLACAO' => $legislationId])]);
     header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok' => true, 'assuntos' => (string)($updated[0]['ASSUNTOS'] ?? ''), 'message' => 'Assuntos atualizados com sucesso.'], JSON_UNESCAPED_UNICODE); exit;
 }
-if ($isAjax && ($_POST['action'] ?? '') === 'count_rows') { $filters = json_decode((string)($_POST['filtros'] ?? '{}'), true); $params = $legislationFilterParams(is_array($filters) ? $filters : [], (string)($_POST['busca'] ?? '')); $count = $legislacao->call('CALL sp_legislacao_count(:empresa,:unidade,:periodo,:padrao,:busca,:filtros)', $params); header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok' => true, 'total' => (int)($count[0]['total_registros'] ?? 0)]); exit; }
+if ($isAjax && ($_POST['action'] ?? '') === 'count_rows') { $filters = json_decode((string)($_POST['filtros'] ?? '{}'), true); $params = $legislationFilterParams(is_array($filters) ? $filters : [], (string)($_POST['busca'] ?? '')); $count = $legislationQuery($params, true); header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok' => true, 'total' => (int)($count[0]['total_registros'] ?? 0)]); exit; }
 if ($isAjax && ($_POST['action'] ?? '') === 'export_request' && !empty($gridPermission['pode_exportar_excel'])) {
     $uid = (int)($_SESSION['usuario']['codusuario'] ?? 0); $filters = json_decode((string)($_POST['filtros'] ?? '{}'), true); $filters = is_array($filters) ? $filters : []; $search = trim((string)($_POST['busca'] ?? ''));
     // Pedido na fila do GreenPortal-ExportWorker (Agendador do Windows) + alerta "Exportação iniciada".
@@ -130,11 +170,7 @@ if ($isAjax && ($_POST['action'] ?? '') === 'save_rows') {
     }
     $linkedContext = $contextEmpresa > 0 && $contextUnidade > 0;
     if ($hasNewRows && $linkedContext) {
-        $validRelation = false;
-        foreach ($companyRelations as $relation) {
-            if ((int)($relation['CODEMPRESA'] ?? 0) === $contextEmpresa && (int)($relation['codunidade'] ?? 0) === $contextUnidade) { $validRelation = true; break; }
-        }
-        if (!$validRelation) $jsonResponse(false, 'A Empresa e a Unidade selecionadas não formam uma combinação válida.', 422);
+        if (!isset(LegislacaoEmpresas::migradas()[$contextEmpresa]) || !isset(LegislacaoEmpresas::unidades($contextEmpresa)[$contextUnidade])) $jsonResponse(false, 'A Empresa e a Unidade selecionadas não formam uma combinação válida.', 422);
     }
     $created = [];
     try {
@@ -157,7 +193,7 @@ if ($isAjax && ($_POST['action'] ?? '') === 'save_rows') {
             $created[(string)$key] = $newId;
             if ($linkedContext) {
                 try {
-                    $callTenant($tenantPdo, 'CALL sp_crud_insert(:tabela,:dados)', ['tabela' => 'legislacaoxempresa', 'dados' => $json(['CODLEGISLACAO' => $newId, 'CODEMPRESA' => $contextEmpresa, 'codunidade' => $contextUnidade])]);
+                    LegislacaoEmpresas::vincular($newId, $contextEmpresa, $contextUnidade); // no banco da empresa escolhida
                 } catch (Throwable $relationError) {
                     $legislacao->call('CALL sp_crud_delete(:tabela,:chave)', ['tabela' => 'legislacao', 'chave' => $json(['CODLEGISLACAO' => $newId])]);
                     throw $relationError;
@@ -170,32 +206,78 @@ if ($isAjax && ($_POST['action'] ?? '') === 'save_rows') {
         $jsonResponse(false, 'Não foi possível concluir o cadastro da legislação. Verifique os dados informados.', 422);
     }
 }
-if ($isAjax && ($_POST['action'] ?? '') === 'delete_row' && ctype_digit((string)($_POST['CODLEGISLACAO'] ?? ''))) { $legislationId = (int)$_POST['CODLEGISLACAO']; $callTenant($tenantPdo, 'CALL sp_crud_delete(:tabela,:chave)', ['tabela' => 'legislacaoxempresa', 'chave' => $json(['CODLEGISLACAO' => $legislationId])]); $legislacao->call('CALL sp_crud_delete(:tabela,:chave)', ['tabela' => 'legislacaoxassunto', 'chave' => $json(['CODLEGISLACAO' => $legislationId])]); $legislacao->call('CALL sp_crud_delete(:tabela,:chave)', ['tabela' => 'legislacao', 'chave' => $json(['CODLEGISLACAO' => $legislationId])]); header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok' => true, 'message' => 'Legislacao excluida com sucesso.'], JSON_UNESCAPED_UNICODE); exit; }
+if ($isAjax && ($_POST['action'] ?? '') === 'delete_row' && ctype_digit((string)($_POST['CODLEGISLACAO'] ?? ''))) { if (empty($gridPermission['pode_excluir'])) { http_response_code(403); header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok' => false, 'message' => 'Perfil sem permissão de exclusão.'], JSON_UNESCAPED_UNICODE); exit; } $legislationId = (int)$_POST['CODLEGISLACAO']; LegislacaoAssociacoes::limparLei($legislationId); LegislacaoEmpresas::desvincularDeTodas($legislationId); $legislacao->call('CALL sp_crud_delete(:tabela,:chave)', ['tabela' => 'legislacaoxassunto', 'chave' => $json(['CODLEGISLACAO' => $legislationId])]); $legislacao->call('CALL sp_crud_delete(:tabela,:chave)', ['tabela' => 'legislacao', 'chave' => $json(['CODLEGISLACAO' => $legislationId])]); header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok' => true, 'message' => 'Legislacao excluida com sucesso.'], JSON_UNESCAPED_UNICODE); exit; }
 $page = max(1, (int)($_GET['pagina'] ?? 1)); $offset = ($page - 1) * 25; $initialFilters = json_decode((string)($_GET['filtros'] ?? '{}'), true); $initialFilters = is_array($initialFilters) ? $initialFilters : []; $initialSearch = trim((string)($_GET['busca'] ?? ''));
 $filterParams = $legislationFilterParams($initialFilters, $initialSearch);
-$rows = $legislacao->call('CALL sp_legislacao_select(:empresa,:unidade,:periodo,:padrao,:busca,:filtros,25,:offset)', $filterParams + ['offset' => $offset]);
+$rows = $legislationQuery($filterParams, false, 25, $offset);
+$decodeLabel = static fn(string $value): string => html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+$columns = ['CODLEGISLACAO' => $decodeLabel('C&oacute;digo'), 'CODIGO' => $decodeLabel('C&oacute;digo'), 'ASSUNTOS' => 'Assuntos', 'CODAMBITO' => $decodeLabel('&Acirc;mbito'), 'CODTIPO' => 'Tipo', 'NR' => $decodeLabel('N&uacute;mero'), 'ANO' => 'Ano', 'ARTIGOS' => 'Artigos', 'MEIO_AMBIENTE' => 'Meio ambiente', 'SEGURANCA' => $decodeLabel('Seguran&ccedil;a'), 'QUALIDADE' => 'Qualidade', 'RESPOSABILIDADE' => 'Responsabilidade', 'PADRAO' => $decodeLabel('Padr&atilde;o'), 'data_atualizacao' => $decodeLabel('Data atualiza&ccedil;&atilde;o'), 'situacao_da_lei' => $decodeLabel('Situa&ccedil;&atilde;o da lei'), 'devido_da_lei' => 'Devido da lei'];
+// Grid via AJAX (paginação e filtros): devolve só o corpo da tabela, com o total quando pedido (contar=1), sem montar a página inteira
+if ($isAjax && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    $total = isset($_GET['contar']) ? (int)($legislationQuery($filterParams, true)[0]['total_registros'] ?? 0) : null;
+    $available = isset($_GET['contar']) ? $availableOptions($initialFilters, $initialSearch) : null;
+    // embrulhado num <div>: o grid-pagination.js procura '#legislacaoBatchGrid tbody' DENTRO da resposta (sem o div não achava)
+    echo '<div><table id="legislacaoBatchGrid"><tbody' . ($total !== null ? ' data-grid-total="' . $total . '"' : '') . ($available !== null ? ' data-grid-opcoes="' . h($json($available)) . '"' : '') . '>';
+    foreach ($rows as $row) {
+        $id = (int)$row['CODLEGISLACAO'];
+        echo '<tr data-row data-key="' . $id . '">';
+        foreach ($columns as $column => $label) {
+            echo '<td data-column="' . h($column) . '">' . ($column === 'CODLEGISLACAO' ? '<input class="grid-input" value="' . $id . '" readonly>' : '<input class="grid-input" name="rows[' . $id . '][' . h($column) . ']" value="' . h($row[$column] ?? '') . '">') . '</td>';
+        }
+        echo '</tr>';
+    }
+    echo '</tbody></table></div>';
+    exit;
+}
+// Opções dos filtros e combos: só na página inteira
+// sp_crud_select devolve no máximo 1.000 linhas por chamada: o catálogo de tipos tem mais (lê em páginas; antes parava em 1.000)
+$catalog = static function (string $table) use ($legislacao): array {
+    $all = [];
+    for ($offset = 0; ; $offset += 1000) {
+        $page = $legislacao->call('CALL sp_crud_select(:tabela,:filtros,:busca,1000,' . $offset . ')', ['tabela' => $table, 'filtros' => '{}', 'busca' => '']);
+        array_push($all, ...$page);
+        if (count($page) < 1000) break;
+    }
+    return $all;
+};
+$ambitos = $catalog('ambitos');
+$tipos = $catalog('tipos');
+usort($tipos, static function (array $left, array $right): int {
+    return strnatcasecmp((string)($left['DSCTIPO'] ?? ''), (string)($right['DSCTIPO'] ?? ''));
+});
+// Migração 384: empresas já migradas (as da tela de login, MODELO incluída) e as unidades de cada uma, do banco dela
+$migratedCompanies = LegislacaoEmpresas::migradas();
+$periodRows = $legislacao->call('CALL sp_crud_select(:tabela,:filtros,:busca,1000,0)', ['tabela' => 'vw_legislacao_periodos', 'filtros' => '{}', 'busca' => '']);
+$periodOptions = [];
+foreach ($periodRows as $periodRow) {
+    $period = trim((string)($periodRow['periodo'] ?? ''));
+    if (!preg_match('/^\d{4}-\d{2}$/', $period)) continue;
+    $periodOptions[$period] = substr($period, 5, 2) . '/' . substr($period, 0, 4);
+}
+uksort($periodOptions, static fn(string $left, string $right): int => strcmp($right, $left));
 $patternValues = []; foreach ($rows as $patternRow) $patternValues[(string)$patternRow['CODLEGISLACAO']] = (string)($patternRow['PADRAO'] ?? '');
 $prefRows = $callTenant($tenantPdo, 'CALL sp_crud_select(:tabela,:filtros,NULL,100,0)', ['tabela' => 'vw_preferencias_grid', 'filtros' => $json(['codusuario' => $uid, 'transacao' => 'manutencaolegal_legislacao'])]); $preferences = []; foreach ($prefRows as $preference) $preferences[(string)$preference['coluna']] = $preference;
 $ambitoOptions = []; foreach ($ambitos as $item) $ambitoOptions[(string)$item['CODAMBITO']] = (string)($item['DSCAMBITO'] ?? $item['CODAMBITO']);
 $tipoOptions = []; foreach ($tipos as $item) $tipoOptions[(string)$item['CODTIPO']] = (string)($item['DSCTIPO'] ?? $item['CODTIPO']);
-$companyOptions = []; foreach ($companies as $company) $companyOptions['|' . (int)$company['codempresa'] . '|'] = (string)($company['nome'] ?? $company['codigo'] ?? $company['codempresa']);
-$unitLabels = []; foreach ($units as $unit) $unitLabels['|' . (int)$unit['CODUNIDADE'] . '|'] = (string)($unit['DSCUNIDADE'] ?? $unit['CODUNIDADE']);
-$companyUnitOptions = [];
-foreach ($companyRelations as $relation) {
-    $companyKey = '|' . (int)($relation['CODEMPRESA'] ?? 0) . '|';
-    $unitKey = '|' . (int)($relation['codunidade'] ?? 0) . '|';
-    if ($companyKey === '|0|' || $unitKey === '|0|' || !isset($unitLabels[$unitKey])) continue;
-    $companyUnitOptions[$companyKey][$unitKey] = $unitLabels[$unitKey];
+$companyOptions = []; $companyUnitOptions = []; $unitLabels = []; $unitRclTypes = [];
+foreach ($migratedCompanies as $companyId => $company) {
+    $companyOptions['|' . $companyId . '|'] = $company['nome'];
+    foreach (LegislacaoEmpresas::unidadesRcl($companyId) as $unitId => $unit) { $companyUnitOptions['|' . $companyId . '|']['|' . $unitId . '|'] = $unit['nome']; $unitRclTypes['|' . $companyId . '|']['|' . $unitId . '|'] = $unit['tipo']; }
 }
-$decodeLabel = static fn(string $value): string => html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-$columns = ['CODLEGISLACAO' => $decodeLabel('C&oacute;digo'), 'CODIGO' => $decodeLabel('C&oacute;digo'), 'ASSUNTOS' => 'Assuntos', 'CODAMBITO' => $decodeLabel('&Acirc;mbito'), 'CODTIPO' => 'Tipo', 'NR' => $decodeLabel('N&uacute;mero'), 'ANO' => 'Ano', 'ARTIGOS' => 'Artigos', 'MEIO_AMBIENTE' => 'Meio ambiente', 'SEGURANCA' => $decodeLabel('Seguran&ccedil;a'), 'QUALIDADE' => 'Qualidade', 'RESPOSABILIDADE' => 'Responsabilidade', 'PADRAO' => $decodeLabel('Padr&atilde;o'), 'data_atualizacao' => $decodeLabel('Data atualiza&ccedil;&atilde;o'), 'situacao_da_lei' => $decodeLabel('Situa&ccedil;&atilde;o da lei'), 'devido_da_lei' => 'Devido da lei'];
 function h(mixed $value): string { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
 $rclLabels = ['pt' => ['RCL Completa', 'RCL Padrão'], 'en' => ['Complete RCL', 'Standard RCL'], 'es' => ['RCL Completa', 'RCL Estándar']][$idioma] ?? ['RCL Completa', 'RCL Padrão'];
+$assocLabels = ['pt' => ['URL de pesquisa', 'Legislações filhas', 'Alterações na legislação', 'CheckList', 'Palavras-chave'], 'en' => ['Search URLs', 'Child laws', 'Legislation changes', 'Checklist', 'Keywords'], 'es' => ['URL de consulta', 'Legislaciones hijas', 'Cambios en la legislación', 'Checklist', 'Palabras clave']][$idioma] ?? ['URL de pesquisa', 'Legislações filhas', 'Alterações na legislação', 'CheckList', 'Palavras-chave'];
+$assocButtons = '<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-assoc-open="urls" disabled title="' . h($assocLabels[0]) . '" aria-label="' . h($assocLabels[0]) . '"><i class="bi bi-link-45deg"></i></button><button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-assoc-open="filhas" disabled title="' . h($assocLabels[1]) . '" aria-label="' . h($assocLabels[1]) . '"><i class="bi bi-diagram-3"></i></button>'
+    . '<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-assoc-open="alteracoes" disabled title="' . h($assocLabels[2]) . '" aria-label="' . h($assocLabels[2]) . '"><i class="bi bi-clock-history"></i></button>'
+    . '<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-assoc-open="checklist" disabled title="' . h($assocLabels[3]) . '" aria-label="' . h($assocLabels[3]) . '"><i class="bi bi-ui-checks"></i></button>'
+    . '<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-assoc-open="palavras" disabled title="' . h($assocLabels[4]) . '" aria-label="' . h($assocLabels[4]) . '"><i class="bi bi-tags"></i></button>';
 $rclButtons = '<button type="button" class="btn btn-sm btn-outline-success grid-crud-button" data-rcl-completa title="' . h($rclLabels[0]) . '" aria-label="' . h($rclLabels[0]) . '"><i class="bi bi-file-earmark-text"></i></button><button type="button" class="btn btn-sm btn-outline-success grid-crud-button" data-rcl-padrao title="' . h($rclLabels[1]) . '" aria-label="' . h($rclLabels[1]) . '"><i class="bi bi-file-earmark"></i></button>';
 ?>
-<script>window.legislacaoGridOptions = <?php echo $json(['ambitos' => $ambitoOptions, 'tipos' => $tipoOptions, 'empresas' => $companyOptions, 'unidades' => $unitLabels, 'empresaUnidades' => $companyUnitOptions, 'periodos' => $periodOptions, 'filtros' => $initialFilters]); ?>; window.legislacaoPatternValues = <?php echo $json($patternValues); ?>; window.greenPortalIdioma = <?php echo $json($idioma); ?>;</script>
+<script>window.legislacaoGridOptions = <?php echo $json(['ambitos' => $ambitoOptions, 'tipos' => $tipoOptions, 'empresas' => $companyOptions, 'unidades' => $unitLabels, 'empresaUnidades' => $companyUnitOptions, 'unidadeTipoRcl' => $unitRclTypes, 'periodos' => $periodOptions, 'filtros' => $initialFilters, 'disponiveis' => $availableOptions($initialFilters, $initialSearch)]); ?>; window.legislacaoPatternValues = <?php echo $json($patternValues); ?>; window.greenPortalIdioma = <?php echo $json($idioma); ?>;</script>
 <link href="../assets/vendor/bootstrap/css/bootstrap.min.css?v=2" rel="stylesheet"><link href="../assets/vendor/bootstrap-icons/font/bootstrap-icons.min.css?v=2" rel="stylesheet"><link href="../assets/css/app.css" rel="stylesheet"><link href="../assets/css/main.css?v=15" rel="stylesheet"><link href="../assets/css/design-system.css?v=3" rel="stylesheet"><link href="../assets/css/modulo-legal.css?v=1" rel="stylesheet">
-<section class="setup-fragment menu-grid-fragment legislacao-grid-fragment" data-grid-transaction="manutencaolegal_legislacao" data-preferences="<?php echo h($json($preferences)); ?>"><div class="crud-toolbar menu-grid-toolbar"><?php greenPortalCrudButtons(['form_id' => 'legislacaoGridForm', 'language' => $idioma, 'permission' => $gridPermission, 'permission_title' => 'Perfil sem permissão de acesso!', 'transaction' => 'manutencaolegal_legislacao', 'new_attribute' => 'data-new-legislacao', 'duplicate_attribute' => 'data-duplicate-legislacao', 'delete_attribute' => 'data-delete-legislacao', 'extras' => $rclButtons]); ?><div class="crud-search"><i class="bi bi-search"></i><input type="search" placeholder="Buscar no grid" aria-label="Buscar no grid"></div></div><form method="post" id="legislacaoGridForm" class="setup-form menu-grid-form"><input type="hidden" name="action" value="save_rows"><div class="menu-grid-scroll"><table class="table table-sm menu-batch-grid" id="legislacaoBatchGrid"><thead><tr><?php foreach ($columns as $column => $label): ?><th data-column="<?php echo h($column); ?>" style="width:<?php echo (int)($preferences[$column]['largura'] ?? 140); ?>px"><div class="column-heading"><span><?php echo h($label); ?></span><input class="column-filter" type="search" data-column-filter="<?php echo h($column); ?>" placeholder="Buscar" aria-label="Buscar <?php echo h($label); ?>"></div></th><?php endforeach; ?></tr></thead><tbody><?php foreach ($rows as $row): $id = (int)$row['CODLEGISLACAO']; ?><tr data-row data-key="<?php echo $id; ?>"><?php foreach ($columns as $column => $label): ?><td data-column="<?php echo h($column); ?>"><?php if ($column === 'CODLEGISLACAO'): ?><input class="grid-input" value="<?php echo $id; ?>" readonly><?php else: ?><input class="grid-input" name="rows[<?php echo $id; ?>][<?php echo h($column); ?>]" value="<?php echo h($row[$column] ?? ''); ?>"><?php endif; ?></td><?php endforeach; ?></tr><?php endforeach; ?></tbody></table></div></form><nav class="grid-pagination" aria-label="Paginação do grid"><button type="button" class="btn btn-sm btn-outline-secondary grid-page-prev"><i class="bi bi-chevron-left"></i><span>Anterior</span></button><span class="grid-page-status">Calculando total...</span><button type="button" class="btn btn-sm btn-outline-secondary grid-page-next"><span>Próxima</span><i class="bi bi-chevron-right"></i></button></nav></section><script src="../assets/vendor/jquery/jquery-3.7.1.min.js?v=2"></script><script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js?v=2"></script><script src="../assets/js/visualizador-pdf.js?v=3"></script><script src="../assets/js/legislacao-grid.js?v=13"></script><script src="../assets/js/grid-sort.js?v=1"></script><script src="../assets/js/grid-column-filters.js?v=3"></script><script src="../assets/js/grid-column-resize.js?v=1"></script><script src="../assets/js/grid-pagination.js?v=14"></script><script src="../assets/js/grid-loading.js?v=4"></script><script src="../assets/js/grid-ajax.js?v=2"></script>
-
-POST['action'] ?? '') === 'save_rows') {
-    $contextEmpresa = (int)preg_replace('/[^0-9]/', '', (string)(
+<section class="setup-fragment menu-grid-fragment legislacao-grid-fragment" data-grid-inline-count data-grid-transaction="manutencaolegal_legislacao" data-preferences="<?php echo h($json($preferences)); ?>"><div class="crud-toolbar menu-grid-toolbar"><?php greenPortalCrudButtons(['form_id' => 'legislacaoGridForm', 'language' => $idioma, 'permission' => $gridPermission, 'permission_title' => 'Perfil sem permissão de acesso!', 'transaction' => 'manutencaolegal_legislacao', 'new_attribute' => 'data-new-legislacao', 'duplicate_attribute' => 'data-duplicate-legislacao', 'delete_attribute' => 'data-delete-legislacao', 'extras' => $assocButtons . $rclButtons]); // Barra em grupos: Operações | Associações | RCL | Outros (configuração explícita desta tela)
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'toolbar_grupos.php';
+$toolbarConfig = greenPortalToolbarGruposConfig('.legislacao-grid-fragment', ['associacoes' => ['[data-assoc-open]']], false);
+$toolbarConfig['grupos'] = array_values(array_filter($toolbarConfig['grupos'], static fn(array $g): bool => $g['id'] !== 'avaliacao'));
+$toolbarConfig['grupos'][] = ['id' => 'rcl', 'rotulo' => 'RCL', 'botoes' => ['[data-rcl-completa]', '[data-rcl-padrao]']];
+greenPortalToolbarGruposEmitir($toolbarConfig); ?><div class="crud-search"><i class="bi bi-search"></i><input type="search" placeholder="Buscar no grid" aria-label="Buscar no grid"></div></div><form method="post" id="legislacaoGridForm" class="setup-form menu-grid-form"><input type="hidden" name="action" value="save_rows"><div class="menu-grid-scroll"><table class="table table-sm menu-batch-grid" id="legislacaoBatchGrid"><thead><tr><?php foreach ($columns as $column => $label): ?><th data-column="<?php echo h($column); ?>" style="width:<?php echo (int)($preferences[$column]['largura'] ?? 140); ?>px"><div class="column-heading"><span><?php echo h($label); ?></span><input class="column-filter" type="search" data-column-filter="<?php echo h($column); ?>" placeholder="Buscar" aria-label="Buscar <?php echo h($label); ?>"></div></th><?php endforeach; ?></tr></thead><tbody><?php foreach ($rows as $row): $id = (int)$row['CODLEGISLACAO']; ?><tr data-row data-key="<?php echo $id; ?>"><?php foreach ($columns as $column => $label): ?><td data-column="<?php echo h($column); ?>"><?php if ($column === 'CODLEGISLACAO'): ?><input class="grid-input" value="<?php echo $id; ?>" readonly><?php else: ?><input class="grid-input" name="rows[<?php echo $id; ?>][<?php echo h($column); ?>]" value="<?php echo h($row[$column] ?? ''); ?>"><?php endif; ?></td><?php endforeach; ?></tr><?php endforeach; ?></tbody></table></div></form><nav class="grid-pagination" aria-label="Paginação do grid"><button type="button" class="btn btn-sm btn-outline-secondary grid-page-prev"><i class="bi bi-chevron-left"></i><span>Anterior</span></button><span class="grid-page-status">Calculando total...</span><button type="button" class="btn btn-sm btn-outline-secondary grid-page-next"><span>Próxima</span><i class="bi bi-chevron-right"></i></button></nav></section><script src="../assets/vendor/jquery/jquery-3.7.1.min.js?v=2"></script><script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js?v=2"></script><script src="../assets/js/visualizador-pdf.js?v=3"></script><script src="../assets/js/legislacao-grid.js?v=24"></script><script src="../assets/js/grid-sort.js?v=1"></script><script src="../assets/js/grid-column-filters.js?v=3"></script><script src="../assets/js/grid-column-resize.js?v=1"></script><script src="../assets/js/grid-pagination.js?v=15"></script><script src="../assets/js/grid-loading.js?v=4"></script><script src="../assets/js/grid-ajax.js?v=2"></script>

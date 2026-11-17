@@ -3,7 +3,8 @@ declare(strict_types=1);
 
 /*
  * Sincronismo legado -> novo das tabelas fo_* (Homologação de Fornecedores) e nc_* (Não conformidades, desde 18/10/2026),
- * do Módulo Legal das empresas e da legislação central. Prefixos, tabelas desconsideradas e prefixos mantidos no greenportal
+ * do Módulo Legal das empresas e da legislação central (desde a migração 393 a legislação central vem por OPERAÇÕES: só o que
+ * foi incluído/alterado/excluído no legado desde a última execução — classes/SincronismoLegislacaoOperacoes.php). Prefixos, tabelas desconsideradas e prefixos mantidos no greenportal
  * por banco: classes/SincronismoLegado.php.
  *
  * Até a virada definitiva, o cadastro é feito SOMENTE no sistema legado. Este script deixa o
@@ -51,8 +52,13 @@ date_default_timezone_set('America/Sao_Paulo'); // horários dos relatórios no 
 require_once __DIR__ . '/../classes/GreenPortalDatabase.php';
 require_once __DIR__ . '/../classes/SincronismoLegado.php'; // prefixos (fo_, nc_), tabelas desconsideradas e mantidas no novo
 require_once __DIR__ . '/../classes/NaoConformidadeParticipantes.php'; // migração 333: participantes externos das listas de NC
+require_once __DIR__ . '/../classes/SincronismoLegislacaoOperacoes.php'; // migração 393: legislação central por operações (de-para)
 
 const SINC_SOMENTE_INCLUSAO = ['fo_fornecedorxcriterios_historico'];
+// Migração 393 (17/11/2026, decisão do usuário): a legislação central deixa de ser ESPELHO do legado. Agora vêm só as
+// operações feitas no legado desde a última execução (inclusões, alterações das colunas que mudaram, exclusões); o que foi
+// feito no greenportal fica; se o mesmo registro mudou dos dois lados, vale o legado. 'espelho' volta ao comportamento antigo.
+const SINC_LEGISLACAO_MODO = 'operacoes';
 // Proteção de campos confirmados no greenportal (fo_sinc_protecoes). Desligada em 18/10/2026 por decisão do usuário:
 // até a virada o legado prevalece também nesses campos (homologação, condicionantes e plano de ação).
 const SINC_RESPEITAR_PROTECOES = false;
@@ -147,6 +153,15 @@ function paresMigrados(PDO $pdo): array
 }
 
 function sincronizarLegislacao(PDO $pdo, bool $aplicar): array
+{
+    if (SINC_LEGISLACAO_MODO !== 'operacoes') return sincronizarLegislacaoEspelho($pdo, $aplicar);
+    $limite = 500;
+    try { $limite = (int)(valor($pdo, 'SELECT limite_exclusoes FROM guniversal_dbp.sincronismo_config WHERE codconfig = 1') ?? 500) ?: 500; } catch (Throwable) {}
+    return SincronismoLegislacaoOperacoes::executar($pdo, $aplicar, $limite);
+}
+
+/** Comportamento antigo (até a migração 393): deixa a legislação central igual ao legado (sobrescreve e exclui). */
+function sincronizarLegislacaoEspelho(PDO $pdo, bool $aplicar): array
 {
     $resultado = ['origem'=>'green_legislacao','destino'=>'glegislacao_dbp','tabelas'=>[],'totais'=>['processados'=>0,'afetados'=>0,'excluidos'=>0]];
     $lock = 'sinc_legislacao_central';
@@ -650,7 +665,11 @@ if ($soValidar) {
     $v = ['validacao' => 'legado -> greenportal (somente leitura)', 'inicio' => date('Y-m-d H:i:s'), 'bancos' => []];
     foreach ($sincPares as $lista) foreach ($lista as [$origem, $destino]) $v['bancos'][$destino] = validarReplica($pdo, $origem, $destino);
     $central = array_column(linhas($pdo, "SELECT s.TABLE_NAME FROM information_schema.TABLES s JOIN information_schema.TABLES d ON d.TABLE_SCHEMA='glegislacao_dbp' AND d.TABLE_NAME=s.TABLE_NAME AND d.TABLE_TYPE='BASE TABLE' WHERE s.TABLE_SCHEMA='green_legislacao' AND s.TABLE_TYPE='BASE TABLE' AND (s.TABLE_NAME LIKE 'legislacao%' OR s.TABLE_NAME IN ('tipos','ambitos','assuntos','perguntas'))"), 'TABLE_NAME');
-    if (existeBanco($pdo, 'green_legislacao') && existeBanco($pdo, 'glegislacao_dbp')) $v['legislacao_central'] = validarTabelas($pdo, 'green_legislacao', 'glegislacao_dbp', $central);
+    if (existeBanco($pdo, 'green_legislacao') && existeBanco($pdo, 'glegislacao_dbp')) {
+        $v['legislacao_central'] = validarTabelas($pdo, 'green_legislacao', 'glegislacao_dbp', $central);
+        // migração 393: por operações, o greenportal pode ter mudanças próprias — as diferenças são esperadas (informativo)
+        if (SINC_LEGISLACAO_MODO === 'operacoes') $v['legislacao_central'] = ['modo' => 'OPERACOES: diferenças esperadas (o greenportal mantém o que foi feito aqui); só informativo'] + $v['legislacao_central'];
+    }
     $v['fim'] = date('Y-m-d H:i:s');
     $json = json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
     $dirLog = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'logs';

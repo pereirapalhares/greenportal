@@ -110,6 +110,11 @@ final class UsuarioSessao
             require_once __DIR__ . '/HomologacaoFornecedorAcesso.php';
             $permissionsByMenu = array_filter($permissionsByMenu, static fn(array $p): bool => !in_array(strtoupper((string)($p['menu_codigo'] ?? '')), HomologacaoFornecedorAcesso::MENUS_SO_EMPRESA, true));
         }
+        // Migração 384: Manutenção Legal só para o ADMINISTRADOR (some do menu dos outros perfis, mesmo com permissão gravada)
+        if ($sessao['usuario']['codigo_perfil'] !== 'ADMINISTRADOR') {
+            require_once __DIR__ . '/PermissaoTransacao.php';
+            $permissionsByMenu = array_filter($permissionsByMenu, static fn(array $p): bool => !in_array(strtoupper((string)($p['menu_codigo'] ?? '')), PermissaoTransacao::MENUS_SO_ADMIN, true));
+        }
         $sessao['permissoes'] = array_values($permissionsByMenu);
         $sessao['contexto_atualizado_em'] = date('c');
         return true;

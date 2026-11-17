@@ -5,11 +5,15 @@ final class PermissaoTransacao
 {
     private static array $modulosPermitidos = [];
 
+    /** Migração 384: grupo Manutenção Legal (cadastros compartilhados de legislação) só para o perfil ADMINISTRADOR. */
+    public const MENUS_SO_ADMIN = ['MANUTENCAO_LEGAL', 'LEGISLACAO', 'LEGISLACAO_X_EMPRESAS', 'LEGISLACAO_X_PODER', 'TIPOS', 'AMBITOS', 'PERIGOS', 'RISCOS', 'ASSUNTOS'];
+
     public static function obter(string $codigo): array
     {
         $admin = (($_SESSION['usuario']['codigo_perfil'] ?? '') === 'ADMINISTRADOR');
         // Migração 297: telas só da empresa ficam fechadas para o fornecedor externo (FORNECEDOR / FORNECEDOR_GESTOR),
         // mesmo quando um perfil associado do legado dá acesso.
+        if (!$admin && in_array(strtoupper(trim($codigo)), self::MENUS_SO_ADMIN, true)) return self::negada();
         if (!$admin) {
             require_once __DIR__ . '/HomologacaoFornecedorAcesso.php';
             if (HomologacaoFornecedorAcesso::menuNegado($codigo)) return self::negada();

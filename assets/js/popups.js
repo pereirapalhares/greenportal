@@ -8,7 +8,7 @@
     //  - vale também para os modais das telas (dentro dos iframes): o portal instala a regra em cada iframe carregado.
     //  - altura: popup com conteúdo próprio (formulário, lista, texto) tem a altura do conteúdo — termina logo abaixo do
     //    último campo — limitada a 90% da janela; passando disso, barra de rolagem vertical no corpo (título e botões fixos).
-    //    Popup que carrega outra tela (iframe) não tem altura própria: fica com os 90%.
+    //    Popup que carrega outra tela (iframe) fica sempre com os 90% (17/11/2026).
     // Caixas de diálogo (mensagem, confirmação, escolha de colunas, "carregando") mantêm o tamanho próprio, mas sempre na frente.
 
     function T(chave, padrao) {
@@ -64,6 +64,9 @@
     // Popup com outra tela (iframe): se a página tem altura natural (formulário curto, perfil, senha), o popup encolhe até
     // o fim do conteúdo; tela que ocupa a altura toda (grid) continua com os 90%. Só na mesma origem (sem acesso, fica 90%).
     function ajustarTela(el) {
+        // 17/11/2026 (pedido do usuário): popup que abre outra tela fica SEMPRE com 90% de quem chamou; não encolhe mais pela
+        // altura do conteúdo. Caixas de diálogo e popups com conteúdo próprio continuam com a altura do conteúdo.
+        return;
         if (!el.classList.contains('popup-90') || el.classList.contains('popup-maximized') || el.classList.contains('popup-minimized')) return;
         var f = el.querySelector('.modal-body iframe, .modal-content > iframe'), d = el.querySelector(':scope > .modal-dialog');
         if (!f || !d) return;

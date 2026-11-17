@@ -63,6 +63,8 @@
         var $table = $(this), $body = $table.find('tbody'), $form = $table.closest('.menu-grid-form');
         if (!$body.length || !$form.length) return;
         var $fragment = $table.closest('.menu-grid-fragment');
+        // Opt-in (Legislação, 17/11/2026): a mesma resposta traz as linhas e o total (data-grid-total no tbody); uma requisição por filtro/página
+        var inlineCount = $fragment.is('[data-grid-inline-count]');
         var formId = $form.attr('id');
         var $saveButton = $('button[type="submit"][form="' + formId + '"]');
         var $deleteButtons = $fragment.find('[data-delete-menu],[data-delete-group],[data-delete-user],[data-delete-permission],[data-delete-profile],[data-delete-formulario],[data-delete-lista],[data-delete-legislacao],[data-delete-legislacao-empresa]');
@@ -202,6 +204,7 @@
                 window.location.href = url.toString();
                 return;
             }
+            if (inlineCount && totalRecords === null) url.searchParams.set('contar', '1');
             $.ajax({ url: url.toString(), method: 'GET', dataType: 'html' })
                 .done(function (html) {
                     var parsed = $.parseHTML(String(html), document, true), $page = $(parsed), $newBody = $page.find('#' + $table.attr('id') + ' tbody').first();
@@ -209,10 +212,13 @@
                     $body.replaceWith($newBody);
                     $body = $table.find('tbody');
                     currentPage = Math.max(1, page);
+                    url.searchParams.delete('contar');
                     window.history.replaceState({}, '', url.toString());
+                    var inlineTotal = $newBody.attr('data-grid-total');
+                    if (inlineCount && inlineTotal !== undefined && inlineTotal !== '') totalRecords = Number(inlineTotal) || 0;
                     $fragment.trigger('gridPageLoaded', [currentPage]);
                     if (callback) callback();
-                    countRecords();
+                    if (!inlineCount || totalRecords === null) countRecords();
                 })
                 .fail(function () { $pagination.find('.grid-page-status').text(languageMessages().failed); })
                 .always(function () { requestInFlight = false; render(); if (filterPending) window.setTimeout(reloadWithFilters, 0); });
@@ -224,6 +230,7 @@
             currentPage = 1;
             totalRecords = null;
             render();
+            if (inlineCount) { loadPage(1); return; }
             countRecords(function () { if (totalRecords > 0) loadPage(1); else { loadPage(1); } });
         }
 

@@ -45,6 +45,9 @@ final class IaTaximetro
         // Migração 347: sugestão dos itens do modelo de documento a partir do arquivo de exemplo
         'DOC_MODELO_SUGESTAO' => ['Homologação de Fornecedores', 'Sugestão de modelo de documento'],
         'DOC_ADULTERACAO' => ['Homologação de Fornecedores', 'Análise de adulteração de documento'],
+        // Migração 382: links onde acompanhar alterações da lei (Manutenção Legal › Legislação › URL de pesquisa)
+        'LEG_URL_PESQUISA' => ['Módulo Legal', 'Sugestão de URL de pesquisa da legislação'],
+        'LEG_PALAVRAS_CHAVE' => ['Módulo Legal', 'Sugestão de palavras-chave da legislação'],
     ];
 
     public const SITUACOES = [

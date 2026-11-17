@@ -1,31 +1,55 @@
 <?php
 declare(strict_types=1);
-session_start();
-require_once dirname(__DIR__) . '/classes/UsuarioSessao.php';
-require_once dirname(__DIR__) . '/classes/LegislacaoGridService.php';
-if (empty($_SESSION['autenticado'])) { http_response_code(401); exit('Sessão expirada.'); }
-$config = [];
-foreach (file(dirname(__DIR__) . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) { if (str_starts_with(trim($line), '#') || !str_contains($line, '=')) continue; [$key, $value] = explode('=', $line, 2); $config[trim($key)] = trim(trim($value), "\"'"); }
-$tenantPdo = new PDO('mysql:host=' . ($config['GPT_DB_HOST'] ?? '127.0.0.1') . ';port=' . ($config['GPT_DB_PORT'] ?? '3306') . ';dbname=' . $_SESSION['tenant']['banco_dados'] . ';charset=utf8mb4', $config['GPT_DB_USERNAME'] ?? '', $config['GPT_DB_PASSWORD'] ?? '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
-if (!UsuarioSessao::atualizar($tenantPdo, $_SESSION)) { http_response_code(401); exit('Sessão expirada.'); }
-$db = new LegislacaoGridService(new PDO('mysql:host=' . ($config['GLEGISLACAO_DB_HOST'] ?? '127.0.0.1') . ';port=' . ($config['GLEGISLACAO_DB_PORT'] ?? '3306') . ';dbname=' . ($config['GLEGISLACAO_DB_DATABASE'] ?? 'glegislacao_dbp') . ';charset=utf8mb4', $config['GLEGISLACAO_DB_USERNAME'] ?? '', $config['GLEGISLACAO_DB_PASSWORD'] ?? '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]));
-$id = (int)($_GET['CODLEGISLACAO'] ?? $_POST['CODLEGISLACAO'] ?? 0); if ($id < 1) { http_response_code(400); exit('Código da legislação inválido.'); }
-$call = static function (LegislacaoGridService $service, string $table, array $filters = [], string $search = ''): array { return $service->call('CALL sp_crud_select(:tabela,:filtros,:busca,1000,0)', ['tabela' => $table, 'filtros' => json_encode($filters, JSON_UNESCAPED_UNICODE), 'busca' => $search]); };
-if (($_POST['action'] ?? '') === 'save_assuntos') {
-    $selected = json_decode((string)($_POST['assuntos'] ?? '[]'), true); $selected = array_values(array_unique(array_filter(array_map('intval', is_array($selected) ? $selected : []))));
-    $current = $call($db, 'legislacaoxassunto', ['CODLEGISLACAO' => $id]); $currentIds = []; foreach ($current as $link) $currentIds[(int)$link['CODASSUNTO']] = true;
-    foreach (array_keys($currentIds) as $subjectId) if (!in_array($subjectId, $selected, true)) $db->call('CALL sp_crud_delete(:tabela,:chave)', ['tabela' => 'legislacaoxassunto', 'chave' => json_encode(['CODLEGISLACAO' => $id, 'CODASSUNTO' => $subjectId])]);
-    foreach ($selected as $subjectId) if (!isset($currentIds[$subjectId])) $db->call('CALL sp_crud_insert(:tabela,:dados)', ['tabela' => 'legislacaoxassunto', 'dados' => json_encode(['CODLEGISLACAO' => $id, 'CODASSUNTO' => $subjectId])]);
-    header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok' => true, 'message' => 'Assunto atualizado com sucesso.'], JSON_UNESCAPED_UNICODE); exit;
+// Migração 387 — Legislação › Assuntos da legislação (popup do grid de Manutenção Legal › Legislação), no grid padrão do portal:
+// coluna de marcação (vinculado), filtro "Vinculado" e Salvar na barra. Gravar exige Editar em LEGISLACAO.
+require_once dirname(__DIR__) . '/classes/LegislacaoPopup.php';
+
+[$id, $perm, $lei] = LegislacaoAssociacoes::iniciarPopup();
+$L = LegislacaoAssociacoes::class;
+
+if (($_POST['ajax'] ?? '') === '1' || ($_POST['action'] ?? '') === 'save_assuntos') {
+    try {
+        if (($_POST['action'] ?? '') !== 'save_assuntos') $L::json(['ok' => false, 'message' => 'Ação desconhecida.'], 400);
+        $selected = json_decode((string)($_POST['assuntos'] ?? '[]'), true);
+        $selected = array_values(array_unique(array_filter(array_map('intval', is_array($selected) ? $selected : []))));
+        $current = [];
+        foreach ($L::ler('legislacaoxassunto', ['CODLEGISLACAO' => $id]) as $link) $current[(int)$link['CODASSUNTO']] = true;
+        $db = LegislacaoAssociacoes::legislacao();
+        $chamar = static function (string $sql, array $p) use ($db): void { $s = $db->prepare($sql); $s->execute($p); while ($s->nextRowset()) {} $s->closeCursor(); };
+        foreach (array_keys($current) as $sub) if (!in_array($sub, $selected, true)) $chamar('CALL sp_crud_delete(?, ?)', ['legislacaoxassunto', json_encode(['CODLEGISLACAO' => $id, 'CODASSUNTO' => $sub])]);
+        foreach ($selected as $sub) if (!isset($current[$sub])) $chamar('CALL sp_crud_insert(?, ?)', ['legislacaoxassunto', json_encode(['CODLEGISLACAO' => $id, 'CODASSUNTO' => $sub])]);
+        $L::json(['ok' => true, 'message' => 'Assuntos gravados (' . count($selected) . ').', 'resumo' => ['type' => 'legislacao-assuntos-saved', 'id' => $id]]);
+    } catch (Throwable $e) {
+        error_log('[legislacao_assuntos] ' . $e->getMessage());
+        $L::json(['ok' => false, 'message' => 'Não foi possível gravar os assuntos.'], 500);
+    }
 }
-$law = $call($db, 'vw_legislacao_grid', ['CODLEGISLACAO' => $id]); $lawCode = (string)($law[0]['CODIGO'] ?? $id); $current = $call($db, 'legislacaoxassunto', ['CODLEGISLACAO' => $id]); $selected = []; foreach ($current as $link) $selected[(int)$link['CODASSUNTO']] = true;
-$subjects = $call($db, 'assuntos'); $associatedSubjects = []; $unassociatedSubjects = [];
-foreach ($subjects as $subject) { if (isset($selected[(int)($subject['CODASSUNTO'] ?? 0)])) $associatedSubjects[] = $subject; else $unassociatedSubjects[] = $subject; }
-$subjects = array_merge($associatedSubjects, $unassociatedSubjects);
-?><!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Assuntos da legislação — <?= htmlspecialchars($lawCode, ENT_QUOTES, 'UTF-8') ?></title><link rel="stylesheet" href="../assets/vendor/bootstrap/css/bootstrap.min.css"><style>
-html,body{width:100%;height:100%;margin:0;overflow:hidden}body{display:flex;flex-direction:column;padding:10px;background:#fff}.association-toolbar{flex:0 0 auto;display:flex;gap:8px;align-items:center;margin-bottom:8px}.association-toolbar [data-search]{flex:1 1 auto}.association-list{min-height:0;flex:1 1 auto;overflow-y:auto;overflow-x:hidden;border:1px solid var(--gp-border);border-radius:7px}.association-list label{display:block;padding:7px 10px;border-bottom:1px solid var(--gp-border);color:var(--gp-text);font-size:12px}.association-list label:last-child{border-bottom:0}.association-list label:hover{background:var(--gp-surface)}.association-list input{margin-right:7px}[data-message]{flex:0 0 auto}
-</style><?php require_once dirname(__DIR__) . '/components/pagina_padrao.php'; greenPortalEstiloPagina(); ?></head><body>
-<div class="association-toolbar"><button type="button" class="btn btn-sm btn-success" data-save>Confirmar</button><input type="search" class="form-control form-control-sm" placeholder="Buscar assunto" aria-label="Buscar assunto" data-search></div>
-<div class="association-list" data-list><?php foreach ($subjects as $subject): $subjectId = (int)($subject['CODASSUNTO'] ?? 0); ?><label data-associated="<?= isset($selected[$subjectId]) ? '1' : '0' ?>"><input class="form-check-input" type="checkbox" value="<?= $subjectId ?>" <?= isset($selected[$subjectId]) ? 'checked' : '' ?>><?= htmlspecialchars((string)($subject['DSCASSUNTO'] ?? ''), ENT_QUOTES, 'UTF-8') ?></label><?php endforeach; ?></div>
-<div class="small text-danger mt-2" data-message></div><script src="../assets/vendor/jquery/jquery-3.7.1.min.js"></script><script>(function(){var $=window.jQuery;function close(){if(window.parent&&window.top.GreenPortalPopups){var modals=window.top.document.querySelectorAll('[data-popup-transacao-independent]'),modal=modals[modals.length-1];if(modal&&window.top.bootstrap)window.top.bootstrap.Modal.getOrCreateInstance(modal).hide();}}$('[data-search]').on('input',function(){var value=$(this).val().toLowerCase();$('[data-list] label').each(function(){$(this).toggle($(this).text().toLowerCase().indexOf(value)>=0);});});$('[data-save]').on('click',function(){var button=this;button.disabled=true;$.post(window.location.href,{action:'save_assuntos',CODLEGISLACAO:<?= $id ?>,assuntos:JSON.stringify($('[data-list] input:checked').map(function(){return Number(this.value);}).get()),ajax:1},function(response){if(!response||!response.ok){$('[data-message]').text('Não foi possível atualizar os assuntos.');button.disabled=false;return;}if(window.parent)window.parent.postMessage({type:'legislacao-assuntos-saved',id:'<?= $id ?>'},'*');close();},'json').fail(function(){$('[data-message]').text('Não foi possível atualizar os assuntos.');button.disabled=false;});});}());</script></body></html>
+
+$sel = [];
+foreach ($L::ler('legislacaoxassunto', ['CODLEGISLACAO' => $id]) as $link) $sel[(int)$link['CODASSUNTO']] = true;
+$linhas = [];
+foreach ($L::ler('assuntos') as $a) {
+    $cod = (int)($a['CODASSUNTO'] ?? 0); $v = isset($sel[$cod]);
+    $linhas[] = ['cells' => [
+        'ASSUNTO' => (string)($a['DSCASSUNTO'] ?? $cod),
+        'VINCULADO' => ['text' => $v ? 'Sim' : 'Não', 'sort' => $v ? '0' : '1'],
+    ], 'actions' => '<input class="form-check-input" type="checkbox" data-grid-marcar value="' . $cod . '"' . ($v ? ' checked' : '') . ($perm['editar'] ? '' : ' disabled') . ' aria-label="Vincular">'];
+}
+LegislacaoPopup::inicio('Assuntos da legislação', $lei, 'Marque os assuntos da lei e clique em Salvar. A lista vale para todas as empresas.' . ($perm['editar'] ? '' : ' <i class="bi bi-lock"></i> Somente consulta.'));
+greenPortalGridLocal([
+    'transaction' => 'manutencaolegal_legislacao', 'id' => 'lpAssuntosGrid', 'fragment_class' => 'lp-grid',
+    'columns' => ['ASSUNTO' => ['label' => 'Assunto', 'filter' => 'text'], 'VINCULADO' => ['label' => 'Vinculado', 'filter' => 'select', 'width' => '120px']],
+    'actions_label' => 'Marcar', 'select_all' => $perm['editar'],
+    'rows' => $linhas, 'empty' => 'Nenhum assunto cadastrado.', 'default_sort' => ['VINCULADO', 'asc'], 'page_size' => 50,
+    'buttons' => ['reload' => true, 'columns' => false],
+    'extras' => $perm['editar'] ? LegislacaoPopup::botao('bi-floppy', 'Salvar os assuntos marcados', 'data-lp-salvar', false, 'success') : '',
+]);
+LegislacaoPopup::fim($id, 'assuntos', <<<'JS'
+(function () {
+    var $ = window.jQuery;
+    $(document).on('click', '[data-lp-salvar]', function () {
+        var marcados = $('[data-grid-marcar]:checked').map(function () { return Number(this.value); }).get();
+        LP.enviar({ action: 'save_assuntos', assuntos: JSON.stringify(marcados) }, $(this)).then(LP.gravado, function () {});
+    });
+}());
+JS);

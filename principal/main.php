@@ -274,7 +274,7 @@ if ($assistenteLiberado && empty($_SESSION['assistente_ia_csrf'])) $_SESSION['as
 <?php endif; ?>
 <script src="../assets/vendor/jquery/jquery-3.7.1.min.js?v=2"></script>
     <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js?v=2"></script>
-    <script src="../assets/js/popups.js?v=19"></script>
+    <script src="../assets/js/popups.js?v=20"></script>
 <script src="<?php echo $baseUrl; ?>/assets/js/guia-usuario.js?v=2"></script>
 <script src="<?php echo $baseUrl; ?>/assets/js/ajuda.js?v=9"></script>
 <script>window.greenPortalBaseUrl = <?php echo json_encode($baseUrl, JSON_UNESCAPED_SLASHES); ?>; window.greenPortalIdioma = <?php echo json_encode((string)($_SESSION['idioma'] ?? 'pt')); ?>; window.greenPortalTimeoutSeconds = <?php echo (int)$sessionTimeoutMinutes * 60; ?>; window.greenPortalDefaultTransaction = <?php echo json_encode($defaultTransaction); ?>; window.greenPortalPermissions = <?php echo json_encode(array_values((array)($_SESSION['permissoes'] ?? [])), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;</script>

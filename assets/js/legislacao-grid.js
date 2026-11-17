@@ -63,19 +63,40 @@
         if (column === 'devido_da_lei') return language === 'en' ? { 'Alterada pela Atualização': 'Changed by Update', 'Alterada pelo Ajuste': 'Changed by Adjustment', 'Alterado pela Atualização': 'Changed by Update', 'Alterado pelo Ajuste': 'Changed by Adjustment', 'Devido ao Ajuste': 'Due to Adjustment', 'Devido à Atualização': 'Due to Update', 'Retirado pela Atualização': 'Removed by Update' } : language === 'es' ? { 'Alterada pela Atualização': 'Modificada por actualización', 'Alterada pelo Ajuste': 'Modificada por ajuste', 'Alterado pela Atualização': 'Modificado por actualización', 'Alterado pelo Ajuste': 'Modificado por ajuste', 'Devido ao Ajuste': 'Debido al ajuste', 'Devido à Atualização': 'Debido a la actualización', 'Retirado pela Atualização': 'Retirado por actualización' } : { 'Alterada pela Atualização': 'Alterada pela Atualização', 'Alterada pelo Ajuste': 'Alterada pelo Ajuste', 'Alterado pela Atualização': 'Alterado pela Atualização', 'Alterado pelo Ajuste': 'Alterado pelo Ajuste', 'Devido ao Ajuste': 'Devido ao Ajuste', 'Devido à Atualização': 'Devido à Atualização', 'Retirado pela Atualização': 'Retirado pela Atualização' };
         return {};
     }
-    function contextSelectHtml(column, key, value) {
-        var html = '<select class="grid-input" name="rows[' + key + '][' + column + ']"><option value="">Selecione</option>';
-        var options = contextOptions(column);
-        Object.keys(options).map(function (optionValue) {
-            return { value: optionValue, label: String(options[optionValue] || '') };
-        }).sort(function (left, right) {
-            return left.label.localeCompare(right.label, window.greenPortalIdioma === 'en' ? 'en-US' : (window.greenPortalIdioma === 'es' ? 'es-ES' : 'pt-BR'), { sensitivity: 'base', numeric: true });
-        }).forEach(function (option) {
-            var selected = String(option.value) === String(value || '') ? ' selected' : '';
-            html += '<option value="' + $('<div>').text(option.value).html() + '"' + selected + '>' + $('<div>').text(option.label).html() + '</option>';
-        });
-        return html + '</select>';
+    // Listas de edição das linhas. Tipo e Âmbito têm catálogos grandes (≈1.900 tipos): a linha leva só o valor atual e as
+    // opções entram quando o usuário abre a lista (antes eram ~50 mil <option> na página e 13 s para abrir).
+    var LAZY_COLUMNS = { CODAMBITO: true, CODTIPO: true }, sortedOptionsCache = {};
+    function escHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+    function sortedOptions(column) {
+        if (sortedOptionsCache[column]) return sortedOptionsCache[column];
+        var options = contextOptions(column), collator = new Intl.Collator(window.greenPortalIdioma === 'en' ? 'en-US' : (window.greenPortalIdioma === 'es' ? 'es-ES' : 'pt-BR'), { sensitivity: 'base', numeric: true });
+        var list = Object.keys(options).map(function (optionValue) { return { value: optionValue, label: String(options[optionValue] || '') }; })
+            .sort(function (left, right) { return collator.compare(left.label, right.label); });
+        list.html = list.map(function (option) { return '<option value="' + escHtml(option.value) + '">' + escHtml(option.label) + '</option>'; }).join('');
+        return (sortedOptionsCache[column] = list);
     }
+    function unknownOption(column, text) {
+        // valor gravado que não está no catálogo (ex.: âmbito apagado): mantém, para a gravação não apagar o valor da lei
+        return text !== '' && !Object.prototype.hasOwnProperty.call(contextOptions(column), text) ? '<option value="' + escHtml(text) + '">' + escHtml(text + ' (não cadastrado)') + '</option>' : '';
+    }
+    function contextSelectHtml(column, key, value) {
+        var text = String(value === null || value === undefined ? '' : value), options = contextOptions(column);
+        var html = '<select class="grid-input" name="rows[' + key + '][' + column + ']"' + (LAZY_COLUMNS[column] ? ' data-lazy-options="' + column + '"' : '') + '><option value="">Selecione</option>' + unknownOption(column, text);
+        if (LAZY_COLUMNS[column]) {
+            if (text !== '' && Object.prototype.hasOwnProperty.call(options, text)) html += '<option value="' + escHtml(text) + '">' + escHtml(options[text]) + '</option>';
+        } else html += sortedOptions(column).html;
+        html += '</select>';
+        return text === '' ? html : html.replace('<option value="' + escHtml(text) + '">', '<option value="' + escHtml(text) + '" selected>');
+    }
+    function fillLazySelect(select) {
+        var column = select.getAttribute('data-lazy-options');
+        if (!column) return;
+        var current = select.value;
+        select.removeAttribute('data-lazy-options');
+        select.innerHTML = '<option value="">Selecione</option>' + unknownOption(column, current) + sortedOptions(column).html;
+        select.value = current;
+    }
+    $(document).on('mousedown focusin keydown touchstart', 'select[data-lazy-options]', function () { fillLazySelect(this); });
     function dateTimeLocal(value) {
         var text = String(value || '').trim().replace(' ', 'T');
         if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(text)) return text.substring(0, 16);
@@ -149,6 +170,82 @@
         popup.transacaoIndependente({ titulo: 'Assuntos da legislação — ' + lawCode, conteudo: frame });
     }
     window.addEventListener('message', function (event) { if (event.data && event.data.type === 'legislacao-assuntos-saved') window.location.reload(); });
+    // Migração 382: URL de pesquisa e Legislações filhas (popups; a contagem da linha é atualizada sem recarregar o grid)
+    var assocPages = { urls: ['manutencaolegal_legislacao_urls.php', 'URL de pesquisa'], filhas: ['manutencaolegal_legislacao_filhas.php', 'Legislações filhas'], alteracoes: ['manutencaolegal_legislacao_alteracoes.php', 'Alterações na legislação'], checklist: ['manutencaolegal_legislacao_catalogo.php?tipo=checklist', 'CheckList'], palavras: ['manutencaolegal_legislacao_catalogo.php?tipo=palavras', 'Palavras-chave'] };
+    function assocMessage(text) { var $m = $fragment.find('[data-assoc-msg]'); if (!$m.length) { $m = $('<span class="legislacao-assoc-msg small text-danger ms-2" data-assoc-msg></span>'); var $g = $fragment.find('.tb-grupo-associacoes').first(); if ($g.length) $g.after($m); else $fragment.find('.crud-toolbar').first().append($m); } $m.text(text || ''); clearTimeout($m.data('timer')); if (text) $m.data('timer', setTimeout(function () { $m.text(''); }, 3500)); }
+    function openAssociation(kind, $row) {
+        var page = assocPages[kind], code = String(($row && $row.data('key')) || '').trim();
+        if (!page) return;
+        if (!$row || !$row.length) return assocMessage('Selecione uma legislação no grid.');
+        if (!/^\d+$/.test(code)) return assocMessage('Salve a legislação antes de associar.');
+        var host = window.parent && window.parent.GreenPortalPopups ? window.parent : (window.top || window), popup = host.GreenPortalPopups;
+        if (!popup || typeof popup.transacaoIndependente !== 'function' || !host.jQuery) { if (window.console) console.error('GreenPortalPopups.transacaoIndependente indisponível.'); return; }
+        var lawCode = String($row.find('[data-column="CODIGO"] input').val() || code).trim();
+        var url = new URL(page[0] + (page[0].indexOf('?') >= 0 ? '&' : '?') + 'CODLEGISLACAO=' + encodeURIComponent(code), window.location.href).toString();
+        var frame = host.jQuery('<iframe>', { style: 'width:100%;height:100%;border:0;display:block;' }).attr('src', url);
+        popup.transacaoIndependente({ titulo: page[1] + ' — ' + lawCode, conteudo: frame });
+    }
+    function assocCountHtml(kind, data) {
+        var esc = function (v) { return $('<div>').text(String(v)).html(); };
+        if (kind === 'URLS') { var n = Number(data.QTD_URLS || 0), s = Number(data.QTD_URLS_SUGERIDAS || 0); return '<button type="button" class="btn btn-sm btn-link p-0 legislacao-assoc-count" data-assoc-open="urls" title="' + esc(n + ' link(s) confirmado(s)' + (s ? ', ' + s + ' sugestão(ões) da IA a confirmar' : '')) + '">' + n + '</button>' + (s ? ' <span class="badge text-bg-warning" title="Sugestões da IA a confirmar">+' + s + '</span>' : ''); }
+        var f = Number(data.QTD_FILHAS || 0), p = Number(data.QTD_PAIS || 0);
+        return '<button type="button" class="btn btn-sm btn-link p-0 legislacao-assoc-count" data-assoc-open="filhas" title="' + esc(f + ' legislação(ões) filha(s)' + (p ? '; é filha de ' + p : '')) + '">' + f + '</button>' + (p ? ' <span class="text-muted small" title="É filha de ' + p + ' legislação(ões)">↑' + p + '</span>' : '');
+    }
+    window.addEventListener('message', function (event) {
+        var d = event.data;
+        if (!d || d.type !== 'legislacao-associacoes-saved' || d.QTD_URLS === undefined) return;
+        var $row = $table.find('tbody tr[data-key="' + String(d.id).replace(/[^0-9]/g, '') + '"]');
+        $row.find('td[data-column="URLS"]').html('<div class="legislacao-assoc-cell">' + assocCountHtml('URLS', d) + '</div>');
+        $row.find('td[data-column="FILHAS"]').html('<div class="legislacao-assoc-cell">' + assocCountHtml('FILHAS', d) + '</div>');
+    });
+    // Migração 386: o popup de Alterações pode atualizar a situação, o devido e a data da lei — reflete na linha sem recarregar
+    window.addEventListener('message', function (event) {
+        var d = event.data;
+        if (!d || d.type !== 'legislacao-alteracoes-saved') return;
+        var $row = $table.find('tbody tr[data-key="' + String(d.id).replace(/[^0-9]/g, '') + '"]');
+        if (!$row.length) return;
+        var put = function (column, value) { var $f = $row.find('td[data-column="' + column + '"]').find('select,input').first(); if (!$f.length) return; if ($f.is('select') && value && !$f.find('option').filter(function () { return this.value === value; }).length) $f.append($('<option>').val(value).text(value)); $f.val(value); };
+        put('situacao_da_lei', d.situacao || ''); put('devido_da_lei', d.devido || ''); put('data_atualizacao', d.data ? d.data + 'T00:00' : '');
+    });
+    $table.on('click', '[data-assoc-open]', function (event) { event.stopPropagation(); var $row = $(this).closest('tr'); $table.find('tbody tr').removeClass('selected'); $row.addClass('selected'); openAssociation(String($(this).data('assoc-open')), $row); });
+    $fragment.find('.crud-toolbar').on('click', '[data-assoc-open]', function () { openAssociation(String($(this).data('assoc-open')), selected()); });
+    // Botões que agem na linha selecionada: desabilitados até o usuário selecionar uma legislação já salva
+    function updateAssocButtons() { var $row = selected(), ok = $row.length > 0 && /^\d+$/.test(String($row.data('key') || '')); $fragment.find('.crud-toolbar [data-assoc-open]').prop('disabled', !ok); if (ok) assocMessage(''); }
+    $table.on('click', 'tbody tr', function () { setTimeout(updateAssocButtons, 0); });
+    $fragment.on('gridPageLoaded', function () { setTimeout(updateAssocButtons, 0); });
+    $(document).on('ajaxComplete', function () { setTimeout(updateAssocButtons, 0); });
+    updateAssocButtons();
+    // Migração 385: RCL Completa / RCL Padrão usam os filtros Empresa, Unidade e Mês/Ano da tela (os três obrigatórios)
+    function rclFilters() {
+        var clean = function (v) { return String(v || '').replace(/\|/g, '').trim(); };
+        return { empresa: clean($fragment.find('#legislacaoFilterCODEMPRESA').val()), unidade: clean($fragment.find('#legislacaoFilterCODUNIDADE').val()), mes: clean($fragment.find('#legislacaoFilterMES_ANO_ATUALIZACAO').val()) };
+    }
+    function rclMessage(text, kind) {
+        var $m = $fragment.find('[data-rcl-msg]');
+        if (!$m.length) { $m = $('<span class="small ms-2" data-rcl-msg></span>'); var $g = $fragment.find('.tb-grupo-rcl').first(); if ($g.length) $g.after($m); else $fragment.find('.crud-toolbar').first().append($m); }
+        $m.attr('class', 'small ms-2 text-' + (kind || 'danger')).text(text || ''); clearTimeout($m.data('timer')); if (text && kind !== 'muted') $m.data('timer', setTimeout(function () { $m.text(''); }, 6000));
+    }
+    function updateRclButtons() { var f = rclFilters(), ok = /^\d+$/.test(f.empresa) && /^\d+$/.test(f.unidade) && /^\d{4}-\d{2}$/.test(f.mes);
+        // Migração 386: destaca o RCL definido para a unidade (Setup › Unidades: tipo de RCL)
+        var tipos = (window.legislacaoGridOptions || {}).unidadeTipoRcl || {}, tipo = ((tipos['|' + f.empresa + '|'] || {})['|' + f.unidade + '|']) || '';
+        $fragment.find('[data-rcl-completa]').toggleClass('btn-success', tipo === 'COMPLETA').toggleClass('btn-outline-success', tipo !== 'COMPLETA');
+        $fragment.find('[data-rcl-padrao]').toggleClass('btn-success', tipo === 'PADRAO').toggleClass('btn-outline-success', tipo !== 'PADRAO'); $fragment.find('[data-rcl-completa],[data-rcl-padrao]').prop('disabled', !ok).attr('title', function () { var base = $(this).is('[data-rcl-completa]') ? 'RCL Completa' : 'RCL Padrão'; return ok ? base : base + ' — escolha Empresa, Unidade e Mês/Ano nos filtros'; }); }
+    $fragment.on('change', '#legislacaoFilterCODEMPRESA,#legislacaoFilterCODUNIDADE,#legislacaoFilterMES_ANO_ATUALIZACAO', function () { setTimeout(updateRclButtons, 0); });
+    $fragment.on('gridPageLoaded', function () { setTimeout(updateRclButtons, 0); });
+    $fragment.find('.crud-toolbar').on('click', '[data-rcl-completa],[data-rcl-padrao]', function (event) {
+        event.preventDefault(); event.stopImmediatePropagation();
+        var f = rclFilters(), $b = $(this), completa = $b.is('[data-rcl-completa]');
+        if (!/^\d+$/.test(f.empresa) || !/^\d+$/.test(f.unidade) || !/^\d{4}-\d{2}$/.test(f.mes)) return rclMessage('Escolha Empresa, Unidade e Mês/Ano nos filtros para gerar o RCL.');
+        var url = new URL('manutencaolegal_legislacao_rcl.php', window.location.href); url.searchParams.set('empresa', f.empresa); url.searchParams.set('unidade', f.unidade); url.searchParams.set('mes', f.mes); url.searchParams.set('tipo', completa ? 'completa' : 'padrao');
+        $fragment.find('[data-rcl-completa],[data-rcl-padrao]').prop('disabled', true); rclMessage('Gerando ' + (completa ? 'RCL Completa' : 'RCL Padrão') + '...', 'muted');
+        fetch(url.toString(), { credentials: 'same-origin' }).then(function (response) {
+            var type = response.headers.get('Content-Type') || '';
+            if (!response.ok || type.indexOf('spreadsheetml') < 0) return response.text().then(function (t) { throw new Error($('<div>').html(t).text().trim() || 'Não foi possível gerar o RCL.'); });
+            var disposition = response.headers.get('Content-Disposition') || '', match = /filename="([^"]+)"/.exec(disposition);
+            return response.blob().then(function (blob) { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = match ? match[1] : 'RCL.xlsx'; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000); rclMessage('RCL gerado.', 'success'); });
+        }).catch(function (error) { rclMessage(error.message || 'Não foi possível gerar o RCL.'); }).finally(updateRclButtons);
+    });
+    updateRclButtons();
     function openPatternEditor($input) {
         var $modal = $('#legislacaoPatternModal');
         if (!$modal.length) {
@@ -171,8 +268,10 @@
         });
         bootstrap.Modal.getOrCreateInstance($modal[0]).show();
     }
+    // Migração 382: coluna sem preferência gravada (URL de pesquisa / Leis filhas, novas) vai para depois das que o usuário já ordenou
+    function columnOrder(column) { var hasAny = Object.keys(preferences || {}).length > 0, pref = (preferences || {})[column]; return pref ? Number(pref.ordem || 0) : (hasAny ? 900 + columns.indexOf(column) : 0); }
     function apply() {
-        columns.sort(function (a, b) { return Number((preferences[a] || {}).ordem || 0) - Number((preferences[b] || {}).ordem || 0); });
+        columns.sort(function (a, b) { return columnOrder(a) - columnOrder(b); });
         var assuntosIndex = columns.indexOf('ASSUNTOS'), ambitoIndex = columns.indexOf('CODAMBITO');
         if (assuntosIndex >= 0 && ambitoIndex >= 0) { columns.splice(assuntosIndex, 1); ambitoIndex = columns.indexOf('CODAMBITO'); columns.splice(ambitoIndex, 0, 'ASSUNTOS'); }
         columns.forEach(function (column) { $table.find('thead tr').append($table.find('th[data-column="' + column + '"]')); $table.find('tbody tr').each(function () { $(this).append($(this).find('td[data-column="' + column + '"]').detach()); }); });
@@ -189,8 +288,36 @@
         return { company: company, unit: unit, labels: labels, partial: (company !== '' && unit === '') || (company === '' && unit !== '') };
     }
     function guardAssociation() { var context = associationContext(); if (context.partial) { window.alert(context.labels.select); return null; } return context; }
-    function rowHtml(key, source) { return columns.map(function (column) { var $sourceField = source && source.find('[data-column="' + column + '"] input, [data-column="' + column + '"] select').first(), value = column === 'CODIGO' && source ? '' : (column === 'PADRAO' && $sourceField ? ($sourceField.data('pattern-value') || $sourceField.val() || '') : ($sourceField && $sourceField.val() || '')); if (column === 'CODLEGISLACAO') return '<td data-column="' + column + '"><span class="text-muted">Novo</span></td>'; if (['CODAMBITO', 'CODTIPO', 'MEIO_AMBIENTE', 'SEGURANCA', 'QUALIDADE', 'RESPOSABILIDADE', 'situacao_da_lei', 'devido_da_lei'].indexOf(column) >= 0) return '<td data-column="' + column + '">' + contextSelectHtml(column, key, value) + '</td>'; if (column === 'data_atualizacao') return '<td data-column="' + column + '"><input class="grid-input" type="datetime-local" name="rows[' + key + '][' + column + ']" value="' + dateTimeLocal(value) + '"></td>'; if (column === 'PADRAO') return '<td data-column="' + column + '">' + patternCellHtml(key, value) + '</td>'; if (column === 'ASSUNTOS') return '<td data-column="' + column + '">' + assuntosCellHtml(value) + '</td>'; return '<td data-column="' + column + '"><input class="grid-input" name="rows[' + key + '][' + column + ']" value="' + $('<div>').text(value).html() + '"></td>'; }).join(''); }
+    function rowHtml(key, source) { return columns.map(function (column) { var $sourceField = source && source.find('[data-column="' + column + '"] input, [data-column="' + column + '"] select').first(), value = column === 'CODIGO' && source ? '' : (column === 'PADRAO' && $sourceField ? ($sourceField.data('pattern-value') || $sourceField.val() || '') : ($sourceField && $sourceField.val() || '')); if (column === 'CODLEGISLACAO') return '<td data-column="' + column + '"><span class="text-muted">Novo</span></td>'; if (['CODAMBITO', 'CODTIPO', 'MEIO_AMBIENTE', 'SEGURANCA', 'QUALIDADE', 'RESPOSABILIDADE', 'situacao_da_lei', 'devido_da_lei'].indexOf(column) >= 0) return '<td data-column="' + column + '">' + contextSelectHtml(column, key, value) + '</td>'; if (column === 'data_atualizacao') return '<td data-column="' + column + '"><input class="grid-input" type="datetime-local" name="rows[' + key + '][' + column + ']" value="' + dateTimeLocal(value) + '"></td>'; if (column === 'PADRAO') return '<td data-column="' + column + '">' + patternCellHtml(key, value) + '</td>'; if (column === 'ASSUNTOS') return '<td data-column="' + column + '">' + assuntosCellHtml(value) + '</td>'; if (column === 'URLS' || column === 'FILHAS') return '<td data-column="' + column + '"><span class="text-muted">—</span></td>'; return '<td data-column="' + column + '"><input class="grid-input" name="rows[' + key + '][' + column + ']" value="' + $('<div>').text(value).html() + '"></td>'; }).join(''); }
+    // Migração 390: as listas dos filtros das colunas mostram só os valores das leis que passam nos outros filtros
+    // (o servidor manda os valores disponíveis na página inteira e, a cada mudança de filtro, no tbody: data-grid-opcoes).
+    function optionKey(column, value) {
+        var text = String(value === null || value === undefined ? '' : value).replace(/^[|\s]+|[|\s]+$/g, '');
+        if (column === 'CODAMBITO' || column === 'CODTIPO') return /^\d+$/.test(text) ? String(parseInt(text, 10)) : text;
+        return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+    function applyAvailableOptions(available) {
+        if (!available || typeof available !== 'object') return;
+        var locale = window.greenPortalIdioma === 'en' ? 'en-US' : (window.greenPortalIdioma === 'es' ? 'es-ES' : 'pt-BR');
+        Object.keys(available).forEach(function (column) {
+            var $select = $table.find('thead select[data-column-filter="' + column + '"]');
+            if (!$select.length || !Array.isArray(available[column])) return;
+            var allowed = {}, values = contextOptions(column), current = String($select.val() || '');
+            available[column].forEach(function (value) { allowed[optionKey(column, value)] = true; });
+            var list = Object.keys(values).filter(function (value) { return allowed[optionKey(column, value)] || value === current; })
+                .map(function (value) { return { value: value, label: String(values[value] || value) }; })
+                .sort(function (a, b) { return a.label.localeCompare(b.label, locale, { sensitivity: 'base', numeric: true }); });
+            $select[0].innerHTML = '<option value="">Todos</option>' + list.map(function (item) { return '<option value="' + escHtml(item.value) + '">' + escHtml(item.label) + '</option>'; }).join('');
+            $select.val(current);
+        });
+    }
     installContextFilters();
+    applyAvailableOptions((window.legislacaoGridOptions || {}).disponiveis);
+    $fragment.on('gridPageLoaded', function () {
+        var raw = $table.find('tbody').first().attr('data-grid-opcoes');
+        if (!raw) return;
+        try { applyAvailableOptions(JSON.parse(raw)); } catch (e) {}
+    });
     apply();
     $table.on('click', 'tbody tr', function () { $table.find('tbody tr').removeClass('selected'); $(this).addClass('selected'); });
     $table.on('click', '[data-edit-pattern]', function (event) { event.stopPropagation(); openPatternEditor($(this).closest('[data-column="PADRAO"]').find('input').first()); });

@@ -295,8 +295,25 @@ try {
         if (($exportConfig['special'] ?? '') === 'busca') {
             $batch = buscaExportarLote($exportPdo, $filters, $offset);
         } elseif (($exportConfig['special'] ?? '') === 'legislacao') {
+            // filtros das colunas chegam como {"value": "1", "exact": true}: as procedures esperam o texto (migração 390)
+            $filters = array_map(static fn($raw) => is_array($raw) ? ($raw['value'] ?? '') : $raw, (array)$filters);
             $value = static function (mixed $raw, bool $numeric = false): ?string { $text = trim((string)$raw, "| \t\n\r\0\x0B"); if ($text === '') return null; return $numeric && !ctype_digit($text) ? null : $text; };
-            $batch = workerCall($exportPdo, 'CALL sp_legislacao_select(:empresa,:unidade,:periodo,:padrao,:busca,:filtros,1000,:offset)', ['empresa' => $value($filters['CODEMPRESA'] ?? null, true), 'unidade' => $value($filters['CODUNIDADE'] ?? null, true), 'periodo' => $value($filters['MES_ANO_ATUALIZACAO'] ?? null), 'padrao' => trim((string)($filters['PADRAO'] ?? '')) ?: null, 'busca' => $search ?: null, 'filtros' => json_encode($filters, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), 'offset' => $offset]);
+            // Migrações 383/384: Empresa e Unidade pelo vínculo do banco da empresa ESCOLHIDA no filtro (legislacaoxempresa), na mesma linha.
+            $empresaFiltro = $value($filters['CODEMPRESA'] ?? null, true); $unidadeFiltro = $value($filters['CODUNIDADE'] ?? null, true);
+            if (empty($legislacaoIdsPronto)) {
+                $legislacaoIdsPronto = true; $legislacaoIds = null;
+                if ($empresaFiltro !== null) {
+                    require_once $root . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'LegislacaoEmpresas.php';
+                    try { $legislacaoIds = LegislacaoEmpresas::leis((int)$empresaFiltro, $unidadeFiltro !== null ? (int)$unidadeFiltro : null); }
+                    catch (InvalidArgumentException) { $legislacaoIds = []; }
+                }
+            }
+            try {
+                $batch = workerCall($exportPdo, 'CALL sp_legislacao_select_ids(:ids,:periodo,:padrao,:busca,:filtros,1000,:offset)', ['ids' => $legislacaoIds === null ? null : json_encode($legislacaoIds), 'periodo' => $value($filters['MES_ANO_ATUALIZACAO'] ?? null), 'padrao' => trim((string)($filters['PADRAO'] ?? '')) ?: null, 'busca' => $search ?: null, 'filtros' => json_encode($filters, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), 'offset' => $offset]);
+            } catch (PDOException $legacyError) {
+                if (!str_contains($legacyError->getMessage(), '_ids')) throw $legacyError;
+                $batch = workerCall($exportPdo, 'CALL sp_legislacao_select(:empresa,:unidade,:periodo,:padrao,:busca,:filtros,1000,:offset)', ['empresa' => $empresaFiltro, 'unidade' => $unidadeFiltro, 'periodo' => $value($filters['MES_ANO_ATUALIZACAO'] ?? null), 'padrao' => trim((string)($filters['PADRAO'] ?? '')) ?: null, 'busca' => $search ?: null, 'filtros' => json_encode($filters, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), 'offset' => $offset]);
+            }
         } else {
             $matrixView = $exportConfig['view'];
             if (($job['transacao'] ?? '') === 'manutencaolegal_legislacaoxempresa' && (($filters['CORRELACIONADO'] ?? '') !== 'Sim')) $matrixView = 'vw_legislacaoxempresa_matrix_all';
