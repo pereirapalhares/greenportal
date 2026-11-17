@@ -1,0 +1,31 @@
+body{background:var(--gp-surface)}.admin-dashboard{padding:14px 20px 18px;color:var(--gp-text)}.admin-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.admin-head h2{font-size:18px;margin:0}.admin-head small{color:var(--gp-muted)}
+.admin-badge{background:var(--gp-primary-soft);border:1px solid var(--gp-border);padding:6px 10px;border-radius:7px;font-size:11px;color:var(--gp-primary)}
+.dash-abas{border-bottom:1px solid var(--gp-border);margin-bottom:12px;gap:2px}.dash-abas .nav-link{font-size:12px;color:var(--gp-muted);border:1px solid transparent;border-bottom:0;border-radius:8px 8px 0 0;padding:7px 14px}.dash-abas .nav-link.active{color:var(--gp-primary-dark,#1b5e3f);background:#fff;border-color:var(--gp-border);font-weight:600}
+.admin-cards{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px}.dash-cards-6{grid-template-columns:repeat(6,minmax(0,1fr))}.dash-cards-4{grid-template-columns:repeat(5,minmax(0,1fr))}
+.admin-card,.admin-panel{background:#fff;border:1px solid var(--gp-border);border-radius:10px}.admin-card{padding:12px;min-height:96px}.admin-card i{font-size:18px}.admin-card.green i{color:var(--gp-primary)}.admin-card.blue i{color:#4d87ad}.admin-card.purple i{color:#8870ac}.admin-card.orange i{color:#bd8434}.admin-card.red i{color:#c66059}.admin-card.gray i{color:#8d9a94}
+.admin-card strong{display:block;font-size:22px;margin-top:6px;color:var(--gp-text)}.admin-card span{display:block;font-size:10px;color:var(--gp-muted);line-height:1.2}.admin-card small{display:block;font-size:10px;color:var(--gp-muted);margin-top:3px}
+.dash-link{cursor:pointer;transition:box-shadow .15s}.dash-link:hover{box-shadow:0 2px 8px rgba(31,77,58,.15)}
+.admin-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px;margin-top:12px}.dash-grid-2{grid-template-columns:1.3fr 1fr}.admin-panel{padding:14px}.admin-panel h3{font-size:13px;margin:0 0 6px;color:var(--gp-primary-dark)}.admin-subtitle{font-size:10px;color:var(--gp-muted);margin-bottom:10px}
+.admin-table{width:100%;font-size:11px}.admin-table th{color:var(--gp-muted);font-weight:600;position:sticky;top:0;background:#fff}.admin-table td,.admin-table th{padding:5px 4px;border-bottom:1px solid var(--gp-border);vertical-align:top}.admin-table tr:last-child td{border-bottom:0}.admin-table .num{text-align:right;white-space:nowrap}
+.status-ok{color:var(--gp-primary)}.status-warning{color:#b27a2e}.status-danger{color:#c55b55}.dash-nota{font-size:10.5px;color:var(--gp-muted);margin:6px 0}
+.dash-barra{display:flex;height:9px;border-radius:5px;overflow:hidden;background:#eef2f0;min-width:80px}.dash-barra span{display:block;height:100%}.dash-barra-grande{margin-top:10px}.dash-barra-grande .dash-barra{height:12px}
+.dash-acoes{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:10px}.dash-relatorios{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px}.dash-rolagem{max-height:340px;overflow:auto}
+.dash-num{cursor:pointer;font-weight:700;text-decoration:none;color:inherit;border-bottom:1px dotted currentColor}.dash-num:hover{color:var(--gp-primary)}.dash-num .badge{cursor:pointer}a.dash-num:has(.badge){border-bottom:0}.dash-clique{cursor:pointer}.dash-clique:hover td{background:#f3f8f5}.dash-motivo{max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dash-resumos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}.dash-resumo h3 a{font-size:11px;font-weight:400;float:right;cursor:pointer}.dash-resumo .linha{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--gp-border)}.dash-resumo .linha:last-child{border-bottom:0}
+.dash-carregando{padding:30px;text-align:center;color:var(--gp-muted);font-size:12px}
+@media(max-width:1200px){.admin-cards,.dash-cards-6,.dash-cards-4{grid-template-columns:repeat(4,1fr)}}@media(max-width:800px){.admin-grid,.dash-grid-2,.dash-resumos{grid-template-columns:1fr}.admin-cards,.dash-cards-6,.dash-cards-4{grid-template-columns:repeat(2,1fr)}}
+/* Migração 341: lente do risco */
+.dash-secao{font-size:14px;font-weight:700;color:var(--gp-primary,#1f5f46);margin:14px 0 6px}.dash-risco-ponto{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}.dash-matriz td.num,.dash-matriz th.num{text-align:center}.dash-matriz-alerta{background:#f8d7da!important;color:#842029;font-weight:700}.dash-pendencias{border-left:4px solid #dc3545}
+
+/* Migração 367: aviso do filtro aplicado pelo cartão */
+.dash-filtro-aviso{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:0 0 6px;padding:5px 10px;border-radius:6px;background:#eef6f1;color:#1f4d3a;font-size:12.5px;font-weight:600}.dash-filtro-aviso .btn-link{font-size:12.5px;font-weight:600}.dash-filtro-aviso .dash-nota{flex-basis:100%;margin:0;font-weight:400}
+/* Migração 368: quadros em sub-abas e grids padrão dentro dos dashboards */
+.dash-subabas-nav{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid #d9e6df;margin-bottom:8px}
+.dash-subaba{border:1px solid transparent;border-bottom:0;background:none;padding:6px 12px;border-radius:8px 8px 0 0;color:#4f675d;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:5px;margin-bottom:-1px}
+.dash-subaba:hover{color:#1f4d3a;background:#f2f8f5}
+.dash-subaba.active{background:#fff;border-color:#d9e6df;color:#1f4d3a}
+.dash-subaba-n{background:#e6f1eb;color:#1f4d3a;border-radius:10px;padding:0 7px;font-size:11px}
+.dash-subaba.active .dash-subaba-n{background:#1f7a52;color:#fff}
+.dash-subaba-painel>.admin-panel,.dash-subabas-unica>.admin-panel{margin-top:0}
+.dash-grid .menu-grid-scroll{max-height:none}
+.dash-grid-2 .dash-grid{min-width:0}

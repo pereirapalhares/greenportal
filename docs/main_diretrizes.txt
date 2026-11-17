@@ -1,0 +1,38 @@
+GREEN PORTAL - DIRETRIZES DA TELA MAIN
+
+1. ESTRUTURA
+
+A main e o container autenticado do portal e deve conter:
+
+- cabecalho ocupando toda a largura do navegador;
+- menu lateral;
+- area de trabalho com abas;
+- rodape ocupando toda a largura do navegador.
+
+O cabecalho deve conter marca Green Portal, icone do Green, controle de
+abrir/fechar menu, empresa, usuario e sino de alertas. A altura definida para
+o cabecalho deve seguir o layout vigente do projeto.
+
+2. MENU
+
+Ao entrar ou atualizar a main, o menu inicia fechado. Quando fechado e o
+usuario clicar em um icone de nivel zero, o menu deve abrir, posicionar o
+item clicado e mostrar seus subitens.
+
+3. ABAS
+
+Cada item de menu transacional deve abrir seu proprio PHP em uma aba. A aba
+Dashboard deve abrir automaticamente apos o login. As paginas carregadas nas
+abas devem tratar somente o proprio contexto e nao duplicar cabecalho,
+rodape ou regras da main.
+
+4. SESSAO
+
+A main deve controlar o timeout de inatividade configurado em Setup/Main.
+Interacoes no cabecalho, menu, abas e iframes devem renovar a atividade.
+Consultas automaticas nao devem renovar a sessao.
+
+As abas devem apresentar um icone de fechamento no lado direito. O fechamento
+deve remover a aba e seu iframe correspondente; quando a aba fechada estiver
+ativa, a aplicacao deve ativar a aba vizinha disponivel, sem recarregar as
+demais transacoes.

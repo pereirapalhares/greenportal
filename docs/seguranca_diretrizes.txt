@@ -1,0 +1,24 @@
+GREEN PORTAL - DIRETRIZES DE SEGURANCA
+
+1. PERFIS
+
+Cada empresa deve possuir os perfis ADMINISTRADOR, ADM_DA_EMPRESA, GESTOR,
+EMITENTE, REVISOR, APROVADOR e FORNECEDOR.
+
+O usuario admin de cada empresa deve possuir perfil ADMINISTRADOR e acesso
+total. O perfil ADM_DA_EMPRESA pode alterar configuracoes permitidas da
+empresa, incluindo labels conforme sua autorizacao.
+
+2. PERMISSOES
+
+Permissoes pertencem ao perfil, nunca diretamente ao usuario. Para cada item
+de menu/transacao devem ser armazenadas permissoes de visualizar, incluir,
+editar, excluir, exportar Excel e gerar PDF.
+
+Ao criar perfil ou item de menu, devem ser criadas as associacoes necessarias
+sem conceder permissoes automaticamente, exceto o perfil ADMINISTRADOR.
+
+3. AUDITORIA
+
+Operacoes CRUD devem gerar logs no banco da empresa, com usuario,
+transacao, acao, entidade, registro, resultado, detalhes e data/hora.

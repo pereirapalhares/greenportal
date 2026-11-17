@@ -1,0 +1,298 @@
+GREEN PORTAL - RELATORIO DE ADERENCIA AS DIRETRIZES DO PROJETO
+================================================================
+Gerado em: 19/08/2026
+Escopo analisado: E:\wamp\apps\greenportal (raiz, classes/, components/, credenciais/,
+principal/, assets/css, assets/js, database/ e .env), comparado com os documentos em
+E:\wamp\apps\greenportal\docs.
+
+Este arquivo lista, por ordem de severidade, tudo que foi identificado como divergente
+das diretrizes do projeto. Cada item indica o(s) arquivo(s) envolvido(s), a regra violada
+e a evidencia encontrada no codigo, para facilitar a correcao pelo Codex.
+
+
+1. CRITICO - SEGURANCA E INTEGRIDADE DE DADOS
+================================================================
+
+1.1 Ausencia total de protecao CSRF
+------------------------------------
+Regra (diretrizes-projeto.txt, secao 6): "Tokens CSRF devem ser usados em operacoes
+que alteram dados."
+Evidencia: busca por "csrf" (case-insensitive) em todo o projeto (*.php e *.js) nao
+retornou nenhuma ocorrencia. Nenhum formulario (login, grids em lote, Setup/Menu,
+Seguranca/Usuarios, Seguranca/Permissoes, Minha Conta, exportacoes, exclusao de
+registros etc.) gera ou valida token CSRF. Tambem nao ha configuracao de cookie de
+sessao com SameSite (nenhuma chamada a session_set_cookie_params ou ini_set para
+session.cookie_samesite).
+Impacto: qualquer operacao que grava dados (salvar, excluir, duplicar, exportar,
+alterar senha, alterar permissoes) pode ser forjada por um site malicioso enquanto o
+usuario estiver autenticado no portal.
+Ajuste sugerido: implementar geracao de token CSRF por sessao (ex.: no bootstrap
+comum), incluir campo oculto/hidden nos formularios e cabecalho X-CSRF-Token nas
+chamadas AJAX (grid-ajax.js, manutencao-legal-cadastro.js, modulo-legal-requisitos.js,
+seguranca-*.js etc.), validando no servidor antes de qualquer INSERT/UPDATE/DELETE.
+Como e uma regra transversal, o ideal e centralizar a validacao em um unico ponto
+(ex.: dentro das classes *Grid que ja centralizam o CRUD) para nao ter que alterar
+cada transacao individualmente.
+
+1.2 SQL direto nas camadas PHP, contrariando a arquitetura de views/procedures
+--------------------------------------------------------------------------------
+Regra (diretrizes-projeto.txt, secoes 5.1 e 7): "Os arquivos PHP e as classes PHP nao
+devem conter comandos SQL CRUD diretos, como SELECT, INSERT ou UPDATE" / "Nao escrever
+SELECT, INSERT, UPDATE ou DELETE diretamente nos arquivos PHP."
+Ocorrencias encontradas:
+  - classes/ManutencaoLegalCadastroGrid.php, metodo contextQuery() (linhas 58-66):
+    monta e executa "SELECT * FROM `$safeView` WHERE ..." e "SELECT COUNT(*) ...
+    FROM `$safeView` ..." diretamente, em vez de usar sp_crud_select/sp_crud_count.
+    Usado pelos grids com contexto (ex.: telas relacionadas ao LAIA).
+  - classes/AjudaTransacoesGrid.php (linha 33 e 49): UPDATE e SELECT diretos na
+    tabela ajuda_transacoes.
+  - classes/AjudaTransacoesCrudGrid.php (linhas 28, 36, 44): SELECT COUNT, UPDATE e
+    SELECT diretos.
+  - classes/AjudaTransacoesCrudGridV2.php (linhas 23, 27, 32): mesmos padroes -
+    SELECT COUNT, UPDATE, SELECT direto (esta e a classe realmente usada hoje, ver
+    item 2.1).
+  - principal/ajuda_visualizacao.php (linha 32) e principal/setup_ajuda.php (linha
+    15): SELECT direto concatenando o idioma no nome da coluna
+    ("titulo_".$lang." AS titulo, texto_".$lang...").
+  - principal/html_edicao.php (linhas 11-12): UPDATE e SELECT diretos, com nome de
+    coluna concatenado a partir do idioma.
+  - credenciais/logar.php (linhas 82-91 e 104-113): dois SELECT diretos (tabela
+    empresa e tabela usuarios/perfis) no fluxo de autenticacao.
+  - index.php raiz (linha 41): `$pdo->query("SELECT codempresa, codigo, nome FROM
+    empresa WHERE status = 'ATIVA' ORDER BY nome")` para popular o combo de empresas
+    do login.
+Observacao: nos casos acima os valores de usuario sao parametrizados via PDO
+(prepared statements) ou restritos por whitelist/regex, entao nao ha uma vulnerabilidade
+de SQL Injection evidente; o problema e de arquitetura/conformidade com a diretriz do
+projeto, que exige que toda leitura/gravacao passe pelas procedures/views universais
+(sp_crud_select/count/insert/update/delete) para manter auditoria, padronizacao de
+mensagens de erro e consistencia entre transacoes.
+Ajuste sugerido: migrar essas leituras/gravacoes para sp_crud_select/sp_crud_count/
+sp_crud_update, criando (se necessario) uma view vw_ajuda_transacoes_grid e mantendo
+a logica de idioma no PHP (montando o filtro) em vez de concatenar o nome da coluna
+no SQL.
+
+1.3 Bug de configuracao no .env (chaves duplicadas GPT_DB_*)
+-----------------------------------------------------------
+Arquivo: .env (raiz do projeto).
+Achado: as chaves GPT_DB_HOST/GPT_DB_PORT/GPT_DB_DATABASE/GPT_DB_USERNAME/
+GPT_DB_PASSWORD/GPT_DB_CHARSET aparecem 3 vezes com valores diferentes:
+  1) GPT_DB_DATABASE=gmodelo_db (charset utf8mb4_0900_ai_ci)
+  2) GPT_DB_DATABASE=green_modelo (charset latin1)
+  3) GPT_DB_DATABASE=green_modelo_seguranca (charset latin1)
+Todo o codigo que le o .env (ManutencaoLegalCadastroGrid::env(), AjudaTransacoes*::env(),
+logar.php::greenPortalEnv(), etc.) usa "se a chave ainda nao existir, define" (primeiro
+valor vence). Isso significa que os blocos 2 e 3 nunca sao lidos com o prefixo GPT_ -
+sao "mortos" no arquivo, e o valor efetivo de GPT_DB_DATABASE e sempre "gmodelo_db"
+(sem o "p" final), que e o nome de banco legado/errado citado nos proprios docs como
+o que foi substituido por gmodelo_dbp (ver docs/manutencao_legal_licencas_diretrizes.txt
+e docs/modulo_legal_correcao_20260819.txt). Isso tambem indica que qualquer transacao
+nova que dependa do default GPT_DB_DATABASE (em vez de receber 'database' explicito no
+cfg) vai apontar para o banco errado.
+Ajuste sugerido: renomear as 2 ultimas blocos para prefixos proprios (ex.:
+LEGADO_MODELO_DB_* e LEGADO_SEGURANCA_DB_*, ja que parecem ser usados apenas por
+scripts de migracao) e corrigir GPT_DB_DATABASE para gmodelo_dbp (ou remover a
+dependencia do default, exigindo 'database' explicito em cada chamada).
+
+1.4 ExportacaoGridWorker aponta para banco errado nas Licencas
+----------------------------------------------------------------
+Arquivo: classes/ExportacaoGridWorker.php, linha 59:
+  'manutencaolegal_licencas' => [... 'database' => 'gmodelo_db', 'prefix' => 'GPT'],
+Regra (docs/modulo_legal_correcao_20260819.txt e
+docs/manutencao_legal_licencas_diretrizes.txt): "A transacao manutencaolegal_licencas
+utiliza exclusivamente o banco gmodelo_dbp" (view vw_licencas_grid criada pelo script
+070_licencas_gmodelo_dbp.sql especificamente para eliminar a dependencia de
+gmodelo_db).
+Achado: o grid principal (principal/manutencaolegal_licencas.php) ja foi corrigido e
+usa 'database' => 'gmodelo_dbp' (correto), mas o worker de exportacao Excel ainda
+aponta para o banco antigo 'gmodelo_db'. Como consequencia, clicar em "Exportar Excel"
+na tela de Licencas vai gerar a planilha consultando vw_licencas_grid no banco ERRADO
+(gmodelo_db), que pode nao existir mais, estar desatualizado ou nao ter a view mais
+recente - gerando exportacao vazia, com erro, ou com dados divergentes da tela.
+Ajuste sugerido: alterar a linha 59 de ExportacaoGridWorker.php para
+'database' => 'gmodelo_dbp'.
+
+
+2. ALTO - FUNCIONALIDADE QUEBRADA OU AUSENTE / CODIGO DUPLICADO
+================================================================
+
+2.1 Tres classes diferentes para a mesma funcionalidade (Ajuda das Transacoes)
+---------------------------------------------------------------------------------
+Arquivos: classes/AjudaTransacoesGrid.php, classes/AjudaTransacoesCrudGrid.php,
+classes/AjudaTransacoesCrudGridV2.php.
+Achado: as tres implementam basicamente a mesma tela (grid/accordion de edicao dos
+textos de ajuda em ajuda_transacoes), com pequenas variacoes de layout. Busca no
+projeto inteiro por referencias a "AjudaTransacoesGrid::" e "AjudaTransacoesCrudGrid::"
+(sem V2) nao encontrou nenhum arquivo que as invoque - apenas
+principal/configuracoes_ajuda.php e principal/setup_ajuda.php* usam
+AjudaTransacoesCrudGridV2.
+Impacto: codigo morto que aumenta a superficie de manutencao, pode confundir o Codex
+ou um novo desenvolvedor sobre qual e a versao "oficial", e reproduz os problemas de
+SQL direto (item 1.2) em tres lugares em vez de um.
+Ajuste sugerido: remover classes/AjudaTransacoesGrid.php e
+classes/AjudaTransacoesCrudGrid.php (confirmar antes que nenhuma rota externa/teste
+dependa delas), mantendo e corrigindo apenas a V2.
+
+2.2 principal/index.php e uma pagina orfa que conflita com main.php
+------------------------------------------------------------------------
+Regra (diretrizes-projeto.txt, secao 3.3): apos login, o endpoint deve redirecionar
+para /principal/main.php, que e a pagina autenticada oficial (cabecalho 7%, area
+central 88%, rodape 5%, menu lateral, abas etc.).
+Achado: principal/index.php existe paralelamente e implementa uma pagina "Acesso
+realizado" simplificada (sem cabecalho/menu/rodape/abas), aparentemente um resquicio
+de uma fase inicial do desenvolvimento antes do main.php estar pronto. Nenhum outro
+arquivo redireciona para ele (logar.php redireciona para main.php).
+Ajuste sugerido: remover principal/index.php ou, se ele tiver alguma finalidade
+(pagina de fallback), documentar isso; do contrario deixa a impressao de rota
+duplicada/abandonada dentro da area protegida.
+
+2.3 ajuda_visualizacao.php e setup_ajuda.php sao quase identicos (duplicacao)
+--------------------------------------------------------------------------------
+Arquivos: principal/ajuda_visualizacao.php e principal/setup_ajuda.php.
+Achado: os dois arquivos fazem a mesma coisa - abrir um popup somente leitura com o
+texto de ajuda de uma transacao, consultando ajuda_transacoes por SQL direto (ver
+1.2) com o mesmo HTML/CSS embutido, praticamente linha a linha identicos. So
+diferem em detalhes de nome de variavel/HTML.
+Ajuste sugerido: unificar em um unico endpoint (ex.: manter apenas
+ajuda_visualizacao.php) e apontar assets/js/ajuda-transacao.js para ele, eliminando
+a duplicata.
+
+2.4 Botao "Exportar Excel" habilitado mas sem funcionalidade no modulo de Legislacao
+------------------------------------------------------------------------------------------
+Regra (docs/manutencao_legal_legislacao_diretrizes.txt e
+docs/grids_em_lote_diretrizes.txt, secao 11): todos os grids devem oferecer
+exportacao Excel assincrona respeitando filtros e busca.
+Achado: principal/manutencaolegal_legislacao.php chama greenPortalCrudButtons(...)
+sem desabilitar a opcao 'export', portanto o botao "Exportar Excel" aparece habilitado
+(conforme permissao). Porem, nao existe nenhum tratamento de
+action=export_request nesse arquivo, e a transacao "manutencaolegal_legislacao" nao
+esta cadastrada no mapa $legalExports de classes/ExportacaoGridWorker.php (que so
+cobre tipos, ambitos, aspectos, impactos, perigos, riscos, assuntos, unidades, areas,
+atividades, requisitos legais e licencas). O mesmo vale para
+assets/js/legislacao-grid.js, que nao possui nenhuma referencia a "export".
+Impacto: ao clicar em Exportar Excel na tela de Legislacao, o clique nao aciona
+nenhum fluxo valido no servidor (o botao provavelmente fica sem efeito ou gera um
+comportamento inesperado no JS, que espera uma resposta JSON de confirmacao de
+solicitacao).
+Ajuste sugerido: implementar o handler action=export_request em
+manutencaolegal_legislacao.php (nos mesmos moldes do ManutencaoLegalCadastroGrid) e
+registrar a transacao no mapa $legalExports (banco glegislacao_dbp, view
+vw_legislacao_grid) - ou, caso a exportacao ainda nao esteja prevista para esta
+fase, desabilitar explicitamente o botao passando 'export' => false para nao expor
+uma acao que nao funciona.
+
+2.5 Telas matriciais (X Empresas / X Poder) nao usam o componente padrao de botoes
+        e faltam acoes obrigatorias
+------------------------------------------------------------------------------------------
+Regra (diretrizes-projeto.txt, topo do documento): "A estrutura HTML dos botoes CRUD
+deve ser centralizada em components/botoes_crud.php" e "Todos os botoes da barra de
+acoes dos grids devem seguir a mesma ordem e dimensao visual" (Salvar, Novo, Duplicar,
+Excluir, Recarregar, Exportar Excel, Colunas).
+Achado:
+  - principal/manutencaolegal_legislacaoxempresa.php (linha 43) monta a barra de
+    acoes manualmente em HTML puro (sem chamar greenPortalCrudButtons), com apenas
+    3 botoes: Salvar, Recarregar, Colunas. Nao ha Exportar Excel, nem indicacao de
+    permissao (sem data-permission-locked / tooltip "Perfil sem permissao de acesso!"
+    nos botoes).
+  - principal/manutencaolegal_legislacaoxpoder.php nao possui nenhuma chamada a
+    greenPortalCrudButtons (grep nao encontrou ocorrencias), ou seja, tambem constroi
+    a barra manualmente, repetindo o mesmo problema.
+Impacto: inconsistencia visual/comportamental com o resto do sistema, botoes sem
+controle de permissao visual, e ausencia de Exportar Excel nas duas telas mesmo
+constando como padrao geral dos grids.
+Ajuste sugerido: refatorar as duas telas para usar
+components/botoes_crud.php::greenPortalCrudButtons(), documentando explicitamente
+(caso seja uma decisao de produto) que Novo/Duplicar/Excluir nao se aplicam a um
+grid matricial (usar 'new' => false, 'duplicate' => false, 'delete' => false), mas
+mantendo Salvar/Recarregar/Exportar Excel/Colunas no padrao visual e com controle de
+permissao.
+
+
+3. MEDIO - PADRAO DE CODIGO E CONSISTENCIA
+================================================================
+
+3.1 Caractere corrompido em label hardcoded (violação da propria diretriz de
+        acentuacao/UTF-8)
+------------------------------------------------------------------------------
+Arquivo: classes/ModuloLegalRequisitosGrid.php, linha 80:
+  'CODAMBITO' => ['label' => ['pt' => 'Código do âmbito', ...
+Regra (diretrizes-projeto.txt, secao 14): "E proibida a gravacao de texto com
+sequencias de codificacao corrompida resultantes de conversao incorreta entre latin1
+e UTF-8" e a diretriz pede testar explicitamente palavras acentuadas como "Ambito".
+Achado anterior: havia um caractere de substituição gravado diretamente no código-fonte PHP; o texto foi corrigido.
+no lugar de "Â" (deveria ser "Código do Âmbito"). E um campo tecnico oculto por
+padrao (nao aparece na tela normalmente), mas aparece caso o usuario reative a coluna
+pelo seletor "Colunas", e mostra corrupcao de encoding em pleno codigo-fonte.
+Ajuste sugerido: corrigir a string para "Código do Âmbito" e salvar o arquivo em
+UTF-8 sem BOM; revisar o arquivo inteiro à procura de outros bytes invalidos.
+
+3.2 principal/dashboard.php nao envia os cabecalhos de no-cache
+-------------------------------------------------------------------
+Regra (docs/cache_e_versionamento_diretrizes.txt): "Essa regra vale para o main.php e
+para os grids carregados em iframe, incluindo os novos cadastros da Manutencao
+Legal" - Cache-Control: no-store, no-cache, must-revalidate, max-age=0 / Pragma:
+no-cache / Expires: 0.
+Achado: ao contrario da maioria das demais transacoes (ManutencaoLegalCadastroGrid,
+ModuloLegalRequisitosGrid, seguranca_*.php, setup_*.php etc., que chamam header()
+explicitamente no topo), principal/dashboard.php nao define nenhum desses cabecalhos.
+Como o Dashboard e a primeira aba aberta apos o login e fica em iframe dentro da
+main.php, ele deveria seguir a mesma regra para evitar ERR_CACHE_READ_FAILURE e dados
+desatualizados apos Ctrl+F5.
+Ajuste sugerido: adicionar os 3 headers no topo de dashboard.php, no mesmo padrao
+usado pelos demais arquivos.
+
+3.3 Duplicacao dos arquivos de diretrizes na raiz do projeto
+------------------------------------------------------------
+Regra (diretrizes-projeto.txt, secao 4 - Organizacao sugerida): "/docs/
+Documentacao do projeto" - unica pasta prevista para a documentacao.
+Achado: todos os *_diretrizes.txt (e diretrizes-projeto.txt) existem duplicados na
+raiz de E:\wamp\apps\greenportal (fora da pasta docs/), alem de dentro de docs/. Os
+arquivos da raiz tem data de modificacao mais recente (19/08/2026) que os de docs/,
+sugerindo que foram copiados/gerados por engano em outro processo (talvez o proprio
+Codex) e nao foram removidos.
+Ajuste sugerido: manter a documentacao apenas em /docs/ e remover as copias da raiz,
+para nao correr o risco de alguem editar a copia errada e gerar divergencia entre as
+duas versoes das diretrizes.
+
+
+4. OBSERVACOES / PONTOS POSITIVOS CONFIRMADOS
+================================================================
+Para contexto, os pontos abaixo foram checados e estao de acordo com as diretrizes:
+- Senhas: password_hash()/password_verify() com fallback documentado para
+  hash_equals() quando senha_usa_hash=0 (credenciais/logar.php e
+  UsuarioContaService.php) - conforme politica configuravel por empresa.
+  session_regenerate_id(true) e chamado apos login bem-sucedido.
+- Nome do banco do tenant nunca vem direto do formulario: e resolvido via consulta a
+  guniversal_dbp.empresa e validado por regex antes de compor a DSN (logar.php).
+- CRUD dos grids "genericos" (ManutencaoLegalCadastroGrid, ModuloLegalRequisitosGrid,
+  ModuloLegalSituacaoGrid, UsuarioSessao, MenuService, AlertasService,
+  UsuarioContaService) usa consistentemente sp_crud_insert/select/update/delete/count
+  via PDO com parametros nomeados (sem concatenacao de valores de usuario).
+  htmlspecialchars() e usado ao renderizar dados nos grids revisados.
+- Paginacao de 25 registros, debounce de 1000ms na busca/filtros
+  (assets/js/grid-pagination.js linha 179) e exportacao Excel via worker
+  assincrono com no maximo 2 slots (classes/ExportacaoGridWorker.php) implementados
+  conforme a diretriz.
+- assets/.htaccess aplica corretamente Cache-Control/Pragma/Expires para os arquivos
+  estaticos (css/js/fontes/icones/imagens).
+- assets/css/design-system.css centraliza corretamente as variaveis dos 3 temas
+  (verde/azul/cinza), aplicadas tanto no login quanto na main autenticada.
+- .env fica fora da pasta publica servida por URL (raiz do projeto) e as credenciais
+  nao aparecem hardcoded nos arquivos PHP revisados.
+
+
+5. PROXIMOS PASSOS SUGERIDOS
+================================================================
+1) Priorizar 1.1 (CSRF) e 1.4 (banco errado no export de Licencas) - sao os itens
+   com maior risco pratico imediato (seguranca e dado incorreto entregue ao usuario).
+2) Corrigir 1.3 (.env) e revalidar todas as transacoes que dependem do default
+   GPT_DB_DATABASE sem passar 'database' explicito no cfg, para garantir que nenhuma
+   delas esteja acidentalmente apontando para gmodelo_db.
+3) Resolver 2.4 e 2.5 (Legislacao sem exportacao funcional; matrizes sem botoes
+   padronizados) antes de considerar essas telas como concluidas.
+4) Fazer a limpeza de codigo morto/duplicado (2.1, 2.2, 2.3, 3.3) em um commit
+   separado de "housekeeping", para nao misturar com correcoes funcionais.
+5) Depois dessas correcoes, recomenda-se um novo ciclo de testes funcionais
+   (login, permissao, CRUD, exportacao, filtros, acesso direto por URL) nas telas
+   alteradas, conforme o criterio minimo de qualidade do documento
+   diretrizes-projeto.txt (secao 10).

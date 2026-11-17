@@ -1,0 +1,37 @@
+GREEN PORTAL - DIRETRIZES DE SESSAO E ACESSO
+
+O acesso funcional inicia sempre pela tela de login. Paginas internas devem
+validar sessao autenticada, usuario, perfil e empresa antes de exibir
+conteudo.
+
+Acesso direto sem sessao deve redirecionar para index.php. Endpoints Ajax
+devem responder 401 sem revelar dados internos.
+
+O timeout de inatividade e configurado em Setup/Main pelo ADMINISTRADOR,
+com padrao de 30 minutos, minimo de 1 e maximo de 1440. Eventos do usuario
+na main e nas abas renovam a atividade; consultas automaticas nao renovam.
+
+Ao expirar, a sessao deve ser encerrada e o navegador redirecionado para o
+login.
+
+MINHA CONTA
+-----------
+
+O usuario logado pode abrir Minha conta pelo bloco de identificacao no
+cabecalho. O popup permite alterar a propria senha e escolher o proprio tema
+de layout. A senha atual deve ser confirmada, a nova senha deve ser
+confirmada novamente. Durante o desenvolvimento, a senha deve ser validada
+sem hash, conforme `senha_usa_hash = 0`; essa regra devera ser revisada antes
+de homologacao ou producao.
+Nenhum usuario pode alterar a senha ou o layout de outro usuario.
+
+Em Minha conta, o usuario tambem pode escolher sua transacao inicial. Essa
+preferencia e individual e fica registrada por usuario, sem alterar a tela
+inicial de outros usuarios. A lista deve considerar as transacoes disponiveis
+no menu e os paineis habilitados para a sessao, incluindo o calendario. Se a
+transacao salva nao estiver mais disponivel, o sistema deve abrir o Dashboard
+como alternativa.
+
+O tema salvo pelo ADMINISTRADOR em Setup/Layout e o padrao da empresa e deve
+ser aplicado tambem na tela de login. A preferencia individual do usuario
+pode substituir esse padrao somente depois da autenticacao.

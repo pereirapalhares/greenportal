@@ -1,0 +1,4 @@
+<?php
+$e=[];foreach(file(__DIR__.'/../.env',FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)?:[] as $l){$l=trim($l);if($l===''||$l[0]==='#'||!str_contains($l,'='))continue;[$k,$v]=explode('=',$l,2);$e[trim($k)]=trim(trim($v),'"\'');}
+$p=new PDO('mysql:host='.$e['GPT_DB_HOST'].';port='.$e['GPT_DB_PORT'].';dbname=gmodelo_dbp;charset=utf8mb4',$e['GPT_DB_USERNAME'],$e['GPT_DB_PASSWORD'],[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
+$rows=$p->query("SELECT CODCONDICIONANTE FROM li_condicionantes WHERE DSCCONDICIONANTE='TESTE CONDICIONANTE 20260922'")->fetchAll();$s=$p->prepare('CALL sp_crud_delete(:tabela,:chave)');foreach($rows as $row){$s->execute(['tabela'=>'li_condicionantes','chave'=>json_encode(['CODCONDICIONANTE'=>(int)$row['CODCONDICIONANTE']])]);$s->closeCursor();}echo json_encode(['removed'=>count($rows)]).PHP_EOL;

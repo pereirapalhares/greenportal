@@ -1,0 +1,143 @@
+GREEN PLATFORM — DOCUMENTO DE REQUISITOS DE PROJETO
+Versão 1.0 | 10/10/2026 | Status: proposta para validação
+===========================================================================
+
+1. OBJETIVO E ORIGEM
+--------------------
+Documento de Requisitos de Projeto (DRP), versão 1.0, 10/10/2026. Transformar o Green SGA em Green Platform modular, preservando dados e funcionalidades. Base: arquitetura modular discutida e apresentação GreenSolutions Software 4.0.1, 37 páginas. [PDF] indica conteúdo da apresentação; [PROPOSTA] identifica decisão nova a validar.
+
+2. VISÃO E PRINCÍPIOS
+---------------------
+[PDF pp.3-5] Plataforma multi-site, módulos independentes e inter-relacionados, personalização por usuário, IA, dashboards e interface moderna. [PROPOSTA] Monólito modular inicialmente; módulos licenciáveis sem duplicar serviços. [ATUAL] PHP 8, MySQL 8, WAMP, MVC, Bootstrap 5/jQuery. CRUD via procedures; leitura/relatórios por views; Grid e Form Universal modal; IDs técnicos ocultos e descrições visíveis; seg_menu, permissões e ajuda PT/EN/ES. Scripts SQL versionados com backup e rollback.
+
+3. CATÁLOGO DE MÓDULOS
+----------------------
+[PROPOSTA] Green Core: segurança, perfis, grupos, empresas/unidades, menus, idiomas, ajuda e auditoria. Green UI: grids, formulários, dashboards e exportação. Green Responsibility: responsáveis, regras, grupos e delegação. Green Questionnaire: motor universal. Green Tasks: pendências, alertas e notificações. Green Calendar: agenda e recorrência. Green Content: GED/ECM. Green Workflow: processos e aprovações. Green Legal: requisitos e conformidade. Green SGA: licenças, condicionantes, aspectos, monitoramentos, controles, infraestrutura e treinamentos. Green Supplier: homologação. Green Quality: NCs, planos e auditorias. Green ESG: KPIs, emissões e relatórios. Green Projects: engenharia e entregáveis. Green AI: extração, classificação, busca e sugestões.
+
+4. REQUISITOS TRANSVERSAIS
+--------------------------
+RF-001 [PDF pp.4-5] Multi-site e visão personalizada ao usuário logado.
+RF-002 [PDF p.6] Responsabilidades múltiplas, diretas e por perfil.
+RF-003 [PDF pp.7-9] Agenda, notificações/pendências, alertas, cards e painel gerencial.
+RF-004 [PDF p.8] Geração e atribuição automática de tarefas, com IA quando habilitada.
+RF-005 [PDF pp.10-12] Dashboards navegáveis por unidade, período e responsável; risco e escolha de colunas.
+RF-006 [PDF pp.11-12] Auditoria, tutoriais e suporte móvel.
+RF-007 [PDF pp.12-13] Política configurável de alertas; visualizar, inserir, editar, excluir e exportar.
+RF-008 [PDF p.14] Delegação, API SAP/Power BI e monitoramento de usuários por SCIM.
+RF-009 [PROPOSTA] Toda tela nova deve ter autorização, labels e ajuda PT/EN/ES.
+RF-010 [PROPOSTA] Desativar módulo não pode apagar dados históricos.
+
+5. GREEN CONTENT
+----------------
+CNT-001 [PROPOSTA] Documento com metadados, tipo, empresa, unidade e vínculo com objeto de negócio.
+CNT-002 [PROPOSTA] Versionamento, check-in/out, histórico e recuperação autorizada.
+CNT-003 [PROPOSTA] Pastas, taxonomia, pesquisa, visualizador, retenção e segurança.
+CNT-004 [PROPOSTA] Revisão e aprovação por Green Workflow, sem fluxo duplicado.
+CNT-005 [PROPOSTA] Upload seguro, validação MIME/tamanho, hash e storage configurável.
+CNT-006 [PDF p.26] Vincular controles de gestão ao GED para versionamento.
+
+6. GREEN WORKFLOW
+-----------------
+WF-001 [PROPOSTA] Fluxos versionados com etapas, transições, papéis e condições.
+WF-002 [PROPOSTA] Instâncias vinculadas ao objeto de origem e eventos de negócio.
+WF-003 [PROPOSTA] Aprovar, rejeitar, devolver, complementar, delegar e escalar.
+WF-004 [PROPOSTA] Prazos, tarefas, comentários, evidências e trilha de auditoria.
+WF-005 [PROPOSTA] Execução idempotente e ações previamente autorizadas; vedar SQL arbitrário configurável.
+
+7. MOTOR UNIVERSAL DE QUESTIONÁRIOS
+-----------------------------------
+QUE-001 [PROPOSTA] amb_questionario_* será motor oficial; inventariar/migrar amb_questionario_req_* antes de desativar.
+QUE-002 [PROPOSTA] Preservar perguntas, opções, versões, respostas, resultados e execuções históricas.
+QUE-003 [PROPOSTA] Publicações imutáveis, regras configuráveis e resultados auditáveis.
+QUE-004 [PROPOSTA] Ações sensíveis geram proposta sujeita a validação humana.
+QUE-005 [PDF p.34] Blocos, pesos e resultado de aprovação em questionários de integração de funcionários.
+QUE-006 [PROPOSTA] Interface integrada por Grid/Form Universal e popups.
+
+8. GREEN LEGAL E SGA
+--------------------
+LEG-001 [PDF pp.15-17] Atendimento legal baseado em cinco pilares: licenças, monitoramento, treinamento, infraestrutura e controle.
+LEG-002 [PDF pp.15-17] IA sugere itens potenciais; validar antes de criar itens definitivos.
+LEG-003 [PDF pp.16-17] Mudanças nos pilares repercutem no atendimento legal.
+LEG-004 [PDF pp.18-21] Evidências entre unidades/leis similares, histórico e relatório legal.
+LEG-005 [PDF pp.18,33] Controle versus influência; influência associada a fornecedores.
+LEG-006 [PDF p.19] Reanálise quando a legislação mudar e busca semântica.
+LEG-007 [PDF pp.20-21] Inativação rastreável, classificação legal e próxima avaliação.
+SGA-001 [PDF pp.22-24] Licenças com responsáveis, agenda, alertas, pendências, dashboards e risco.
+SGA-002 [PDF pp.23-24] Protocolos, renovação, arquivamento, validade recorrente e taxas.
+SGA-003 [PDF pp.24-26] Extração por IA e medições recorrentes.
+SGA-004 [PROPOSTA] SGA reutiliza Content e Workflow.
+
+9. GREEN SUPPLIER
+-----------------
+SUP-001 [PDF pp.28-29] Home, dashboards, meus fornecedores/funcionários, tarefas e alertas.
+SUP-002 [PDF p.30] Extração/validação de documentos por IA e detecção indicativa de adulteração, com revisão humana.
+SUP-003 [PDF p.31] Chat empresa-fornecedor e explicação de rejeição.
+SUP-004 [PDF pp.32-33] Risco, portaria, ações corretivas, carbono escopo 3 e leis de influência.
+SUP-005 [PDF p.34] Veículos/equipamentos e questionários ponderados de integração.
+SUP-006 [PDF p.35] Ranking e fila consolidada de aprovações.
+
+10. QUALITY, ESG E PROJECTS
+---------------------------
+QLT-001 [PROPOSTA] Centralizar NCs, planos de ação, auditorias e eficácia.
+QLT-002 [PDF pp.12,32] Integração de ações corretivas e flags de eficácia.
+ESG-001 [PDF p.36] KPIs, gases de efeito estufa, descarbonização e relatórios de sustentabilidade.
+ESG-002 [PDF p.36] Referenciais como GRI e IFRS S1/S2, sujeitos a detalhamento.
+PRJ-001 [PROPOSTA] Projetos de engenharia, templates, entregáveis e revisões via Content/Workflow.
+
+11. REQUISITOS NÃO FUNCIONAIS
+-----------------------------
+RNF-001 [PROPOSTA] RBAC por ação, empresa/unidade, módulo e objeto.
+RNF-002 [PROPOSTA] Proteção contra SQL injection, XSS, CSRF e uploads maliciosos.
+RNF-003 [PROPOSTA] Auditoria de alterações com antes/depois, autor, data, origem e correlação; LGPD.
+RNF-004 [PROPOSTA] Transações, rollback, tratamento de erro e idempotência.
+RNF-005 [PROPOSTA] Internacionalização PT/EN/ES, interface responsiva e acessível.
+RNF-006 [PROPOSTA] Backups e restauração testados, observabilidade e migrações versionadas.
+RNF-007 [PROPOSTA] Metas de SLA, desempenho e capacidade a definir; PDF não fixa valores.
+
+12. ORGANIZAÇÃO DO CÓDIGO E DADOS
+---------------------------------
+[PROPOSTA] app/Core (kernel); app/Platform (Security, UI, Responsibility, Questionnaire, Tasks, Calendar, Integration); app/Services (Content, Workflow, AI); app/Modules (Legal, SGA, Supplier, Quality, ESG, Projects). Cada módulo: Controllers, Services, Repositories/adaptadores, Views, Routes, Config, SQL/Migrations, Help, Labels e Tests. Preservar nomes seg_* e amb_* enquanto houver dependências; não renomear em massa. Views para leitura; procedures para mutações. Contratos internos estáveis e eventos versionados, sem acesso arbitrário a tabelas privadas de outros módulos.
+
+13. PLANO DE MIGRAÇÃO
+---------------------
+MIG-001 Inventariar rotas, Controllers, views, procedures, tabelas, permissões, menus e dados.
+MIG-002 Classificar objetos por módulo e dependência.
+MIG-003 Criar contratos dos serviços comuns e adaptadores de compatibilidade.
+MIG-004 Consolidar motores de questionário, reconciliando dados históricos.
+MIG-005 Integrar responsabilidades, pendências e agenda aos módulos.
+MIG-006 Migrar GED e aprovações gradualmente para Content/Workflow.
+MIG-007 Habilitar/desabilitar módulos por configuração/licença e validar permissões.
+MIG-008 Remover legado apenas após homologação e janela de observação.
+
+14. PRIORIDADES
+---------------
+P0: baseline, inventário, logs, permissões, regressão e questionários.
+P1: responsabilidades efetivas, delegação, pendências, notificações e agenda.
+P2: Content e Workflow compartilhados com versionamento e aprovações.
+P3: modularização de Legal, SGA, Quality e Supplier.
+P4: IA, ESG, Projects, APIs e comercialização avançada.
+Ordem proposta, não cronograma contratado.
+
+15. CRITÉRIOS DE ACEITE
+-----------------------
+CA-001 Nenhuma função atual perdida sem decisão formal.
+CA-002 Módulos habilitáveis sem quebrar dependências ou histórico.
+CA-003 CRUD via procedures e autorização/auditoria adequadas.
+CA-004 IDs ocultos; descrições em grids e combos.
+CA-005 Menus, formulários, mensagens e ajuda PT/EN/ES.
+CA-006 Questionários legados reconciliados e motor novo homologado.
+CA-007 Documentos versionados e aprovações rastreáveis.
+CA-008 Eventos/tarefas sem duplicação por reprocessamento.
+CA-009 Dashboards respeitam unidade, usuário e permissões.
+CA-010 Migrações e rollback testados em homologação.
+
+16. ENTREGÁVEIS E DECISÕES PENDENTES
+------------------------------------
+ENT-001 Software Architecture Handbook vivo; ENT-002 inventário e mapa de dependências; ENT-003 modelo de dados; ENT-004 contratos e eventos; ENT-005 backlog rastreável; ENT-006 migrations e patches; ENT-007 plano de testes/migração; ENT-008 ajuda PT/EN/ES.
+DEC-001 Validar fronteiras e nomes comerciais dos módulos.
+DEC-002 Definir serviços obrigatórios versus licenciáveis.
+DEC-003 Definir storage documental, retenção e assinatura.
+DEC-004 Definir estratégia multiempresa/multitenant.
+DEC-005 Definir SLAs, volumetria, backup e infraestrutura.
+DEC-006 Definir ordem comercial e critérios de priorização.
+

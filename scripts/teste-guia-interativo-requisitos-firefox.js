@@ -1,0 +1,76 @@
+const fs = require('fs');
+const driver = 'http://127.0.0.1:4444';
+const app = 'http://187.191.99.180/greenportal';
+const testEmpresa = process.env.GREEN_TEST_EMPRESA || 'Atlas';
+const testUsuario = process.env.GREEN_TEST_USER || 'admin';
+const testSenha = process.env.GREEN_TEST_PASSWORD || '';
+const result = { navegador: 'Firefox via GeckoDriver', empresa: testEmpresa, usuario: testUsuario, checks: [], status: 'REPROVADO' };
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+async function call(path, method = 'GET', body) { const response = await fetch(driver + path, { method, headers: { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) }); const json = await response.json(); if (json.value?.error) throw Error(json.value.message || json.value.error); return json.value; }
+function check(name, ok, detail = '') { result.checks.push({ name, ok: !!ok, detail }); console.log(`${ok ? 'PASS' : 'FAIL'} - ${name}${detail ? `: ${detail}` : ''}`); if (!ok) throw Error(name); }
+function elementId(element) { return element && (element['element-6066-11e4-a52e-4f735466cecf'] || element.ELEMENT); }
+(async () => { let sid;
+  try {
+    sid = (await call('/session', 'POST', { capabilities: { alwaysMatch: { browserName: 'firefox', unhandledPromptBehavior: 'accept', 'moz:firefoxOptions': { binary: 'C:\\Program Files\\Mozilla Firefox\\firefox.exe', args: ['-headless'] } } } })).sessionId;
+    const a = path => `/session/${sid}${path}`;
+    const js = (script, args = []) => call(a('/execute/sync'), 'POST', { script, args });
+    await call(a('/url'), 'POST', { url: `${app}/index.php` }); await wait(900);
+    await js(`var e=document.querySelector('#empresa'),u=document.querySelector('#userid'),s=document.querySelector('#senha'),f=document.querySelector('form.login-form');var o=Array.from(e.options||[]).find(x=>new RegExp(${JSON.stringify(testEmpresa)},'i').test(x.textContent)||new RegExp(${JSON.stringify(testEmpresa)},'i').test(x.value));if(o)e.value=o.value;u.value=${JSON.stringify(testUsuario)};s.value=${JSON.stringify(testSenha)};f.submit();`); await wait(2200);
+    check('Login ' + testEmpresa, await js('return /main\\.php/i.test(location.href)') === true);
+    await js("var b=document.querySelector('[data-open-user-guide]');if(b)b.click();"); await wait(2200);
+    const headerGuide = await js("var d=document.querySelector('#greenPortalUserGuideDrawer'),f=d&&d.querySelector('iframe');return {drawer:!!d,frame:!!f,url:f?.src||'',minimize:!!(d&&d.querySelector('.guide-drawer-minimize'))};");
+    check('Guia do cabecalho abre no painel da aplicacao', headerGuide.drawer && headerGuide.frame && headerGuide.minimize, JSON.stringify(headerGuide));
+    await js("var b=document.querySelector('#greenPortalUserGuideDrawer .guide-drawer-minimize');if(b)b.onclick();"); await wait(120);
+    check('Guia do cabecalho pode ser minimizado', await js("return !!document.querySelector('#greenPortalUserGuideDrawer.is-minimized')") === true);
+    await js("var b=document.querySelector('#greenPortalUserGuideDrawer .guide-drawer-minimize');if(b)b.onclick();"); await wait(120);
+    check('Guia do cabecalho pode ser restaurado', await js("return !!document.querySelector('#greenPortalUserGuideDrawer:not(.is-minimized) iframe')") === true);
+    await js("var f=document.querySelector('#greenPortalUserGuideDrawer iframe'),b=f&&f.contentDocument.querySelector('[data-guide-show-me]');if(b)b.click();"); await wait(5000);
+    const headerTour = await js("var r=Array.from(document.querySelectorAll('iframe')).find(x=>/modulolegal_requisitoslegais/i.test(x.src)&&x.contentDocument),d=r&&r.contentDocument;return {page:!!r,card:!!(d&&d.querySelector('[data-green-tour]')),target:!!(d&&d.querySelector('[data-green-tour-target]'))};");
+    check('Mostre-me do cabecalho abre a transacao e orienta o menu', headerTour.page && headerTour.card && headerTour.target, JSON.stringify(headerTour));
+    await js("var r=Array.from(document.querySelectorAll('iframe')).find(x=>/modulolegal_requisitoslegais/i.test(x.src)&&x.contentDocument),b=r&&r.contentDocument.querySelector('[data-tour-close]');if(b)b.click();");
+    await js("var d=document.querySelector('#greenPortalUserGuideDrawer');if(d)d.remove();");
+    await js("window.greenPortalOpenTab('menu-requisitos-legais','/greenportal/principal/modulolegal_requisitoslegais.php','Requisitos Legais');"); await wait(5000);
+    const screenGuide = await js("var f=Array.from(document.querySelectorAll('iframe')).reverse().find(x=>/modulolegal_requisitoslegais/i.test(x.src)&&x.contentDocument&&x.contentDocument.querySelector('.modulo-legal-requisitos-fragment'));var b=f&&f.contentDocument.querySelector('[data-open-guide-requisitos]');return {button:!!b,question:!!(b&&b.querySelector('.bi-question-circle')),title:b?.getAttribute('title')||'',frame:!!f};");
+    result.screen = screenGuide; check('Botão ? abre o guia interativo', screenGuide.button && screenGuide.question && /guia interativo/i.test(screenGuide.title), JSON.stringify(screenGuide));
+    await js("var f=Array.from(document.querySelectorAll('iframe')).reverse().find(x=>/modulolegal_requisitoslegais/i.test(x.src)&&x.contentDocument&&x.contentDocument.querySelector('.modulo-legal-requisitos-fragment'));f.contentDocument.querySelector('[data-open-guide-requisitos]').click();"); await wait(3200);
+    const buttons = await js("var f=Array.from(document.querySelectorAll('iframe')).find(x=>/guia_interativo_requisitos\\.php/i.test(x.src)&&x.contentDocument);var d=f&&f.contentDocument;return {start:!!(d&&d.querySelector('[data-help-start]')),steps:!!(d&&d.querySelector('[data-help-steps]')),url:f?.src||'',frame:!!f,drawer:!!document.querySelector('#greenPortalGuideDrawer')};");
+    result.guide = buttons; check('Guia de Requisitos Legais carregado', buttons.start && buttons.steps && buttons.drawer, JSON.stringify(buttons));
+    await js("var b=document.querySelector('#greenPortalGuideDrawer .guide-drawer-minimize');if(b)b.click();"); await wait(150);
+    check('Painel lateral pode ser minimizado', await js("return !!document.querySelector('#greenPortalGuideDrawer.is-minimized')") === true);
+    await js("var b=document.querySelector('#greenPortalGuideDrawer .guide-drawer-minimize');if(b)b.click();"); await wait(150);
+    check('Painel lateral pode ser restaurado', await js("return !!document.querySelector('#greenPortalGuideDrawer:not(.is-minimized) iframe')") === true);
+    await js("var f=Array.from(document.querySelectorAll('iframe')).find(x=>/guia_interativo_requisitos\\.php/i.test(x.src)&&x.contentDocument);f.contentDocument.querySelector('[data-help-start]').click();"); await wait(700);
+    const handles = await call(a('/window/handles'));
+    check('Demonstração permaneceu na mesma sessão', handles.length === 1, `janelas=${handles.length}`);
+    const tour = await js("var r=Array.from(document.querySelectorAll('iframe')).find(x=>/modulolegal_requisitoslegais/i.test(x.src)&&x.contentDocument),d=r&&r.contentDocument;return {page:!!(r&&d),panel:!!document.querySelector('[data-green-guide-card]'),target:!!(d&&d.querySelector('[data-green-tour-target]')),fragment:!!(d&&d.querySelector('.modulo-legal-requisitos-fragment')),drawer:!!document.querySelector('#greenPortalGuideDrawer')};");
+    result.tour = tour; check('Tour visual montado na tela atual', tour.page && tour.panel && tour.target, JSON.stringify(tour));
+    await js("var r=Array.from(document.querySelectorAll('iframe')).find(x=>/modulolegal_requisitoslegais/i.test(x.src)&&x.contentDocument),b=r&&r.contentDocument.querySelector('[data-card-minimize]');if(b&&typeof b.onclick==='function')b.onclick();else if(b)b.click();"); await wait(150);
+    const cardMin = await js("var r=Array.from(document.querySelectorAll('iframe')).find(x=>/modulolegal_requisitoslegais/i.test(x.src)&&x.contentDocument),c=r&&r.contentDocument.querySelector('[data-green-guide-card]');return {card:!!c,min:!!(c&&c.classList.contains('is-minimized')),button:!!(c&&c.querySelector('[data-card-minimize]'))};");
+    check('Cartão guiado pode ser minimizado', cardMin.min === true, JSON.stringify(cardMin));
+    await js("var r=Array.from(document.querySelectorAll('iframe')).find(x=>/modulolegal_requisitoslegais/i.test(x.src)&&x.contentDocument),b=r&&r.contentDocument.querySelector('[data-card-minimize]');if(b&&typeof b.onclick==='function')b.onclick();else if(b)b.click();"); await wait(150);
+    check('Cartão guiado pode ser restaurado', await js("var r=Array.from(document.querySelectorAll('iframe')).find(x=>/modulolegal_requisitoslegais/i.test(x.src)&&x.contentDocument);return !!(r&&r.contentDocument.querySelector('[data-green-guide-card]:not(.is-minimized)'))") === true);
+    await js("var fs=Array.from(document.querySelectorAll('iframe'));fs.forEach(function(f){f.removeAttribute('data-test-active')});var active=fs.find(function(f){return /modulolegal_requisitoslegais/i.test(f.src)&&f.contentDocument&&f.contentDocument.querySelector('[data-green-guide-card]')});if(active)active.setAttribute('data-test-active','1');");
+    const reqFrameElement = await call(a('/element'), 'POST', { using: 'css selector', value: 'iframe[data-test-active="1"]' });
+    const reqFrameId = elementId(reqFrameElement);
+    check('Iframe de Requisitos Legais localizado para clique real', !!reqFrameId);
+    await call(a('/frame'), 'POST', { id: reqFrameElement });
+    const nextElement = await call(a('/element'), 'POST', { using: 'css selector', value: '[data-card-next]' });
+    const nextElementId = elementId(nextElement);
+    check('Botão Próximo localizado no iframe', !!nextElementId);
+    await call(a('/element/' + encodeURIComponent(nextElementId) + '/click'), 'POST', {});
+    await call(a('/frame'), 'POST', { id: null }); await wait(350);
+    const nextStep = await js("var r=Array.from(document.querySelectorAll('iframe')).find(x=>/modulolegal_requisitoslegais/i.test(x.src)&&x.contentDocument),c=r&&r.contentDocument.querySelector('[data-green-guide-card]'),b=c&&c.querySelector('[data-card-next]');return {card:!!c,label:c?.querySelector('.guide-card-label')?.textContent||'',text:c?.querySelector('.guide-card-text')?.textContent||'',onclick:!!(b&&b.onclick)};");
+    check('Passo a passo continua respondendo no Firefox', nextStep.card && /Passo 2 de 4/i.test(nextStep.label), JSON.stringify(nextStep));
+    await call(a('/frame'), 'POST', { id: reqFrameElement });
+    const prevElement = await call(a('/element'), 'POST', { using: 'css selector', value: '[data-card-prev]' });
+    const prevElementId = elementId(prevElement);
+    check('Botão Voltar localizado no iframe', !!prevElementId);
+    await call(a('/element/' + encodeURIComponent(prevElementId) + '/click'), 'POST', {});
+    await call(a('/frame'), 'POST', { id: null }); await wait(200);
+    check('Voltar retorna ao Passo 1', await js("var r=Array.from(document.querySelectorAll('iframe')).find(x=>/modulolegal_requisitoslegais/i.test(x.src)&&x.contentDocument),c=r&&r.contentDocument.querySelector('[data-green-guide-card]');return !!(c&&/Passo 1 de 4/i.test(c.querySelector('.guide-card-label')?.textContent||''))") === true);
+    await call(a('/screenshot')).then(shot => { fs.mkdirSync('tests/evidencias-guia-requisitos-firefox', { recursive: true }); fs.writeFileSync('tests/evidencias-guia-requisitos-firefox/guia-tour.png', Buffer.from(shot, 'base64')); });
+    result.status = 'APROVADO';
+  } catch (error) { result.erro = error.message; console.error(`ERRO - ${error.message}`); }
+  finally { result.fim = new Date().toISOString(); fs.mkdirSync('tests/evidencias-guia-requisitos-firefox', { recursive: true }); fs.writeFileSync('tests/evidencias-guia-requisitos-firefox/resultado.json', JSON.stringify(result, null, 2)); if (sid) await call(`/session/${sid}`, 'DELETE').catch(() => {}); }
+  process.exitCode = result.status === 'APROVADO' ? 0 : 1;
+})();

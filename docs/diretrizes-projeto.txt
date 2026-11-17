@@ -1,0 +1,1796 @@
+GREEN PORTAL - DIRETRIZES DO PROJETO
+====================================
+
+PADRAO VISUAL DA BARRA DE ACOES DOS GRIDS
+------------------------------------------
+
+O visual do portal deve ser controlado por `assets/css/design-system.css`,
+com variaveis CSS para cores, superficies, bordas, sombras, raios e
+transicoes. A escolha do usuario entre os temas Verde, Azul e Cinza deve
+alterar somente essas variaveis e continuar sendo persistida por usuario.
+Login, cabecalho, menu, dashboard, grids, botoes e modais devem utilizar a
+mesma linguagem visual do tema selecionado.
+
+A estrutura HTML dos botoes CRUD deve ser centralizada em
+`components/botoes_crud.php`. O componente recebe a identificacao do
+formulario, as permissoes e, opcionalmente, um bloco de botoes especificos da
+transacao. O componente nao executa regras de negocio; o JavaScript de cada
+transacao continua responsavel pelas acoes especificas.
+
+As transacoes exibidas dentro de abas que possuem grid nao devem apresentar
+cabecalho ou titulo interno. O primeiro elemento visivel da aba deve ser a
+barra de botoes; o titulo da transacao ja e identificado pelo menu e pela aba.
+
+Todos os botoes da barra de acoes dos grids devem seguir a mesma ordem e
+dimensao visual. A ordem padrao e: Salvar, Novo, Duplicar, Excluir,
+Recarregar, Exportar Excel e Colunas; a paginacao deve permanecer na mesma
+linha, imediatamente apos Colunas. O botao Exportar Excel das transacoes que
+usam o componente generico de cadastros deve receber o mesmo tratamento dos
+demais botoes, com icone Bootstrap, tooltip multidioma e dimensao compacta,
+sem exibir o texto do botao.
+
+Versao inicial: 1.0
+Data: 2026-08-13
+
+DIRETRIZ OFICIAL — ISOLAMENTO DE TRANSACOES
+-------------------------------------------
+
+Cada transacao funcional deve possuir seu proprio arquivo PHP, no formato
+`<nome_da_transacao>.php`, e deve tratar exclusivamente sua tela, dados,
+filtros e acoes. APIs, procedures, views, permissoes, testes e documentacao
+devem manter o mesmo escopo e identificador da transacao.
+
+Componentes compartilhados ficam restritos a infraestrutura, como sessao,
+tenant, autorizacao, auditoria, i18n, conexao e componentes visuais. Nenhuma
+transacao pode receber livremente do navegador o nome de banco, tabela, view,
+procedure ou acao. Toda mutacao deve validar tenant, unidade, registro,
+permissao e contrato da transacao, com rollback, idempotencia quando aplicavel
+e registro de auditoria.
+
+O detalhamento normativo esta em `docs/diretriz-isolamento-transacoes.md`.
+
+1. OBJETIVO
+-----------
+
+O Green Portal sera uma aplicacao web simples, modular e de facil manutencao.
+O sistema tera uma pagina principal de acesso (login) e cada operacao do
+sistema sera executada por um arquivo PHP proprio, associado ao seu modulo e
+transacao.
+
+2. TECNOLOGIAS PADRAO
+---------------------
+
+- PHP 8.x para a camada de servidor e regras de negocio.
+- MySQL para persistencia dos dados.
+- Bootstrap 5 para layout, componentes e responsividade.
+- jQuery para interacoes no navegador e chamadas AJAX.
+- HTML5 e CSS3 para estrutura e estilos complementares.
+
+As dependencias e versoes especificas devem ser registradas quando o projeto
+for inicializado. O codigo deve permanecer compativel com PHP 8.x.
+
+2.1 INTERNACIONALIZACAO
+-----------------------
+
+A aplicacao deve ser mult idioma desde a primeira versao, com suporte aos
+seguintes idiomas:
+
+- PT - Portugues.
+- EN - Ingles.
+- ES - Espanhol.
+
+Regras para internacionalizacao:
+
+- O portugues (PT) sera o idioma padrao inicial.
+- O usuario deve poder selecionar o idioma, conforme a regra definida para o
+  projeto, e a preferencia deve ser mantida na sessao e/ou no cadastro do
+  usuario.
+- Textos de menus, botoes, formularios, grids, mensagens de validacao, erros e
+  confirmacoes devem usar chaves de traducao, nunca textos fixos espalhados no
+  codigo.
+- As traducoes devem ficar organizadas por idioma e utilizar chaves estaveis e
+  descritivas.
+- Quando uma traducao nao existir, o sistema deve aplicar um fallback para PT
+  e registrar a ausencia para correcao posterior.
+- Datas, horas, numeros e valores monetarios devem respeitar o locale do idioma
+  selecionado, sem alterar indevidamente o valor armazenado no banco.
+- Dados digitados pelo usuario, como nomes e descricoes, nao devem ser
+  traduzidos automaticamente; somente os textos da interface e do sistema
+  devem ser internacionalizados.
+
+2.2 ARQUITETURA MULTITENANT POR EMPRESA
+----------------------------------------
+
+O Green Portal deve ser uma aplicacao multitenant, com isolamento dos dados
+por empresa. Cada empresa tera seu proprio banco de dados, contendo suas
+tabelas e seus dados de usuarios, grupos, perfis e permissoes.
+
+Na tela de login, o usuario deve informar:
+
+- Userid.
+- Senha.
+- Empresa.
+
+Exemplos de identificacao de bancos por empresa:
+
+- Empresa OAA: `goaa_dbp`.
+- Empresa Crown: `gcrown_dbp`.
+
+O padrao de nome deve ser definido e aplicado de forma consistente para as
+demais empresas. A empresa informada no login deve ser um codigo ou identificador
+previamente cadastrado, e nao o nome livre do banco de dados.
+
+Fluxo de autenticacao multiempresa:
+
+1. Receber userid, senha e identificador da empresa.
+2. Consultar um cadastro central de empresas para localizar a configuracao do
+   tenant correspondente.
+3. Abrir uma conexao somente com o banco da empresa identificada.
+4. Validar o usuario e a senha dentro do banco daquele tenant.
+5. Gravar na sessao o identificador da empresa e o contexto do banco validado.
+6. Executar todas as transacoes seguintes usando exclusivamente o banco do
+   tenant autenticado.
+
+O usuario nunca deve conseguir escolher ou alterar diretamente o nome, host,
+usuario ou senha do banco por meio de parametros da URL, formulario ou AJAX.
+As credenciais dos bancos devem ficar protegidas na configuracao do servidor,
+e o sistema deve impedir qualquer consulta cruzada entre empresas.
+
+Cada banco de empresa deve possuir, no minimo, as estruturas necessarias para
+usuarios, grupos, perfis, transacoes de menu e permissoes. A administracao
+desses dados deve ocorrer dentro do contexto da empresa autenticada.
+
+2.2.1 PADRAO DE MIGRACAO MULTIEMPRESA
+--------------------------------------
+
+O `gmodelo_dbp` e a empresa Modelo de referencia estrutural do Green Portal.
+Todas as empresas migradas ou provisionadas deverao possuir a mesma estrutura
+de banco-base, com as adaptacoes de dados e configuracoes proprias de cada
+tenant.
+
+Cada empresa devera possuir um mapeamento explicito entre o banco legado, o
+banco legado de seguranca, quando existir, e o banco novo do Green Portal. Por
+exemplo:
+
+- Empresa Modelo: `green_modelo` e `green_modelo_seguranca` -> `gmodelo_dbp`.
+- Empresa Crown: `green_crown` e `green_crown_seguranca` -> `gcrown_dbp`.
+
+O cadastro desse mapeamento deve ser controlado pelo processo oficial de
+migracao e provisionamento. O usuario nao podera informar livremente nomes de
+bancos de origem ou destino.
+
+As migracoes devem:
+
+- preservar as chaves e a rastreabilidade do legado;
+- converter os dados para a codificacao oficial do novo tenant;
+- aplicar a mesma estrutura de tabelas, views, procedures, indices, menus,
+  permissoes e auditoria definida para `gmodelo_dbp`;
+- copiar somente os dados pertencentes a empresa migrada;
+- manter usuarios, grupos, configuracoes e dados operacionais isolados por
+  tenant;
+- registrar origem, destino, versao, quantidades, status e conflitos;
+- ser executadas primeiro em homologacao, com backup dos bancos envolvidos;
+- permitir repeticao segura ou retomada quando tecnicamente possivel.
+
+Uma alteracao estrutural aprovada para a base do Modelo devera ser avaliada
+como migracao versionada para os demais tenants. Nenhuma empresa existente
+deve ser alterada automaticamente sem o processo controlado de atualizacao.
+
+2.3 PERFIS PADRAO E USUARIO ADMINISTRADOR
+------------------------------------------
+
+Cada empresa deve possuir os seguintes perfis padrao:
+
+- `ADMINISTRADOR`.
+- `ADM_DA_EMPRESA`.
+- `GESTOR`.
+- `EMITENTE`.
+- `REVISOR`.
+- `APROVADOR`.
+- `FORNECEDOR`.
+
+Os perfis devem existir dentro do banco de dados da respectiva empresa. As
+permissoes de cada perfil serao configuradas por transacao de menu, incluindo
+CRUD, operacoes em lote, exportacao para Excel, geracao de PDF e demais acoes
+disponiveis.
+
+Durante a criacao ou inicializacao de cada empresa, deve ser criado um usuario
+com userid `admin` e perfil `ADMINISTRADOR`. Esse usuario deve ter acesso a
+todas as transacoes do menu e todas as permissoes CRUD, incluindo incluir,
+visualizar, editar e excluir. Quando aplicavel, tambem deve possuir as
+permissoes de operacoes em lote, exportacao para Excel e geracao de PDF.
+
+A senha inicial do usuario `admin` deve ser definida por mecanismo seguro e
+deve exigir alteracao no primeiro acesso. A politica de armazenamento da senha
+sera definida no setup da empresa, conforme a configuracao documentada na
+secao de setup por empresa. A criacao do usuario e a atribuicao do perfil
+devem ser registradas no log de auditoria do banco da empresa.
+
+Cada banco de empresa tambem deve permitir a personalizacao dos textos da
+interface pelo usuario que possuir o perfil `ADM_DA_EMPRESA`. Esse perfil
+podera alterar, conforme as transacoes liberadas:
+
+- Labels e titulos das colunas do grid.
+- Labels dos campos e titulos dos formularios.
+- Textos de botoes, filtros e mensagens de apoio da transacao.
+
+A personalizacao deve ser armazenada no banco da propria empresa e respeitar o
+idioma selecionado (PT, EN ou ES), permitindo labels diferentes por idioma. A
+alteracao do label nao pode modificar nomes de tabelas, colunas, parametros,
+chaves de traducao ou qualquer identificador tecnico utilizado pelo sistema.
+Quando nao existir um label personalizado, deve ser utilizado o texto padrao
+da aplicacao. Alteracoes de labels devem gerar registro no log de auditoria.
+
+O perfil `ADM_DA_EMPRESA` somente podera personalizar labels dentro do seu
+tenant. Ele nao podera alterar labels de outra empresa nem modificar a
+estrutura tecnica das transacoes.
+
+2.4 SETUP INDIVIDUAL DA EMPRESA
+-------------------------------
+
+Cada empresa deve possuir um setup proprio, armazenado no seu banco e aplicado
+somente ao respectivo tenant. O setup deve permitir configurar:
+
+- Padrao de cores, tema e estilos visuais do site.
+- Politica de senha. Durante o desenvolvimento, as senhas serao armazenadas
+  sem criptografia/hash, conforme a decisao atual do projeto.
+- Regras de expiracao, tamanho minimo e troca obrigatoria de senha, quando
+  habilitadas.
+- Labels personalizados para grids, grids em lote e formularios, por idioma.
+- Demais preferencias de apresentacao que sejam aprovadas para o projeto.
+
+Durante o desenvolvimento, a configuracao `senha_usa_hash` deve permanecer
+com valor `0`. Essa decisao e exclusiva do ambiente de desenvolvimento e
+deve ser revisada antes de qualquer implantacao em homologacao ou producao.
+A configuracao nao deve expor senhas em telas, logs, respostas AJAX ou
+mensagens de erro. A politica de producao devera ser definida posteriormente,
+com revisao formal de seguranca.
+
+O setup deve possuir valores padrao para garantir que uma nova empresa possa
+ser inicializada sem configuracao manual obrigatoria. Alteracoes no setup
+devem registrar usuario, data, valores anterior e novo, e transacao responsavel.
+
+2.5 PREFERENCIAS DE COLUNAS POR USUARIO
+---------------------------------------
+
+Nos grids e grids em lote, cada usuario deve poder escolher quais campos ou
+colunas deseja visualizar. Essa escolha deve ser persistida individualmente
+por usuario, empresa e transacao, sem alterar a configuracao dos demais
+usuarios.
+
+As preferencias devem permitir, conforme o componente, mostrar ou ocultar
+colunas e preservar a ordem e a largura escolhidas. O sistema deve aplicar um
+conjunto padrao de colunas quando o usuario ainda nao possuir preferencias e
+deve oferecer uma opcao para restaurar o padrao.
+
+A configuracao de visibilidade nao pode remover validacoes, controles de
+seguranca ou permissao de acesso aos dados. Uma coluna somente podera ser
+exibida se a transacao e o perfil permitirem seu acesso. A preferencia de
+colunas deve ser considerada tambem na exportacao para Excel, conforme a regra
+definida para a transacao.
+
+2.6 EMPRESA MODELO E PROVISIONAMENTO DE NOVAS EMPRESAS
+------------------------------------------------------
+
+Deve existir uma empresa especial chamada `Modelo`. Ela sera utilizada como
+template para a criacao de novas empresas e tera um setup proprio para
+executar o provisionamento de novos tenants.
+
+O setup da empresa `Modelo` deve possuir uma transacao especifica para criacao
+de empresa, que devera:
+
+1. Cadastrar os dados da nova empresa no cadastro central de empresas.
+2. Validar o codigo, identificador e o padrao do nome do novo banco.
+3. Criar um novo banco de dados exclusivo para a empresa.
+4. Criar no novo banco todas as tabelas, views, procedures, indices e estruturas
+   necessarias ao funcionamento do sistema.
+5. Inicializar os perfis padrao, transacoes de menu, permissoes e configuracoes
+   de setup da nova empresa.
+6. Inicializar as tabelas de logs e auditoria do novo tenant.
+7. Cadastrar os usuarios iniciais, chamados `keyusers`, associados a nova
+   empresa.
+8. Registrar o resultado completo do provisionamento e eventuais falhas.
+
+O cadastro dos `keyusers` deve permitir informar, no minimo:
+
+- Userid.
+- Nome completo.
+- Endereco de e-mail.
+- Senha inicial ou mecanismo seguro para defini-la.
+- Perfil inicial.
+- Situacao do usuario.
+
+O usuario `admin` da nova empresa deve ser criado conforme a regra do perfil
+`ADMINISTRADOR`, com acesso completo ao menu e ao CRUD. Os demais `keyusers`
+devem receber somente as permissoes correspondentes aos perfis selecionados no
+cadastro.
+
+O processo de criacao deve ser transacional e idempotente quando tecnicamente
+possivel: uma falha nao pode deixar uma empresa parcialmente cadastrada sem
+indicacao de seu estado. O sistema deve possuir estados de provisionamento,
+como pendente, em processamento, concluido e erro, permitindo rastrear e
+retomar o processo com seguranca.
+
+O usuario responsavel pelo provisionamento deve ter permissao especifica para
+essa transacao. O processo nao deve copiar usuarios, logs ou dados operacionais
+da empresa `Modelo`; deve copiar somente a estrutura e os dados iniciais
+explicitamente definidos como template. A criacao da empresa, do banco, dos
+`keyusers` e das permissoes deve ser registrada no log de auditoria aplicavel.
+
+2.7 CATALOGO DE MODULOS DA EMPRESA MODELO
+------------------------------------------
+
+Os modulos do Green Portal devem ser cadastrados e mantidos inicialmente na
+empresa `Modelo`. Durante o provisionamento, os modulos selecionados poderao
+ser replicados para o banco da nova empresa, incluindo sua estrutura, menus,
+itens de menu, transacoes, permissoes padrao e configuracoes iniciais.
+
+Cada empresa criada a partir da `Modelo` devera possuir, no minimo, o modulo
+`Seguranca`. Outros modulos poderao ser selecionados conforme a necessidade da
+empresa, incluindo, entre outros:
+
+- `Manutencao Legal`.
+- `Modulo Legal`.
+- `Licencas`.
+
+O catalogo de modulos deve permitir ativar ou desativar modulos por empresa,
+sem apagar sua estrutura ou seus registros quando a politica de negocio exigir
+uma reativacao futura. A ativacao de um modulo deve respeitar o isolamento do
+tenant e gerar registro de auditoria.
+
+O modulo `Seguranca` deve concentrar a infraestrutura de administracao de:
+
+- Usuarios e seus dados de acesso.
+- Grupos e associacoes de usuarios.
+- Perfis e permissoes por transacao.
+- Menus, itens de menus e vinculos com transacoes.
+- Politicas de senha e configuracoes de autenticacao.
+- Politica de envio de e-mails, incluindo servidor, porta, seguranca,
+  remetente, credenciais protegidas e regras de envio.
+- Logs, auditoria e demais configuracoes de seguranca.
+
+A estrutura de menus deve suportar ate quatro niveis hierarquicos de itens,
+permitindo organizar modulos, submodulos e transacoes sem ultrapassar esse
+limite. Cada item de menu deve poder ser associado a uma transacao, permissao,
+icone, ordem de exibicao e situacao ativa/inativa.
+
+As URLs dos itens de menu devem ser simples de cadastrar e manter. O cadastro
+deve exigir somente o caminho relativo da transacao, por exemplo
+`/principal/usuarios.php`, sem necessidade de alterar codigo, rotas complexas
+ou arquivos de configuracao a cada novo item. O sistema deve:
+
+- Validar automaticamente o formato da URL e aceitar somente caminhos internos
+  da aplicacao.
+- Manter o padrao de URL por modulo e transacao definido neste documento.
+- Permitir informar a URL diretamente no cadastro do item de menu.
+- Validar se o arquivo ou transacao existe antes de ativar o item, quando essa
+  verificacao estiver disponivel.
+- Impedir URLs externas, javascript, caminhos absolutos do servidor ou valores
+  que permitam redirecionamento inseguro.
+- Permitir que a mesma transacao seja associada a mais de um item de menu,
+  quando necessario, sem duplicar a implementacao PHP.
+- Registrar alteracoes de URL, situacao, ordem e associacao no log de auditoria.
+
+O label, a URL, o icone, a ordem e a hierarquia devem ser dados configuraveis
+do item de menu. A URL deve apontar para o arquivo PHP da transacao e nao deve
+conter regras de negocio ou parametros sensiveis gravados diretamente no menu.
+
+Na replicacao de um modulo, devem ser copiados somente os dados de configuracao
+e referencia definidos como parte do template. Usuarios, senhas, logs,
+preferencias pessoais e dados operacionais nao devem ser copiados da empresa
+`Modelo`, exceto os registros iniciais explicitamente exigidos, como o usuario
+`admin` e os `keyusers` informados no provisionamento.
+
+Alteracoes estruturais realizadas na empresa `Modelo` nao devem modificar
+automaticamente empresas ja criadas. A aplicacao de uma nova versao de modulo
+em empresas existentes deve ocorrer por processo controlado de atualizacao,
+com compatibilidade, registro de versao e auditoria.
+
+3. PRINCIPIO DE URLS E TRANSACOES
+---------------------------------
+
+A URL principal da aplicacao sera o ponto de entrada do login. Depois da
+autenticacao, as demais URLs devem apontar diretamente para o arquivo PHP que
+representa a transacao solicitada.
+
+3.1 TELA PRINCIPAL DE LOGIN
+---------------------------
+
+A tela inicial deve apresentar um layout dividido em duas areas:
+
+- Lado esquerdo, ocupando 30% da largura: formulario de acesso com Empresa,
+  Usuario e Senha, alem das
+  acoes de lembrar acesso, recuperar senha, selecao de idioma e entrar.
+- Lado direito, ocupando 70% da largura: area flexivel para informacoes uteis,
+  comunicados e conteudo de marketing relacionado ao Green Portal.
+
+O conteudo institucional inicial da area direita deve apresentar informacoes
+sobre sistemas de gestao em conformidade com as normas ISO 14001, OHSAS 18001
+e ISO 16001, incluindo a integracao desses sistemas, o gerenciamento de
+residuos e efluentes industriais, o levantamento da legislacao ambiental e
+trabalhista aplicavel e a orientacao para adequacao da empresa aos requisitos
+que nao estejam sendo plenamente atendidos.
+
+Esse texto e seus desdobramentos visuais devem ser tratados como conteudo
+institucional configuravel pelo usuario com perfil `ADMINISTRADOR`, respeitando
+os idiomas suportados e o setup da empresa.
+
+3.2 AUTENTICACAO INICIAL DA EMPRESA MODELO
+-------------------------------------------
+
+O endpoint de validacao do login e `/credenciais/logar.php`. Ele deve receber
+Empresa, Usuario, Senha e Idioma, consultar o cadastro de empresas e abrir a
+conexao somente com o banco do tenant selecionado. O idioma escolhido deve ser
+gravado na sessao.
+
+O primeiro teste funcional deve utilizar:
+
+- Empresa: `MODELO`.
+- Usuario: `admin`.
+- Banco: `gmodelo_dbp`.
+
+O banco central para o cadastro de empresas e definido pela configuracao
+`GREEN_PORTAL_CENTRAL_DATABASE`. O nome do banco do tenant nunca deve ser
+aceito diretamente do formulario; deve ser obtido do cadastro central, validado
+e usado somente como identificador seguro de conexao.
+
+O cadastro central inicial foi migrado de `green_seguranca.empresas`, cuja chave
+legada e `CODEMPRESA`. A migracao preserva esse codigo em `codempresa` e
+`codigo_legado`, converte os textos de `latin1` para `utf8mb4` e registra a
+operacao em `registros_migracao`.
+
+Os scripts da migracao do cadastro de empresas sao:
+
+- `/database/005_migrar_empresas_legado.sql`: migra identificacao, nome, banco
+  e situacao das empresas.
+- `/database/006_completar_empresas_legado.sql`: migra endereco, contatos,
+  CNPJ, e-mail, logotipo, configuracoes e demais campos cadastrais.
+
+O cadastro resultante possui 29 empresas. O tenant `MODELO` utiliza o banco
+`gmodelo_dbp`; os demais bancos somente poderao ser usados no login quando
+estiverem provisionados e disponiveis no servidor. No ambiente inicial,
+somente a empresa `MODELO` permanece com status `ATIVA`; todas as demais ficam
+com status `INATIVA` e nao podem realizar login.
+
+O cadastro central tambem possui o banco `guniversal_dbp`, criado para
+concentrar o cadastro de empresas fora do tenant Modelo. A migracao foi
+executada por `/database/032_migrar_empresa_universal.sql`, transferindo a
+tabela `empresa`, a tabela `setup_empresa` e as views `vw_empresa_grid` e
+`vw_setup_empresa_grid`. Foram mantidas a chave primaria `codempresa`, os
+campos cadastrais, os indices unicos e a collation `utf8mb4_0900_ai_ci`. A
+operacao e registrada em `gmodelo_dbp.registros_migracao` com o codigo
+`EMPRESA_UNIVERSAL`.
+
+As credenciais do novo banco ficam no arquivo `.env` com o prefixo
+`GUNIVERSAL_DB_`. A tela de login e o endpoint de autenticacao consultam a
+tabela `guniversal_dbp.empresa`. O setup multidioma da tela de login continua
+sendo lido de `gmodelo_dbp`, enquanto nao houver uma centralizacao especifica
+desse setup.
+
+3.3 FLUXO POS-LOGIN E PAGINA PRINCIPAL
+--------------------------------------
+
+O login deve disponibilizar um combo com as empresas cadastradas na tabela
+`empresa`, exibindo somente registros com status `ATIVA`. A empresa `MODELO`
+deve ser a opcao selecionada inicialmente para os testes. O endpoint deve
+validar novamente o status no servidor, autenticar o usuario no banco do tenant
+e redirecionar para `/principal/main.php`.
+
+A pagina `/principal/main.php` deve ocupar a tela inteira e possuir:
+
+- Cabecalho com 7% da altura da janela.
+- Area central entre o cabecalho e o rodape com 88% da altura da janela.
+- Rodape com 5% da altura da janela.
+- No cabecalho, o icone do Green Portal, o label `Green Portal` e o botao de
+  abrir/recolher o menu lateral.
+- O grupo formado pelo botao do menu, icone e label `Green Portal` deve ficar
+  alinhado no canto superior esquerdo, diretamente sobre o menu lateral.
+- No canto superior direito, a empresa autenticada, o sino de alertas e os
+  dados resumidos do usuario.
+
+- Menu lateral esquerdo com os itens de menu e icones Bootstrap Icons.
+- Area de trabalho no lado direito para carregar a transacao selecionada.
+- Identificacao do usuario e da empresa autenticada.
+- Acao de logout em `/credenciais/sair.php`.
+
+O cabecalho e o rodape devem ocupar 100% da largura do navegador, sem serem
+limitados pela largura do menu lateral. O menu lateral e a area central devem
+ficar somente na faixa intermediaria entre o cabecalho e o rodape. A area
+central de trabalho deve utilizar o espaco restante da janela e possuir
+rolagem propria somente quando o conteudo da transacao exigir.
+
+Quando o menu lateral for recolhido, ele deve permanecer em modo compacto,
+exibindo somente os icones dos itens de nivel 0. Textos, grupos de configuracao,
+submenus e setas de expansao devem ficar ocultos nesse modo; ao expandir o menu,
+todos os niveis e textos devem voltar a ser exibidos.
+
+Acima do item Dashboard deve existir uma busca geral do menu. A busca deve
+filtrar os itens de nivel 0 e os subitens, aceitando texto com ou sem acentuacao.
+
+Quando um item de menu ainda nao possuir uma URL/transacao implementada, o
+sistema deve manter o usuario na pagina principal e mostrar a mensagem
+`Em construção`, identificando o modulo selecionado. A mensagem deve ser
+apresentada sem erro tecnico ou tela em branco. A lista inicial de modulos
+exibida na pagina contempla Seguranca, Manutencao Legal, Modulo Legal e
+Licencas; eles permanecem como itens em construcao ate suas transacoes serem
+implementadas.
+
+Os itens do menu nao devem ser definidos diretamente no HTML da `main.php`.
+Eles devem ser cadastrados na tabela `menus` da empresa, com codigo, modulo,
+hierarquia, ordem, URL da transacao e status ativo. O cadastro inicial da
+empresa Modelo fica nos scripts `007_cadastrar_menus_multidioma.sql` e
+`008_corrigir_labels_menus_multidioma.sql`.
+
+Cada menu deve possuir os labels `label_pt`, `label_en` e `label_es`. A
+`main.php` seleciona o label conforme o idioma da sessao, mantendo PT como
+padrao, e monta a hierarquia a partir de `codmenu_pai`. URLs preenchidas
+abrem a transacao correspondente; menus sem URL exibem `Em construção`.
+
+Todos os bancos dos tenants devem utilizar `utf8mb4_0900_ai_ci` nas tabelas e
+colunas textuais. A aplicacao deve abrir a conexao PDO com `charset=utf8mb4` e
+os scripts SQL devem iniciar com `SET NAMES utf8mb4 COLLATE utf8mb4_0900_ai_ci`.
+O script `009_corrigir_acentuacao_dados_modelo.sql` corrige dados do Modelo
+que tenham sido gravados anteriormente com `?` no lugar de caracteres
+acentuados. A verificacao deve considerar os bytes com `HEX()` para diferenciar
+um problema real de armazenamento de um problema visual do terminal.
+
+O cabecalho da `main.php` nao deve exibir o titulo `Area de trabalho` ou o
+titulo da pagina central. Essa area deve permanecer visualmente limpa para
+priorizar a identidade visual, a empresa, as notificacoes e o usuario.
+
+16.2 DASHBOARD INICIAL
+----------------------
+
+16.2.1 HOME PRINCIPAL APOS O LOGIN
+----------------------------------
+
+A transacao `/principal/home.php` e a Home oficial do portal. Ela deve ser
+aberta sempre como a primeira aba apos o login, antes da transacao inicial
+preferida pelo usuario. A Home possui somente seus proprios cards e
+indicadores resumidos; nao deve incorporar o dashboard, pendencias ou outras
+subtransacoes.
+
+Depois da abertura da Home, a `main.php` deve abrir, em uma segunda aba, a
+transacao salva na preferencia `default_transacao` do usuario. Se a preferencia
+nao existir ou nao estiver disponivel, deve ser usada a transacao padrao do
+sistema. Cada card da Home pode abrir uma transacao independente em nova aba,
+sem transferir formularios, variaveis ou estado de trabalho para a Home.
+
+Os dados dos cards devem ser obtidos por views e procedures do tenant. O PHP
+da Home nao pode executar SELECT, INSERT, UPDATE ou DELETE diretamente. Os
+cards devem respeitar as permissoes do usuario e possuir labels em portugues,
+espanhol e ingles.
+
+O primeiro item do menu lateral deve ser `Dashboard`, com icone Bootstrap
+Icons `bi-speedometer2`. Ele substitui o item `Inicio`, deve ficar selecionado
+por padrao e a pagina `/principal/main.php` deve abrir nessa visao logo apos o
+login confirmado.
+
+Ao carregar a `main.php`, o JavaScript deve abrir automaticamente a aba do
+menu cujo codigo seja `DASHBOARD`, carregando `/principal/dashboard.php`.
+
+O dashboard inicial deve apresentar uma visao geral com indicadores, estado de
+processos, documentos pendentes, alertas e atividades recentes. Quando ainda
+nao houver dados para os indicadores, a tela deve apresentar estados vazios
+claros, sem erro tecnico ou tela em branco. Os componentes do dashboard devem
+ser preparados para receber dados reais dos tenants futuramente.
+
+16.4 ABAS DE TRABALHO POR TRANSACAO
+------------------------------------
+
+Cada item de menu deve possuir seu proprio arquivo PHP e as propriedades
+necessarias para funcionar. A pagina principal atua como o container das abas
+de trabalho, sem concentrar a implementacao das transacoes.
+
+- O item `Dashboard` deve abrir `dashboard.php` dentro de uma aba e essa aba
+  deve ser aberta automaticamente apos o login.
+- O item `Setup / Login` deve abrir `setup_login.php` em uma nova aba ao lado
+  da aba Dashboard.
+- Cada aba deve manter seu proprio conteudo e contexto, permitindo alternar
+  entre transacoes abertas sem perder a pagina principal.
+- A transacao deve respeitar a sessao, o tenant, o perfil e as permissoes do
+  usuario.
+- Itens sem arquivo PHP implementado devem mostrar `Em construcao`.
+
+Nesta etapa, os arquivos funcionais sao `/principal/dashboard.php` e
+`/principal/setup_login.php`. A pagina `main.php` gerencia apenas a navegacao e
+as abas, enquanto as regras e interfaces de cada transacao ficam no seu PHP.
+
+O `Setup / Login` deve exibir somente as acoes `Salvar` e `Preview`; as acoes
+`Visualizar` e `Editar` nao se aplicam a essa configuracao.
+
+O submenu `Setup / Main` deve abrir `/principal/setup_main.php`. Essa transacao
+deve seguir o mesmo padrao de `setup_login.php`, permitindo ao
+`ADMINISTRADOR` alterar textos da pagina principal, salvar os valores no setup
+do tenant e abrir uma previa em popup.
+
+O `Setup / Main` deve utilizar as chaves `main_marca_texto`,
+`main_cabecalho_texto` e `main_rodape_texto` para armazenar somente os textos
+da marca, do cabecalho e do rodape,
+mantendo o mesmo padrao de idioma, tenant, permissao e auditoria do
+`Setup / Login`.
+
+O texto do cabeçalho deve ser opcional e vazio por padrão; a `main.php` não deve
+exibir `Área de trabalho` automaticamente. Quando o administrador preencher o
+campo, o texto configurado poderá ser exibido.
+
+Os labels dos itens de menu, incluindo `Dashboard` e `Setup`, nao podem ser
+alterados pelo `Setup / Main`.
+
+O submenu `Setup / Menu` deve abrir `/principal/setup_menu.php` e utilizar um
+grid em lote editavel. A transacao deve permitir CRUD por linha, busca geral,
+busca individual por coluna, novo registro e exclusao da linha selecionada.
+As colunas devem poder ser ocultadas e redimensionadas pelo usuario. Essas
+preferencias devem ser persistidas por usuario na tabela `preferencias_grid`,
+associadas a transacao `setup_menu`, sem alterar a estrutura da tabela `menus`.
+Nesse grid, a rolagem deve existir somente no contêiner de dados; o título, a
+busca e os botões devem permanecer fixos, assim como o cabeçalho das colunas.
+A `main.php` não deve apresentar barra de rolagem horizontal. O layout
+principal deve bloquear as barras de rolagem horizontal e vertical e manter
+as rolagens somente nos componentes internos que necessitarem, como grids e
+conteúdos de transações.
+
+O `Setup / Menu` não deve exibir título interno. Seus botões devem incluir
+Salvar, Novo, Excluir, Recarregar, Colunas e Exportar Excel. A exportação deve
+ser enfileirada e processada em segundo plano, sem bloquear a tela. O início e
+a conclusão, ou eventual erro, devem gerar alertas para o usuário no sino da
+`main.php`; quando concluída, o alerta deve conter o link para a planilha.
+Todos esses botões devem permanecer na mesma linha da busca do grid, com os
+botões alinhados à esquerda e a busca alinhada à direita. O botão `Colunas`
+deve ficar imediatamente ao lado de `Exportar Excel`.
+
+Cada pagina carregada em uma aba deve conter somente o fragmento de trabalho da
+sua transacao. `dashboard.php` nao deve repetir cabecalho ou rodape da `main`;
+`setup_login.php` tambem nao deve repetir essas areas. O cabecalho, menu,
+rodape e as abas pertencem exclusivamente a `main.php`. As paginas de
+transacao devem tratar somente seu proprio conteudo, formularios, dados e
+popup, funcionando dentro do iframe da aba.
+
+O texto da marca exibido na tela de login tambem deve ser configuravel no
+`Setup / Login`, por meio do campo `Texto da marca`. O valor deve ser salvo no
+setup do tenant, aplicado na tela de login e exibido no preview da transacao.
+
+16.6 PADRAO VISUAL DE TELAS CRUD
+--------------------------------
+
+Todas as telas CRUD devem seguir um layout padrao:
+
+- Primeira linha: titulo da tela alinhado a esquerda e campo de busca do CRUD
+  alinhado a direita, quando a transacao possuir dados pesquisaveis.
+- Segunda linha: botoes das operacoes CRUD e demais acoes autorizadas pelo
+  perfil do usuario.
+- Acoes contextuais nao devem ser adicionadas ao CRUD sem necessidade. O botao
+  `Preview` somente deve aparecer quando o contexto da transacao exigir uma
+  visualizacao previa.
+
+Na transacao `Setup / Login`, o botao `Preview` e obrigatorio porque permite
+  visualizar como a tela de login ficara antes ou depois do salvamento. O
+  preview deve abrir em popup e permanecer restrito ao contexto da transacao.
+
+Os botoes devem respeitar as permissoes CRUD do perfil. A busca deve filtrar os
+  campos da tela sem misturar estado com a `main.php` ou com outras abas.
+
+As abas devem permanecer posicionadas no topo da area de trabalho, alinhadas
+sempre a esquerda. Cada aba deve carregar sua pagina PHP em um contexto de
+documento independente, sem compartilhar variaveis de apresentacao, formularios
+ou estado de trabalho com a `main.php` ou com outra aba. A `main.php` deve
+gerenciar somente o menu, a abertura/ativacao das abas e o container visual.
+
+As abas devem ficar imediatamente junto a linha inferior do cabecalho e a linha
+superior da area de trabalho, sem margens ou espacamentos decorativos
+desnecessarios. O espacamento interno pertence ao conteudo da transacao, nao ao
+container das abas.
+
+Cada pagina de transacao deve tratar exclusivamente seu proprio contexto:
+
+- `dashboard.php`: indicadores e componentes do dashboard.
+- `setup_login.php`: configuracoes e preview da tela de login.
+- Outras transacoes: somente suas regras, dados e componentes.
+
+Os iframes das abas criam contextos de navegador/documento separados para
+evitar mistura de DOM, variaveis JavaScript e estado visual. A sessao PHP de
+autenticacao permanece compartilhada intencionalmente entre as abas, pois ela
+representa o mesmo usuario, empresa e autorizacao. Cada pagina deve renovar e
+validar esse contexto, mas nao deve gravar estado especifico de outra pagina.
+
+16.5 ATUALIZACAO DO CONTEXTO NO RECARREGAMENTO
+-----------------------------------------------
+
+Toda requisicao autenticada deve atualizar o contexto do usuario a partir do
+banco do tenant. Isso inclui recarregamentos normais e `Ctrl+F5`. A classe
+`/classes/UsuarioSessao.php` deve consultar novamente a view de usuarios por
+meio da procedure universal e atualizar as variaveis da sessao, incluindo:
+
+- Nome, e-mail e userid.
+- Perfil, codigo do perfil e situacao.
+- Codigo do usuario e demais dados necessarios a autorizacao.
+- Data/hora da ultima atualizacao do contexto.
+
+Se o usuario tiver sido desativado ou removido no banco, a sessao deve ser
+encerrada e o usuario deve retornar ao login. Essa verificacao deve ocorrer na
+`main.php` e tambem nas paginas de transacao, como `dashboard.php` e
+`setup_login.php`, para impedir que uma aba mantenha dados antigos ou
+permissoes revogadas.
+
+16.3 MENU SETUP E CONFIGURACAO DA TELA DE LOGIN
+-----------------------------------------------
+
+Antes do modulo `Seguranca`, o menu deve apresentar o item `Setup`, visivel
+somente para usuarios com o perfil `ADMINISTRADOR`. O item possui os subitens:
+
+- `Login`.
+- `Main`.
+- `Grid`.
+- `Formulario`.
+
+Nesta primeira etapa, somente `Setup / Login` esta funcional. A transacao deve
+permitir ao administrador configurar, no banco da empresa e por idioma, os
+labels e textos da tela de login, incluindo titulo, subtitulo, labels dos
+campos, botao de entrada e conteudo institucional/marketing.
+
+A tela deve possuir:
+
+- Campos para edicao dos textos.
+- Botao `Salvar`, persistindo as alteracoes no setup do tenant por meio das
+  procedures universais.
+- Botao `Preview`, abrindo um popup Bootstrap com uma previa da tela de login.
+- Mensagem de confirmacao apos salvar e tratamento amigavel de erros.
+
+Os subitens `Main`, `Grid` e `Formulario` devem permanecer visiveis para o
+`ADMINISTRADOR`, mas apresentar `Em construcao` enquanto suas transacoes nao
+estiverem implementadas. Usuarios sem o perfil `ADMINISTRADOR` nao devem
+visualizar nem acessar diretamente qualquer URL do Setup.
+
+16.1 SINO E GESTAO DE ALERTAS
+-----------------------------
+
+O sino localizado no canto superior direito da `main.php` sera o ponto de
+entrada para a gestao de alertas e comunicacoes do sistema. Ele deve:
+
+- Exibir a quantidade de alertas nao lidos por meio de um badge.
+- Abrir um painel ou popup com os alertas do usuario.
+- Permitir futuramente visualizar, marcar como lido e acessar a transacao
+  relacionada ao alerta.
+- Respeitar empresa, usuario, perfil, idioma e permissoes.
+- Nao exibir dados de outro tenant.
+
+Na primeira implementacao, o sino apresenta o estado vazio `Nenhum alerta
+novo`. A origem dos alertas e a administracao das comunicacoes serao
+implementadas posteriormente em uma transacao propria, com registro de leitura
+e auditoria.
+
+Os redirecionamentos e referencias internas devem respeitar o caminho base em
+que o Green Portal foi publicado. A aplicacao nao deve assumir que esta sempre
+instalada na raiz do dominio: deve funcionar tanto em
+`http://servidor/principal/main.php` quanto em uma publicacao por subpasta,
+como `http://servidor/greenportal/principal/main.php`. URLs internas devem ser
+montadas a partir do caminho base detectado pela aplicacao.
+
+O formulario deve enviar os dados para `/credenciais/logar.php`. A area de
+informacoes deve poder receber conteudo configuravel no futuro, respeitando o
+setup e o idioma selecionado pela empresa. A tela deve ser responsiva: em
+dispositivos menores, a area de marketing pode ser ocultada ou reposicionada
+para priorizar o acesso.
+
+Em telas de desktop, todos os elementos da tela de login devem caber na altura
+visivel da janela, sem barra de rolagem vertical. Os espacamentos e tamanhos
+devem se adaptar a diferentes alturas de monitor. Em dispositivos menores, o
+layout responsivo podera permitir rolagem quando necessario para preservar a
+usabilidade do formulario.
+
+O idioma de trabalho deve ser escolhido na propria tela de login. O seletor
+deve oferecer PT (Portugues), EN (Ingles) e ES (Espanhol), com PT selecionado
+por padrao. O idioma escolhido deve ser enviado com a autenticacao e mantido
+na sessao do usuario para as telas seguintes. Quando o usuario ja possuir uma
+preferencia salva, ela podera ser apresentada como sugestao, mas o usuario
+deve poder altera-la no login.
+
+Os textos e demais conteudos apresentados na tela de login devem ser
+configuraveis no modulo de setup da empresa. Somente o usuario com perfil
+`ADMINISTRADOR` podera alterar esses conteudos, incluindo titulo, subtitulo,
+labels, mensagens, textos institucionais, informacoes uteis e textos de
+marketing. As alteracoes devem respeitar os idiomas PT, EN e ES, possuir valor
+padrao e gerar registro no log de auditoria.
+
+Os arquivos oficiais de identidade visual do Green Portal estao armazenados em
+`E:\\wamp\\apps\\greenportal\\imagens`:
+
+- `GreenIco.ico`: icone do Green Portal, utilizado como favicon e icone da
+  aplicacao.
+- `greenlogo.jpeg`: logotipo/icone visual do Green Portal, utilizado na tela de
+  login e em outras areas autorizadas da interface.
+
+Novas telas devem reutilizar esses arquivos como referencia visual. A troca de
+logo ou icone por empresa, caso seja habilitada futuramente no setup, deve ser
+controlada pelo perfil `ADMINISTRADOR`, validada quanto ao formato e registrada
+na auditoria.
+
+Exemplos:
+
+- /                         Pagina principal de login.
+- /credenciais/logar.php    Valida as credenciais e inicia a sessao.
+- /credenciais/sair.php     Encerra a sessao do usuario.
+- /principal/usuarios.php   Consulta e retorna o grid de usuarios.
+- /principal/usuario.php    Exibe ou processa a tela de um usuario.
+- /principal/salvar-usuario.php  Salva um usuario.
+- /principal/excluir-usuario.php Exclui um usuario.
+
+Cada arquivo PHP deve ter uma responsabilidade clara. Nao criar um endpoint
+generico que concentre transacoes de modulos diferentes, salvo quando houver
+uma necessidade tecnica documentada.
+
+Observacao: o nome correto do modulo de autenticacao e "credenciais". Caso
+seja necessario manter compatibilidade com uma URL antiga escrita como
+"crendeciais", ela devera ser tratada por um redirecionamento controlado, sem
+duplicar a implementacao.
+
+4. ORGANIZACAO SUGERIDA
+-----------------------
+
+- /index.php                    Entrada principal/login.
+- /credenciais/                 Login, logout e validacao de acesso.
+- /principal/                   Funcionalidades da area autenticada.
+- /config/                      Configuracoes da aplicacao e banco.
+- /includes/                    Bootstrap da aplicacao e funcoes comuns.
+- /classes/                     Classes PHP genericas e reutilizaveis.
+- /assets/css/                  Folhas de estilo proprias.
+- /assets/js/                   Scripts proprios e inicializacao do jQuery.
+- /assets/vendor/               Bibliotecas de terceiros, quando aplicavel.
+- /docs/                        Documentacao do projeto.
+
+Os nomes de pastas e arquivos devem ser escritos em minusculas, sem espacos e
+sem acentos. Nomes de transacoes devem ser objetivos e consistentes.
+
+As transacoes devem utilizar as classes genericas armazenadas em `/classes`.
+Nao devem ser criadas classes ou metodos exclusivos para cada entidade do
+banco, salvo uma excecao tecnica formalmente documentada.
+
+5. PADRAO DE EXECUCAO DOS PHPs
+------------------------------
+
+Cada transacao PHP deve, conforme a necessidade:
+
+1. Carregar o bootstrap comum da aplicacao.
+2. Iniciar e validar a sessao quando for uma area protegida.
+3. Validar o metodo HTTP esperado (GET, POST ou outro).
+4. Validar e normalizar os dados recebidos.
+5. Executar a regra de negocio por meio das classes genericas e das interfaces
+   de banco definidas para o projeto.
+6. Retornar HTML, JSON ou redirecionamento conforme o contrato da transacao.
+7. Registrar erros no log do servidor, sem expor detalhes sensiveis ao usuario.
+
+Transacoes chamadas por AJAX devem informar claramente o formato da resposta,
+preferencialmente JSON, incluindo status de sucesso, mensagem e dados quando
+necessario.
+
+5.1 CAMADA DE ACESSO A DADOS E CRUD
+------------------------------------
+
+Todo CRUD deve ser executado no banco de dados por meio de views e procedures.
+Os arquivos PHP e as classes PHP nao devem conter comandos SQL CRUD diretos,
+como SELECT, INSERT ou UPDATE. Operacoes de exclusao tambem devem ser
+encapsuladas em procedures.
+
+As procedures de consulta e alteracao devem ser genericas e receber os
+parametros necessarios para identificar a entidade, os campos, os filtros e os
+valores da operacao, conforme o padrao definido para o projeto. O objetivo e
+permitir que a mesma camada PHP atenda diferentes entidades sem criar um metodo
+para cada tabela.
+
+As classes em `/classes` devem concentrar, de forma reutilizavel:
+
+- Conexao e selecao segura do banco do tenant.
+- Execucao de views e procedures.
+- Montagem de filtros de busca geral e por coluna.
+- Operacoes genericas de incluir, consultar, editar e excluir.
+- Tratamento padrao de parametros, retorno, erros e transacoes.
+
+Uma transacao PHP deve apenas validar a requisicao, autorizar o usuario,
+informar a operacao e seus parametros para a classe generica e apresentar o
+resultado. Regras especificas de persistencia devem permanecer no banco, nas
+views e nas procedures, e nao espalhadas pelos arquivos de transacao.
+
+6. AUTENTICACAO E AUTORIZACAO
+-----------------------------
+
+- Durante o desenvolvimento, o armazenamento de senhas deve seguir
+  `senha_usa_hash = 0`, sem uso de `password_hash()` ou `password_verify()`.
+  Essa regra vale somente para o ambiente de desenvolvimento e devera ser
+  revisada antes de homologacao ou producao.
+- A sessao deve ser regenerada apos o login bem-sucedido.
+- Paginas e transacoes protegidas devem recusar acesso sem sessao valida.
+- Logout deve invalidar a sessao e redirecionar para a pagina de login.
+- Permissoes devem ser verificadas no servidor, nunca somente no JavaScript.
+- Tokens CSRF devem ser usados em operacoes que alteram dados.
+
+6.1 MODELO DE PERFIS E PERMISSOES
+---------------------------------
+
+As permissoes devem ser associadas ao perfil do usuario, e nao configuradas
+individualmente em cada tela. O modelo deve seguir esta hierarquia:
+
+    Usuario -> Perfil -> Transacao de menu -> Permissoes da transacao
+
+- Cada usuario deve possuir um perfil ativo.
+- O perfil deve definir quais transacoes de menu estao acessiveis.
+- Para cada transacao de menu liberada, o perfil deve possuir permissoes
+  independentes de CRUD: incluir, visualizar, editar e excluir.
+- A transacao tambem deve permitir configurar a permissao de exportar o grid
+  para Excel.
+- Formularios que possuam uma versao para impressao ou documento devem permitir
+  configurar a permissao de gerar PDF do formulario.
+- Permissoes adicionais para operacoes em lote devem respeitar as permissoes
+  CRUD correspondentes e podem ser controladas separadamente quando necessario.
+- O menu da aplicacao deve exibir somente as transacoes permitidas ao perfil.
+- A exibicao de botoes de CRUD no grid deve respeitar as permissoes do perfil.
+- O botao de exportacao para Excel deve ser exibido somente quando o perfil
+  tiver a permissao de exportar naquela transacao.
+- O botao ou acao de gerar PDF deve ser exibido somente quando o perfil tiver a
+  permissao de PDF naquela transacao.
+- O controle visual do menu e dos botoes nao substitui a autorizacao no
+  servidor: toda transacao PHP deve validar novamente o perfil e a permissao
+  exigida antes de executar a operacao.
+- Um perfil sem permissao de acesso a uma transacao nao pode acessa-la por URL
+  direta, mesmo que conheca o caminho do arquivo PHP.
+
+O cadastro e a administracao de perfis devem permitir selecionar as
+transacoes de menu e, em cada uma delas, marcar as permissoes CRUD, exportacao
+para Excel e geracao de PDF aplicaveis. As permissoes devem ser negadas por
+padrao quando nao houver uma associacao explicita.
+
+7. BANCO DE DADOS
+-----------------
+
+- Usar PDO para chamar procedures e consultar as views autorizadas.
+- Nao escrever SELECT, INSERT, UPDATE ou DELETE diretamente nos arquivos PHP.
+- Centralizar o CRUD em procedures genericas e as consultas de grid em views.
+- Nunca concatenar valores recebidos do usuario em comandos ou parametros SQL.
+- Manter credenciais do banco fora dos arquivos publicos.
+- Manter um cadastro central e seguro para mapear a empresa ao seu banco de
+  dados, sem permitir que o usuario informe um nome de banco arbitrario.
+- Toda conexao e consulta deve usar o contexto do tenant autenticado.
+- Nunca misturar dados de empresas diferentes na mesma consulta, sessao ou
+  resposta.
+- Definir chaves primarias, indices e relacionamentos de forma explicita.
+- Registrar alteracoes de schema em scripts versionados ou documentados.
+- Usar utf8mb4 para suportar corretamente caracteres internacionais.
+
+7.1 LOGS E AUDITORIA
+--------------------
+
+A aplicacao deve possuir controle de logs para auditoria. Os logs devem ser
+armazenados em tabelas dentro do proprio banco de cada empresa, mantendo o
+isolamento entre tenants e permitindo identificar quem realizou cada operacao.
+
+Toda operacao de CRUD deve gerar um registro de auditoria, preferencialmente
+dentro da mesma procedure que executa a operacao, para que o dado e seu log
+sejam gravados de forma consistente. O log deve registrar, conforme aplicavel:
+
+- Usuario e userid responsavel pela acao.
+- Perfil utilizado no momento da operacao.
+- Empresa e banco do contexto autenticado.
+- Transacao de menu executada.
+- Tipo da operacao: incluir, visualizar, editar ou excluir.
+- Entidade e identificador do registro afetado.
+- Data e hora da operacao.
+- Resultado da operacao e mensagem de erro, quando houver falha.
+- Valores anteriores e novos valores, quando necessario para auditoria.
+- Endereco IP, identificador da sessao e identificador da requisicao, quando
+  disponiveis.
+
+Os logs devem ser protegidos contra alteracao pelos usuarios comuns. A
+permissao para consultar ou exportar logs deve ser configurada por perfil e
+transacao de menu, assim como as demais permissoes do sistema. A consulta dos
+logs deve respeitar o banco da empresa autenticada e nao pode expor dados de
+outra empresa.
+
+Falhas de auditoria devem ser tratadas como erro da operacao quando a politica
+de seguranca exigir rastreabilidade obrigatoria. A estrutura das tabelas de log
+deve ser criada em todos os bancos de empresas por meio do processo oficial de
+implantacao ou atualizacao de schema.
+
+8. INTERFACE E EXPERIENCIA
+--------------------------
+
+- Usar componentes padrao do Bootstrap 5 sempre que possivel.
+- Manter telas responsivas para desktop e dispositivos moveis.
+- Usar jQuery somente para comportamento e comunicacao com o servidor; a
+  regra de negocio permanece no PHP.
+- Exibir mensagens de sucesso, erro e validacao de forma clara.
+- Grids devem possuir estados para carregamento, vazio e erro.
+- Formularios devem validar no cliente para melhor experiencia e no servidor
+  para garantir seguranca.
+
+8.1 PADRAO UNICO DE TELAS DE TRANSACAO
+--------------------------------------
+
+Todas as transacoes que trabalhem com registros devem seguir um padrao visual
+unico, baseado nos seguintes elementos:
+
+- Um grid principal para listagem dos registros.
+- Operacoes em lote no proprio grid, quando a transacao exigir essa
+  necessidade.
+- No grid em lote, cada linha deve poder ser editada diretamente ou por meio
+  de um popup de edicao, conforme a complexidade dos campos.
+- O grid em lote deve permitir as operacoes de CRUD por linha: incluir,
+  visualizar, editar e excluir registros, alem das acoes em lote quando
+  aplicavel.
+- Um formulario padrao para inclusao e alteracao de registros.
+- Botoes de CRUD (incluir, visualizar, editar e excluir), exibidos conforme a
+  permissao do usuario e a finalidade da transacao.
+- Uma busca geral, capaz de localizar o termo em todos os campos pesquisaveis.
+- Uma busca individual por coluna do grid, permitindo filtrar cada coluna de
+  maneira independente.
+
+O comportamento e a apresentacao desses elementos devem ser consistentes em
+todo o sistema. Novas transacoes nao devem criar um modelo de grid ou formulario
+com comportamento diferente sem justificativa documentada.
+
+No grid em lote, alteracoes feitas em uma ou mais linhas devem indicar
+claramente o estado pendente, permitir cancelar a edicao e solicitar confirmacao
+antes de salvar. A exclusao deve exigir confirmacao e o sistema deve informar o
+resultado de cada linha processada, inclusive quando houver sucesso parcial.
+
+8.2 POPUPS E INTERACOES DO GRID
+-------------------------------
+
+Toda interacao relevante do grid deve utilizar telas de popup (modal do
+Bootstrap 5), evitando navegacoes inesperadas e mantendo o contexto da tela
+principal. Isso inclui, conforme o caso:
+
+- Formulario de inclusao, visualizacao e edicao.
+- Confirmacao de exclusao individual ou em lote.
+- Mensagens de sucesso, alerta e erro.
+- Avisos de validacao ou falta de permissao.
+- Resultado de operacoes em lote.
+
+Enquanto o grid ou uma operacao AJAX estiver sendo processado, deve ser exibido
+um popup de aguarde, com a tela bloqueada para impedir cliques duplicados. O
+popup deve ser fechado somente quando a operacao terminar com sucesso ou erro.
+Em caso de erro, deve apresentar uma mensagem amigavel e permitir nova
+tentativa quando for seguro.
+
+As interacoes devem atualizar o grid apos uma operacao bem-sucedida, preservar
+os filtros aplicados sempre que possivel e impedir o envio duplicado de
+formularios ou comandos.
+
+9. PADROES DE CODIGO
+--------------------
+
+- Usar indentacao consistente e nomes descritivos.
+- Separar configuracao, acesso a dados, regras de negocio e apresentacao tanto
+  quanto a simplicidade do projeto permitir.
+- Evitar duplicacao; funcoes compartilhadas devem ficar em includes apropriados.
+- Comentarios devem explicar decisoes ou regras nao obvias, nao repetir o
+  codigo.
+- Toda nova transacao deve ser documentada nesta convencao de URLs e, quando
+  relevante, ter seu contrato de entrada e saida registrado.
+
+10. CRITERIOS MINIMOS DE QUALIDADE
+----------------------------------
+
+- A aplicacao deve iniciar pelo login sem revelar informacoes internas.
+- URLs de transacao devem funcionar de forma previsivel e possuir controle de
+  acesso adequado.
+- Operacoes de escrita devem validar dados, proteger contra CSRF e usar SQL
+  parametrizado.
+- Erros devem ser tratados sem mostrar stack traces em ambiente de producao.
+- Antes de publicar uma funcionalidade, testar login, permissao, validacao,
+  sucesso, falha e acesso direto a URL.
+
+11. DECISOES A REGISTRAR FUTURAMENTE
+------------------------------------
+
+- Nome do banco, ambiente e estrategia de configuracao.
+- Estrutura inicial das tabelas e politica de migrations.
+- Modelo de perfis e permissoes.
+- Formato padrao das respostas AJAX.
+- Politica de logs, backup e deploy.
+- Regras de versionamento e fluxo de revisao do codigo.
+
+12. IMPLANTACAO INICIAL DA EMPRESA MODELO
+------------------------------------------
+
+A empresa template inicial do Green Portal e `Modelo`, com os seguintes dados:
+
+- Nome da empresa: Modelo.
+- Banco de dados: `gmodelo_dbp`.
+- Script de implantacao: `/database/001_criar_empresa_modelo.sql`.
+
+O banco `gmodelo_dbp` deve possuir inicialmente as tabelas principais
+`usuarios`, `grupos`, `menus`, `perfis` e `empresa`. A tabela `empresa` pertence
+ao cadastro interno do tenant Modelo e nao deve ser replicada como dado
+operacional para novas empresas; o cadastro central da nova empresa deve ser
+criado pelo processo de provisionamento.
+
+Tambem fazem parte da infraestrutura inicial as tabelas auxiliares de
+associacao de permissoes, setup e auditoria, conforme a evolucao do projeto.
+
+Os dados iniciais de `usuarios` e `grupos` devem ser migrados do banco
+`green_modelo_seguranca`, preservando a rastreabilidade do codigo de origem. Em
+caso de `USERID` duplicado na origem, deve ser migrado somente o registro mais
+antigo, conforme o script oficial, evitando duplicidade no novo tenant.
+
+Deve existir no banco Modelo o usuario inicial:
+
+- Userid: `admin`.
+- Senha inicial: `<senha de teste via variável de ambiente>`.
+- Perfil: `ADMINISTRADOR`.
+- Situacao: ativo.
+- Acesso: todas as transacoes do menu e todas as permissoes CRUD.
+
+Nesta implantacao inicial, a senha do usuario `admin` segue a configuracao da
+empresa Modelo com `senha_usa_hash = 0`, conforme definido para o setup atual.
+Essa politica e configuravel e podera ser alterada posteriormente. A senha
+inicial deve ser tratada como credencial de implantacao e alterada quando a
+politica de seguranca da empresa exigir.
+
+O script de implantacao e idempotente, nao deve apagar tabelas ou dados
+existentes e deve registrar a criacao da empresa Modelo no log de auditoria.
+
+13. CONTROLE DE MIGRACOES, BUGS E ARTEFATOS REPLICAVEIS
+-------------------------------------------------------
+
+O banco `gmodelo_dbp` deve possuir estruturas para controlar a evolucao do
+template e a qualidade dos testes:
+
+- `registros_migracao`: registra migracoes de origem e destino, tipo, versao,
+  status, quantidade de registros, datas e detalhes da execucao.
+- `bugs_testes`: registra bugs encontrados durante os testes, incluindo
+  codigo, descricao, modulo, transacao, severidade, passos de reproducao,
+  resultado esperado, resultado obtido, solucao aplicada, responsavel e
+  situacao.
+- `artefatos_replicacao`: define quais objetos da empresa Modelo serao
+  replicados para uma nova empresa.
+
+O catalogo `artefatos_replicacao` deve controlar, no minimo:
+
+- Tipo do artefato: `TABELA`, `PROCEDURE` ou `VIEW`.
+- Nome do artefato e schema de origem.
+- Modulo ao qual pertence.
+- Versao e ordem de replicacao.
+- Indicadores de replicacao e obrigatoriedade.
+- Dependencias e observacoes tecnicas.
+
+A ordem de replicacao deve respeitar dependencias: tabelas antes de views e
+procedures que as utilizem, e procedures antes de transacoes que as chamem.
+Artefatos inativos ou marcados como nao replicaveis nao devem ser copiados para
+novas empresas. A tabela `empresa` do tenant Modelo e um exemplo de artefato
+que permanece exclusivo do template.
+
+O processo de criacao de uma empresa deve consultar esse catalogo, registrar
+cada artefato copiado e manter o resultado da operacao em
+`registros_migracao`. Falhas de replicacao devem informar o artefato afetado,
+permitir diagnostico e impedir que a nova empresa seja considerada concluida
+sem que os artefatos obrigatorios estejam instalados.
+
+13.1. COMPARACAO OBRIGATORIA DE ARTEFATOS EXISTENTES
+-----------------------------------------------------
+
+Toda alteracao em um artefato existente deve ser comparada com a versao
+anterior antes da publicacao. Esta regra se aplica a arquivos PHP, JavaScript,
+CSS, SQL, testes, documentacao, configuracoes e demais artefatos do projeto.
+
+Antes da alteracao, deve-se identificar a versao anterior por meio do controle
+de versao ou, quando isso nao estiver disponivel, criar uma copia de
+seguranca identificada com data e hora. A comparacao deve verificar, no minimo:
+
+- funcoes, classes, endpoints, consultas, eventos e regras de negocio;
+- campos, colunas, filtros, botoes, popups e comportamentos da interface;
+- permissoes, validacoes, integracoes e formatos de dados;
+- testes existentes e funcionalidades que ja estavam homologadas.
+
+Nenhuma funcao ou comportamento existente pode ser removido, substituido ou
+alterado sem justificativa registrada. Quando a remocao for intencional, a
+alteracao deve ser descrita no backlog ou relatorio tecnico, incluindo o
+motivo, o impacto e a validacao correspondente.
+
+Apos a alteracao, deve-se executar uma comparacao entre as versoes, validar a
+sintaxe dos artefatos afetados e repetir os testes de regressao das
+funcionalidades anteriores junto com os testes da nova funcionalidade. O
+resultado da comparacao e dos testes deve acompanhar a entrega.
+
+15. CHAVES PRIMARIAS E MIGRACAO DO LEGADO
+-----------------------------------------
+
+Os bancos legados utilizam como chave primaria o campo no padrao
+`COD<ENTIDADE>`, e esse padrao deve ser preservado nos bancos novos para
+facilitar a migracao e a rastreabilidade. Exemplos:
+
+- Tabela `usuarios`: chave `CODUSUARIO`.
+- Tabela `grupos`: chave `CODGRUPO`.
+
+Antes de migrar qualquer tabela, o processo deve consultar o dicionario do
+banco de origem e identificar o campo, ou conjunto de campos, definido como
+chave primaria. A tabela de destino deve ser criada com a mesma chave
+logica, respeitando o tipo, tamanho, sinal e valores do legado. Nao devem ser
+criados campos genericos `id` como substitutos das chaves legadas.
+
+As chaves estrangeiras e tabelas de associacao tambem devem usar os nomes
+`COD<ENTIDADE>` correspondentes. Caso uma tabela legada possua chave composta,
+a composicao deve ser preservada no destino.
+
+Na primeira migracao da empresa `Modelo`, os campos `CODUSUARIO` e `CODGRUPO`
+foram identificados no banco `green_modelo_seguranca` e passaram a ser as
+chaves oficiais de `gmodelo_dbp`. A adequacao foi registrada pela migracao
+`MODELO_CHAVES_LEGADO`.
+
+O processo de migracao deve:
+
+1. Inspecionar a chave primaria da origem antes de criar a tabela destino.
+2. Validar se os valores da chave sao unicos e nao nulos.
+3. Criar a tabela destino sem coluna `id` artificial.
+4. Migrar os dados preservando os valores da chave original.
+5. Recriar indices e chaves estrangeiras usando os campos `COD<ENTIDADE>`.
+6. Registrar origem, destino, quantidade, versao, status e eventuais conflitos.
+
+Scripts relacionados:
+
+- `/database/003_adequar_chaves_ao_legado.sql`: converte o schema Modelo para
+  as chaves oficiais do legado e remove o uso de `id`.
+
+16. PROCEDURES UNIVERSAIS E VIEWS DE GRID
+-----------------------------------------
+
+O CRUD das entidades deve utilizar procedures universais, sem criar uma
+procedure ou metodo PHP especifico para cada tabela. Na empresa `Modelo` foram
+criadas:
+
+- `sp_crud_insert`: inclusao generica por nome da tabela e objeto JSON de dados.
+- `sp_crud_select`: consulta generica de tabela ou view, com filtros JSON,
+  busca textual, limite e deslocamento para grids.
+- `sp_crud_update`: alteracao generica por objeto JSON de chave e dados.
+- `sp_crud_delete`: exclusao generica por objeto JSON de chave.
+
+As procedures validam a existencia da tabela, validam os campos recebidos no
+dicionario do banco, usam identificadores delimitados e retornam a quantidade
+de registros afetados. A camada PHP deve apenas autorizar a transacao, montar
+os objetos de entrada e apresentar a resposta.
+
+As consultas dos grids devem preferir views especificas de apresentacao, sem
+alterar a estrutura das tabelas. Foram criadas views iniciais para usuarios,
+grupos, perfis, menus, permissoes, setup, auditoria, migracoes, bugs e
+artefatos de replicacao. As views e procedures estao registradas em
+`artefatos_replicacao` para serem copiadas conforme o modulo e a politica do
+tenant.
+
+O script de implantacao e
+`/database/004_procedures_crud_views_modelo.sql`. O CRUD universal foi validado
+com uma inclusao, alteracao, consulta e exclusao temporarias na tabela
+`bugs_testes`, sem deixar registro de teste persistido.
+
+14. POLITICA DE ACENTUACAO E CODIFICACAO
+----------------------------------------
+
+O Green Portal deve suportar corretamente acentos, cedilha, caracteres
+especiais e textos nos idiomas PT, EN e ES, sem perda ou corrompimento de
+informacao. A codificacao oficial do projeto e UTF-8.
+
+Regras obrigatorias:
+
+- Todos os arquivos PHP, HTML, CSS, JavaScript e arquivos de configuracao
+  devem ser salvos em UTF-8, preferencialmente sem BOM.
+- As paginas HTML devem declarar `<meta charset="utf-8">` e as respostas PHP
+  devem informar `Content-Type` com charset UTF-8 quando aplicavel.
+- Todos os bancos de empresas devem ser criados com character set `utf8mb4` e
+  collation `utf8mb4_unicode_ci` ou outra collation UTF-8 definida oficialmente.
+- Todas as tabelas e colunas que armazenarem texto devem utilizar `utf8mb4`.
+- A conexao PDO deve configurar explicitamente `charset=utf8mb4`, e scripts SQL
+  devem iniciar a sessao com `SET NAMES utf8mb4` quando necessario.
+- Procedures, views, parametros, retornos JSON, exportacoes e geracao de PDF
+  devem preservar UTF-8 do inicio ao fim do processamento.
+- Nunca converter texto para latin1, ASCII ou outra codificacao sem uma razao
+  documentada e uma conversao controlada.
+- Dados migrados de sistemas legados em latin1 devem ser identificados,
+  convertidos e validados com exemplos de acentos antes da liberacao.
+- Testes devem incluir palavras como `Gestão`, `Ação`, `Usuário`, `Licença`,
+  `Resíduos`, `Órgão`, `Español` e `Inglês`, verificando tela, banco, busca,
+  grid, Excel, PDF, logs e procedures.
+
+A empresa `Modelo` e o banco `gmodelo_dbp` foram criados em `utf8mb4` com
+`utf8mb4_unicode_ci`. Toda nova empresa provisionada a partir do template deve
+herdar essa configuracao. Problemas de acentuacao devem ser registrados em
+`bugs_testes` e corrigidos antes de o artefato ser marcado como pronto para
+replicacao.
+
+14.1 CONVERSAO DE BANCOS LEGADOS LATIN1
+---------------------------------------
+
+Todo banco legado utilizado como origem de migracao sera considerado `latin1`.
+Nenhum dado textual legado deve ser copiado diretamente sem conversao. Durante
+a migracao, os campos textuais devem ser convertidos explicitamente para o
+charset `utf8mb4` e gravados com a collation de destino
+`utf8mb4_0900_ai_ci`.
+
+E importante diferenciar os conceitos:
+
+- Charset de armazenamento e transporte: `utf8mb4`.
+- Collation para comparacao e ordenacao: `utf8mb4_0900_ai_ci`.
+- Charset legado de origem: `latin1`.
+
+O processo deve configurar a conexao de destino como UTF-8, aplicar a
+conversao nos campos textuais de usuarios, grupos e demais entidades migradas,
+e validar amostras com acentos antes de concluir. A conversao deve preservar
+caracteres como `ç`, `ã`, `é`, `Ó`, `Ñ` e demais caracteres suportados.
+
+O script oficial de criacao da empresa `Modelo` deve ser utilizado como
+referencia para esse procedimento. A origem `green_modelo_seguranca` permanece
+em `latin1`, enquanto o banco `gmodelo_dbp` e os novos tenants devem utilizar
+`utf8mb4` com `utf8mb4_0900_ai_ci`. Cada migracao deve registrar origem,
+destino, quantidade, status e detalhes em `registros_migracao`.
+
+No grid em lote do `Setup / Menu`, o usuario pode arrastar o cabecalho para
+ordenar as colunas e arrastar a borda direita para aumentar ou diminuir sua
+largura. A ordem e a largura devem ser persistidas individualmente na tabela
+`preferencias_grid`.
+O item `Segurança / Usuários` deve abrir `/principal/seguranca_usuarios.php` e
+utilizar a tabela `usuarios`, com CRUD em lote, buscas, colunas configuráveis,
+preferências por usuário e exportação Excel em segundo plano. A senha de um
+novo usuário deve iniciar conforme a política de senha configurada no tenant.
+O item `Segurança / Permissões` deve abrir `/principal/seguranca_permissoes.php`
+e utilizar a tabela `permissoes`, associando perfil e transação de menu às
+permissões de incluir, visualizar, editar, excluir, exportar Excel e gerar PDF.
+Em todos os grids, a coluna correspondente à chave primária (`cod<entidade>`)
+deve ficar oculta por padrão. O usuário autorizado poderá reexibi-la pelo
+seletor de colunas, com essa escolha persistida individualmente.
+
+O item `Segurança / Grupos` deve abrir `/principal/seguranca_grupos.php` e
+seguir o mesmo padrão do grid em lote de `Setup / Menu`, utilizando a tabela
+`grupos`, com CRUD, buscas, colunas configuráveis, preferências por usuário e
+exportação Excel em segundo plano.
+O grid deve exibir barras de rolagem vertical e horizontal dentro do proprio
+contenedor quando necessario. O cabecalho das colunas deve permanecer sempre
+visivel durante a rolagem vertical; na rolagem horizontal, cabecalho, filtros
+e linhas devem deslocar-se em conjunto. A pagina, o menu e a area de trabalho
+nao devem criar barras de rolagem adicionais para o grid.
+Todos os grids devem possuir o botão `Duplicar`, que cria um novo registro a
+partir da linha selecionada e sempre inicia o novo registro como inativo. As
+operações de inclusão, alteração, duplicação e exclusão devem solicitar
+confirmação em modal antes de serem executadas.
+Nos usuários, perfil e grupo vazios devem ser enviados como `NULL`, nunca como
+zero, para respeitar as chaves estrangeiras.
+Todos os grids devem permitir ordenação dos registros pelo clique no cabeçalho
+de qualquer coluna, alternando entre ordem crescente e decrescente.
+Todos os grids devem exibir um modal de carregamento durante a abertura e em
+qualquer evento que recarregue ou processe seus dados, incluindo salvar,
+excluir, duplicar, recarregar, exportar e chamadas AJAX de preferências. O
+modal deve ser encerrado após a conclusão da operação.
+
+PADRAO DE CARREGAMENTO DOS GRIDS
+--------------------------------
+
+Todos os grids ja construidos e os novos grids devem seguir o mesmo comportamento
+de carregamento:
+
+1. Ao iniciar ou recarregar uma transacao que contenha grid, deve ser exibido um
+   popup modal de aguarde com fundo estatico e indicador visual de processamento.
+2. O grid deve permanecer oculto enquanto a pagina, os dados e os scripts da
+   transacao nao terminarem de carregar.
+3. Somente depois da conclusao do carregamento o grid deve receber o estado
+   `grid-ready` e ser exibido ao usuario.
+4. O modal deve ser encerrado ao final do carregamento inicial, apos uma recarga,
+   ao terminar uma requisicao AJAX ou quando outro modal da transacao for fechado.
+5. O controlador comum deste comportamento e `assets/js/grid-loading.js`. As
+   paginas devem carregar a versao atual desse arquivo depois do jQuery, Bootstrap
+   e dos scripts especificos do grid.
+6. O comportamento deve evitar condicoes de corrida quando a transacao for
+   aberta dentro de uma aba da `main.php`, inclusive quando o documento ja estiver
+   com `readyState=complete`.
+7. O CSS comum deve manter o fragmento oculto ate a classe `grid-ready` ser
+   aplicada, sem esconder o popup de aguarde.
+
+Aplicacao atual:
+- `principal/setup_menu.php`
+- `principal/seguranca_grupos.php`
+- `principal/seguranca_usuarios.php`
+- `principal/seguranca_permissoes.php`
+
+REGRA DE DUPLICACAO DO SETUP / MENU
+-----------------------------------
+
+Ao duplicar uma linha na transacao Setup / Menu, o campo `codigo` deve receber
+automaticamente um valor unico derivado do codigo original, com o sufixo
+`_COPIA_<sequencial>`. Isso evita conflito com a restricao `uk_menus_codigo`.
+O usuario ainda pode editar o codigo antes de salvar. Caso um codigo repetido
+seja informado manualmente, a aplicacao deve apresentar uma mensagem amigavel,
+sem expor uma excecao fatal do banco de dados.
+
+INICIALIZACAO DAS PERMISSOES
+----------------------------
+
+As permissoes iniciais da empresa Modelo sao carregadas pelo script
+`database/017_inicializar_permissoes.sql`. O perfil ADMINISTRADOR recebe todas
+as permissoes para as transacoes ativas. Os demais perfis recebem inicialmente
+somente a permissao de visualizar a transacao DASHBOARD. A tela
+`seguranca_permissoes.php` permite administrar essas combinacoes perfil,
+transacao e permissoes de incluir, visualizar, editar, excluir, exportar Excel
+e gerar PDF.
+Ao abrir a tela, a aplicacao verifica a matriz completa de perfis e menus ativos.
+Qualquer perfil ou transacao nova e associado automaticamente a todas as
+combinacoes ausentes sem permissoes para perfis comuns. Para o ADMINISTRADOR,
+as combinacoes novas recebem acesso total. As permissoes ja configuradas nunca
+sao sobrescritas. A carga inicial da matriz tambem pode ser
+executada pelo script `database/018_completar_matriz_permissoes.sql`.
+Quando um novo item de menu for criado, a proxima abertura de
+`seguranca_permissoes.php` criara a linha desse menu para todos os perfis ativos.
+Para o ADMINISTRADOR a nova linha recebe acesso total; para os demais perfis as
+permissoes permanecem desmarcadas.
+
+PAGINACAO DOS GRIDS
+-------------------
+
+Todos os grids de transacao devem utilizar paginacao padronizada com 25
+registros exibidos por pagina. Os controles de pagina ficam fora da area de
+rolagem do grid, mantendo o cabecalho, os botoes e a busca disponiveis. A
+paginacao deve ser recalculada depois de filtros, ordenacao, inclusao,
+duplicacao, exclusao ou recarga dos dados. O comportamento comum fica em
+`assets/js/grid-pagination.js`.
+
+CONTROLE DE PERMISSOES NOS GRIDS
+--------------------------------
+
+Ao carregar uma transacao, o perfil do usuario deve ser validado pelo codigo
+do item de menu correspondente. A permissao de visualizacao controla a exibicao
+do grid; incluir controla os botoes Novo e Duplicar; editar controla os campos
+e o salvamento de registros existentes; excluir controla o botao Excluir; e
+exportar controla o botao Exportar Excel. As permissoes sao carregadas da
+`vw_permissoes_grid` e aplicadas pelo comportamento comum de
+`assets/js/grid-pagination.js`. O servidor tambem deve validar a operacao antes
+de executar qualquer inclusao, alteracao, exclusao ou exportacao.
+Todo controle desabilitado por falta de permissao deve informar, ao passar o
+mouse, a mensagem traduzida `Perfil sem permissao de acesso!` em PT, EN ou ES.
+
+O cadastro de perfis deve utilizar a transacao
+`/principal/seguranca_perfil.php`, com os mesmos recursos do grid de usuarios:
+CRUD em lote, duplicacao, confirmacao, busca geral e por coluna, ordenacao,
+colunas persistentes por usuario, paginacao, exportacao Excel e modal de
+carregamento. O campo `codperfil` deve ficar oculto por padrao. O item de menu
+correspondente e `SEGURANCA_PERFIL`.
+
+Na tela `seguranca_usuarios.php`, salvar e excluir devem ser executados por
+AJAX depois da confirmacao. O salvar deve manter o grid na tela e apresentar a
+mensagem de sucesso sem recarregar a pagina. A exclusao deve remover somente a
+linha excluida do grid. O modal de carregamento deve aparecer apenas depois da
+confirmacao da operacao.
+
+Os filtros por coluna devem usar combobox quando o campo representar uma lista
+de valores, relacionamento ou estado booleano. Filtros de textos livres devem
+continuar como busca textual. Essa regra e aplicada pelo arquivo comum
+`assets/js/grid-column-filters.js` nos grids de menus, grupos, usuarios,
+permissoes e perfis.
+
+O item `Seguranca / Formulario` deve utilizar
+`/principal/seguranca_formulario.php`. A configuracao e composta por campos de
+formulario associados a uma transacao e por permissoes de campo associadas a um
+perfil. O perfil define se pode visualizar, editar ou informar cada campo.
+As tabelas utilizadas sao `formularios_campos` e `permissoes_campos`, criadas
+por `database/020_seguranca_formulario.sql`.
+
+O grid de `Seguranca / Formulario` tambem deve respeitar a paginacao padrao de
+25 linhas por pagina.
+
+A carga inicial dos campos dos grids administrativos e realizada por
+`database/021_carga_formularios_campos.sql`. O script e idempotente e inclui os
+grids de Setup/Menu, Seguranca/Grupos, Seguranca/Usuarios,
+Seguranca/Permissoes, Seguranca/Perfil e Seguranca/Formulario. Ele tambem cria
+as permissoes iniciais para todos os perfis ativos. As chaves primarias ficam
+ocultas por padrao. O script deve ser executado com conexao UTF-8/utf8mb4 e os
+labels PT, EN e ES devem permanecer em arquivos UTF-8, sem conversao para ANSI.
+
+Os filtros por coluna dos grids tambem devem respeitar o contexto do campo. Para
+relacionamentos, estados booleanos, niveis e tipos cadastrados, o filtro deve
+ser apresentado como combobox, com a opcao Todos. Campos livres continuam com
+entrada textual. Essa regra e aplicada por
+`assets/js/grid-column-filters.js` em todos os grids administrativos.
+
+O cadastro de listas para campos do tipo Lista de selecao utiliza a transacao
+`/principal/seguranca_lista.php` e a tabela `formulario_lista`. A origem pode
+ser FIXA ou BANCO. Listas fixas utilizarao `formulario_lista_itens`; listas de
+banco deverao apontar para uma fonte previamente cadastrada, com view ou
+procedure autorizada, campo de valor, campo de label e filtro. Nao sera
+permitida a digitacao de SQL livre na aplicacao.
+
+As listas ja utilizadas pelos grids foram catalogadas pelo script
+`database/023_carga_listas_utilizadas.sql`: perfis, grupos, menus, menus pai,
+origem da lista, tipos de campo, niveis de menu e situacao ativo. As fontes de
+banco ficam identificadas por codigo de view, campo de valor, campo de label e
+filtro JSON.
+
+LAYOUT DO PORTAL
+----------------
+
+O item `Setup / Layout`, disponivel somente ao perfil ADMINISTRADOR, utiliza a
+transacao `/principal/setup_layout.php`. A empresa pode escolher uma das tres
+paletas pastel: verde, azul ou cinza. A escolha e persistida por empresa na
+tabela `setup_empresa`, chave `layout_tema`, com verde como valor padrao. O
+cadastro inicial do menu e da configuracao e feito por
+`database/026_setup_layout_temas.sql`.
+
+A escolha da paleta de layout deve ser persistida por usuario, na tabela
+`preferencias_usuario`, chave `layout_tema`, criada por
+`database/027_preferencias_layout_usuario.sql`. A configuracao da empresa e
+utilizada somente como fallback para usuarios sem escolha individual. A
+paleta deve alterar tambem os botoes do portal. A transacao deve oferecer um
+botao `View` com uma pre-visualizacao do main, dashboard e grid de exemplo.
+
+Todos os grids devem permitir redimensionar as colunas pelo indicador lateral
+do cabecalho. A largura deve ser persistida por usuario na tabela
+`preferencias_grid`, mantendo o valor depois de recarregar a tela ou utilizar
+CTRL+F5. Esse comportamento tambem se aplica a Segurança/Formulario e
+Seguranca/Lista.
+
+Ao entrar na aplicacao ou atualizar `main.php`, o menu lateral deve iniciar
+fechado, exibindo somente os icones dos menus de nivel zero. A abertura e o
+fechamento continuam disponiveis pelo botao do cabecalho, sem persistir o
+estado entre atualizacoes.
+
+Os grids possuem rolagem horizontal e vertical somente no contenedor
+`menu-grid-scroll`. A pagina, o cabecalho, os botoes e a busca nao devem rolar
+junto com o conteudo do grid.
+
+Todos os grids administrativos devem utilizar paginacao visual com 25 linhas
+por pagina. A consulta inicial e cada navegacao devem solicitar somente o lote
+correspondente ao banco, mantendo a busca, os filtros, a ordenacao e a edicao
+associados a pagina corrente. Os controles Anterior e Proxima devem permitir a
+navegacao entre os lotes sem carregar todos os registros no navegador.
+Os filtros por coluna e a busca geral devem ser enviados ao banco depois do
+debounce de 1 segundo; o grid nao deve filtrar somente as linhas ja carregadas.
+Ao aplicar um criterio, a pagina deve voltar para a primeira pagina e manter o
+filtro durante a navegacao.
+
+O rodape de cada grid deve informar a quantidade total de registros que atende
+ao filtro atual, mesmo quando somente os 25 registros da pagina corrente foram
+carregados no navegador. Na abertura do grid, a contagem e feita sem filtro;
+ao aplicar busca geral ou filtro de coluna, a contagem deve ser recalculada.
+Essa contagem e fornecida pela procedure generica `sp_crud_count`, criada em
+`database/024_procedure_contagem_grids.sql`, e deve aparecer junto aos controles
+de paginacao. O texto deve indicar tambem a pagina corrente, por exemplo:
+`2526 registros - Pagina 1`.
+
+As buscas gerais e buscas por coluna devem utilizar debounce de 1 segundo.
+Enquanto o usuario continua digitando, a consulta nao deve ser disparada;
+somente apos esse intervalo sem novas teclas o filtro e a contagem do rodape
+devem ser atualizados.
+
+EXPORTACAO DE GRIDS
+-------------------
+
+A exportacao Excel deve ser executada em segundo plano. O processamento deve
+respeitar no maximo dois slots simultaneos para os servicos do LibreOffice;
+quando os dois slots estiverem ocupados, a nova solicitacao permanece
+aguardando ate a liberacao de um slot. O controle e feito por arquivos de lock
+em `runtime/libreoffice-slots` pelo worker `classes/ExportacaoGridWorker.php`.
+
+Cada solicitacao deve armazenar os filtros e a busca vigentes no momento do
+clique em Exportar Excel. O worker deve aplicar esses mesmos criterios na
+consulta. Sem filtros, a planilha deve conter todos os registros da transacao,
+e nao somente os 25 registros da pagina atual. A consulta e feita em lotes de
+1000 registros ate o fim dos dados.
+
+Os criterios da solicitacao ficam nas colunas `filtros` e `busca` da tabela
+`exportacoes_grid`, criadas pelo script
+`database/025_exportacao_filtros_concorrencia.sql`.
+
+PADRAO DE MENSAGENS AO USUARIO
+------------------------------
+
+As mensagens exibidas na aplicacao devem ser claras e nao tecnicas. Elas
+devem informar o que aconteceu e indicar o procedimento para correcao, sem
+mostrar SQLSTATE, nomes de tabelas, procedures, excecoes ou caminhos internos.
+O mapeamento comum fica em `classes/MensagemAplicacao.php`. Para erros de
+duplicidade, a mensagem deve orientar o usuario a informar outro codigo; para
+relacionamentos, deve orientar a revisar ou remover dependencias; para campos
+obrigatorios, deve solicitar a revisao do formulario. Em qualquer outro caso,
+deve orientar a revisar os dados e procurar o administrador se o problema
+persistir. Todos os labels, botoes, avisos, mensagens de sucesso e mensagens
+de erro devem possuir as versoes PT, EN e ES, usando PT como fallback quando
+uma traducao nao estiver cadastrada. O idioma deve ser obtido da sessao do
+usuario e nunca da mensagem tecnica retornada pelo banco.
+
+ALERTAS DO PORTAL
+-----------------
+
+Cada alerta deve apresentar titulo, mensagem e a data/hora da solicitacao,
+usando o campo `criado_em` da tabela `alertas`. O menu do sino deve oferecer
+um icone para limpar as mensagens do usuario logado. A limpeza deve remover
+somente os alertas daquele usuario, mediante confirmacao, e deve respeitar o
+idioma PT, EN ou ES da sessao.
+
+TIMEOUT DE INATIVIDADE
+----------------------
+
+O ADMINISTRADOR pode configurar em Setup/Main o campo
+sessao_timeout_minutos, com limite de 1 a 1440 minutos e valor padrao de
+30 minutos. A contagem considera interacoes do usuario na tela principal e
+nas paginas abertas em abas. Consultas automaticas do sistema nao renovam o
+tempo de atividade. Ao atingir o limite, a sessao e encerrada e o usuario e
+redirecionado para a tela de login.
+
+PROTECAO DE ACESSO
+------------------
+
+O acesso funcional ao portal deve iniciar pela tela de login. Paginas internas
+devem validar a sessao autenticada e a empresa selecionada antes de exibir
+qualquer conteudo. Uma tentativa direta sem sessao deve ser redirecionada
+para o login; endpoints Ajax devem responder com status 401 sem expor dados.
+
+DOCUMENTACAO ESPECIFICA
+-----------------------
+
+As regras detalhadas por contexto ficam organizadas nos seguintes documentos:
+
+- login_diretrizes.txt
+- main_diretrizes.txt
+- menu_diretrizes.txt
+- alertas_diretrizes.txt
+- grids_em_lote_diretrizes.txt
+- formularios_diretrizes.txt
+- seguranca_diretrizes.txt
+- exportacao_diretrizes.txt
+- sessao_acesso_diretrizes.txt
+- multitenant_idiomas_diretrizes.txt
+
+SEPARACAO DO MENU
+-----------------
+
+A montagem do menu e separada da tela principal. MenuService.php trata dados,
+hierarquia, idioma e permissoes; principal/menu.php trata somente a
+renderizacao; main.php permanece responsavel pelo layout, abas e eventos
+globais.
+
+O tratamento de alertas segue a mesma separacao: AlertasService.php trata
+dados e limpeza, os endpoints PHP tratam comunicacao HTTP e alertas.js trata
+somente a interface do sino.
+
+As funcoes especificas do usuario seguem a mesma separacao: 
+UsuarioContaService.php trata senha e preferencias, minha_conta.php e o
+endpoint protegido e minha-conta.js trata somente o popup Minha conta.
+Entre as preferencias individuais esta a transacao inicial: cada usuario pode
+escolher qual aba deve ser aberta apos o login, como Dashboard ou Calendario.
+Essa escolha e persistida por usuario e, se deixar de estar disponivel, o
+sistema utiliza o Dashboard como alternativa segura.
+
+O rodape inteligente segue separacao propria em rodape_diretrizes.txt,
+principal/footer.php, assets/js/footer.js e assets/css/footer.css.
+
+O painel direito segue as regras de painel_direito_diretrizes.txt, com
+servico, componente visual, CSS e paginas de contexto separados.
+
+O modulo de Legislacao possui diretrizes proprias em
+migracao_legislacao_diretrizes.txt. Sua migracao deve utilizar
+database/028_migrar_legislacao.sql, preservar as chaves do legado e converter
+os dados para utf8mb4_0900_ai_ci.
+
+A transacao Manutencao Legal / Legislacao segue
+manutencao_legal_legislacao_diretrizes.txt e utiliza o banco independente
+glegislacao_dbp.
+
+ACENTUACAO E CODIFICACAO
+------------------------
+
+Arquivos PHP, JavaScript, CSS, SQL e textos devem permanecer em UTF-8. Toda
+resposta HTML deve declarar charset=utf-8, toda resposta JSON deve declarar
+charset=utf-8 e as conexoes MySQL devem usar utf8mb4. Bancos legados latin1
+sofrerao conversao controlada para utf8mb4_0900_ai_ci durante a migracao.
+ROLAGEM DOS GRIDS
+-----------------
+
+Todo grid deve controlar suas proprias barras de rolagem dentro do contenedor
+da tabela. Devem ser utilizadas rolagem vertical e horizontal sempre que
+necessarias. O cabecalho das colunas deve permanecer fixo e sempre visivel
+durante a rolagem vertical; a rolagem horizontal deve deslocar cabecalho,
+filtros e linhas em conjunto. A pagina principal, o menu e a area de trabalho
+nao devem criar barras de rolagem adicionais para o grid.
+
+FORMATO DE DATAS POR IDIOMA
+---------------------------
+
+Todos os campos de data e hora da aplicacao devem respeitar o idioma ativo:
+PT e ES devem usar DD/MM/YYYY HH:MM; EN deve usar MM/DD/YYYY HH:MM. O banco
+mantem o formato datetime para persistencia e as telas fazem a conversao
+somente na apresentacao e no recebimento dos valores.
+
+ATUALIZACAO DE SEGURANCA / USUARIOS
+-----------------------------------
+
+Em `principal/seguranca_usuarios.php`, a busca geral, os filtros por coluna,
+a contagem e a paginacao devem consultar o banco de dados. O navegador nao
+deve esconder ou mostrar somente as 25 linhas ja carregadas como mecanismo de
+filtragem. O componente `assets/js/setup-users.js` deve permanecer restrito
+as acoes especificas de usuarios, enquanto `assets/js/grid-pagination.js`
+controla a consulta server-side, o debounce de 1 segundo e a troca AJAX do
+tbody.
+
+Os campos `codperfil` e `codgrupo` devem ser comboboxes na edicao e nos
+filtros. As opcoes devem ser carregadas de todos os perfis e grupos ativos,
+independentemente dos registros presentes na pagina corrente. Os filtros
+enviam os codigos ao banco e exibem as descricoes ao usuario.
+
+Na verificacao de 16/08/2026, o banco Modelo possuia 2.526 usuarios, 7 perfis
+ativos e 35 grupos ativos. Os joins da `vw_usuarios_grid` utilizam as chaves
+primarias indexadas de `perfis` e `grupos`; portanto, nao foi necessaria uma
+nova estrutura de banco para este ajuste. Uma busca textual contendo coringa
+no inicio pode fazer leitura dos usuarios e somente devera ser substituida
+por FULLTEXT quando o volume justificar essa complexidade.
+
+MANUTENCAO LEGAL / X EMPRESAS
+-----------------------------
+
+A transacao `manutencaolegal_legislacaoxempresa.php` utiliza a tabela
+`legislacaoxempresa` no banco da empresa e a view
+`vw_legislacaoxempresa_grid`. O grid exibe CODIGO da lei, DSCUNIDADE e o
+combobox TIPO DE LEI, com MATRIZ e as letras de A a Z. A chave
+CODLEGISLACAXEMPRESA fica oculta por padrao. O item de menu e
+`LEGISLACAO_X_EMPRESAS`, abaixo de Manutencao Legal, e foi registrado no
+script `database/038_manutencao_legal_x_empresas.sql`.
+
+CORRECAO DO FORMATO MATRICIAL
+-----------------------------
+
+Na transacao X Empresas, cada linha representa uma legislacao e a primeira
+coluna mostra somente o `CODIGO`. A partir da segunda coluna, cada unidade e
+apresentada como uma coluna dinamica com seu `DSCUNIDADE`. O valor no
+cruzamento legislacao/unidade e o `tipo_de_lei`, editado por combobox com
+MATRIZ e as letras de A a Z. A view `vw_legislacaoxempresa_matrix` fornece
+uma linha por legislacao e a tabela `legislacaoxempresa` permanece responsavel
+por criar, atualizar ou remover cada relacao.
+
+FILTROS SERVER-SIDE DA LEGISLACAO
+---------------------------------
+
+O grid `manutencaolegal_legislacao.php` deve enviar ao banco todos os filtros
+de coluna e filtros contextuais. A procedure `sp_legislacao_select` retorna as
+linhas da pagina e `sp_legislacao_count` retorna o total usando o mesmo JSON
+de filtros. A implementacao atual esta registrada em
+`database/037_filtros_colunas_legislacao.sql`.
+
+Os filtros textuais usam correspondencia parcial; listas e campos booleanos
+usam o valor selecionado; o filtro de `ASSUNTOS` usa EXISTS sobre
+`legislacaoxassunto` e `assuntos`. Nenhum filtro pode limitar-se ao conteudo
+ja carregado no navegador.
+
+MANUTENCAO LEGAL / X PODER
+--------------------------
+
+A transacao `manutencaolegal_legislacaoxpoder.php` utiliza a tabela
+`gmodelo_dbp.legislacaoxpoder`, migrada de `green_modelo` pelo script
+`database/040_migrar_legislacaoxpoder.sql`. O grid e matricial: CODIGO da
+legislacao na primeira coluna, unidades como colunas e o cruzamento com
+combobox PODER contendo Controle, Conhecimento e Influência. A alteracao de
+uma celula sincroniza a relacao composta por CODLEGISLACAO, poder e
+codunidade usando as procedures CRUD universais.
+
+As transações Manutenção Legal/X Empresas e Manutenção Legal/X Poder seguem o padrão único documentado em `docs/manutencao_legal_matrizes_diretrizes.txt`. O filtro Correlacionados=Sim restringe à relação da própria transação; Não exibe todas as leis de legislacao, relacionadas ou não.
+
+Os cadastros básicos da Manutenção Legal seguem adicionalmente as regras de docs/manutencao_legal_cadastros_diretrizes.txt. A implementação é centralizada em ManutencaoLegalCadastroGrid.php para que autenticação, permissões, CRUD, paginação, filtros e preferências mantenham um único comportamento.
+VALIDACAO DE RELACIONAMENTOS COM O LEGADO
+------------------------------------------
+
+Antes de corrigir ou homologar relacionamentos migrados, deve ser feita uma
+comparacao registro a registro entre a tabela legada e a tabela do tenant
+novo. A comparacao deve ignorar somente a chave tecnica auto_increment e
+considerar todas as chaves de negocio, incluindo a unidade e a empresa.
+
+As tabelas de associacao contextual devem obedecer as seguintes regras:
+
+- `codunidade` e obrigatorio quando a relacao e exibida por unidade;
+- a combinacao das chaves de negocio e `codunidade` deve possuir indice
+  `UNIQUE`;
+- duplicidades existentes devem ser consolidadas mantendo uma unica linha;
+- registros sem unidade ou sem chave contextual devem ser classificados
+  antes da remocao e preservados em tabela de backup identificada pela
+  migracao;
+- registros presentes no legado e ausentes no destino devem ser restaurados
+  com os mesmos valores de negocio;
+- `INSERT IGNORE` nao substitui uma chave `UNIQUE`, pois nao impede
+  duplicidades quando a tabela nao possui uma restricao correspondente.
+
+Toda correcao de dados deve ser versionada em script SQL, registrar a
+origem, o destino, a quantidade e o resultado em `registros_migracao`, e
+ser reexecutavel sem duplicar dados ou perder registros novos validos.
+
+Apos a correcao, devem ser validados: quantidade de linhas, duplicidades,
+registros sem unidade, equivalencia com o legado, presenca dos registros
+restaurados e contagens das views principais e filhas. As contagens de
+relacionamentos devem usar `COUNT(DISTINCT chave_de_negocio)` quando a
+regra do grid for contar associacoes unicas.

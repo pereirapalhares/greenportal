@@ -1,0 +1,55 @@
+/* Visualizador de arquivos do GED (principal/visualizador_arquivo.php) */
+html, body.va { height: 100%; margin: 0; }
+body.va { display: flex; flex-direction: column; background: #e9eef0; color: #24352f; font-size: 13px; overflow: hidden; }
+.va-barra { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 6px 12px; background: #fff; border-bottom: 1px solid #dfe7e3; }
+.va-nome { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.va-nome .bi-file-earmark-pdf { color: #c0392b; }
+.va-paginas { color: #6c757d; white-space: nowrap; }
+.va-zoom, .va-acoes { display: inline-flex; align-items: center; gap: 4px; }
+.va-zoom-valor { min-width: 44px; text-align: center; color: #6c757d; }
+.va-aviso { padding: 6px 12px; background: #fff3cd; color: #664d03; border-bottom: 1px solid #ffe69c; }
+.va-area { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 12px; text-align: center; }
+.va-pdf canvas { display: block; margin: 0 auto 12px; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .18); }
+.va-imagem { max-width: none; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .18); }
+.va-mensagem { padding: 40px 16px; color: #6c757d; line-height: 1.7; }
+.va-mensagem .bi { font-size: 32px; }
+.va-impressao-bloqueada { display: none; }
+/* Faixa de informação (prévia convertida, arquivo grande...) */
+.va-faixa { padding: 5px 12px; background: #e8f4fd; color: #0b4a6f; border-bottom: 1px solid #c5e3f6; font-size: 12px; }
+.va-mensagem-erro { color: #842029; }
+.va-detalhe { color: #6c757d; display: inline-block; max-width: 640px; margin-top: 4px; }
+.va-alerta { margin: 14px auto 0; max-width: 560px; padding: 8px 12px; background: #fff3cd; color: #664d03; border: 1px solid #ffe69c; border-radius: 4px; }
+.va-quebra { display: inline-flex; align-items: center; gap: 4px; margin: 0; color: #6c757d; white-space: nowrap; cursor: pointer; }
+/* Texto */
+.va-texto { text-align: left; font-size: 13px; }
+.va-pre { margin: 0 auto; max-width: 1200px; padding: 14px 16px; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .18); font-family: Consolas, "Courier New", monospace; font-size: 1em; line-height: 1.45; white-space: pre-wrap; word-break: break-word; tab-size: 4; color: #1f2d27; }
+.va-pre.va-pre-sem-quebra { white-space: pre; word-break: normal; overflow-x: auto; max-width: none; }
+/* Tabelas (CSV e planilhas) */
+.va-tabela { border-collapse: collapse; background: #fff; font-size: 1em; box-shadow: 0 1px 4px rgba(0, 0, 0, .18); margin: 0 auto 12px 0; }
+.va-tabela th, .va-tabela td { border: 1px solid #d5dde1; padding: 3px 7px; white-space: nowrap; vertical-align: top; text-align: left; }
+.va-tabela thead th { position: sticky; top: -12px; background: #eef3f1; font-weight: 600; z-index: 1; }
+.va-tabela .va-num { background: #f4f6f7; color: #8a979e; text-align: right; font-weight: 400; min-width: 34px; }
+.va-tabela-planilha td { height: auto !important; }
+.va-tabela-planilha font { font-size: inherit !important; }
+.va-planilha { text-align: left; font-size: 13px; }
+.va-abas { display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 8px; border-bottom: 1px solid #c9d3d0; position: sticky; top: -12px; background: #e9eef0; z-index: 2; padding-top: 2px; }
+.va-aba { border: 1px solid #c9d3d0; border-bottom: 0; background: #f4f6f7; padding: 4px 12px; border-radius: 4px 4px 0 0; color: #3d4f48; font-size: 12px; }
+.va-aba.ativa { background: #fff; font-weight: 600; color: #1d6b4f; margin-bottom: -1px; border-bottom: 1px solid #fff; }
+/* Áudio e vídeo */
+.va-midia { padding: 24px 12px; }
+.va-midia .bi { font-size: 48px; color: #6c757d; }
+.va-midia audio { width: min(600px, 100%); margin-top: 12px; }
+.va-midia video { max-width: 100%; max-height: calc(100vh - 100px); background: #000; box-shadow: 0 1px 4px rgba(0, 0, 0, .3); }
+/* Sem permissão: nada para copiar, arrastar ou imprimir */
+body.va-protegido .va-area { user-select: none; -webkit-user-select: none; }
+body.va-protegido canvas, body.va-protegido img { -webkit-user-drag: none; pointer-events: auto; }
+@media print {
+    body.va-protegido > * { display: none !important; }
+    body.va-protegido .va-impressao-bloqueada { display: block !important; padding: 40px; font-size: 16px; }
+    body.va:not(.va-protegido) .va-barra, body.va:not(.va-protegido) .va-aviso, body.va:not(.va-protegido) .va-faixa, body.va:not(.va-protegido) .va-abas { display: none !important; }
+    body.va:not(.va-protegido) .va-pre, body.va:not(.va-protegido) .va-tabela { box-shadow: none; }
+    body.va:not(.va-protegido) .va-aba-painel[hidden] { display: block !important; }
+    body.va:not(.va-protegido), body.va:not(.va-protegido) .va-area { display: block; height: auto; overflow: visible; background: #fff; padding: 0; }
+    body.va:not(.va-protegido) .va-pdf canvas { box-shadow: none; margin: 0 auto; page-break-after: always; max-width: 100%; height: auto !important; }
+    body.va:not(.va-protegido) .va-imagem { box-shadow: none; max-width: 100%; height: auto !important; }
+}

@@ -1,0 +1,3 @@
+<?php
+require_once dirname(__DIR__) . '/classes/ManutencaoLegalCadastroGrid.php';
+ManutencaoLegalCadastroGrid::render(['menu' => 'ADMINISTRACAO_AREAS', 'title' => ['pt' => 'Áreas', 'en' => 'Areas', 'es' => 'Áreas'], 'transaction' => 'administracao_areas', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT', 'table' => 'areas', 'view' => 'vw_areas_grid', 'primary' => 'CODAREA', 'default_sort' => ['column' => 'DSCAREA', 'direction' => 'asc'], 'fields' => ['CODAREA' => ['label' => ['pt' => 'Código', 'en' => 'Code', 'es' => 'Código'], 'readonly' => true], 'DSCAREA' => ['label' => ['pt' => 'Área', 'en' => 'Area', 'es' => 'Área']]]]);

@@ -1,0 +1,242 @@
+ANÁLISE - GESTÃO DE MIGRAÇÃO E SINCRONISMO DE BASES LEGADAS
+Green Portal
+
+1. CONTEXTO ATUAL
+
+As bases legadas green_atlas e green_atlas_seguranca já foram migradas para a estrutura nova utilizada pela empresa Atlas.
+
+O próximo cenário é migrar:
+
+- green_gd_americana
+- green_gd_americana_seguranca
+
+Para os novos bancos:
+
+- ggdamericana_dbp
+- a seguranca da Goodyear sera armazenada em ggdamericana_dbp; nao criar
+  ggdamericana_seguranca_dbp
+
+Também existe no Windows Task Scheduler o processo GreenPortal-Sincronismo FO legado, responsável pelo sincronismo entre as bases legadas e as bases novas.
+
+2. OBJETIVO
+
+Criar uma gestão administrativa centralizada para permitir a configuração, execução, acompanhamento e auditoria da migração e do sincronismo de qualquer empresa.
+
+A solução não deve conter regras fixas somente para Atlas ou GD Americana. Cada empresa deve ser cadastrada e configurada por meio da Administração.
+
+3. TRANSAÇÃO ADMINISTRATIVA PROPOSTA
+
+Criar uma transação no menu Administração com o nome sugerido:
+
+Migração e Sincronismo de Bases Legadas
+
+A transação deve permitir o cadastro e gerenciamento das empresas que utilizarão o processo de migração.
+
+4. CADASTRO DA EMPRESA
+
+Para cada empresa, deverão ser mantidas as seguintes informações:
+
+- Nome da empresa.
+- Código interno da empresa.
+- Banco legado principal.
+- Banco legado de segurança.
+- Banco novo principal.
+- Banco novo de segurança.
+- Status da migração.
+- Empresa habilitada ou desabilitada para sincronismo.
+- Data da última migração.
+- Data do último sincronismo.
+- Usuário responsável pela configuração.
+
+Exemplo para GD Americana:
+
+- Empresa: GD Americana
+- Código: gdamericana
+- Banco legado principal: green_gd_americana
+- Banco legado de segurança: green_gd_americana_seguranca
+- Banco novo principal: ggdamericana_dbp
+- Banco novo unico da empresa: ggdamericana_dbp, incluindo seguranca
+
+5. CONFIGURAÇÃO DA MIGRAÇÃO
+
+A gestão deve permitir definir:
+
+- Tabelas que serão migradas.
+- Ordem de migração das tabelas.
+- Mapeamento de campos.
+- Campos que serão ignorados.
+- Regras de transformação de dados.
+- Regras de conversão de acentuação e charset.
+- Regras de tratamento de chaves primárias.
+- Regras de atualização de registros existentes.
+- Estratégia de sincronismo incremental.
+- Modo de execução.
+
+Modos sugeridos:
+
+- Migração inicial completa.
+- Sincronismo incremental.
+- Reprocessamento de erros.
+- Simulação sem gravação.
+- Migração de uma tabela específica.
+
+6. CONTROLE DAS EXECUÇÕES
+
+Cada execução deve ser registrada em uma fila de processamento com:
+
+- Empresa.
+- Tipo da execução.
+- Data e hora da solicitação.
+- Usuário solicitante.
+- Status.
+- Percentual concluído.
+- Tabela atual.
+- Quantidade de registros lidos.
+- Quantidade de registros incluídos.
+- Quantidade de registros atualizados.
+- Quantidade de registros ignorados.
+- Quantidade de erros.
+- Data e hora de início.
+- Data e hora de conclusão.
+- Mensagem de erro geral.
+
+Status sugeridos:
+
+- SOLICITADA
+- VALIDANDO
+- PROCESSANDO
+- CONCLUIDA
+- CONCLUIDA_COM_ALERTAS
+- ERRO
+- CANCELADA
+
+7. INTEGRAÇÃO COM O WINDOWS TASK SCHEDULER
+
+O processo GreenPortal-Sincronismo FO legado deve deixar de trabalhar com regras fixas por empresa.
+
+O worker deverá:
+
+1. Consultar as empresas habilitadas.
+2. Consultar a fila de migração e sincronismo.
+3. Carregar a configuração específica da empresa.
+4. Validar as conexões de origem e destino.
+5. Executar a migração ou sincronismo solicitado.
+6. Registrar o progresso no banco novo.
+7. Registrar logs por empresa, tabela e registro.
+8. Atualizar o status da execução.
+9. Continuar processando as demais empresas quando uma empresa apresentar erro.
+10. Permitir reprocessamento controlado dos erros.
+
+O Task Scheduler deve continuar sendo responsável pelo acionamento automático do worker. A aplicação Green Portal deve ser responsável pela configuração, fila, acompanhamento e auditoria.
+
+8. VALIDAÇÕES ANTES DA MIGRAÇÃO
+
+O sistema não deve permitir iniciar uma migração sem executar as seguintes validações:
+
+- Testar conexão com o banco legado principal.
+- Testar conexão com o banco legado de segurança.
+- Testar conexão com o banco novo principal.
+- Testar conexão com o banco novo de segurança.
+- Verificar se os bancos de destino existem.
+- Verificar charset e collation.
+- Verificar se existe backup recente.
+- Verificar se já existe uma execução em andamento para a empresa.
+- Validar as tabelas configuradas.
+- Validar o mapeamento dos campos.
+- Executar uma simulação.
+- Apresentar a quantidade estimada de registros.
+- Solicitar confirmação do administrador.
+
+9. LOGS E AUDITORIA
+
+Os logs devem ser armazenados de forma consultável na Administração.
+
+Deve ser possível filtrar por:
+
+- Empresa.
+- Execução.
+- Tabela.
+- Tipo de operação.
+- Status.
+- Registro com erro.
+- Data e hora.
+
+O log deve informar claramente o valor de origem, o valor de destino e o motivo de eventual erro ou ignorância do registro, respeitando os dados sensíveis.
+
+10. ARQUITETURA RECOMENDADA
+
+Fluxo geral:
+
+Administração
+    ↓
+Configuração da empresa e dos bancos
+    ↓
+Validação e simulação
+    ↓
+Solicitação de migração ou sincronismo
+    ↓
+Fila de processamento
+    ↓
+GreenPortal-Sincronismo FO legado
+    ↓
+Processamento por empresa e tabela
+    ↓
+Atualização de status e logs
+    ↓
+Relatório final
+
+11. PADRÃO DE NOMENCLATURA
+
+A solução deve aceitar empresas seguindo o padrão:
+
+- Banco legado principal: green_<empresa>
+- Banco legado de segurança: green_<empresa>_seguranca
+- Banco novo principal: g<empresa>_dbp
+- Banco novo unico: g<empresa>_dbp, incluindo as tabelas de seguranca
+
+O nome real dos bancos deve permanecer configurável, pois algumas empresas podem possuir nomenclatura histórica diferente.
+
+12. RECOMENDAÇÃO DE SEGURANÇA
+
+A transação deve ser acessível somente ao perfil ADMINISTRADOR ou a usuários com permissão administrativa específica.
+
+A execução de uma migração deve exigir confirmação explícita e registrar:
+
+- Usuário.
+- Data e hora.
+- Empresa.
+- Tipo da operação.
+- Configuração utilizada.
+- Resultado.
+
+Senhas e credenciais dos bancos não devem ser exibidas no grid nem nos arquivos de exportação. Quando necessário, devem ser armazenadas de forma protegida e nunca gravadas nos logs.
+
+13. IMPLANTAÇÃO PARA GD AMERICANA
+
+A primeira implantação da nova gestão deverá cadastrar GD Americana com os bancos:
+
+- green_gd_americana
+- green_gd_americana_seguranca
+- ggdamericana_dbp
+- ggdamericana_dbp concentra dados funcionais e seguranca
+
+Depois deverão ser executadas as seguintes etapas:
+
+1. Validação das conexões.
+2. Levantamento das tabelas.
+3. Comparação entre estruturas legadas e novas.
+4. Definição do mapeamento.
+5. Simulação sem gravação.
+6. Migração inicial.
+7. Validação dos registros migrados.
+8. Ativação do sincronismo incremental.
+9. Monitoramento pelo Task Scheduler.
+10. Reprocessamento dos eventuais erros.
+
+14. CONCLUSÃO
+
+A melhor solução é transformar o atual processo específico de sincronismo em um serviço orientado por configuração.
+
+Dessa forma, Atlas, GD Americana e futuras empresas poderão utilizar o mesmo worker, a mesma fila, a mesma tela administrativa e o mesmo padrão de auditoria.
+
+O GreenPortal-Sincronismo FO legado continuará sendo o executor automático no Windows, enquanto o Green Portal passará a controlar as configurações, solicitações, status, logs e resultados das migrações.

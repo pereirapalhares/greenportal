@@ -1,0 +1,335 @@
+GREEN PORTAL - INVENTARIO DA MIGRACAO GOODYEAR AMERICANA - 267
+
+Data: 2026-10-14
+Empresa: Goodyear Americana
+Codigo: GD_AM
+
+Mapeamento
+----------
+Legado principal: green_gd_americana
+Legado seguranca: green_gd_americana_seguranca
+Novo principal: ggdamericana_dbp
+Novo seguranca: ggdamericana_dbp (mesmo banco operacional)
+
+Resultado da validacao estrutural
+---------------------------------
+O banco ggdamericana_dbp ainda nao existia no momento do inventario.
+Nao deve existir um banco novo separado de seguranca; a seguranca integra
+ggdamericana_dbp.
+
+Banco legado principal:
+- 288 tabelas base.
+- 143 tabelas possuem nome correspondente no gmodelo_dbp.
+- 145 tabelas sao especificas do legado e exigem mapeamento funcional.
+
+Banco legado de seguranca:
+- 20 tabelas base.
+- 3 tabelas possuem nome correspondente no gmodelo_dbp.
+- 17 tabelas sao especificas do legado.
+- Foram identificados 56 usuarios e 40 grupos na origem.
+
+Dados relevantes identificados no legado principal:
+- areas: 40
+- atividades: 418
+- aspectos: 324
+- impactos: 24
+- infraestrutura: 3
+- laia: 1.454
+- legislacaoxempresa: 3.039
+- legislacaoxatividade: 1.312
+- legislacaoxlicencas: 35
+- legislacaoxperigo: 4.874
+- legislacaoxpoder: 3.041
+
+Tabelas que nao podem ser copiadas automaticamente apenas pelo nome
+--------------------------------------------------------------------
+act_*, auditoria_*, avaliacao_*, condicionantes, documentos_indexados,
+ged_*, fornecedor*, historico_*, licenci*, levantamentoxrevisoes e outras
+tabelas exclusivas do legado. Elas dependem de chaves, views, procedimentos,
+GED, usuarios e regras de negocio que foram alteradas no novo modelo.
+
+Decisao tecnica
+---------------
+Nao foi criada uma base nova nem realizada carga parcial. A etapa atual fica
+restrita ao inventario para evitar um tenant inconsistente. A migracao deve
+ser executada em duas camadas:
+
+1. Provisionar a estrutura oficial do gmodelo_dbp, sem dados de outra empresa.
+2. Migrar cada dominio funcional com mapeamento, conversao de charset,
+   preservacao de chaves, validacao de orfaos e auditoria.
+
+Proxima execucao controlada
+---------------------------
+1. Criar backup logico dos dois bancos legados.
+2. Criar somente ggdamericana_dbp inativo, com a estrutura completa, incluindo
+   seguranca.
+3. Clonar somente a estrutura oficial do tenant Modelo.
+4. Migrar primeiro seguranca: usuarios, grupos, perfis e permissoes.
+5. Migrar administracao e catalogos usados pelo Modulo Legal.
+6. Migrar legislacao, requisitos, licencas e relacionamentos.
+7. Migrar GED e os dominios restantes com scripts especificos.
+8. Validar contagens, chaves, orfaos, charset e views.
+9. Registrar cada dominio em registros_migracao.
+10. Ativar o tenant somente depois da homologacao.
+
+Execucao da seguranca
+---------------------
+Backup criado em:
+runtime/backups/20261014_goodyear_pre_migracao_267/
+
+O banco ggdamericana_dbp foi provisionado com a estrutura do gmodelo_dbp e
+concentra dados funcionais e seguranca. Nao deve ser criado ou usado um banco
+separado com sufixo _seguranca_dbp.
+
+A carga inicial foi executada no banco operacional ggdamericana_dbp, que e o
+tenant utilizado pela aplicacao. O banco separado de seguranca nao faz parte
+da arquitetura do GreenPortal e nao deve ser consultado pelo login ou pelos
+modulos.
+
+Resultado validado:
+- grupos: 40
+- usuarios: 56
+- perfis: 8
+- menus: 92
+- perfil_menus: 46
+- permissoes: 696
+- usuarios superiores orfaos: 0
+- auditoria: GREEN_GOODYEAR_SEGURANCA_267 / CONCLUIDA
+
+Conflito tratado:
+O legado possuia dois registros com USERID paulo. O codigo 32 permaneceu como
+paulo e o codigo 82 foi convertido para paulo_82, mantendo os dois registros.
+
+Regra de perfil aplicada:
+ADMINISTRADOR -> ADMINISTRADOR;
+ADM DA EMPRESA -> ADM_DA_EMPRESA;
+GESTORES -> GESTOR;
+VISITANTE -> VISITANTE_DOCUMENTOS;
+demais usuarios -> EMITENTE.
+
+As senhas foram preservadas no formato legado para permitir o primeiro acesso,
+com senha_usa_hash=0. A conversao para hash deve ser realizada pelo fluxo de
+alteracao de senha do usuario, conforme a politica do tenant.
+
+O cadastro central da Goodyear foi mantido como INATIVA e o sincronismo
+automatico permanece desabilitado ate a homologacao do Modulo Legal.
+
+Homologacao controlada do login
+-------------------------------
+O script scripts/homologar-login-goodyear-267.php habilitou temporariamente
+a empresa, validou o usuario admin contra a senha legada, carregou a sessao
+com UsuarioSessao e restaurou o status INATIVA no bloco finally.
+
+Resultado:
+- empresa localizada: OK
+- usuario admin ativo: OK
+- senha compativel: OK
+- perfil ADMINISTRADOR: OK
+- sessao atualizada: OK
+- permissoes de visualizacao do administrador: 96
+- permissoes carregadas na sessao: 77 menus distintos
+- status final da empresa: INATIVA
+
+Nenhum dado funcional do Modulo Legal foi alterado nesta homologacao.
+
+Migracao controlada dos catalogos legais - 268
+-----------------------------------------------
+Foi executado scripts/aplicar-migracao-268-goodyear-legal-catalogos.php.
+O escopo incluiu unidades, areas, atividades, aspectos, impactos, destinos,
+perigos, riscos e relacionamentos com a legislacao compartilhada.
+
+Persistidos no tenant:
+- unidades: 4
+- areas: 40
+- atividades: 418
+- aspectos: 324
+- impactos: 24
+- destinos: 30
+- perigos: 88
+- riscos: 66
+- relacionamentos de aspecto: 8.909
+- relacionamentos de atividade: 1.255
+- relacionamentos de impacto: 177
+- relacionamentos de perigo: 4.804
+- relacionamentos de risco: 2.068
+- relacionamentos de poder: 2.997
+- situacoes de requisitos: 3.321
+- relacionamentos empresa/legislacao: 2.997
+
+A validacao encontrou zero orfaos no destino para os relacionamentos
+carregados. Foram ignorados 244 registros orfaos do legado, principalmente
+referencias a leis que nao existem em glegislacao_dbp ou a unidades/cadastros
+ausentes. Esses registros permanecem preservados no backup original.
+
+A tabela legada legislacaoxunidade nao foi criada no tenant porque nao existe
+na estrutura oficial do gmodelo_dbp. O relacionamento de unidade utilizado
+pelas telas homologadas foi preservado nas tabelas correspondentes que existem
+no modelo novo.
+
+Auditoria: GREEN_GOODYEAR_LEGAL_CATALOGOS_268 / CONCLUIDA.
+O tenant continua INATIVO e o sincronismo permanece desabilitado.
+
+Migracao controlada de licencas e relacionamentos - 269
+-------------------------------------------------------
+Foi executado scripts/aplicar-migracao-269-goodyear-licencas.php para migrar
+li_licencas e os relacionamentos legislacaoxlicencas do legado
+green_gd_americana para ggdamericana_dbp.
+
+Resultado persistido:
+- licencas: 199
+- relacionamentos validos com legislacao: 27
+- relacionamentos orfaos ignorados: 8
+- quantidade auditada: 226
+- auditoria: GREEN_GOODYEAR_LICENCAS_269 / CONCLUIDA
+
+As referencias de unidade, usuario e grupos foram validadas contra o destino.
+Referencias invalidas ou iguais a zero foram convertidas para NULL, sem deixar
+referencias invalidas no tenant. A validacao final confirmou:
+- orfaos de legislacao: 0
+- orfaos de licenca: 0
+- orfaos de unidade nos relacionamentos: 0
+- usuarios invalidos: 0
+- grupos invalidos: 0
+
+Os registros de tipos documentais, arquivos GED e evidencias nao foram
+migrados nesta etapa. Os campos novos de classificacao documental permanecem
+NULL e serao tratados na etapa especifica de GED/tipos documentais.
+
+O cadastro central da Goodyear foi mantido como INATIVA, com
+sincronismo_ativo=0 e status_migracao=LEGAL_LICENCAS_CONCLUIDA.
+
+Vinculacao do GED legado das licencas - 270
+-------------------------------------------
+Para a Goodyear Americana, o identificador fisico do GED e
+green_gd_americana. O caminho oficial dos arquivos e:
+
+E:\projetoGreen\GED\green_gd_americana\licencas\<CODLICENCA>\<arquivo>.<extensao>
+
+Os arquivos ja existentes nao foram copiados nem movidos. A aplicacao usa o
+GedStorageService para montar o caminho, listar os arquivos e resolver o link
+de visualizacao/download com validacao de nome e pasta.
+
+Validacao executada:
+- licencas avaliadas: 199
+- licencas com arquivos: 151
+- arquivos localizados: 796
+- licencas sem pasta GED: 37
+- auditoria: GREEN_GOODYEAR_GED_270 / CONCLUIDA
+
+As 37 licencas sem pasta permanecem sem evidencia, podendo ser identificadas
+pelo filtro de requisitos sem evidencia quando houver requisito relacionado.
+O caminho raiz foi configurado explicitamente em GGED_LEGACY_ROOT no arquivo
+.env. O tenant continua INATIVO, o sincronismo permanece desabilitado e o
+status_migracao central foi atualizado para LEGAL_GED_CONCLUIDA.
+
+Migracao controlada de controles e evidencias - 271
+---------------------------------------------------
+Foi executada a migracao controlada do catalogo `documentos` do legado para
+o tenant novo. O legado da Goodyear possui apenas um documento cadastrado.
+
+Resultado:
+- documentos lidos: 1
+- documentos persistidos: 1
+- relacionamentos documentosxaspectos: 0
+- relacionamentos documentosxatividades: 0
+- relacionamentos documentosximpactos: 0
+- relacionamentos documentosxpalavraschave: 0
+- relacionamentos documentosxperigos: 0
+- relacionamentos documentosxriscos: 0
+- relacionamentos documentosxunidades: 0
+- relacionamentos legislacaoxdocumentos: 0
+- registros GED estruturados no legado: 0
+- responsabilidades de controles no legado: 0
+- auditoria: GREEN_GOODYEAR_CONTROLES_271 / CONCLUIDA
+
+O documento foi comparado campo a campo no destino, sem divergencias. Tambem
+foi validado que nao existem vinculos de controle orfaos. Como nao existem
+relacionamentos nem evidencias GED estruturadas para este tenant, nao houve
+arquivos para mover ou vinculos de requisitos/unidades/responsaveis para
+recriar nesta etapa. O acesso continua seguindo o caminho legado configurado.
+
+O status central foi atualizado para LEGAL_CONTROLES_CONCLUIDA, mantendo a
+empresa INATIVA e o sincronismo desabilitado.
+
+Teste operacional e visual da Fase 271
+--------------------------------------
+Validacao nao visual: concluida com sucesso. O documento foi comparado campo
+a campo, a auditoria foi localizada e nao existem vinculos de controle orfaos.
+
+No teste visual inicial pelo Firefox/WebDriver, a autenticacao foi recusada
+porque a automacao enviou a credencial de forma incorreta. O diagnostico
+posterior confirmou que o login usa o banco principal ggdamericana_dbp, onde o
+usuario admin esta ativo, com perfil ADMINISTRADOR e senha compativel com o
+legado. Nao existe banco novo separado de seguranca; ele nao e a fonte usada
+pelo login atual.
+
+O teste corrigido pelo Firefox/WebDriver foi concluido com sucesso:
+- empresa GD_AM localizada: OK
+- login do admin: OK
+- abertura de principal/modulolegal_controle.php: OK
+- grid de controles exibido com o documento PGR: OK
+- filtros, botoes e coluna Arquivos visiveis: OK
+- erro de permissao ou acesso negado na tela: nao identificado
+
+A empresa foi ativada depois da homologacao. O sincronismo automatico continua
+desabilitado (sincronismo_ativo=0) enquanto as demais fases da migracao nao
+forem concluidas.
+
+Correção arquitetural: banco único por empresa - 272
+------------------------------------------------------
+Foi formalizada a regra de que cada empresa possui um unico banco operacional
+novo. Para a Goodyear Americana, esse banco e ggdamericana_dbp e nele devem
+permanecer juntos os dados funcionais e de seguranca: usuarios, grupos,
+perfis, menus, permissoes, Modulo Legal, GED e demais modulos.
+
+O cadastro central foi corrigido para:
+- banco_novo: ggdamericana_dbp
+- banco_novo_seguranca: ggdamericana_dbp
+- auditoria: GREEN_PORTAL_BANCO_UNICO_272 / CONCLUIDA
+
+A estrutura de ggdamericana_dbp foi comparada com gmodelo_dbp: 313 tabelas,
+nenhuma tabela ausente e nenhuma diferenca estrutural relevante. gatlas_dbp
+possui extensoes especificas da Atlas; portanto ele e referencia complementar,
+mas a base oficial de provisionamento da Goodyear permanece gmodelo_dbp.
+
+O banco com sufixo _seguranca_dbp nao faz parte da arquitetura futura, nao e
+consultado pelo login e nao deve ser criado nas proximas migracoes. O banco
+ggdamericana_seguranca_dbp foi verificado diretamente no information_schema
+em 14/10/2026 e nao existe no servidor. Portanto nao havia dados para gerar
+dump nem banco separado para executar DROP. A remocao fisica do artefato ja
+estava concluida; a evidencia e o resultado constam em
+docs/homologacao_final_migracao_goodyear_274.txt.
+
+Migracao dos demais dominios do Modulo Legal - 273
+--------------------------------------------------
+Foram migrados para o banco unico ggdamericana_dbp:
+- LAIA: 1.454 registros
+- LPRO: 2.179 registros
+- infraestrutura: 3 registros, convertidos para ml_infraestrutura
+- revisao LAIS: 1 registro
+
+Treinamentos, monitoramentos, controles de calibracao e responsabilidades nao
+possuiam registros no legado da Goodyear. Tambem nao foram encontrados
+relacionamentos de LAIA/LPRO ou arquivos GED nas pastas infraestrutura,
+treinamentos, monitoramento, laia ou lpro. Nenhum arquivo foi movido.
+
+As referencias para areas, atividades, aspectos, destinos, impactos, perigos,
+riscos e unidades foram conferidas contra os catalogos migrados. Uma
+referencia de destino inexistente foi normalizada para NULL. A validacao final
+confirmou zero referencias orfas e zero permissoes associadas a perfil
+inexistente.
+
+Resultado da auditoria: GREEN_GOODYEAR_DOMINIOS_LEGAIS_273 / CONCLUIDA.
+Quantidade auditada: 3.637 registros.
+
+Teste visual e operacional no Firefox
+-------------------------------------
+Foram abertas com o usuario admin as telas de Infraestrutura, Treinamentos,
+LAIA, LAIS, LPRO e Monitoramento. As telas carregaram no tenant GD_AM, com
+grids, filtros, paginacao, botoes e dados migrados visiveis, sem erro PHP,
+SQL ou permissao. O Firefox exibiu, entre outros, 1/59 paginas de LAIA e 1/88
+paginas de LPRO.
+
+O status central foi atualizado para LEGAL_DOMINIOS_CONCLUIDA. A empresa
+permanece ATIVA apos a homologacao do login e das telas, mas o sincronismo
+automatico continua desabilitado (sincronismo_ativo=0).

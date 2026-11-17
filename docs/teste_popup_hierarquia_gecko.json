@@ -1,0 +1,55 @@
+{
+  "navegador": "Firefox via GeckoDriver",
+  "empresa": "Atlas",
+  "fluxo": "Agenda > Evento > Agenda",
+  "checks": [
+    {
+      "name": "Login Atlas",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Agenda carregada",
+      "ok": true,
+      "detail": "{\"body\":\"Agenda\\nEventos, compromissos e pendências do usuário.\\n15 item(ns)\\n1/1\\nData\\tTipo\\tAção\\tDescrição\\tStatus\\n22/10/2026 00:00\\tEvento\\t\\nMedição e Monitoramento: Monitoramento das providências da Agência Ambiental para inspeção veicular\\tResponsabilidade de Medição e Monitoramento: Monitoramento das providências da Agência Ambiental para inspeção veicular\\tAtivo\\n22/10/2026 00:00\\tMedição e monitoramento\\t\\nMonitoramento das providências da Agência Ambiental para inspeção veicular\\tPrazo: 2026-10-22 00:00:00\\tPen\",\"links\":15,\"rows\":15,\"title\":\"Agenda\",\"url\":\"http://187.191.99.180/greenportal/principal/eventos.php?modo=agenda\"}"
+    },
+    {
+      "name": "Agenda possui links de abertura",
+      "ok": true,
+      "detail": "15"
+    },
+    {
+      "name": "Popup pai de evento aberto",
+      "ok": true,
+      "detail": "{\"count\":1,\"frame\":true,\"h\":611,\"w\":1321,\"z\":1050}"
+    },
+    {
+      "name": "Agenda aberta dentro do popup de evento",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Dois popups visíveis",
+      "ok": true,
+      "detail": "[{\"child\":false,\"h\":611,\"level\":\"0\",\"w\":1321,\"z\":1050},{\"child\":true,\"h\":550,\"level\":\"1\",\"w\":1189,\"z\":1070}]"
+    },
+    {
+      "name": "Popup filho acima do pai",
+      "ok": true,
+      "detail": "[{\"child\":false,\"h\":611,\"level\":\"0\",\"w\":1321,\"z\":1050},{\"child\":true,\"h\":550,\"level\":\"1\",\"w\":1189,\"z\":1070}]"
+    },
+    {
+      "name": "Popup filho menor que o pai",
+      "ok": true,
+      "detail": "[{\"child\":false,\"h\":611,\"level\":\"0\",\"w\":1321,\"z\":1050},{\"child\":true,\"h\":550,\"level\":\"1\",\"w\":1189,\"z\":1070}]"
+    },
+    {
+      "name": "Backdrops em ordem crescente",
+      "ok": true,
+      "detail": "[1040,1060]"
+    }
+  ],
+  "status": "APROVADO",
+  "evidence": "docs/evidencias_popups/agenda-evento-agenda-firefox.png",
+  "finishedAt": "2026-10-14T13:50:37.265Z"
+}

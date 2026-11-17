@@ -1,0 +1,38 @@
+Modulo Legal - Correlacionamento Ocupacional
+
+Origem
+- E:/wamp/www/cadastros/legislacaoxocupacional_c.php.
+- E:/wamp/www/configuracoes/legislacaoxocupacional.php.
+
+Implementacao oficial
+- Existe somente um item de menu: Modulo Legal > Correlacionamento Ocupacional.
+- Menu: CORRELACIONAMENTO_OCUPACIONAL.
+- Transacao principal: modulolegal_correlacionamentoocupacional.php.
+- Banco: gmodelo_dbp.
+- View principal: vw_modulolegal_correlacionamento_ocupacional_grid.
+- Chaves de contexto: CODLEGISLACAO e CODUNIDADE.
+
+Os relacionamentos nao sao itens de menu. Eles sao acessados por botoes
+contextuais na barra da transacao principal:
+
+- Perigos: legislacaoxperigo.
+- Atividades: legislacaoxatividade.
+- Riscos: legislacaoxrisco.
+- Licencas: legislacaoxlicencas.
+- Documentos: legislacaoxdocumentos.
+
+As tabelas legadas de atividades e riscos foram migradas de green_modelo para
+gmodelo_dbp pelo script database/076_modulo_legal_correlacionamento_ocupacional.sql.
+As telas contextuais sao somente leitura, respeitam a legislacao e a unidade
+selecionadas, e podem exportar os registros filtrados em segundo plano.
+
+A transacao principal segue o componente ManutencaoLegalCadastroGrid, com
+autenticacao, permissoes, paginação, busca, filtros, colunas persistentes,
+exportacao Excel e abertura do PDF por visualizadopdf.php/PDF.js local.
+
+O grid principal preserva a ordem, os filtros e as larguras do legado; os
+identificadores tecnicos CODLEGISLACAO e CODUNIDADE permanecem ocultos.
+
+O script 076 tambem registra o menu, as permissoes, a ajuda da transacao, as
+views contextuais e a migracao em registros_migracao. Nenhum submenu deve ser
+criado para os cinco relacionamentos.

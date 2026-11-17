@@ -1,0 +1,196 @@
+GREEN PORTAL - ANALISE DE PENDENCIAS DO MODULO LEGAL
+====================================================
+
+Data da analise: 20/09/2026
+Escopo: Modulo Legal e suas transacoes
+Fora do escopo: planilha Controle Atividades Tomas - Respondido - Revisao E.xls
+
+CONCLUSAO GERAL
+---------------
+
+O Modulo Legal possui uma base estrutural avancada. A maior parte das
+transacoes ja possui tabelas, views, procedures, migracoes e telas. As
+principais pendencias estao concentradas em homologacao, integracao funcional,
+responsabilidades e algumas decisoes de escopo.
+
+1. HOMOLOGACAO COMPLETA DO MODULO LEGAL
+----------------------------------------
+
+Executar testes visuais e funcionais integrados para:
+
+- Requisitos Legais;
+- Situacao;
+- Historico de Situacao;
+- Licencas;
+- Treinamentos;
+- InfraEstrutura;
+- Controle;
+- LAIA;
+- LAIS;
+- LPRO;
+- todos os popups contextuais.
+
+Validar especialmente:
+
+- isolamento por CODLEGISLACAO e CODUNIDADE;
+- filtros server-side;
+- paginacao e contagem;
+- permissoes combinadas;
+- inclusao, edicao e exclusao logica;
+- exportacao;
+- idiomas PT, EN e ES;
+- ausencia de mistura de registros entre requisitos diferentes.
+
+2. REQUISITOS LEGAIS E SITUACAO
+--------------------------------
+
+Pendencias:
+
+- concluir o teste visual dos botoes contextuais;
+- validar o filtro de responsaveis;
+- validar o filtro de leis revogadas;
+- validar a alteracao do nivel de controle;
+- testar o popup de alteracoes apos a correcao da view;
+- testar o historico apos alteracao e exclusao de situacoes;
+- confirmar a preservacao do registro anterior em JSON;
+- validar os textos completos do campo PADRAO;
+- confirmar que o popup de Situacao nao duplica ou mistura responsaveis.
+
+Referencias:
+
+- modulo_legal_requisitos_legais_diretrizes.txt;
+- historico_situacao_requisitos_legais_20260825.md;
+- correcao_popup_alteracoes_requisitos_legais_20260822.md.
+
+3. INTEGRACAO DOS ITENS DE GESTAO COM REQUISITOS LEGAIS
+-------------------------------------------------------
+
+As estruturas existem, mas precisam de homologacao integrada:
+
+- Requisito Legal x Licencas;
+- Requisito Legal x Controles;
+- Requisito Legal x Medicao e Monitoramento;
+- Requisito Legal x Treinamentos;
+- Requisito Legal x InfraEstrutura;
+- Requisito Legal x Homologacao de Fornecedores.
+
+Confirmar funcionalmente a regra:
+
+- Controle: acoes internas da empresa;
+- Influencia: acoes relacionadas a fornecedores;
+- Conhecimento: sem abertura do relacionamento com fornecedores.
+
+4. TREINAMENTOS E INFRAESTRUTURA
+--------------------------------
+
+Pendencias:
+
+- executar testes visuais e nao visuais dos dois CRUDs;
+- testar os relacionamentos com palavras-chave e atributos;
+- validar o gerenciamento de arquivos;
+- homologar as responsabilidades;
+- confirmar as associacoes com requisitos legais;
+- homologar Minhas Licencas, Meus Treinamentos e Minhas Infraestruturas
+  conforme as regras de escopo de cada transacao.
+
+5. CONTROLE
+-----------
+
+O CRUD de documentos e os relacionamentos ja foram estruturados. Permanecem:
+
+- homologacao dos nove relacionamentos;
+- validacao das associacoes sociais;
+- validacao das responsabilidades por usuario e grupo;
+- teste das permissoes de ADMINISTRADOR, ADM_DA_EMPRESA e GESTOR;
+- confirmacao da regra funcional definitiva do modulo Controle;
+- integracao com Meus Controles e com as pendencias do usuario.
+
+6. RESPONSABILIDADES
+--------------------
+
+O modelo foi homologado ate Treinamentos, conforme PER-001 a PER-009.
+Ainda e necessario:
+
+- concluir a homologacao de InfraEstrutura, prevista como PER-010;
+- homologar definitivamente Controle;
+- implementar ou validar a delegacao de responsabilidades;
+- tratar responsabilidades de usuarios inativos;
+- apresentar pendencias de responsabilidades ao administrador;
+- avaliar a interface Responsavel x Categoria;
+- garantir a substituicao ou delegacao de responsaveis inativos.
+
+7. LICENCAS
+-----------
+
+Pendencias especificas:
+
+- resolver a ausencia da tabela nc_listadistribuicao em gmodelo_dbp;
+- decidir se a lista de distribuicao sera migrada ou permanecera provisoria;
+- estender e validar Visualizacao Total para os demais modulos, quando
+  houver regra de escopo definida;
+- homologar Licencas, Minhas Licencas, arquivos, condicionantes e palavras-
+  chave;
+- validar responsabilidades, datas calculadas e exportacao com filtros.
+
+8. LPRO, LAIS E LAIA
+--------------------
+
+Pendencias:
+
+- executar testes visuais de todas as colunas e comboboxes;
+- validar as chaves compostas contextuais;
+- testar filtros OR de aspecto/impacto, perigo/risco e unidade;
+- validar a visualizacao de arquivos;
+- confirmar que todos os popups preservam o contexto correto;
+- verificar a equivalencia final com os grids legados.
+
+9. POTENCIAIS DE IA
+-------------------
+
+A fila e o servico de IA existem, mas ainda faltam:
+
+- testes visuais e nao visuais em PT, EN e ES;
+- popup de detalhes do potencial;
+- conversao de potencial aprovado para o modulo definitivo;
+- criacao do relacionamento com o requisito legal;
+- atribuicao de responsavel apos aprovacao;
+- auditoria completa de aprovacao e rejeicao.
+
+A IA deve continuar apenas sugerindo potenciais ate que o usuario aprove cada
+resultado. A conversao para registros definitivos deve ocorrer por procedure,
+com auditoria.
+
+10. ORDEM RECOMENDADA DE TRABALHO
+---------------------------------
+
+1. Homologar Requisitos Legais, Situacao e Historico.
+2. Homologar todos os popups contextuais.
+3. Finalizar Treinamentos, InfraEstrutura e Controle.
+4. Concluir responsabilidades e transacoes Minhas/Meus.
+5. Validar LAIA, LAIS e LPRO.
+6. Completar o fluxo de aprovacao dos potenciais de IA.
+7. Integrar os resultados ao dashboard, pendencias e auditoria.
+
+PRIORIDADE IMEDIATA
+-------------------
+
+A pendencia mais imediata e a homologacao integrada do fluxo:
+
+Requisitos Legais -> Situacao -> relacionamentos -> responsaveis -> historico.
+
+DOCUMENTOS-BASE CONSULTADOS
+---------------------------
+
+- modulo_legal_requisitos_legais_diretrizes.txt;
+- modulo_legal_requisitos_popups_diretrizes.txt;
+- modulo_legal_lpro_lais_legado_diretrizes.md;
+- modulo_legal_lpro_correlacionamentos_diretrizes.md;
+- modulo_legal_lais_correlacionamentos_diretrizes.md;
+- modulo_legal_laia_legado_diretrizes.txt;
+- modulo_legal_treinamentos_infraestrutura_diretrizes.md;
+- requisitos_legais_treinamentos_infraestrutura_diretrizes.md;
+- servico_ia_potenciais_diretrizes.md;
+- status_implementacao_responsabilidades_20260820.md;
+- matriz_geral_permissoes_responsabilidades_20260822.md;
+- controle_documentos_crud_20260824.md;
+- historico_situacao_requisitos_legais_20260825.md.

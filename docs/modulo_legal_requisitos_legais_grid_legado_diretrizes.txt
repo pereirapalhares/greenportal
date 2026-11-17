@@ -1,0 +1,43 @@
+Diretriz complementar - Modulo Legal / Requisitos Legais
+Atualizacao: 2026-08-19
+
+Referencia legada
+- Cadastro: E:/wamp/www/cadastros/requisitos_legais_porlei_c.php
+- Configuracao: E:/wamp/www/configuracoes/requisitoslegaisxempresa.php
+
+O grid deve preservar a correspondencia posicional entre:
+- $buscas: #select_filter gera combo; #text_filter gera texto; posicao vazia
+  nao gera filtro.
+- $labels: titulo da coluna em portugues.
+- $campos: campo retornado pela consulta.
+- $tamanho: largura inicial em pixels.
+- $sort: regra de ordenacao; str indica texto e sort_numero indica numero.
+- $types: tipo de edicao; ro e somente leitura e txt e texto editavel.
+
+Ordem visivel oficial
+Unidade..., Nivel de Controle, Atendido?, Codigo, Ambito, Tipo, Numero,
+Ano, Assuntos agrupados, Artigos, Meio Ambiente, Seguranca, Qualidade e
+Social.
+
+Campos tecnicos CODLEGISLACAO, CODLEGISLACAXEMPRESA, CODUNIDADE, CODTIPO,
+CODAMBITO e CODEMPRESA ficam ocultos e sem filtro. A coluna PADRAO e mantida
+no grid por regra funcional atual, posicionada imediatamente depois de
+UNIDADE.
+
+Filtros
+- Combo: Unidade, Nivel de Controle, Atendido?, Ambito, Meio Ambiente,
+  Seguranca, Qualidade e Social.
+- Texto: Codigo, Tipo, Numero, Ano, Assuntos agrupados e Artigos.
+- As opcoes dos combos sao carregadas pela view oficial e ordenadas
+  alfabeticamente.
+
+Edicao
+- A coluna Nivel de Controle permanece editavel conforme a regra legada de
+  confirmacao da alteracao.
+- As demais colunas do grid principal sao somente leitura.
+- As chaves tecnicas nunca podem ser editadas pelo usuario.
+
+Implementacao
+- Arquivo principal: principal/modulolegal_requisitoslegais.php.
+- Classe: classes/ModuloLegalRequisitosGrid.php.
+- JavaScript: assets/js/modulo-legal-requisitos.js.

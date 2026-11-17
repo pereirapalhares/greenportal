@@ -1,0 +1,130 @@
+ROTEIRO DE HOMOLOGAÇÃO VISUAL — PER-008
+Responsabilidades em Gestão de Funcionários
+Data: 22/08/2026
+
+OBJETIVO
+Homologar a consulta e a manutenção de responsabilidades diretas para um funcionário selecionado em Homologação de Fornecedores > Gestão de Funcionários, validando contexto, permissões, inclusão, edição, exclusão lógica e mensagens.
+
+ESCOPO E REGRA DE LEGADO
+O escopo desta etapa é a entidade fo_funcionarios no tenant gmodelo_dbp.
+Não migrar nem interpretar fo_funcionarioxtiposxtreinamentos.codusuario como responsabilidade do funcionário. Esse vínculo pertence ao módulo TREINAMENTO e permanece pendente de revisão semântica.
+Órfãos e a diferença de cinco registros entre o legado e o banco novo permanecem fora deste teste.
+
+AMBIENTE
+URL: http://187.191.99.180/greenportal/
+Empresa: MODELO
+Banco: gmodelo_dbp
+Menu: Homologação de Fornecedores > Gestão de Funcionários
+Transação: HOMOLOGACAO_FORNECEDOR_FUNCIONARIO
+Código esperado da transação: confirmar no cadastro de permissões caso tenha sido alterado.
+
+USUÁRIOS
+Preparação e limpeza: admin / <senha de teste via variável de ambiente>
+Execução autorizada: ueditor / <senha de teste via variável de ambiente>
+
+
+DADOS DE TESTE
+Selecionar um funcionário válido exibido na grade. Sugestão inicial: CODFUNCIONARIO 6, se estiver disponível; caso contrário, usar o primeiro registro válido e anotar código e nome.
+Responsável de teste: selecionar o usuário ativo ueditor, se disponível.
+Grupo de teste: selecionar um grupo ativo conhecido, se disponível.
+Tipo de responsabilidade: usar um tipo ativo do módulo HOMOLOGACAO, preferencialmente “Responsável pelo fornecedor” ou “Responsável pela documentação”.
+
+PRÉ-CONDIÇÕES
+1. Acessar com admin e confirmar que HOMOLOGACAO_FORNECEDOR_FUNCIONARIO está ativa.
+2. Para o perfil GESTOR/usuário ueditor, configurar temporariamente Visualizar=1, Incluir=1, Editar=1 e Excluir=1.
+3. Manter Excel e PDF no estado anterior.
+4. Acessar novamente com ueditor pelo fluxo normal do menu, nunca iniciando diretamente pelo arquivo PHP.
+
+PER-008.1 — Acesso e botão contextual
+1. Abrir Homologação de Fornecedores > Gestão de Funcionários.
+2. Confirmar que a grade carrega com barra de rolagem vertical e horizontal quando necessário e cabeçalho sempre visível.
+3. Confirmar que o botão “Responsabilidades” aparece na barra de ações/linha contextual.
+4. Antes de selecionar uma linha, confirmar que o botão está desabilitado.
+5. Selecionar o funcionário de teste.
+6. Confirmar que o botão fica habilitado.
+7. Clicar em “Responsabilidades”.
+Resultado esperado: a consulta abre sem HTTP 400, sem “Funcionário inválido” e identifica o funcionário selecionado pelo código e nome.
+
+PER-008.2 — Consulta
+1. Confirmar o título “Responsabilidades do funcionário”.
+2. Confirmar o cabeçalho com o CODFUNCIONARIO e nome corretos.
+3. Se não houver vínculos, confirmar a mensagem “Não há responsabilidades cadastradas para este funcionário”.
+4. Confirmar que a tela não apresenta como responsabilidade do funcionário os vínculos de treinamento do legado.
+5. Clicar em “Manter”.
+Resultado esperado: a tela de manutenção abre com o mesmo funcionário e sem perda do contexto.
+
+PER-008.3 — Inclusão de responsabilidade por usuário
+1. Na manutenção, clicar em “Adicionar”.
+2. Selecionar um tipo ativo.
+3. Manter Destino como “Usuário”.
+4. Selecionar ueditor ou outro usuário ativo de teste.
+5. Informar validade inicial igual à data do teste e deixar a data final vazia.
+6. Marcar Principal somente se o cenário precisar validar essa indicação.
+7. Clicar em “Salvar”.
+Resultado esperado: mensagem de sucesso, registro visível na grade e situação ATIVA.
+
+PER-008.4 — Edição
+1. Alterar o responsável ou a prioridade do registro criado.
+2. Salvar.
+Resultado esperado: mensagem de sucesso e valores alterados exibidos após o recarregamento.
+
+PER-008.5 — Destino por grupo
+1. Adicionar uma segunda responsabilidade.
+2. Alterar Destino para “Grupo”.
+3. Confirmar que o campo Grupo aparece e o campo Usuário fica oculto.
+4. Selecionar um grupo ativo.
+5. Salvar.
+Resultado esperado: o registro é salvo com destino Grupo e o nome do grupo é exibido na consulta.
+
+PER-008.6 — Exclusão lógica
+1. Na manutenção, acionar a lixeira de um vínculo de teste.
+2. Salvar.
+3. Voltar à consulta.
+Resultado esperado: o vínculo não aparece entre as responsabilidades ativas. O registro deve permanecer no banco com ATIVO=0 e situação histórica, sem exclusão física.
+
+PER-008.7 — Permissões restritivas
+Executar cada cenário com admin ajustando apenas a permissão da transação e depois entrar novamente como ueditor.
+
+Cenário A — Visualizar=1, Incluir=0, Editar=0, Excluir=0:
+- consulta permitida;
+- botão Manter pode abrir a tela, mas Adicionar, campos existentes, lixeira e Salvar devem estar bloqueados/ocultos;
+- servidor deve rejeitar alteração não autorizada.
+
+Cenário B — Visualizar=0, Incluir=0, Editar=0, Excluir=0:
+- acesso à transação ou à consulta de responsabilidades deve ser bloqueado;
+- mensagem deve informar falta de permissão, sem SQL.
+
+Cenário C — Visualizar=1, Incluir=1, Editar=0, Excluir=0:
+- Adicionar disponível;
+- registros existentes e seus campos não editáveis;
+- nova inclusão permitida.
+
+Cenário D — Visualizar=1, Incluir=0, Editar=1, Excluir=0:
+- Adicionar oculto;
+- edição de registros existentes permitida.
+
+Cenário E — Visualizar=1, Incluir=0, Editar=0, Excluir=1:
+- exclusão lógica disponível;
+- inclusão e edição bloqueadas.
+
+PER-008.8 — Troca de funcionário e compatibilidade
+1. Voltar à grade.
+2. Selecionar um segundo funcionário válido.
+3. Clicar em “Responsabilidades”.
+4. Confirmar código, nome e listagem próprios do segundo funcionário.
+5. Testar o acesso direto, somente para compatibilidade, usando a URL completa com o prefixo da aplicação e CODFUNCIONARIO=<código>.
+Resultado esperado: o contexto não fica preso ao primeiro funcionário e o parâmetro direto continua funcionando.
+
+EVIDÊNCIAS
+Registrar capturas da grade, botão desabilitado/habilitado, consulta, manutenção, inclusão, edição, exclusão lógica e cada cenário de permissão.
+Para erros, registrar passo, mensagem, usuário, código do funcionário, URL e horário.
+
+LIMPEZA E RESTAURAÇÃO
+1. Excluir logicamente todos os vínculos criados para teste.
+2. Confirmar que nenhum vínculo legado foi alterado.
+3. Restaurar as permissões do GESTOR ao baseline anterior.
+4. Restaurar Excel e PDF ao estado anterior.
+5. Confirmar que o banco não recebeu exclusões físicas.
+
+CRITÉRIO DE APROVAÇÃO
+PER-008 será aprovado quando o contexto do funcionário, a consulta, a manutenção, inclusão, edição, exclusão lógica, mensagens e matriz de permissões estiverem corretos, sem misturar vínculos de outro funcionário ou vínculos de treinamento fora do escopo.

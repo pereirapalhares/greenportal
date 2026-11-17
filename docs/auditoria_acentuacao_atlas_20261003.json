@@ -1,0 +1,11 @@
+{
+    "schema": {
+        "charset_name": "utf8mb4",
+        "collation_name": "utf8mb4_0900_ai_ci"
+    },
+    "colunas_texto_auditadas": 67,
+    "valores_auditados_aproximados": 0,
+    "ocorrencias_suspeitas": 0,
+    "campos_suspeitos": [],
+    "criterio": "sequencias tipicas de mojibake (Ã/Â seguidos de caracteres de continuacao) e caractere de substituicao; acentos portugueses validos nao sao considerados"
+}

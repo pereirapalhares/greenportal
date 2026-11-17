@@ -1,0 +1,244 @@
+ROTEIRO DE HOMOLOGAÇÃO VISUAL — PER-006
+Responsabilidades de Medição e Monitoramento
+GreenPortal | Empresa Modelo | Banco gmodelo_dbp
+Data prevista: 21/08/2026
+
+===============================================================================
+1. OBJETIVO
+===============================================================================
+
+Validar a consulta e a manutenção de responsabilidades vinculadas a um
+registro de Medição e Monitoramento, usando o modelo lógico já homologado em
+Licenças e Requisitos Legais.
+
+O teste deve confirmar inclusão, edição, exclusão lógica, preservação do
+histórico, controle de permissões e mensagens coerentes.
+
+===============================================================================
+2. CONTAS UTILIZADAS
+===============================================================================
+
+Preparação e limpeza:
+
+- Usuário: admin
+- Perfil: ADMINISTRADOR
+Senha: <senha de teste via variável de ambiente>
+
+Execução funcional:
+
+- Usuário: ueditor
+- Perfil: GESTOR
+Senha: <senha de teste via variável de ambiente>
+
+Não registrar senhas reais neste relatório.
+
+===============================================================================
+3. PERMISSÃO UTILIZADA
+===============================================================================
+
+Nesta primeira implementação, Medição e Monitoramento é uma tela contextual
+do módulo Requisitos Legais. Portanto, a permissão a ser configurada é a da
+transação REQUISITOS_LEGAIS, código 306.
+
+Login como admin em Segurança > Permissões > Perfil GESTOR.
+
+Configurar temporariamente:
+
+- Incluir: 1
+- Visualizar: 1
+- Editar: 1
+- Excluir: 1
+
+Manter Exportar Excel e Gerar PDF sem alteração. Salvar a linha e confirmar a
+mensagem antes de mudar o filtro da transação.
+
+Ao final, restaurar exatamente os valores anteriores ao teste.
+
+===============================================================================
+4. DADOS DE TESTE
+===============================================================================
+
+1. Acessar Requisitos Legais > Medição e Monitoramento.
+2. Selecionar um registro existente no grid.
+3. Registrar o CODMONITORAMENTO escolhido.
+4. Preferir um registro sem responsabilidade ativa para facilitar a inclusão.
+5. Se o registro já possuir vínculos, anotar a quantidade ativa e histórica.
+
+O teste não deve alterar dados de outros monitoramentos.
+
+Dados da linha criada para o teste:
+
+- Finalidade: Monitoramento;
+- Destino: Usuário;
+- Responsável: Administrador Modelo;
+- Prioridade inicial: 5;
+- Principal: desmarcado;
+- Válido de: data do teste;
+- Válido até: vazio.
+
+Registrar o CODATRIBUICAO gerado após a inclusão.
+
+===============================================================================
+5. PREPARAÇÃO DA SESSÃO
+===============================================================================
+
+1. Encerrar sessões anteriores.
+2. Configurar as permissões com admin.
+3. Fazer logout do admin.
+4. Entrar como ueditor.
+5. Abrir o grid de Medição e Monitoramento.
+6. Selecionar uma linha do grid.
+7. Confirmar que o botão Responsabilidades fica habilitado somente após a
+   seleção da linha.
+
+Resultado esperado:
+
+- grid aberto sem erro;
+- botão Responsabilidades visível;
+- botão desabilitado sem linha selecionada;
+- botão habilitado com uma linha selecionada.
+
+===============================================================================
+6. PER-006-A — CONSULTA
+===============================================================================
+
+1. Com uma linha selecionada, clicar em Responsabilidades.
+2. Confirmar a abertura da consulta contextual.
+3. Conferir o CODMONITORAMENTO exibido no título.
+4. Conferir os dados de contexto, como parâmetros, data ou observação.
+5. Conferir as colunas Finalidade, Responsável, Destino, Origem, Situação e
+   Validade.
+
+Resultado esperado:
+
+- consulta referente ao monitoramento selecionado;
+- nenhum registro de outro monitoramento exibido;
+- vínculos ativos identificados como ATIVA;
+- históricos identificados como HISTORICA;
+- nenhuma mensagem SQL ou técnica.
+
+===============================================================================
+7. PER-006-B — INCLUSÃO
+===============================================================================
+
+1. Na consulta, clicar em Manter.
+2. Confirmar que a tela de manutenção corresponde ao mesmo
+   CODMONITORAMENTO.
+3. Clicar em Adicionar.
+4. Preencher a linha com os dados da seção 4.
+5. Clicar em Salvar.
+6. Registrar exatamente a mensagem exibida.
+7. Reabrir a consulta.
+
+Resultado esperado:
+
+- uma única responsabilidade criada;
+- mensagem única de sucesso;
+- vínculo novo listado como ATIVA;
+- nenhum aviso de permissão insuficiente;
+- nenhum erro SQL ou técnico;
+- nenhum vínculo de outro monitoramento alterado.
+
+===============================================================================
+8. PER-006-C — EDIÇÃO
+===============================================================================
+
+1. Abrir novamente Manter responsabilidades.
+2. Localizar o CODATRIBUICAO criado no item 7.
+3. Alterar a Prioridade de 5 para 9.
+4. Marcar Principal.
+5. Clicar em Salvar.
+6. Fechar e reabrir a manutenção.
+7. Conferir os valores persistidos.
+
+Resultado esperado:
+
+- mensagem única de sucesso;
+- prioridade 9 persistida;
+- Principal persistido como marcado;
+- nenhum novo vínculo criado;
+- nenhum outro vínculo alterado;
+- nenhum aviso contraditório.
+
+===============================================================================
+9. PER-006-D — EXCLUSÃO LÓGICA
+===============================================================================
+
+1. Localizar o vínculo criado no teste.
+2. Clicar na lixeira da linha.
+3. Confirmar o desaparecimento visual da lista ativa.
+4. Clicar em Salvar.
+5. Registrar exatamente a mensagem exibida.
+6. Reabrir a consulta.
+7. Conferir a lista de históricos.
+
+Resultado esperado:
+
+- mensagem única e coerente;
+- vínculo ausente da lista ATIVA;
+- vínculo presente como HISTORICA;
+- nenhum registro removido fisicamente;
+- demais vínculos inalterados.
+
+===============================================================================
+10. PER-006-E — PERMISSÕES RESTRITIVAS
+===============================================================================
+
+Executar a preparação abaixo com admin e repetir o acesso com ueditor:
+
+1. Visualizar=1, Incluir=0, Editar=0, Excluir=0.
+   Esperado: consulta disponível e manutenção bloqueada.
+2. Visualizar=1, Incluir=0, Editar=0, Excluir=1.
+   Esperado: manutenção aberta, campos bloqueados, Adicionar oculto e
+   lixeira habilitada.
+3. Visualizar=0, Incluir=0, Editar=0, Excluir=0.
+   Esperado: consulta e transação bloqueadas.
+
+Em cada cenário confirmar que a validação server-side permanece efetiva,
+mesmo que alguma alteração visual seja tentada pelo navegador.
+
+===============================================================================
+11. VALIDAÇÃO DAS MENSAGENS
+===============================================================================
+
+Não aceitar:
+
+- sucesso acompanhado de aviso de falta de permissão;
+- exposição de SQL, stack trace ou nome de tabela/procedure;
+- mensagem de sucesso quando nenhum dado foi alterado;
+- ausência de mensagem após operação concluída.
+
+Registrar as mensagens de consulta, inclusão, edição, exclusão e bloqueio.
+
+===============================================================================
+12. LIMPEZA
+===============================================================================
+
+1. Encerrar a sessão de ueditor.
+2. Entrar como admin.
+3. Confirmar que o vínculo de teste está HISTORICA.
+4. Não excluir fisicamente o vínculo histórico.
+5. Restaurar as permissões do perfil GESTOR ao baseline anterior.
+6. Confirmar que Exportar Excel e Gerar PDF permanecem inalterados.
+7. Fazer logout do admin.
+8. Entrar como ueditor e confirmar o bloqueio/acesso conforme o baseline.
+
+===============================================================================
+13. CRITÉRIOS DE ACEITE
+===============================================================================
+
+PER-006 será aprovado quando:
+
+- a consulta contextual abrir pelo monitoramento selecionado;
+- inclusão, edição e exclusão lógica funcionarem;
+- o histórico for preservado;
+- as permissões forem respeitadas visual e server-side;
+- as mensagens forem únicas e coerentes;
+- nenhum registro de outro monitoramento for alterado;
+- a limpeza e restauração das permissões forem concluídas.
+
+Resultado final: _______________________________________
+Responsável: __________________________________________
+Data/hora: ____________________________________________
+Evidências: ____________________________________________
+Pendências: ____________________________________________

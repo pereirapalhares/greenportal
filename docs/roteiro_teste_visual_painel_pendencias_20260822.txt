@@ -1,0 +1,330 @@
+ROTEIRO DE TESTE VISUAL — PAINEL DE PENDÊNCIAS
+Projeto: Green Portal
+Data: 22/08/2026
+
+1. OBJETIVO
+
+Validar visualmente, no navegador, o funcionamento do painel lateral de
+informações e da tela de Pendências por módulo.
+
+2. PRÉ-REQUISITOS
+
+- Navegador atualizado, preferencialmente Chrome ou Edge.
+- Ambiente de desenvolvimento disponível.
+- Usuário administrador para o teste completo.
+- Usuário com acesso parcial a módulos.
+- Usuário sem acesso ao módulo de Não Conformidades.
+- Tela do navegador com largura suficiente para exibir o menu, workspace e
+  painel lateral direito.
+
+3. ACESSO INICIAL
+
+Passos:
+
+1. Abrir o endereço do Green Portal.
+2. Efetuar login com o usuário administrador.
+3. Aguardar o carregamento completo do `main.php`.
+
+Resultado esperado:
+
+- O cabeçalho, menu lateral, workspace e painel direito devem aparecer.
+- O painel direito deve apresentar os ícones:
+  - Pendências;
+  - Aprovações;
+  - Próximos prazos;
+  - Ajuda;
+  - Pendências do dia.
+- Cada ícone deve possuir tooltip ao passar o mouse.
+- Não deve haver ícone quebrado, texto sobreposto ou erro no console.
+
+Evidência/foto: _________________________________________________
+Status: ( ) Aprovado  ( ) Reprovado
+
+4. TESTE DO ÍCONE PENDÊNCIAS
+
+Passos:
+
+1. Clicar no ícone Pendências no painel direito.
+2. Observar a nova aba criada no workspace.
+
+Resultado esperado:
+
+- Deve abrir uma aba chamada Pendências.
+- A aba deve exibir a tela `painel_pendencias.php`.
+- A tela não deve abrir diretamente a lista de Não Conformidades.
+- Deve aparecer um título de Pendências e uma descrição explicativa.
+- Os cards devem estar organizados em uma grade visual.
+- Os cards devem possuir ícone, título, quantidade e descrição.
+
+Evidência/foto: _________________________________________________
+Status: ( ) Aprovado  ( ) Reprovado
+
+5. TESTE VISUAL DOS CARDS
+
+Para cada card exibido:
+
+1. Confirmar se o título está legível.
+2. Confirmar se o número está visível.
+3. Confirmar se o ícone representa o módulo.
+4. Passar o mouse sobre o card.
+5. Confirmar se o card possui efeito visual de foco ou elevação.
+6. Confirmar se o cursor indica que o card é clicável.
+
+Resultado esperado:
+
+- Os cards não devem se sobrepor.
+- O texto não deve ser cortado indevidamente.
+- Os ícones devem utilizar Bootstrap Icons.
+- As cores devem permanecer consistentes com o padrão visual do projeto.
+- O layout deve funcionar em desktop e em telas menores.
+
+6. CARD DE NÃO CONFORMIDADES
+
+Passos:
+
+1. Localizar o card Não Conformidades.
+2. Conferir a quantidade apresentada.
+3. Clicar no card.
+
+Resultado esperado:
+
+- Deve abrir uma nova aba para Minhas Ocorrências.
+- A tela deve ser `naoconformidades_minhasocorrencias.php`.
+- O grid deve aparecer preenchido.
+- Para o usuário admin, a quantidade esperada é 212 registros na base atual.
+- A coluna Etapa não deve apresentar registros Finalizado.
+- As linhas devem estar relacionadas ao usuário autenticado.
+- O grid deve abrir sem mostrar a tela vazia.
+
+Evidência/foto do card: __________________________________________
+Evidência/foto do grid: __________________________________________
+Quantidade exibida: __________
+Status: ( ) Aprovado  ( ) Reprovado
+
+7. CARD DE SITUAÇÕES LEGAIS
+
+Passos:
+
+1. Voltar para a aba Pendências.
+2. Localizar o card Situações legais.
+3. Clicar no card.
+
+Resultado esperado:
+
+- Deve abrir o grid de situação de cumprimento da legislação.
+- O grid deve mostrar somente situações associadas ao usuário.
+- Situações atendidas não devem aparecer.
+- O grid deve carregar sem solicitar legislação ou unidade manualmente.
+
+Evidência/foto: _________________________________________________
+Status: ( ) Aprovado  ( ) Reprovado
+
+8. CARD DE LICENÇAS
+
+Passos:
+
+1. Voltar para a aba Pendências.
+2. Localizar o card Licenças.
+3. Clicar no card.
+
+Resultado esperado:
+
+- Deve abrir o grid `manutencaolegal_licencas.php`.
+- O grid deve mostrar licenças do usuário responsável.
+- Devem aparecer licenças vencidas ou próximas do vencimento.
+- Licenças fora do período de pendência não devem aparecer.
+- Para a base atual do admin, a referência é 21 registros.
+
+Evidência/foto: _________________________________________________
+Quantidade exibida: __________
+Status: ( ) Aprovado  ( ) Reprovado
+
+9. CARD DE HOMOLOGAÇÃO DE FORNECEDORES
+
+Passos:
+
+1. Voltar para a aba Pendências.
+2. Localizar o card Homologação de Fornecedores.
+3. Clicar no card.
+
+Resultado esperado:
+
+- Deve abrir `homologacaofornecedor_fornecedor.php`.
+- O grid deve mostrar fornecedores sob responsabilidade do usuário.
+- Devem aparecer fornecedores com avaliação próxima ou vencida.
+- Se não houver pendências, o card deve exibir zero ou não ser exibido,
+  conforme a regra visual configurada.
+
+Evidência/foto: _________________________________________________
+Quantidade exibida: __________
+Status: ( ) Aprovado  ( ) Reprovado
+
+10. TESTE DO ÍCONE APROVAÇÕES
+
+Passos:
+
+1. Clicar no ícone Aprovações do painel direito.
+2. Observar a aba aberta.
+
+Resultado esperado:
+
+- Deve abrir `painel_aprovacoes.php`.
+- O título da aba deve ser Aprovações.
+- O conteúdo deve apresentar as aprovações ou informar que não existem
+  aprovações pendentes.
+- O painel não deve mostrar aprovações de outros usuários.
+
+Evidência/foto: _________________________________________________
+Status: ( ) Aprovado  ( ) Reprovado
+
+11. TESTE DO ÍCONE PRÓXIMOS PRAZOS
+
+Passos:
+
+1. Clicar no ícone Próximos prazos.
+2. Observar a aba aberta.
+
+Resultado esperado:
+
+- Deve abrir `painel_prazos.php`.
+- A tela deve exibir prazos próximos do usuário ou informar que não existem.
+- O conteúdo não deve apresentar prazos de usuários sem relação.
+
+Evidência/foto: _________________________________________________
+Status: ( ) Aprovado  ( ) Reprovado
+
+12. TESTE DO ÍCONE AJUDA
+
+Passos:
+
+1. Clicar no ícone Ajuda.
+2. Observar a aba aberta.
+
+Resultado esperado:
+
+- Deve abrir `painel_ajuda.php`.
+- O conteúdo deve ser exibido sem erro.
+- O ícone e o título da aba devem corresponder à função Ajuda.
+
+Evidência/foto: _________________________________________________
+Status: ( ) Aprovado  ( ) Reprovado
+
+13. TESTE DE PENDÊNCIAS DO DIA
+
+Passos:
+
+1. Clicar no ícone Pendências do dia.
+2. Observar o número exibido no ícone.
+3. Observar a aba do calendário.
+
+Resultado esperado:
+
+- O número do ícone deve representar a quantidade de pendências do dia.
+- Não deve ser apenas o número do dia do mês.
+- A aba deve abrir `painel_calendario.php`.
+- A tela deve destacar ou listar os itens previstos para a data atual.
+
+Evidência/foto: _________________________________________________
+Quantidade exibida: __________
+Status: ( ) Aprovado  ( ) Reprovado
+
+14. TESTE DE ATUALIZAÇÃO DO IFRAME
+
+Passos:
+
+1. Abrir o DevTools do navegador na aba Network ou Console.
+2. Manter o `main.php` aberto.
+3. Confirmar que o painel direito é um iframe com origem em
+   `main_pendencias.php`.
+4. Aguardar cinco minutos ou, somente para teste local, reduzir o intervalo
+   temporariamente.
+
+Resultado esperado:
+
+- Somente o iframe lateral deve ser recarregado.
+- O menu lateral não deve fechar.
+- A aba ativa do workspace não deve ser perdida.
+- As abas abertas não devem ser recarregadas.
+- Os números dos badges devem ser atualizados.
+
+Evidência/foto: _________________________________________________
+Status: ( ) Aprovado  ( ) Reprovado
+
+15. TESTE DE PERMISSÃO — USUÁRIO SEM NC
+
+Passos:
+
+1. Encerrar a sessão do administrador.
+2. Entrar com usuário sem permissão de leitura em Não Conformidades.
+3. Abrir o ícone Pendências.
+
+Resultado esperado:
+
+- O card Não Conformidades não deve aparecer.
+- Nenhuma informação de NC deve aparecer no painel.
+- O usuário não deve conseguir abrir Minhas Ocorrências pelo painel.
+
+Evidência/foto: _________________________________________________
+Status: ( ) Aprovado  ( ) Reprovado
+
+16. TESTE DE PERMISSÃO — HOMOLOGAÇÃO
+
+Passos:
+
+1. Utilizar usuário sem permissão de Homologação.
+2. Abrir o painel de Pendências.
+
+Resultado esperado:
+
+- O card Homologação de Fornecedores não deve aparecer.
+- Nenhum fornecedor deve ser exibido no painel.
+
+Evidência/foto: _________________________________________________
+Status: ( ) Aprovado  ( ) Reprovado
+
+17. TESTE DE RESPONSIVIDADE
+
+Executar o painel nas seguintes larguras:
+
+- Desktop: 1366 px ou superior;
+- Tablet: aproximadamente 768 px;
+- Janela estreita: aproximadamente 480 px.
+
+Resultado esperado:
+
+- Os cards devem reorganizar-se sem sobreposição.
+- Os títulos devem permanecer legíveis.
+- Os botões devem continuar clicáveis.
+- O painel lateral não deve criar rolagem horizontal indevida.
+
+18. TESTE DE CACHE E ABA ANTIGA
+
+Passos:
+
+1. Fechar abas antigas de Pendências e Minhas Ocorrências.
+2. Atualizar o navegador com Ctrl+F5.
+3. Clicar novamente em Pendências.
+4. Abrir o card Não Conformidades.
+
+Resultado esperado:
+
+- Deve ser carregada a versão atualizada do painel.
+- A aba não deve reutilizar uma versão antiga com resultado zero.
+- O grid deve manter a contagem correta.
+
+19. RESULTADO FINAL
+
+Quantidade de testes aprovados: __________
+Quantidade de testes reprovados: __________
+
+Falhas encontradas:
+
+________________________________________________________________________
+________________________________________________________________________
+________________________________________________________________________
+
+Evidências anexadas: ( ) Sim  ( ) Não
+
+Responsável: _________________________________________________________
+Data: ____/____/________
+Assinatura: __________________________________________________________

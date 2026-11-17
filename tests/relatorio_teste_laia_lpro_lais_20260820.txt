@@ -1,0 +1,222 @@
+===============================================================================
+GREEN PORTAL - RELATORIO DE VALIDACAO VISUAL E FUNCIONAL
+Tela testada: Modulo Legal > LAIA, LPRO e LAIS (CRUD principal das tres telas
+               + botoes de relacionamento do LAIA, que abrem popups com
+               outros CRUDs)
+Ambiente: instancia local (http://localhost/greenportal), empresa "Modelo",
+          usuario "admin"
+Data do teste: 20/08/2026
+Metodo: navegacao e interacao manual via navegador (Chrome), incluindo
+        tentativas reais de inclusao e exclusao de registros de teste,
+        leitura do console e das chamadas de rede da aplicacao.
+===============================================================================
+
+-------------------------------------------------------------------------------
+0. RESUMO DO QUE FOI TESTADO
+-------------------------------------------------------------------------------
+
+  - Grid principal "LAIA" (1461 registros): visualizacao, edicao inline de
+    celulas (chevron de selecao por linha), inclusao de novo registro e
+    gravacao, exclusao (ate a caixa de confirmacao).
+  - Botoes de relacionamento do LAIA (icones apos o divisor na barra de
+    ferramentas): "Requisitos legais", "Controles e documentos", "Objetivos e
+    metas" e "Inventario" - os quatro foram abertos e testados, em mais de
+    uma linha do grid quando aplicavel.
+  - Grid principal "LPRO" (2677 registros): edicao inline, inclusao de novo
+    registro e tentativa de gravacao.
+  - Grid principal "LAIS" (5 registros): inclusao de novo registro e
+    tentativa de gravacao, exclusao (ate a caixa de confirmacao).
+
+===============================================================================
+1. CRITICO - BUGS FUNCIONAIS CONFIRMADOS
+===============================================================================
+
+1.1 [CRITICO] O botao "Salvar" nao grava registros novos em LAIA, LPRO e LAIS
+    (bug sistemico, reproduzido nas tres telas)
+
+  Passos para reproduzir (identico nas tres telas):
+    1. Abrir Modulo Legal > LAIA (ou LPRO, ou LAIS).
+    2. Clicar no icone "+" (Novo) na barra de ferramentas - uma linha em
+       branco/com valores padrao e inserida no topo do grid, em modo de
+       edicao.
+    3. Clicar no icone de "Salvar" (check verde) na barra de ferramentas.
+
+  Resultado observado: nada acontece. Nao aparece a caixa de dialogo de
+  confirmacao ("Confirma a gravacao das alteracoes?") que o restante do
+  sistema usa nesse fluxo, nao aparece nenhuma mensagem de erro ou aviso, e a
+  contagem de registros do grid nao muda. A inspecao da rede confirma que
+  NENHUMA chamada HTTP relacionada a gravacao e disparada ao clicar em
+  Salvar - apenas as chamadas periodicas de "alertas.php" (nao relacionadas)
+  continuam ocorrendo. O console do navegador tambem nao registra nenhum
+  erro ou excecao.
+
+  Este comportamento foi reproduzido de forma independente e identica nas
+  tres telas do menu Modulo Legal testadas nesta rodada:
+    - LAIA: novo registro criado com valores padrao ("Modelo CA" /
+      "Administracao" / "Armazem de Carga Geral e Quimicos"), Salvar clicado,
+      nenhuma requisicao de gravacao disparada.
+    - LPRO: mesmo teste, mesmo resultado (nenhuma requisicao disparada).
+    - LAIS: mesmo teste, mesmo resultado (nenhuma requisicao disparada).
+
+  Impacto: na pratica, NENHUM usuario consegue cadastrar um novo registro de
+  LAIA, LPRO ou LAIS pela tela principal dessas telas - a funcionalidade de
+  criacao existe visualmente (o botao "+" funciona e insere a linha), mas o
+  fluxo de gravacao esta completamente quebrado, de forma silenciosa (sem
+  qualquer feedback ao usuario de que a gravacao falhou ou nao foi
+  executada). Como as tres telas compartilham exatamente o mesmo sintoma,
+  a causa provavelmente esta em um componente/funcao JavaScript comum a elas
+  (por exemplo, o mesmo handler de "Salvar" usado pelo grid generico do
+  Modulo Legal), o que sugere uma correcao unica pode resolver os tres casos
+  de uma vez.
+
+  Sugestao: revisar o handler de clique do botao "Salvar" quando a linha em
+  edicao e um registro NOVO (ainda sem ID/chave gravada) nessas tres telas -
+  comparar com o fluxo de "Novo" que funciona corretamente no popup
+  "Situacao" de Requisitos Legais (testado e aprovado no relatorio anterior,
+  19/08/2026) para identificar a diferenca de implementacao. Adicionar
+  tambem uma mensagem de erro visivel ao usuario para qualquer falha nesse
+  fluxo, mesmo que a causa raiz nao seja corrigida de imediato - hoje o
+  usuario simplesmente perde os dados digitados sem nenhum aviso.
+
+-------------------------------------------------------------------------------
+1.2 [CRITICO] Botao de relacionamento "Inventario" do LAIA aponta para uma
+    URL inexistente (HTTP 404)
+
+  Passos para reproduzir:
+    1. Na grid "LAIA", selecionar qualquer registro.
+    2. Clicar no 4º icone de relacionamento na barra de ferramentas (tooltip
+       "Inventario").
+
+  Resultado observado: o popup abre, mas em vez do conteudo esperado exibe a
+  pagina de erro padrao do Apache "Not Found - The requested URL was not
+  found on this server", incluindo a assinatura completa do servidor
+  ("Apache/2.4.65 (Win64) PHP/8.3.28 mod_fcgid/2.3.10-dev Server at localhost
+  Port 80").
+
+  Verificacao tecnica: a chamada de rede confirma a causa - o arquivo
+  chamado (modulolegallaia_inventario.php, com os filtros corretos
+  CODLAIA/CODUNIDADE no querystring) retorna HTTP 404, ou seja, esse arquivo
+  nao existe no servidor (ou o roteamento para ele esta incorreto).
+
+  Impacto: a funcionalidade de "Inventario" do LAIA esta completamente
+  indisponivel. Adicionalmente, a pagina de erro expõe a versao exata do
+  Apache e do PHP em uso - a mesma observacao de divulgacao de versao (banner
+  disclosure) ja registrada no relatorio de seguranca de 19/08/2026 (item
+  3.1), agora confirmada tambem em uma tela autenticada da aplicacao, nao
+  apenas na pagina publica testada anteriormente.
+
+  Sugestao: criar/restaurar o arquivo de backend faltante
+  (modulolegallaia_inventario.php) ou corrigir a rota que o botao
+  "Inventario" chama. Independentemente disso, configurar paginas de erro
+  customizadas no Apache (ErrorDocument 404 ...) para nao expor a versao do
+  servidor em nenhuma resposta de erro.
+
+===============================================================================
+2. ALTO
+===============================================================================
+
+2.1 [ALTO] Chevron de selecao (dropdown) da coluna "Fonte/Atividade/
+    Equipamento" em LAIA nao abre nenhuma lista de opcoes
+
+  Passos para reproduzir:
+    1. Na grid "LAIA", clicar sobre a celula "Fonte/Atividade/Equipamento" de
+       qualquer linha - a celula entra em modo de edicao, exibindo o valor
+       atual e um icone de seta (chevron) a direita, com aparencia de campo
+       de selecao (combobox).
+    2. Clicar sobre o chevron (testado em coordenadas exatas confirmadas por
+       zoom da tela, em duas linhas diferentes) e tambem tentar duplo-clique
+       na propria celula.
+
+  Resultado observado: nenhuma lista de opcoes e exibida em nenhuma das
+  tentativas. O campo permanece como uma caixa de texto com o valor atual e
+  o chevron visivel, mas sem reagir ao clique - nao ha como escolher um novo
+  valor de Fonte/Atividade/Equipamento por essa interface, apesar de o
+  campo visualmente indicar que e uma lista suspensa.
+
+  Impacto: impede a edicao desse campo (um dos mais importantes do
+  cadastro de LAIA, ja que define a fonte/atividade/equipamento associada ao
+  aspecto/impacto ambiental) diretamente pela grid. Reforca a gravidade do
+  item 1.1, ja que mesmo se o Salvar funcionasse, esse campo especifico
+  parece nao ser editavel via a interface disponivel.
+
+  Sugestao: verificar se o componente de dropdown dessa coluna especifica
+  esta corretamente inicializado/vinculado ao evento de clique - possivel
+  problema de z-index (lista renderizada atras de outro elemento) ou de
+  binding de evento que nao esta sendo aplicado a essa coluna em particular
+  (as demais colunas com chevron - Unidade, Area - nao foram testadas a
+  fundo neste ponto e podem ter o mesmo problema; recomenda-se verificar
+  todas as colunas do tipo lista suspensa no grid do LAIA).
+
+===============================================================================
+3. BAIXO
+===============================================================================
+
+3.1 Logotipo da aplicacao retorna HTTP 503 intermitentemente
+
+  Durante a navegacao normal entre telas, a requisicao para
+  imagens/greenlogo.jpeg retornou HTTP 503 (Service Unavailable) em pelo
+  menos uma ocasiao observada via rede, fazendo o logotipo nao carregar no
+  cabecalho. Nao foi possivel determinar se e um problema pontual do
+  ambiente local (ex.: worker do servidor sobrecarregado) ou algo mais
+  consistente - fica como observacao para acompanhamento.
+
+  Sugestao: monitorar a taxa de erro desse recurso estatico; se for
+  recorrente, verificar configuracao do servidor de arquivos estaticos
+  (limite de conexoes, cache, etc.).
+
+===============================================================================
+4. OBSERVACOES / PONTOS POSITIVOS
+-------------------------------------------------------------------------------
+
+  - A caixa de dialogo de confirmacao de exclusao ("Confirmacao") funciona
+    corretamente em LAIS - foi testada e cancelada sem excluir o registro,
+    confirmando que o fluxo de exclusao pede confirmacao explicita antes de
+    remover dados, na mesma linha do padrao positivo ja observado em
+    Requisitos Legais no relatorio anterior.
+  - O botao "Excluir" descarta corretamente uma linha nova ainda nao salva
+    (testado em LAIA), sem necessidade de confirmacao adicional - comporta-
+    mento correto, ja que nesse caso nao ha dado persistido para perder.
+  - Os botoes de relacionamento "Requisitos legais" e "Objetivos e metas" do
+    LAIA funcionam corretamente, exibindo os registros relacionados
+    esperados (14 e 1 registros, respectivamente, nos casos testados).
+  - O botao de relacionamento "Controles e documentos" do LAIA foi
+    inicialmente suspeito de repetir o bug de "contagem nao bate com as
+    linhas exibidas" encontrado no relatorio anterior (a primeira linha
+    testada mostrou "0 registros" com grid vazio) - porem, ao testar com uma
+    segunda linha do LAIA, o popup exibiu corretamente "6 registros" com as
+    6 linhas renderizadas e os parametros de filtro corretos na chamada de
+    rede. Ou seja, neste caso especifico o "0 registros" da primeira linha
+    era um resultado legitimo (aquele registro realmente nao possui
+    controles/documentos vinculados), nao um bug - o botao funciona
+    corretamente.
+  - Nenhum erro de JavaScript foi observado no console durante os testes
+    desta rodada (assim como no relatorio anterior, as falhas encontradas
+    sao silenciosas do ponto de vista do front-end).
+  - O grid do LAIA suporta um volume grande de registros (1461) sem
+    problemas perceptiveis de performance na paginacao e na navegacao.
+
+===============================================================================
+5. PROXIMOS PASSOS SUGERIDOS (EM ORDEM DE PRIORIDADE)
+-------------------------------------------------------------------------------
+
+  1. [CRITICO] Corrigir o fluxo de gravacao (botao Salvar) para registros
+     novos em LAIA, LPRO e LAIS - hoje nao dispara nenhuma requisicao e nao
+     da nenhum feedback ao usuario, impedindo o cadastro de novos registros
+     nas tres telas (item 1.1). Priorizar por ser o bug de maior impacto
+     encontrado nesta rodada de testes.
+
+  2. [CRITICO] Restaurar/corrigir o arquivo de backend do botao
+     "Inventario" do LAIA (modulolegallaia_inventario.php, HTTP 404) e
+     configurar paginas de erro customizadas para nao expor a versao do
+     servidor (item 1.2).
+
+  3. [ALTO] Corrigir o dropdown da coluna "Fonte/Atividade/Equipamento" do
+     LAIA, que nao abre a lista de opcoes ao clicar - e verificar as demais
+     colunas do tipo lista suspensa do mesmo grid (item 2.1).
+
+  4. [BAIXO] Investigar a origem do HTTP 503 intermitente no carregamento
+     do logotipo (item 3.1).
+
+===============================================================================
+FIM DO RELATORIO
+===============================================================================

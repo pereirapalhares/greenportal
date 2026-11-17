@@ -1,0 +1,13 @@
+GREEN PORTAL - DIRETRIZES MULTITENANT E MULTIDIOMA
+
+Cada empresa possui seu proprio banco de dados, tabelas de seguranca,
+perfis, menus, permissoes, logs e configuracoes. A empresa Modelo serve
+como origem para criacao e replicacao de novos tenants.
+
+O banco legado pode estar em latin1. Toda migracao deve identificar as
+chaves primarias cod<nome_tabela> e converter dados, tabelas, views e
+procedures para utf8mb4_0900_ai_ci.
+
+O portal suporta PT, EN e ES, com PT como padrao. Labels, mensagens,
+menus, formularios, alertas, erros e textos de setup devem possuir as tres
+versoes. Nenhum dado novo pode ser salvo com codificacao quebrada.

@@ -1,0 +1,39 @@
+TESTE VISUAL E OPERACIONAL - GOODYEAR ANCHIETA
+==============================================
+Data: 14/10/2026
+
+Parametros utilizados:
+- origem: green_goodyear_anchieta
+- origem de seguranca: green_goodyear_anchieta_seguranca
+- GED: E:\projetoGreen\GED\green_goodyear_anchieta
+- destino: gganchieta_dbp
+- empresa: GOODYEAR_ANCHIETA
+
+Teste nao visual:
+- solicitacao criada: #2
+- status inicial: EM_CONSTRUCAO
+- inicio solicitado: EM_EXECUCAO
+- worker executado: sim
+- validacao das origens: aprovada
+- validacao do caminho GED: aprovada
+- validacao do destino: ERRO, pois gganchieta_dbp ainda nao existe
+- etapas posteriores nao executadas, preservando a seguranca
+- status final: ERRO
+- registro de log: storage/logs/migracao/migracao_2.log
+
+Teste visual Firefox:
+- login administrativo: aprovado
+- tela administracao_migracao_empresas.php: aprovada
+- Goodyear Anchieta exibida: aprovado
+- destino gganchieta_dbp exibido: aprovado
+- caminho GED exibido: aprovado
+- status ERRO exibido: aprovado
+- link Ver log: aprovado
+- popup do log: aprovado
+- mensagem Banco destino nao encontrado exibida: aprovado
+- evidencia: runtime/firefox-migracao-anchieta.png
+
+Conclusao:
+O fluxo de solicitacao, validacao, erro controlado e exibicao do log esta
+funcionando. A migracao de dados nao foi iniciada porque o banco destino
+gganchieta_dbp precisa ser provisionado antes da execucao real.

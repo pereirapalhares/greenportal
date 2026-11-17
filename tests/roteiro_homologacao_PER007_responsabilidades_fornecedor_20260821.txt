@@ -1,0 +1,197 @@
+ROTEIRO DE HOMOLOGAÇÃO VISUAL — PER-007
+Responsabilidades na Gestão de Fornecedores
+GreenPortal | Empresa Modelo | gmodelo_dbp
+Data prevista: 21/08/2026
+
+===============================================================================
+1. OBJETIVO E ESCOPO
+===============================================================================
+
+Validar a consulta e a manutenção de responsabilidades pelo fluxo normal:
+Homologação de Fornecedores > Gestão de Fornecedores.
+
+Validar consulta, inclusão, edição, exclusão lógica, histórico, permissões,
+mensagens e isolamento de outros fornecedores. Os órfãos das tabelas fo_ ficam
+fora do escopo e não devem ser apagados ou reassociados.
+
+===============================================================================
+2. CONTAS
+===============================================================================
+
+Preparação e limpeza: admin / perfil ADMINISTRADOR. Senha: <senha de teste via variável de ambiente>
+Execução funcional: ueditor / perfil GESTOR. Senha: <senha de teste via variável de ambiente>
+
+===============================================================================
+3. CONFIGURAÇÃO DA PERMISSÃO
+===============================================================================
+
+Como admin, acessar Segurança > Permissões > Perfil GESTOR.
+
+Localizar HOMOLOGACAO_FORNECEDOR_FORNECEDOR — Gestão de Fornecedores e
+configurar temporariamente:
+
+- Incluir=1 | Visualizar=1 | Editar=1 | Excluir=1.
+
+Manter Exportar Excel e Gerar PDF inalterados. Salvar a linha antes de trocar
+o filtro de transação e confirmar a mensagem de sucesso.
+
+===============================================================================
+4. FORNECEDOR DE TESTE
+===============================================================================
+
+1. Entrar como ueditor.
+2. Abrir Homologação de Fornecedores > Gestão de Fornecedores.
+3. Selecionar um fornecedor válido, preferencialmente sem responsabilidade
+   direta nova ativa.
+4. Registrar CODFORNECEDOR, Razão Social e as quantidades ativa/histórica.
+5. Não escolher registro órfão e não alterar outro fornecedor.
+
+Dados para o novo vínculo:
+
+- Tipo: Responsável pelo fornecedor;
+- Destino: Usuário;
+- Responsável: Administrador Modelo;
+- Prioridade inicial: 5;
+- Principal: desmarcado;
+- Válido de: data do teste;
+- Válido até: vazio.
+
+Registrar o CODATRIBUICAO gerado.
+
+===============================================================================
+5. PER-007-A — CONSULTA E ACESSO
+===============================================================================
+
+1. Sem linha selecionada, confirmar que o botão Responsabilidades está
+   desabilitado.
+2. Selecionar o fornecedor de teste.
+3. Confirmar que o botão Responsabilidades fica habilitado.
+4. Clicar no botão, sem navegar por URL direta.
+5. Conferir CODFORNECEDOR e Razão Social no cabeçalho.
+6. Conferir Finalidade, Responsável, Destino, Origem, Entidade, Situação e
+   Validade.
+
+Esperado:
+
+- consulta contextual do fornecedor correto;
+- vínculos legados de fo_fornecedorxusuario visíveis e identificáveis;
+- ATIVA e HISTORICA exibidos corretamente;
+- nenhum SQL, erro técnico ou registro de outro fornecedor.
+
+===============================================================================
+6. PER-007-B — INCLUSÃO
+===============================================================================
+
+1. Na consulta, clicar em Manter.
+2. Confirmar o fornecedor no cabeçalho.
+3. Clicar em Adicionar.
+4. Preencher a linha com os dados da seção 4.
+5. Salvar e registrar a mensagem.
+6. Reabrir a consulta.
+
+Esperado:
+
+- uma atribuição direta criada com ENTIDADE=fo_fornecedores;
+- mensagem única de sucesso;
+- vínculo listado como ATIVA;
+- nenhum vínculo legado convertido ou alterado;
+- nenhum outro fornecedor afetado.
+
+===============================================================================
+7. PER-007-C — EDIÇÃO
+===============================================================================
+
+1. Abrir Manter responsabilidades.
+2. Localizar o CODATRIBUICAO criado.
+3. Alterar Prioridade de 5 para 9.
+4. Marcar Principal.
+5. Salvar, fechar e reabrir a tela.
+
+Esperado:
+
+- mensagem única de sucesso;
+- Prioridade=9 e Principal marcado persistidos;
+- nenhum novo vínculo criado;
+- vínculos legados e outros fornecedores inalterados.
+
+===============================================================================
+8. PER-007-D — EXCLUSÃO LÓGICA
+===============================================================================
+
+1. Localizar o vínculo criado.
+2. Clicar na lixeira.
+3. Confirmar o desaparecimento visual da lista ativa.
+4. Salvar e registrar a mensagem.
+5. Reabrir a consulta e conferir os históricos.
+
+Esperado:
+
+- mensagem única e coerente;
+- vínculo ausente de ATIVA e presente como HISTORICA;
+- nenhum apagamento físico;
+- vínculos legados e outros fornecedores inalterados.
+
+===============================================================================
+9. PER-007-E — VÍNCULOS LEGADOS
+===============================================================================
+
+Se houver vínculo de fo_fornecedorxusuario:
+
+1. Confirmar que aparece na consulta.
+2. Conferir sua origem, entidade e responsável.
+3. Não excluir nem converter esse vínculo durante o teste.
+4. Confirmar que a manutenção do novo vínculo direto é independente dele.
+
+===============================================================================
+10. PER-007-F — PERMISSÕES RESTRITIVAS
+===============================================================================
+
+Reconfigurar a transação como admin e repetir como ueditor:
+
+Cenário 1: V=1, I=0, E=0, X=0.
+Esperado: consulta disponível, manutenção bloqueada e campos inacessíveis.
+
+Cenário 2: V=1, I=0, E=0, X=1.
+Esperado: manutenção aberta, campos desabilitados, Adicionar oculto e
+lixeira habilitada; exclusão lógica permitida.
+
+Cenário 3: V=0, I=0, E=0, X=0.
+Esperado: consulta e manutenção bloqueadas; POST direto retorna HTTP 403.
+
+===============================================================================
+11. MENSAGENS
+===============================================================================
+
+Registrar exatamente as mensagens de consulta, inclusão, edição, exclusão e
+bloqueio. Não aceitar sucesso acompanhado de falta de permissão, SQL exposto,
+stack trace ou sucesso quando nenhuma operação autorizada ocorreu.
+
+===============================================================================
+12. LIMPEZA
+===============================================================================
+
+1. Entrar como admin.
+2. Confirmar o vínculo do teste como HISTORICA.
+3. Não remover o histórico fisicamente.
+4. Confirmar que o fornecedor e vínculos legados permanecem íntegros.
+5. Restaurar as permissões do GESTOR ao baseline anterior.
+6. Confirmar Exportar Excel e Gerar PDF inalterados.
+7. Confirmar o acesso final com ueditor conforme o baseline.
+
+===============================================================================
+13. CRITÉRIOS DE ACEITE
+===============================================================================
+
+- botão contextual abre o fornecedor correto;
+- vínculos legados são consultados sem alteração;
+- inclusão, edição e exclusão lógica direta funcionam;
+- histórico é preservado;
+- permissões e mensagens funcionam visual e server-side;
+- nenhum órfão é apagado ou reassociado;
+- limpeza e restauração são concluídas.
+
+Resultado final: _______________________________________
+Responsável: __________________________________________
+Data/hora: ____________________________________________
+Evidências: ____________________________________________
+Pendências: ____________________________________________

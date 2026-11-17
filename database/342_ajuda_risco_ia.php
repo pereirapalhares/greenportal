@@ -1,0 +1,66 @@
+<?php
+declare(strict_types=1);
+
+/*
+ * Migração 342 — Ajuda da sugestão de risco pela IA. O runner (scripts/aplicar-migracao-342-risco-sugestao-ia.php) põe o trecho
+ * entre <!-- ml342 --> e <!-- /ml342 --> no fim do texto atual de cada transação (sem apagar o resto; rodando de novo, só troca o
+ * trecho). HTML simples: p, listas, negrito (o editor de ajuda e a API só aceitam essas marcas).
+ */
+
+$L = static fn(string $pt, string $en, string $es): array => ['pt' => $pt, 'en' => $en, 'es' => $es];
+
+$completoPt = '<p><strong>Sugestão de risco pela IA (Severidade × Probabilidade)</strong></p>'
+    . '<p>A IA pode <strong>sugerir</strong> a Severidade e a Probabilidade de um item de gestão (licença, medição e monitoramento, treinamento, infraestrutura, controle ou fornecedor), com uma justificativa. <strong>Nada é gravado no item sem a decisão de uma pessoa</strong>: quem pode alterar o cadastro do item aceita, ajusta ou recusa cada sugestão.</p>'
+    . '<p><strong>Como pedir</strong></p><ul>'
+    . '<li><strong>Um item:</strong> no cadastro do pilar (Licenças, Plano de medição e monitoramento, Treinamentos, Infraestrutura, Controle de documentos, Fornecedores e as telas "Minhas…"), selecione a linha e clique no botão <strong>Sugerir risco com IA</strong> (ícone de estrelas) da barra.</li>'
+    . '<li><strong>Em lote:</strong> em <strong>Módulo Legal › Sugestões de risco (IA)</strong> ou no Dashboard (aba Atendimento legal), clique em <strong>Sugerir risco para os itens não avaliados</strong>. Entram os itens ligados a requisitos legais que ainda não têm risco e que não têm sugestão aguardando, a revisar ou recusada (um item recusado pode ser pedido de novo pelo cadastro), até 300 por pedido (os que ligam mais requisitos primeiro). É possível escolher só uma área (pilar).</li>'
+    . '<li>O lote <strong>só roda quando alguém pede</strong>: nada é enviado à IA sozinho.</li></ul>'
+    . '<p><strong>O que a IA recebe</strong>: os critérios de severidade do pilar e os de probabilidade (os mesmos da tabela desta ajuda), os dados do cadastro do item (sem dados pessoais nem arquivos), a situação atual do item, a unidade e os requisitos legais ligados (norma, âmbito, assunto, artigos e texto). Os itens vão em grupos de até 8 por pedido.</p>'
+    . '<p><strong>Quando fica pronto</strong>: o pedido roda em segundo plano pelo serviço de IA do Agendador. Quando termina, chega o alerta <strong>Sugestões de risco da IA prontas para revisar</strong>, que abre a tela de sugestões já filtrada no pedido. Você pode continuar trabalhando enquanto isso.</p>'
+    . '<p><strong>Como revisar</strong> (Módulo Legal › Sugestões de risco (IA), aba <strong>A revisar</strong>): cada linha mostra o item, a Severidade × Probabilidade sugerida, o risco resultante, a confiança informada pela IA (0 a 100) e a justificativa, além do risco que o item já tem (se tiver).</p><ul>'
+    . '<li><strong>Aceitar</strong>: grava os valores sugeridos no item;</li>'
+    . '<li><strong>Ajustar</strong>: troque a Severidade e/ou a Probabilidade na própria linha e clique em Aceitar — grava os seus valores e fica registrado como "IA ajustada";</li>'
+    . '<li><strong>Recusar</strong>: não grava nada (motivo opcional);</li>'
+    . '<li>Marque várias linhas para aceitar ou recusar de uma vez.</li></ul>'
+    . '<p><strong>Quem pode decidir</strong>: quem tem permissão de <strong>editar</strong> a transação do pilar do item (ex.: Licenças para uma licença). Nas telas "Minhas…", só os itens de que a pessoa é responsável. As linhas que você não pode decidir aparecem sem a caixa de marcação.</p>'
+    . '<p><strong>Rastreabilidade</strong>: o histórico do risco do item guarda a origem (<strong>IA</strong> ou <strong>IA ajustada</strong>), a justificativa da IA, quem decidiu e quando. A Situação do requisito e o cadastro mostram o selo "IA" no risco que veio de uma sugestão; se depois alguém alterar o risco no cadastro, ele volta a ser manual. As abas <strong>Decididas</strong> e <strong>Pedidos</strong> mostram o que já foi feito.</p>'
+    . '<p><strong>Custo</strong>: cada pedido passa pelo taxímetro de IA (Administração › Consumo de IA, módulo "Módulo Legal", tipo "Sugestão de risco") e respeita o limite mensal da empresa: com o limite bloqueado, o pedido não é aceito. O texto do pedido (prompt ML_RISCO) pode ser ajustado em Setup › Prompts de IA.</p>';
+
+$completoEn = '<p><strong>AI risk suggestion (Severity × Probability)</strong></p>'
+    . '<p>The AI can <strong>suggest</strong> the Severity and Probability of a management item, with a justification. <strong>Nothing is saved without a person deciding</strong>: whoever can edit the item register accepts, adjusts or rejects each suggestion.</p>'
+    . '<ul><li><strong>One item:</strong> in the pillar register, select the row and click <strong>Suggest risk with AI</strong> (stars icon).</li>'
+    . '<li><strong>Batch:</strong> in <strong>Legal Module › Risk suggestions (AI)</strong> or in the Dashboard (Legal compliance tab), click <strong>Suggest risk for items not assessed</strong> (up to 300 items per request, optionally one area). The batch only runs when someone asks.</li></ul>'
+    . '<p>The AI receives the severity criteria of the pillar and the probability criteria, the item register data (no personal data or files), its current status, the unit and the linked legal requirements. When done, the alert <strong>AI risk suggestions ready to review</strong> opens the suggestions screen.</p>'
+    . '<p><strong>Review</strong> (tab <strong>To review</strong>): <strong>Accept</strong> saves the suggested values; change Severity/Probability on the row and accept to <strong>adjust</strong> (recorded as "AI adjusted"); <strong>Reject</strong> saves nothing. Several rows can be marked and decided at once. Only users who can <strong>edit</strong> the pillar transaction of the item can decide.</p>'
+    . '<p>The risk history keeps the origin (AI or AI adjusted), the justification, who decided and when; the "AI" badge shows on the risk. Each request goes through the AI usage meter and the company monthly limit. The prompt (ML_RISCO) can be changed in Setup › AI prompts.</p>';
+
+$completoEs = '<p><strong>Sugerencia de riesgo por IA (Severidad × Probabilidad)</strong></p>'
+    . '<p>La IA puede <strong>sugerir</strong> la Severidad y la Probabilidad de un ítem de gestión, con una justificación. <strong>No se graba nada sin la decisión de una persona</strong>: quien puede modificar el registro del ítem acepta, ajusta o rechaza cada sugerencia.</p>'
+    . '<ul><li><strong>Un ítem:</strong> en el registro del pilar, seleccione la fila y haga clic en <strong>Sugerir riesgo con IA</strong> (ícono de estrellas).</li>'
+    . '<li><strong>En lote:</strong> en <strong>Módulo Legal › Sugerencias de riesgo (IA)</strong> o en el Panel (pestaña Cumplimiento legal), haga clic en <strong>Sugerir riesgo para los ítems no evaluados</strong> (hasta 300 ítems por pedido, opcionalmente un área). El lote solo se ejecuta cuando alguien lo pide.</li></ul>'
+    . '<p>La IA recibe los criterios de severidad del pilar y de probabilidad, los datos del registro del ítem (sin datos personales ni archivos), su situación, la unidad y los requisitos legales vinculados. Al terminar, la alerta <strong>Sugerencias de riesgo de la IA listas para revisar</strong> abre la pantalla de sugerencias.</p>'
+    . '<p><strong>Revisión</strong> (pestaña <strong>A revisar</strong>): <strong>Aceptar</strong> graba los valores sugeridos; cambie Severidad/Probabilidad en la fila y acepte para <strong>ajustar</strong>; <strong>Rechazar</strong> no graba nada. Se pueden decidir varias filas a la vez. Solo deciden quienes pueden <strong>editar</strong> la transacción del pilar del ítem.</p>'
+    . '<p>El historial del riesgo guarda el origen (IA o IA ajustada), la justificación, quién decidió y cuándo. Cada pedido pasa por el taxímetro de IA y el límite mensual de la empresa. El prompt (ML_RISCO) se ajusta en Setup › Prompts de IA.</p>';
+
+$notaPt = '<p><strong>Sugestão de risco pela IA</strong></p><p>Selecione a linha e clique em <strong>Sugerir risco com IA</strong> (ícone de estrelas) para a IA propor a Severidade e a Probabilidade, com justificativa. A resposta chega nos Alertas e é revisada em Módulo Legal › Sugestões de risco (IA): nada é gravado no item sem você aceitar ou ajustar. Veja a Ajuda de Requisitos legais.</p>';
+$notaEn = '<p><strong>AI risk suggestion</strong></p><p>Select the row and click <strong>Suggest risk with AI</strong> (stars icon). The answer arrives in the Alerts and is reviewed in Legal Module › Risk suggestions (AI): nothing is saved without your decision.</p>';
+$notaEs = '<p><strong>Sugerencia de riesgo por IA</strong></p><p>Seleccione la fila y haga clic en <strong>Sugerir riesgo con IA</strong> (ícono de estrellas). La respuesta llega a las Alertas y se revisa en Módulo Legal › Sugerencias de riesgo (IA): no se graba nada sin su decisión.</p>';
+
+$out = [
+    'modulolegal_risco_sugestoes' => ['titulo' => $L('Ajuda — Sugestões de risco (IA)', 'Help — Risk suggestions (AI)', 'Ayuda — Sugerencias de riesgo (IA)'), 'texto' => $L($completoPt, $completoEn, $completoEs)],
+    'modulolegal_requisitoslegais' => ['titulo' => $L('Ajuda — Requisitos legais', 'Help — Legal requirements', 'Ayuda — Requisitos legales'), 'texto' => $L($completoPt, $completoEn, $completoEs)],
+    'manutencaolegalrequisitoslegais_situacao' => ['titulo' => $L('Ajuda — Situação do requisito legal', 'Help — Legal requirement status', 'Ayuda — Situación del requisito legal'), 'texto' => $L($completoPt, $completoEn, $completoEs)],
+];
+foreach (['manutencaolegal_licencas', 'minhas_licencas', 'medicaoemonitoramento_mm_monitoramento', 'modulolegal_treinamentos', 'meus_treinamentos', 'modulolegal_infraestrutura',
+    'minhas_infraestruturas', 'modulolegal_controle', 'meus_controles', 'homologacaofornecedor_fornecedor'] as $t)
+    $out[$t] = ['titulo' => $L('Ajuda', 'Help', 'Ayuda'), 'texto' => $L($notaPt, $notaEn, $notaEs)];
+
+// Prompt ML_RISCO (Setup › Prompts de IA), gravado só se ainda não existir
+$out['__prompt'] = [
+    'nome' => $L('Sugestão de risco de itens de requisitos legais', 'Risk suggestion for legal requirement items', 'Sugerencia de riesgo de ítems de requisitos legales'),
+    'texto' => $L(
+        'Você é especialista em gestão de requisitos legais de meio ambiente, saúde e segurança do trabalho e qualidade no Brasil. Para cada item de gestão recebido (licença, medição e monitoramento, treinamento, infraestrutura, controle ou fornecedor), avalie o risco de NÃO atender a obrigação ligada a ele: escolha a Severidade (1 a 4) somente pelos critérios de severidade da área do item e a Probabilidade (1 a 4) pelos critérios de probabilidade, ambos enviados no pedido. Considere o texto dos requisitos legais ligados, a atividade e a situação atual do item. Quando a informação for pouca, escolha o nível mais provável, explique a dúvida na justificativa e baixe a confiança. Não invente fatos. Responda exclusivamente em JSON válido, sem Markdown, no formato {"itens":[{"ref":"A1","severidade":1,"probabilidade":1,"justificativa":"até 400 caracteres, citando o critério e o requisito que pesaram","confianca":0}]}, com um objeto para cada ref recebida. confianca vai de 0 a 100.',
+        'You are an expert in legal requirements management for environment, occupational health and safety and quality in Brazil. For each management item received (license, measurement and monitoring, training, infrastructure, control or supplier), assess the risk of NOT meeting the linked obligation: choose the Severity (1 to 4) only by the severity criteria of the item area and the Probability (1 to 4) by the probability criteria, both sent in the request. Consider the linked legal requirements text, the activity and the current status of the item. When information is scarce, choose the most likely level, explain the doubt in the justification and lower the confidence. Do not invent facts. Respond exclusively with valid JSON, without Markdown, as {"itens":[{"ref":"A1","severidade":1,"probabilidade":1,"justificativa":"up to 400 characters, citing the criterion and requirement that weighed","confianca":0}]}, one object per ref received. confianca ranges from 0 to 100.',
+        'Eres especialista en gestión de requisitos legales de medio ambiente, salud y seguridad en el trabajo y calidad en Brasil. Para cada ítem de gestión recibido (licencia, medición y monitoreo, capacitación, infraestructura, control o proveedor), evalúa el riesgo de NO cumplir la obligación vinculada: elige la Severidad (1 a 4) solo por los criterios de severidad del área del ítem y la Probabilidad (1 a 4) por los criterios de probabilidad, ambos enviados en el pedido. Considera el texto de los requisitos legales vinculados, la actividad y la situación actual del ítem. Con poca información, elige el nivel más probable, explica la duda en la justificación y baja la confianza. No inventes hechos. Responde exclusivamente en JSON válido, sin Markdown, como {"itens":[{"ref":"A1","severidade":1,"probabilidade":1,"justificativa":"hasta 400 caracteres, citando el criterio y el requisito que pesaron","confianca":0}]}, un objeto por cada ref recibida. confianca va de 0 a 100.'),
+];
+return $out;

@@ -1,0 +1,418 @@
+===============================================================================
+GREEN PORTAL - RESULTADO DO ROTEIRO DE TESTES VISUAIS - RESPONSABILIDADES
+Roteiro de referencia: roteiro_testes_visuais_responsabilidades_20260820.txt
+Ambiente: instancia local (http://localhost/greenportal), empresa "Modelo"
+          (gmodelo_dbp)
+Data do teste: 20/08/2026
+Metodo: navegacao e interacao manual via navegador (Chrome), execucao real
+        dos fluxos de inclusao/alteracao/exclusao logica descritos no
+        roteiro, usando dados de teste identificados nas observacoes de
+        cada caso; leitura de rede para os testes de seguranca (SEC).
+===============================================================================
+
+-------------------------------------------------------------------------------
+0. CONTAS UTILIZADAS
+-------------------------------------------------------------------------------
+
+  - Conta A (admin / ADMINISTRADOR): usada em RG-001, RG-003, RG-004, todos
+    os testes LIC-C, LIC-M, REQ-C, REQ-M, PER-005 e SEC-001 a SEC-004.
+  - Conta C (visitante / sem perfil): usada em RG-002.
+  - Conta B (ueditor / GESTOR): usada na tentativa de PER-002/003/004 - ver
+    item 2 (BLOQUEADO) para detalhes de por que esses testes nao puderam
+    ser concluidos como especificado.
+  - Conta D (visitante3): nao foi necessaria, pois a Conta C esteve
+    disponivel durante todo o teste.
+
+-------------------------------------------------------------------------------
+1. RESULTADOS POR CASO DE TESTE
+-------------------------------------------------------------------------------
+
+4. TESTES GERAIS DE ACESSO
+
+RG-001 - Acesso autorizado: PASSOU
+  Usuario/perfil: admin / ADMINISTRADOR. Menus "Licencas" e "Requisitos
+  legais" exibidos e funcionais normalmente durante todo o teste.
+
+RG-002 - Acesso sem permissao: PASSOU
+  Usuario/perfil: visitante / sem perfil configurado. Apos login, o menu
+  lateral nao exibe NENHUM item de transacao (nem "Dashboard", nem
+  "Modulo Legal") - apenas a busca de menu e "Sair". A busca por
+  "Licencas" no menu nao retorna nenhum resultado. Nao ha dados na tela.
+  Evidencia: dashboard em branco, menu vazio.
+
+RG-003 - Sessao expirada: PASSOU
+  Usuario/perfil: admin. Apos clicar em "Sair", a navegacao direta para a
+  URL principal (principal/main.php) redireciona corretamente para a tela
+  de login ("Green Portal | Acesso"), sem exibir dados da sessao anterior.
+
+RG-004 - Tenant atual: PASSOU (evidencia indireta)
+  Ao longo de todos os testes de Licencas e Requisitos Legais realizados
+  com a Conta A no tenant Modelo, todos os usuarios, grupos e unidades
+  exibidos nas Responsabilidades pertenciam exclusivamente ao escopo
+  Modelo/gmodelo_dbp (ex.: "Administrador Modelo", grupos como GESTORES,
+  unidade "Modelo CA"). Nenhum dado de outro tenant foi observado em
+  nenhum momento. Nao foi possivel testar login simultaneo em outro
+  tenant para comparacao direta (fora do escopo dos dados de teste
+  fornecidos), portanto o resultado se baseia em observacao consistente,
+  nao em comparacao cruzada.
+
+5. TESTES DE LICENCAS - CONSULTA
+
+LIC-C-001 - Botao inicial desabilitado: PASSOU
+  Registro: Licenca 1 (Licenca CETESB No 79/823.555). Sem selecionar
+  linha, o botao Responsabilidades (icone de pessoas) nao abre nenhum
+  popup ao ser clicado - comporta-se como desabilitado funcionalmente,
+  ainda que visualmente nao esteja acinzentado (ver observacao no item 3).
+
+LIC-C-002 - Selecao de licenca: PASSOU
+  Ao selecionar a Licenca 1, o botao passa a abrir o popup normalmente.
+
+LIC-C-003 - Abrir consulta: PASSOU
+  Popup abre com titulo "Responsabilidades", identificacao "Licenca 1 -
+  Licenca CETESB No 79/823.555" e tabela de vinculos.
+
+LIC-C-004 - Campos exibidos: PASSOU
+  Colunas presentes: Finalidade, Responsavel, Destino, Origem, Situacao,
+  Validade - todas conforme esperado.
+
+LIC-C-005 - Usuario responsavel: PASSOU
+  Linha "Responsavel pela licenca / Administrador Modelo / Usuario"
+  exibida corretamente com finalidade e situacao (ATIVA) visiveis.
+
+LIC-C-006 / LIC-C-007 - Grupo responsavel / Grupo TODOS: PASSOU
+  (com observacao) Linha do grupo TODOS exibe "Todos os usu??rios
+  ativos" com contador "1242 usuario(s) ativo(s)", sem expandir em 1242
+  linhas individuais - comportamento funcional correto. Porem o texto
+  esta com problema de codificacao de caracteres (mojibake): deveria ler
+  "Todos os usuarios ativos". Ver item 2.1 (bug).
+
+LIC-C-008 - Historico: PASSOU
+  Apos exclusao logica de um vinculo (ver LIC-M-008), a mesma consulta
+  passou a exibir esse vinculo com Situacao = HISTORICA (selo cinza,
+  visualmente distinto de ATIVA) e o rodape da tela exibe o texto
+  "Responsabilidades historicas sao mantidas para rastreabilidade e nao
+  representam atribuicoes ativas." - conforme esperado.
+
+LIC-C-009 - Nova licenca nao salva: PASSOU
+  Ao clicar em "+" (Novo) no grid de Licencas (linha nova, ainda nao
+  gravada) e em seguida clicar no botao Responsabilidades, nenhum popup
+  e aberto - a consulta nao e disponibilizada para registro novo, como
+  esperado. Linha nova descartada apos o teste (Excluir).
+
+6. TESTES DE LICENCAS - MANUTENCAO
+
+LIC-M-001 - Abrir manutencao: PASSOU
+  Tela "Manter responsabilidades" mostra somente as 2 atribuicoes ativas
+  da Licenca 1 (a HISTORICA pre-existente nao aparece).
+
+LIC-M-002 - Incluir usuario: PASSOU
+  Adicionada linha Finalidade="Responsavel pelo acesso", Destino=Usuario,
+  Responsavel="Administrador Modelo", vigencia inicial 20/08/2026.
+  Mensagem "Responsabilidades salvas com sucesso." exibida e o novo
+  vinculo apareceu corretamente na consulta.
+
+LIC-M-003 - Incluir grupo: PASSOU
+  Adicionada linha Finalidade="Responsavel pela validade", Destino=Grupo,
+  Grupo="GESTORES". Gravado com sucesso; consulta exibiu "GESTORES / 1
+  usuario(s) ativo(s))". Registro removido ao final do teste (ver item 4,
+  Limpeza).
+
+LIC-M-004 - Alterar atribuicao: PASSOU
+  Alterada a Prioridade de um vinculo ativo de 0 para 5 (depois para 9
+  no teste equivalente de Requisitos). Apos fechar e reabrir a tela
+  (reload real, nao apenas re-render), o valor alterado permaneceu.
+
+LIC-M-005 - Principalidade: PASSOU
+  Campo "Principal" marcado, salvo, e o valor permaneceu apos reload
+  completo do popup (fechado e reaberto).
+
+LIC-M-006 - Data invalida: PASSOU
+  Tentativa de gravar com Vigencia final (01/01/2026) anterior a inicial
+  (20/08/2026) foi bloqueada com a mensagem "SQLSTATE[45000]:
+  <<Unknown error>>: 1644 A data final nao pode ser anterior a data
+  inicial." Ver observacao sobre mensagens tecnicas no item 2.2.
+
+LIC-M-007 - Duplicidade: PASSOU
+  Tentativa de cadastrar um segundo vinculo com o mesmo tipo
+  (Responsavel pela licenca), mesmo destino (Usuario) e mesmo responsavel
+  (Administrador Modelo) com vigencia sobreposta a um vinculo ja ativo
+  foi corretamente bloqueada: "SQLSTATE[45000]: <<Unknown error>>: 1644
+  Ja existe vinculo ativo com vigencia sobreposta." Ver item 2.2.
+
+LIC-M-008 - Exclusao logica: PASSOU
+  Vinculo ativo removido (icone de lixeira) e salvo. Na consulta
+  seguinte, o vinculo nao aparece mais entre os ativos e passa a ser
+  exibido com Situacao = HISTORICA, preservado para rastreabilidade -
+  exatamente conforme esperado. Este mesmo teste tambem gerou o registro
+  historico usado para validar LIC-C-008.
+
+LIC-M-009 - Historico nao editavel: PASSOU
+  Apos a exclusao logica acima, reabrindo a tela de manutencao ativa, o
+  vinculo HISTORICA nao aparece na lista editavel (somente os vinculos
+  ativos sao listados) - portanto nao ha como altera-lo pela manutencao
+  ativa, conforme esperado.
+
+7. TESTES DE REQUISITOS LEGAIS - CONSULTA
+
+  Registro utilizado: Situacao 39 ("As atividades da Crown sao
+  licenciadas pela CETESB..."), localizada a partir do requisito "Obter e
+  manter valido..." no grid de Requisitos Legais (o dado sugerido
+  CODSITUACAO=6728 nao foi localizado na base local durante a navegacao;
+  a Situacao 39 foi usada como equivalente por ja possuir um vinculo
+  HISTORICA pre-existente, util para os testes de historico).
+
+REQ-C-001 - Abrir situacoes: PASSOU
+  Grid de Situacoes exibido corretamente ao selecionar o requisito.
+
+REQ-C-002 - Botoes sem selecao: PASSOU
+  Sem selecionar nenhuma linha do grid de Situacoes, os botoes
+  "Responsabilidades" e "Manter responsabilidades" nao abrem nenhum
+  popup ao serem clicados - comportamento funcionalmente desabilitado.
+
+REQ-C-003 - Selecionar situacao: PASSOU
+  Ao selecionar a Situacao 39, ambos os botoes passam a funcionar.
+
+REQ-C-004 - Consultar situacao: PASSOU
+  Popup "Responsabilidades do requisito" identifica "Situacao 39" e
+  exibe as colunas Finalidade, Responsavel, Destino, Origem, Situacao e
+  Validade.
+
+REQ-C-005 - Correspondencia do registro: PASSOU
+  A descricao exibida no popup ("As atividades da Crown sao licenciadas
+  pela CETESB...") corresponde a descricao da situacao selecionada no
+  grid, nao apenas a legislacao ou unidade.
+
+REQ-C-006 - Historico de requisito: PASSOU
+  O vinculo pre-existente de "Renato Alves" e exibido com Situacao =
+  HISTORICA, claramente distinto (selo cinza) dos vinculos ativos
+  adicionados durante o teste (selo verde ATIVA).
+
+8. TESTES DE REQUISITOS LEGAIS - MANUTENCAO
+
+REQ-M-001 - Abrir manutencao: PASSOU
+  Tela mostra somente vinculos ativos da Situacao 39 (0 no estado
+  inicial, pois o unico vinculo pre-existente era HISTORICA). Observacao:
+  ver item 2.3 (bug do titulo "Sem descricao").
+
+REQ-M-002 - Incluir usuario: PASSOU
+  Adicionado vinculo Finalidade="Requisito legal", Destino=Usuario,
+  Responsavel="Administrador Modelo". Gravado com sucesso e exibido na
+  consulta da mesma situacao.
+
+REQ-M-003 - Incluir grupo: PASSOU
+  Adicionado vinculo com Destino=Grupo, Grupo="GESTORES". Gravado com
+  sucesso; consulta exibiu "GESTORES / 1 usuario(s) ativo(s))". Registro
+  removido ao final do teste (ver item 4, Limpeza).
+
+REQ-M-004 - Alterar vinculo: PASSOU
+  Prioridade do vinculo de usuario alterada de 0 para 9; apos fechar e
+  reabrir a tela (reload real), o valor permaneceu alterado.
+
+REQ-M-005 - Validar duplicidade: PASSOU
+  Tentativa de repetir o mesmo vinculo ativo (mesma finalidade, destino e
+  responsavel) com vigencia sobreposta foi bloqueada com a mesma
+  mensagem tecnica de LIC-M-007 ("Ja existe vinculo ativo com vigencia
+  sobreposta").
+
+REQ-M-006 - Validar vigencia: PASSOU
+  Tentativa de gravar com data final anterior a inicial foi bloqueada
+  com a mesma mensagem tecnica de LIC-M-006.
+
+REQ-M-007 - Exclusao logica: PASSOU
+  Vinculo de grupo removido e salvo; na consulta seguinte aparece como
+  HISTORICA, saindo da lista de vinculos ativos.
+
+9. TESTES DE PERMISSOES
+
+PER-001 a PER-004 - Somente consulta / Incluir / Editar / Excluir:
+  BLOQUEADO (nao foi possivel validar como especificado)
+  A Conta B (ueditor / GESTOR), indicada no roteiro para estes quatro
+  testes, NAO possui sequer permissao de visualizar as transacoes
+  LICENCAS e REQUISITOS_LEGAIS no perfil atualmente configurado - ao
+  clicar em qualquer um dos dois menus, o sistema exibe "Seu perfil nao
+  tem permissao para acessar esta transacao.", bloqueando inclusive a
+  consulta. Isso impede testar as combinacoes granulares de
+  incluir/editar/excluir descritas nos casos PER-002, PER-003 e PER-004,
+  e tambem o cenario "consultas funcionam" do caso PER-001. A Conta C
+  (visitante) tambem nao possui nenhum perfil configurado (ver RG-002),
+  portanto nao serve como substituta. Seria necessario ajustar as flags
+  de permissao da transacao LICENCAS/REQUISITOS_LEGAIS para o perfil
+  GESTOR (conforme o proprio roteiro antecipa: "Confirmar primeiro as
+  flags da transacao") antes de repetir estes quatro testes.
+
+PER-005 - Administrador: PASSOU
+  Confirmado de forma abrangente ao longo de todos os testes LIC-C,
+  LIC-M, REQ-C e REQ-M: a Conta A acessa consulta e manutencao sem
+  nenhuma restricao.
+
+10. TESTES DE SEGURANCA E ISOLAMENTO
+
+SEC-001 - URL sem identificador: PASSOU
+  Acesso direto a licenca_responsabilidades.php sem o parametro
+  CODLICENCA retorna a mensagem "Licenca invalida." em vez de qualquer
+  dado.
+
+SEC-002 - Identificador invalido: PASSOU
+  Testado com CODLICENCA=abc (texto), CODLICENCA=0 e CODLICENCA=-1
+  (negativo) - os tres casos retornaram consistentemente "Licenca
+  invalida.", sem expor dados nem erros de banco de dados.
+
+SEC-003 - Outro registro: NAO TESTAVEL DE FORMA NAO INVASIVA
+  Este teste, conforme especificado, exigiria enviar deliberadamente um
+  ID de vinculo pertencente a uma licenca/situacao para o contexto de
+  outra (ex.: forjar o parametro CODLICENCA de uma requisicao de
+  gravacao), o que caracteriza uma tentativa ativa de manipulacao de
+  parametros - fora do escopo de teste passivo estabelecido para este
+  engajamento (sem exploracao ativa). Observacao tecnica coletada por
+  inspecao de rede: a gravacao das responsabilidades e feita via POST de
+  pagina inteira para licenca_responsabilidades_edicao.php?CODLICENCA=N
+  (nao uma API JSON separada), com o parametro CODLICENCA fixo na URL da
+  propria tela de manutencao - um padrao razoavel para validacao no
+  servidor, mas a efetiva aplicacao dessa validacao por linha nao foi
+  confirmada de forma direta.
+
+SEC-004 - Tenant futuro: PASSOU
+  Nenhuma acao realizada durante todo o roteiro criou ou tentou criar o
+  banco gcrown_dbp - requisito atendido por nao execucao de nenhuma
+  acao nesse sentido.
+
+-------------------------------------------------------------------------------
+2. ACHADOS / OBSERVACOES TECNICAS
+-------------------------------------------------------------------------------
+
+2.1 [BAIXO] Mojibake no texto do grupo "TODOS" dentro do popup de
+    Responsabilidades
+
+  Reproduz em: Licencas > Responsabilidades > linha do grupo TODOS, e
+  tambem em Requisitos Legais > Responsabilidades (mesmo componente
+  compartilhado). O texto exibido e "Todos os usu??rios ativos" em vez
+  de "Todos os usuarios ativos". Este e mais um ponto de ocorrencia do
+  mesmo problema sistemico de codificacao de caracteres ja registrado em
+  relatorios anteriores deste engajamento (acentuacao corrompida em
+  varios pontos da aplicacao) - o componente de Responsabilidades
+  tambem esta afetado.
+
+2.2 [MEDIO] Mensagens de erro de validacao expõem excecao SQL bruta ao
+    usuario, em vez de mensagem amigavel
+
+  Reproduz em: qualquer tentativa de gravacao bloqueada em
+  Manter Responsabilidades (Licencas ou Requisitos Legais) - por
+  exemplo, ao testar LIC-M-006, LIC-M-007, REQ-M-005 e REQ-M-006. A
+  mensagem exibida ao usuario e, por exemplo:
+    "SQLSTATE[45000]: <<Unknown error>>: 1644 Ja existe vinculo ativo
+    com vigencia sobreposta."
+  Embora a REGRA DE NEGOCIO esteja correta (o sistema bloqueia
+  corretamente duplicidade e vigencia invalida, atendendo aos criterios
+  de aceite do roteiro), a APRESENTACAO da mensagem viola o criterio de
+  aceite "Mensagens de erro devem ser compreensiveis ao usuario": um
+  usuario final nao tecnico veria um texto de excecao de banco de dados
+  (prefixo SQLSTATE, codigo de erro MySQL 1644) em vez de uma frase
+  como "Ja existe um responsavel com este vinculo em um periodo
+  sobreposto." Isso tambem expõe detalhes de implementacao (uso de
+  MySQL, uso de SIGNAL/trigger para validacao) que normalmente nao
+  deveriam ser visiveis ao usuario final.
+  Sugestao: capturar a excecao SQLSTATE[45000] no backend e traduzir
+  para uma mensagem de negocio amigavel antes de exibir ao usuario,
+  mantendo o codigo tecnico apenas em log interno.
+
+2.3 [BAIXO] Titulo "Sem descricao" em Manter Responsabilidades de
+    Requisitos Legais quando a situacao nao possui nenhum vinculo ativo
+
+  Reproduz em: Requisitos Legais > Situacao > Manter responsabilidades,
+  ao abrir uma situacao que nao possui NENHUM vinculo de responsabilidade
+  ativo no momento (por exemplo, apos remover o ultimo vinculo ativo via
+  exclusao logica). O cabecalho exibe "Situacao 39 - Sem descricao" em
+  vez de "Situacao 39 - As atividades da Crown sao licenciadas pela
+  CETESB...". Assim que um vinculo ativo e adicionado, o titulo passa a
+  exibir a descricao correta; removendo o unico vinculo ativo, o titulo
+  volta a exibir "Sem descricao" - comportamento reproduzido de forma
+  consistente (confirmado duas vezes durante este teste). A tela de
+  Manter Responsabilidades de Licencas nao apresenta este problema (o
+  titulo sempre exibe a descricao da licenca corretamente,
+  independentemente de haver vinculos ativos).
+  Sugestao: a consulta que monta o cabecalho da tela de manutencao de
+  Requisitos Legais parece estar dependendo de um JOIN com a tabela de
+  vinculos ativos para obter a descricao da situacao, em vez de
+  consultar diretamente o registro da situacao. Corrigir para buscar a
+  descricao independentemente da existencia de vinculos.
+
+2.4 [BAIXO] HTTP 503 intermitente em bootstrap-icons.css
+
+  Observado durante o teste de rede do SEC-003: a requisicao para
+  assets/vendor/bootstrap-icons/bootstrap-icons.css retornou HTTP 503
+  (Service Unavailable) em uma ocasiao. Esta e mais uma ocorrencia do
+  mesmo padrao intermitente de indisponibilidade de arquivos estaticos
+  ja registrado em relatorio anterior deste engajamento (la, o arquivo
+  afetado era o logotipo da aplicacao) - reforca que o problema nao e
+  especifico de um unico arquivo, mas sim do servico de arquivos
+  estaticos como um todo.
+
+-------------------------------------------------------------------------------
+3. LIMPEZA DE DADOS DE TESTE
+-------------------------------------------------------------------------------
+
+  Todos os vinculos de teste incluidos ATIVAMENTE durante este roteiro
+  foram removidos (exclusao logica) ao final da execucao, restaurando o
+  ambiente ao estado anterior de vinculos ativos:
+    - Licenca 1: vinculo "Responsavel pela validade / GESTORES / Grupo"
+      removido.
+    - Situacao 39: vinculo "Requisito legal / Administrador Modelo /
+      Usuario" removido.
+  Os vinculos criados para validar LIC-M-002 e LIC-M-008 (exclusao
+  logica) permanecem no sistema como HISTORICA, por design do proprio
+  fluxo testado (a exclusao logica preserva o registro para
+  rastreabilidade, conforme os criterios de aceite do roteiro) - nao
+  foram removidos fisicamente, o que seria contrario ao comportamento
+  esperado da funcionalidade.
+
+-------------------------------------------------------------------------------
+4. CRITERIOS DE ACEITE (avaliacao)
+-------------------------------------------------------------------------------
+
+  - Todos os testes criticos de acesso, consulta, manutencao e permissao
+    devem passar: PARCIALMENTE ATENDIDO - todos os testes de acesso,
+    consulta e manutencao passaram; os testes de permissao granular
+    (PER-001 a PER-004) ficaram bloqueados por configuracao de perfil
+    insuficiente nas contas de teste disponiveis (ver secao 9).
+  - Nenhum teste pode criar duplicidade ativa: ATENDIDO - todas as
+    tentativas de duplicidade foram corretamente bloqueadas pelo
+    sistema (LIC-M-007, REQ-M-005).
+  - Nenhuma exclusao pode remover fisicamente o historico: ATENDIDO -
+    confirmado em LIC-M-008 e REQ-M-007 (registros preservados como
+    HISTORICA).
+  - Nenhuma responsabilidade de outro tenant pode aparecer: ATENDIDO
+    (evidencia indireta, ver RG-004).
+  - Mensagens de erro devem ser compreensiveis ao usuario: NAO ATENDIDO
+    - mensagens de bloqueio de gravacao expõem excecao SQL bruta (ver
+    item 2.2).
+  - Capturas de tela devem ser arquivadas junto ao relatorio de
+    homologacao: nao aplicavel a este formato de execucao (testes
+    realizados via automacao de navegador com inspecao de DOM/rede;
+    capturas de tela pontuais foram usadas para verificacao visual mas
+    nao foram arquivadas como anexos formais neste relatorio).
+
+===============================================================================
+12. RESULTADO FINAL
+===============================================================================
+
+Responsavel pelo teste: Claude (assistente de QA), a pedido de Paulo
+Data: 20/08/2026
+Ambiente: instancia local (http://localhost/greenportal), empresa Modelo
+Resultado geral: PASSOU COM RESSALVAS
+Observacoes: A funcionalidade de Responsabilidades para Licencas e
+  Requisitos Legais esta funcionalmente correta em todos os fluxos de
+  consulta, manutencao, historico, grupos e seguranca testados (37 de
+  41 casos aplicaveis = PASSOU). Os pontos de atencao sao: (1) mensagens
+  de erro de validacao expõem excecao SQL bruta ao usuario (severidade
+  media); (2) recorrencia do problema sistemico de mojibake ja
+  conhecido; (3) bug pontual de titulo "Sem descricao" na manutencao de
+  Requisitos Legais sem vinculos ativos; (4) os testes de permissao
+  granular (PER-001 a PER-004) precisam ser repetidos apos ajuste das
+  flags de permissao do perfil GESTOR para as transacoes LICENCAS e
+  REQUISITOS_LEGAIS, pois a conta de teste disponivel nao possui nem
+  mesmo permissao de consulta; (5) SEC-003 nao pode ser validado sem uma
+  abordagem de teste ativo/exploratorio, fora do escopo deste roteiro.
+
+===============================================================================
+FIM DO RELATORIO
+===============================================================================

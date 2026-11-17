@@ -1,0 +1,3 @@
+<?php
+require_once dirname(__DIR__) . '/classes/ManutencaoLegalCadastroGrid.php';
+ManutencaoLegalCadastroGrid::render(['menu' => 'TIPOS', 'title' => ['pt' => 'Tipos', 'en' => 'Types', 'es' => 'Tipos'], 'transaction' => 'manutencaolegal_tipos', 'database' => 'glegislacao_dbp', 'prefix' => 'GLEGISLACAO', 'table' => 'tipos', 'view' => 'vw_tipos_grid', 'primary' => 'CODTIPO', 'default_sort' => ['column' => 'DSCTIPO', 'direction' => 'asc'], 'fields' => ['CODTIPO' => ['label' => ['pt' => 'Código', 'en' => 'Code', 'es' => 'Código'], 'readonly' => true], 'DSCTIPO' => ['label' => ['pt' => 'Descrição', 'en' => 'Description', 'es' => 'Descripción']]]]);

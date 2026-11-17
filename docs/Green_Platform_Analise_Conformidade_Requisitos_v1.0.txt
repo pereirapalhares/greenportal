@@ -1,0 +1,416 @@
+ANALISE DE CONFORMIDADE DA APLICACAO GREENPORTAL
+GREEN PLATFORM - REQUISITOS DE PROJETO v1.0
+
+Data da analise: 10/10/2026
+Documento de referencia: docs\Green_Platform_Requisitos_Projeto_v1.0.txt
+Escopo: codigo PHP, classes, paginas, servicos, scripts SQL, documentacao e evidencias de testes existentes no repositorio.
+Status: diagnostico tecnico para planejamento. Este documento nao substitui a homologacao funcional, o inventario do banco em cada tenant nem o teste de seguranca de producao.
+
+======================================================================
+1. CONCLUSAO EXECUTIVA
+======================================================================
+
+O GreenPortal ja e uma base funcional importante do Green SGA, com recursos de acesso por empresa, perfis e permissoes, catalogo universal de menus, modulo Legal/SGA, responsabilidades, alertas, dashboards, calendario, GED inicial, exportacoes, IA aplicada a potenciais/documentos/licencas e varias rotinas de migracao legada.
+
+A aplicacao, entretanto, ainda nao pode ser considerada aderente integralmente ao Green Platform descrito no documento de requisitos. O codigo atual esta concentrado em paginas PHP e classes de apoio, enquanto a arquitetura-alvo propoe Core, Platform, Services e Modules com contratos estaveis, eventos, repositorios e servicos reutilizaveis.
+
+Classificacao geral:
+
+- ATENDIDO OU BEM COBERTO: parte do Core de acesso, multi-tenant, RBAC basico por transacao, interface padrao de grids/forms, Legal/SGA, responsabilidades, alertas, dashboards iniciais, exportacao, migracao legada e IA aplicada.
+- PARCIAL: auditoria, escopo por unidade/objeto, workflow, documentos/GED, delegacao, tarefas, agenda, questionarios, mobile/acessibilidade, observabilidade, backup/rollback e imutabilidade historica.
+- PENDENTE: motor universal de questionarios, motor universal de workflow, gestao completa de conteudo/versionamento, SCIM, integracoes SAP/Power BI, contratos de API, ESG/Projetos completos e modularizacao estrutural.
+
+Prioridade recomendada:
+
+P0 - seguranca, isolamento, integridade, auditoria, backup, idempotencia e contratos de dados.
+P1 - consolidacao de Core, tarefas, agenda, notificacoes, responsabilidades e workflow.
+P2 - servicos universais de Conteudo/GED e Questionarios.
+P3 - modularizacao, integracoes e ampliacao Supplier/Quality.
+P4 - IA avancada, ESG, Projetos e capacidades analiticas de plataforma.
+
+======================================================================
+2. EVIDENCIAS DO ESTADO ATUAL
+======================================================================
+
+Inventario aproximado encontrado no repositorio:
+
+- 851 arquivos PHP.
+- 213 scripts SQL.
+- 19 classes PHP de servicos/componentes principais.
+- 65 arquivos JavaScript.
+- Diretorios atuais: classes, principal, database, services, scripts, tests, docs, assets e vendor.
+- Nao existe atualmente o diretorio app/Core, app/Platform, app/Services ou app/Modules proposto como arquitetura-alvo.
+
+Componentes relevantes ja existentes:
+
+- classes/GreenPortalDatabase.php: conexao e acesso aos bancos.
+- classes/UsuarioContaService.php e classes/UsuarioSessao.php: conta, senha e sessao.
+- classes/PermissaoTransacao.php e classes/MenuService.php: menu e permissoes.
+- classes/AlertasService.php e classes/PainelDireitoService.php: alertas e painel.
+- classes/ExportacaoGridWorker.php e services/ExportacaoGridService.php: exportacao assincrona.
+- classes/NaoConformidadeWorkflow.php: workflow especifico de nao conformidades.
+- classes/InteligenciaArtificialDocumento.php e classes/InteligenciaArtificialLicenca.php: IA aplicada a documentos/licencas.
+- services/InteligenciaArtificialService.php: fila e processamento de solicitacoes de IA.
+- services/ocr_service: servico OCR baseado em FastAPI.
+- classes de grid do modulo Legal e de manutencao: grids, filtros, descricoes de chaves e CRUD contextual.
+- principal/eventos.php e principal/painel_calendario.php: agenda/calendario de eventos.
+- principal/gestao_arquivos.php, principal/api/ged_arquivos.php e principal/visualizadopdf.php: GED inicial.
+
+Evidencias de banco e migracao:
+
+- Scripts SQL versionados com views, procedures, permissoes, alertas, dashboards, responsabilidades, controle de documentos e IA.
+- logs_auditoria e vw_logs_auditoria_grid ja aparecem nos scripts iniciais, mas a cobertura e profundidade devem ser uniformizadas.
+- views de responsabilidades efetivas e delegacoes ja existem para varios modulos.
+- scripts recentes de migracao e correcao do Atlas, Modelo e Modelo2 registram etapas e preservam dados legados.
+- docs\diretriz-catalogo-menus-universal.md define a separacao entre catalogo universal de menus e permissoes por tenant.
+
+Limites identificados:
+
+- A maior parte da regra ainda e descoberta em paginas PHP e configuracoes locais de transacao.
+- O workflow existente e especifico de nao conformidades, nao um motor universal.
+- O GED possui arquivos e visualizacao, mas nao foi comprovada a cobertura completa de versionamento, check-in/check-out, retencao, hash, recuperacao e aprovacao.
+- Nao foi encontrada implementacao universal consolidada para amb_questionario_*.
+- Nao foram encontradas implementacoes de SCIM, SAP ou Power BI prontas.
+- A presenca de API em algumas transacoes nao equivale a uma camada de contratos REST/eventos versionados para toda a plataforma.
+
+======================================================================
+3. MATRIZ DE REQUISITOS FUNCIONAIS
+======================================================================
+
+RF-001 - Multi-site, empresa, unidade e visao personalizada
+Status: PARCIAL / BASE FORTE.
+Evidencias: bancos por tenant, selecao de empresa na sessao, catalogo universal de menus, filtros e regras por unidade, views de responsabilidades e dashboards com unidade.
+Faltas: modelo formal de sites/locais, contexto persistente de unidade em todos os modulos, escopo de objeto centralizado e personalizacao de visao por usuario/perfil.
+Alterar/criar: servico TenantContext/UnitContext; politica central de escopo; tabelas de sites, preferencias e visoes; testes de tentativa cruzada entre tenant, empresa, unidade e objeto.
+
+RF-002 - Responsabilidades multiplas, diretas e por perfil
+Status: PARCIALMENTE ATENDIDO.
+Evidencias: tabelas/views de responsabilidades, destinacao por usuario, consultas de responsabilidades efetivas e documentacao de responsabilidades.
+Faltas: contrato universal para todos os modulos, vigencia, prioridade, substituicao, delegacao e tratamento unico de conflito.
+Alterar/criar: ResponsibilityService universal, tabela de origem/destino/vigencia, regras de precedencia, delegacao e auditoria.
+
+RF-003 - Agenda, notificacoes, pendencias, alertas, cards e dashboard
+Status: PARCIALMENTE ATENDIDO.
+Evidencias: eventos.php, painel_calendario.php, painel_pendencias.php, painel_prazos.php, alertas.php, AlertasService e dashboards.
+Faltas: unificacao entre eventos, tarefas, alertas e pendencias; recorrencia, notificacao multicanal, preferencia do usuario, escalonamento e visao transversal por modulo.
+Alterar/criar: TaskService, AgendaService, NotificationService e modelo comum de prazo/status/origem; evitar duplicidade de regras entre paginas.
+
+RF-004 - Atribuicao automatica de tarefas com IA
+Status: PENDENTE / PARCIAL.
+Evidencias: IA gera potenciais e alertas, e responsabilidades direcionam registros.
+Faltas: motor que converta resultado da IA em tarefa atribuida, com confianca, aprovacao humana, prazo, reprocessamento e explicacao.
+Alterar/criar: fila de tarefas IA, regras de threshold, aprovacao humana, idempotencia, auditoria e vinculo tarefa-alerta-registro.
+
+RF-005 - Dashboards por unidade, periodo, responsavel e risco
+Status: PARCIALMENTE ATENDIDO.
+Evidencias: dashboard.php, dashboard_admin.php e consultas de licencas, requisitos, pendencias, unidades e responsabilidades.
+Faltas: construtor configuravel de dimensoes/medidas, filtros de periodo comuns, risco padronizado, exportacao de indicadores e politica de desempenho.
+Alterar/criar: camada de indicadores, consultas materializadas quando necessario, catalogo de metricas e permissao por dado agregado.
+
+RF-006 - Auditoria, tutorial, responsividade e uso movel
+Status: PARCIAL.
+Evidencias: logs de auditoria em scripts, ajuda por transacao, Bootstrap, ajustes visuais e varios testes Firefox.
+Faltas: auditoria universal antes/depois/origem/correlacao, trilha imutavel, acessibilidade WCAG verificada, tutorial contextual uniforme e validacao mobile automatizada.
+Alterar/criar: AuditService central, correlation_id, trilha de leitura sensivel, acessibilidade automatizada, ajuda contextual e testes responsivos.
+
+RF-007 - Politica configuravel de alertas e CRUD/exportacao
+Status: PARCIALMENTE ATENDIDO.
+Evidencias: alertas, AlertasService, exportacao assincrona e links de acompanhamento.
+Faltas: politica por tipo, severidade, prazo, canal, perfil/unidade e escalonamento; CRUD universal da politica.
+Alterar/criar: tabelas de regras, destinatarios, canais e historico de entrega; worker de notificacao e telas administrativas.
+
+RF-008 - Delegacao, SAP/Power BI, API e SCIM
+Status: PENDENTE / PARCIAL.
+Evidencias: referencias a APIs internas, delegacoes de responsabilidade e servicos auxiliares.
+Faltas: conector SAP, conector Power BI, API publica versionada, webhooks e SCIM para monitoramento/sincronizacao de usuarios.
+Alterar/criar: API Gateway/contratos, autenticacao de integracao, filas, idempotency key, logs tecnicos, adaptadores SAP/Power BI e SCIM.
+
+RF-009 - Autorizacao por tela/acao e idiomas PT/EN/ES
+Status: PARCIALMENTE ATENDIDO.
+Evidencias: MenuService, PermissaoTransacao, perfis, permissoes por acao, menus universais e rotulos em tres idiomas em varias paginas.
+Faltas: enforcement uniforme em endpoint, popup, exportacao, API e objeto; catalogo central de labels; cobertura integral dos tres idiomas.
+Alterar/criar: AuthorizationService central, politica deny-by-default, matriz tela/acao/objeto, i18n central e teste de acesso direto.
+
+RF-010 - Desabilitar modulo sem apagar historia
+Status: PARCIAL.
+Evidencias: configuracoes de menu/modulo, status de registros e preservacao historica em migracoes.
+Faltas: flag de modulo com comportamento formal, bloqueio de novas operacoes, consulta historica e governanca de reativacao.
+Alterar/criar: ModuleRegistry, feature flags por tenant, regras de leitura historica, auditoria de ativacao/desativacao e testes de nao exclusao.
+
+======================================================================
+4. CONTEUDO, DOCUMENTOS E GED
+======================================================================
+
+CNT-001 - Metadados, classificacao, proprietario, unidade e seguranca
+Status: PARCIAL.
+Evidencias: gestao_arquivos.php, APIs GED, controle de documentos e associacoes a requisitos/controles.
+Faltas: metamodelo universal de conteudo, taxonomia unica, proprietario formal, escopo por unidade e politica uniforme de acesso.
+Acao: criar ContentService, tabela content_items, content_metadata, taxonomy, ownership e ACL por objeto.
+
+CNT-002 - Versionamento, check-in/out, historico e recuperacao
+Status: PENDENTE / nao comprovado de forma completa.
+Acao: implementar versoes imutaveis, hash, autor, data, motivo, check-in/out com timeout, restauracao como nova versao e bloqueio contra sobrescrita.
+
+CNT-003 - Pastas, taxonomia, busca, visualizador, retencao e seguranca
+Status: PARCIAL.
+Evidencias: arquivos, PDF, OCR e busca pontual.
+Faltas: busca por metadados/conteudo, MIME/size/hash/storage formal, retencao, descarte controlado, quarentena e viewer seguro para todos os tipos.
+Acao: storage adapter, antivirus/quarentena, politica de retencao, indice de busca e autorizacao por documento.
+
+CNT-004 - Workflow de aprovacao de conteudo
+Status: PENDENTE como capacidade universal.
+Acao: integrar ContentService ao WorkflowService, com estados rascunho/em aprovacao/aprovado/rejeitado/obsoleto e aprovadores por perfil/unidade.
+
+CNT-005 - Upload seguro
+Status: PARCIAL.
+Evidencias: servico OCR e rotinas de arquivos.
+Faltas: comprovacao universal de MIME real, tamanho, hash, nome seguro, storage fora da area publica, quarentena, antivirus e auditoria de download.
+
+CNT-006 - GED vinculado a controles, requisitos, riscos e evidencias
+Status: PARCIALMENTE ATENDIDO.
+Evidencias: associacoes de controle/documento e vinculos do modulo Legal.
+Faltas: contrato comum para todos os modulos e navegacao bidirecional completa.
+
+======================================================================
+5. WORKFLOW, TAREFAS E QUESTIONARIOS
+======================================================================
+
+WF-001 a WF-005 - Motor universal de workflow
+Status: PENDENTE / PARCIAL.
+Evidencias: classes/NaoConformidadeWorkflow.php e scripts 111/112 atendem um recorte de nao conformidades; existem status, auditoria e acoes naquele dominio.
+Faltas: definicao versionada de fluxo, instancias universais, acoes aprovar/rejeitar/devolver/complementar/delegar/escalar, SLA, comentarios, evidencias, idempotencia e autorizacao para Legal, Conteudo, Questionario, Fornecedor e Projetos.
+Alterar/criar: WorkflowDefinition, WorkflowVersion, WorkflowInstance, WorkflowTask, WorkflowAction, WorkflowComment, WorkflowEvidence e eventos de dominio. Toda mutacao deve ocorrer por servico/procedure autorizado, nunca por SQL recebido livremente.
+
+QUE-001 a QUE-006 - Questionarios universais
+Status: PENDENTE como plataforma universal.
+Evidencias: paginas/checklists e referencias pontuais a perguntas, mas nao foi encontrado um motor consolidado amb_questionario_* com publicacao imutavel e resultados versionados.
+Faltas: banco universal de questionarios, inventario/migracao dos questionarios legados amb_questionario_req_*, perguntas/blocos/regras/pesos, publicacao imutavel, respostas historicas, validacao humana para itens sensiveis e integracao a workflow.
+Alterar/criar: guniversal_dbp.amb_questionario, amb_questionario_versao, amb_questionario_bloco, amb_questionario_pergunta, amb_questionario_opcao, amb_questionario_regra, amb_questionario_publicacao; banco tenant para aplicacoes, respostas, evidencias e resultados. Publicacoes usadas nao podem ser alteradas.
+
+======================================================================
+6. LEGAL, SGA E RESPONSABILIDADES
+======================================================================
+
+LEG-001 a LEG-007
+Status: PARCIALMENTE ATENDIDO, com maior maturidade que os demais dominios.
+Evidencias: modulo Legal, requisitos, legislacao, situacao de cumprimento, licencas, condicionantes, correlacionamentos Ambiental/Ocupacional/Social, LAIA/LPRO/LAIS, medidas/monitoramentos, treinamentos, infraestrutura, responsabilidades, alertas e IA.
+Atendido: cadastro e associacao de requisitos, unidades, licencas, controles e evidencias; telas e grids contextualizados; IA de potenciais/documentos/licencas; responsabilidades por varios dominios; conversoes de potenciais aprovados.
+Faltas: motor universal de avaliacao, propagacao formal de alteracoes com impacto, reanalise semantica, trilha completa de inativacao, matriz controle/influencia/fornecedor padronizada, agenda universal de licencas, protocolo/renovacao/taxa com workflow e reutilizacao integral de Content/Workflow.
+Acao: consolidar entidades Legal sob servicos comuns; ligar cada alteracao a impacto, tarefa, alerta, evidencias e auditoria; preservar historico sem apagar registros.
+
+SGA-001 a SGA-004
+Status: PARCIALMENTE ATENDIDO.
+Evidencias: LAIA, LPRO, LAIS, controles, objetivos/metas, impactos, aspectos, riscos, responsabilidades e correlacionamentos.
+Faltas: governanca comum entre processos, indicadores e workflow de aprovacao/revisao; reaproveitamento formal do ContentService e WorkflowService.
+
+======================================================================
+7. FORNECEDORES, QUALIDADE, ESG E PROJETOS
+======================================================================
+
+SUP-001 a SUP-006
+Status: PARCIAL.
+Evidencias: homologacao de fornecedores, fornecedores/funcionarios, responsabilidades, permissoes e testes de homologacao.
+Faltas: avaliacao/questionarios universais, documentos e validade, risco, workflow de homologacao, scorecards, planos de acao e integracao com tarefas/alertas.
+
+QLT-001 a QLT-006
+Status: PARCIAL / desigual por submodulo.
+Evidencias: nao conformidades, analise de causa, aprovacao, eficacia, ocorrencias e workflow especifico.
+Faltas: controle universal de acao corretiva, auditoria/inspecao completa, indicadores de qualidade, integracao com Content/Questionnaire/Workflow e modelo unificado de evidencias.
+
+ESG-001 a ESG-005
+Status: PENDENTE ou PARCIAL conforme a entidade.
+Evidencias: scripts e referencias a dominios ambiental, ocupacional e social, impactos e aspectos.
+Faltas: modulo ESG consolidado, indicadores e metas ESG, evidencias, relatorios, governanca e trilha de calculo.
+
+PRJ-001 a PRJ-005
+Status: PENDENTE como modulo de plataforma.
+Faltas: projetos, fases, entregas, riscos, tarefas, documentos, custos, indicadores, workflow e relacao com requisitos/controles.
+
+======================================================================
+8. REQUISITOS NAO FUNCIONAIS
+======================================================================
+
+RNF-001 - Seguranca, RBAC, tenant, unidade, modulo e objeto
+Status: PARCIALMENTE ATENDIDO.
+Existe RBAC por perfil/menu/permissao e isolamento por bancos/empresa. Falta centralizar a politica e garantir o mesmo enforcement em todos os endpoints, APIs, exportacoes, arquivos, objetos e unidades.
+
+RNF-002 - Injecao, XSS, CSRF e upload
+Status: PARCIAL.
+Ha prepared statements, CSRF em partes do sistema e validacoes em fluxos especificos. Deve haver auditoria de todos os endpoints e testes automatizados de seguranca, principalmente uploads e conteudo HTML.
+
+RNF-003 - Auditoria LGPD
+Status: PARCIAL.
+Ha logs_auditoria, mas a cobertura antes/depois, autor, data, origem, IP, correlation_id, leitura de dados pessoais, exportacao e retencao deve ser uniforme e imutavel.
+
+RNF-004 - Transacao, rollback, tratamento de erro e idempotencia
+Status: PARCIAL.
+Existem procedures, workers e recuperacao de fila de IA. Falta padrao global de transacao, idempotency key, retry seguro, outbox/eventos e rollback testado por modulo.
+
+RNF-005 - i18n, acessibilidade e responsividade
+Status: PARCIAL.
+PT/EN/ES e Bootstrap existem em varias telas. Falta catalogo central, cobertura integral, labels sem texto fixo, teclado, contraste, leitor de tela e matriz de testes mobile.
+
+RNF-006 - Backup, restore, observabilidade e migrations
+Status: PARCIAL.
+Ha backups, scripts SQL versionados e documentos de homologacao. Falta pipeline formal com checksum, preflight, rollback, restore testado, metricas, logs estruturados, health checks e alertas do servico.
+
+RNF-007 - SLA e desempenho
+Status: PARCIAL.
+Ha investigacoes de performance e workers, mas nao ha SLO/SLI formal, testes de carga por tenant, limites de fila, timeout e plano de capacidade.
+
+======================================================================
+9. ORGANIZACAO DE CODIGO E DADOS
+======================================================================
+
+Status: PENDENTE como reestruturacao arquitetural; nao se recomenda uma reescrita big-bang.
+
+O codigo atual deve ser preservado e migrado gradualmente para:
+
+- app/Core: bootstrap, configuracao, sessao, tenant, autorizacao, auditoria, erros e contratos.
+- app/Platform: banco, filas, eventos, storage, notificacao, busca, arquivos e i18n.
+- app/Services: Content, Workflow, Questionnaire, Task, Agenda, Alert, Responsibility, Export e AI.
+- app/Modules: Legal, SGA, Supplier, Quality, ESG, Projects e demais dominios.
+- controllers, services, repositories, views, routes, config, SQL, help, labels e tests por modulo.
+
+Regra de migracao: primeiro extrair servicos e contratos mantendo as paginas atuais como adaptadores; depois mover telas e repositorios. Nao duplicar regras de permissao, tenant ou transacao em novos modulos.
+
+Banco:
+
+- guniversal_dbp deve conter somente catalogos universais, incluindo menus, labels, idiomas, questionarios publicados e configuracoes globais autorizadas.
+- Cada banco tenant deve conter dados operacionais, permissoes de seus perfis, respostas, tarefas, documentos vinculados, eventos e historico da empresa.
+- O nome do banco nunca deve vir livremente do login; deve ser resolvido pelo cadastro central da empresa.
+- Chaves legadas, especialmente COD<ENTIDADE>, devem permanecer estaveis quando o requisito de migracao exigir.
+- Views devem servir leitura; mutacoes devem passar por procedures/servicos autorizados, com transacao e auditoria.
+
+======================================================================
+10. PLANO DE ALTERACOES E CRIACOES
+======================================================================
+
+P0 - Fundacao segura
+
+1. Criar inventario formal de tabelas, views, procedures, funcoes, indices, chaves e dependencias por banco.
+2. Criar matriz de autorizacao por tenant, empresa, unidade, modulo, objeto e acao.
+3. Centralizar TenantContext, UnitContext e AuthorizationService.
+4. Padronizar AuditService com before/after, autor, origem, IP, correlation_id e LGPD.
+5. Padronizar transacao, rollback, erro, retry, idempotency key e outbox.
+6. Formalizar backup, restore, checksum, preflight, rollback e teste de restauracao.
+7. Criar health checks para MySQL, filas, IA, OCR, storage e workers.
+8. Criar testes automatizados de isolamento Atlas/Modelo/Modelo2 e de acesso direto a endpoints.
+
+P1 - Operacao transversal
+
+1. Criar TaskService e unificar tarefas, pendencias, prazos e eventos.
+2. Criar AgendaService e NotificationService, incluindo recorrencia, escalonamento e preferencia do usuario.
+3. Evoluir responsabilidades para vigencia, delegacao, substituicao, conflito e auditoria.
+4. Criar WorkflowService universal e adaptar primeiro nao conformidades e Legal.
+5. Transformar resultados IA aprovados em tarefas/controles/licencas/documentos com idempotencia.
+6. Criar catalogo de indicadores e filtros comuns de dashboard.
+
+P2 - Conteudo e questionarios
+
+1. Criar ContentService e modelo de conteudo/versionamento/retencao/check-in-out.
+2. Fortalecer upload seguro, storage, MIME real, hash, quarentena e auditoria de download.
+3. Criar QuestionnaireService e tabelas universais amb_questionario_*.
+4. Inventariar e migrar questionarios legados mantendo historico e identificadores.
+5. Integrar questionarios a fornecedores, Legal, SGA, Qualidade e Workflow.
+
+P3 - Modularizacao e integracoes
+
+1. Extrair adaptadores das paginas atuais para app/Core, app/Platform, app/Services e app/Modules.
+2. Criar API versionada, contratos, autenticacao de integracao e webhooks.
+3. Implementar adaptadores SAP e Power BI conforme decisoes de escopo.
+4. Implementar SCIM para ciclo de vida e monitoramento de usuarios.
+5. Completar Supplier e Quality com servicos universais de documentos/questionarios/workflow.
+
+P4 - Evolucao de plataforma
+
+1. Busca semantica e reanalise de impacto com IA, sempre com validacao humana.
+2. Consolidar ESG com indicadores, metas, evidencias e relatorios.
+3. Criar Projects com fases, riscos, tarefas, documentos e indicadores.
+4. Criar analise de capacidade, SLO/SLI, carga e observabilidade operacional.
+
+======================================================================
+11. MODELO MINIMO DE NOVOS COMPONENTES
+======================================================================
+
+Servicos:
+
+- TenantContextService
+- AuthorizationService
+- AuditService
+- ContentService
+- WorkflowService
+- QuestionnaireService
+- TaskService
+- AgendaService
+- NotificationService
+- ResponsibilityService
+- SearchService
+- StorageService
+- IntegrationService
+- AIOrchestrator
+
+Entidades universais sugeridas:
+
+- universal_menu, universal_label, universal_ajuda, module_registry
+- workflow_definition, workflow_version, workflow_instance, workflow_task, workflow_action, workflow_comment, workflow_evidence
+- content_item, content_version, content_metadata, content_acl, content_retention, content_link
+- amb_questionario, amb_questionario_versao, amb_questionario_bloco, amb_questionario_pergunta, amb_questionario_opcao, amb_questionario_regra, amb_questionario_publicacao
+- task, task_assignment, task_dependency, task_event, task_evidence
+- notification_rule, notification_delivery, notification_preference
+- audit_event, audit_data_access, integration_log, outbox_event, idempotency_key
+
+Regras obrigatorias:
+
+- Toda entidade operacional deve possuir tenant/empresa quando aplicavel, autor, datas, status, origem e historico.
+- Toda operacao sensivel deve validar sessao, tenant, unidade, perfil, acao e objeto.
+- Toda fila deve ter estado, tentativa, erro, retry seguro e correlacao.
+- Toda exclusao funcional deve preferir inativacao/historico quando houver requisito legal ou auditoria.
+
+======================================================================
+12. PLANO DE VALIDACAO E ACEITE
+======================================================================
+
+Antes de considerar a plataforma aderente:
+
+1. Executar suite de login por empresa, usuario, perfil e senha, inclusive usuario em multiplos grupos/perfis.
+2. Tentar acessar diretamente cada pagina, API, popup, exportacao e documento sem permissao.
+3. Validar que Atlas nao ve Modelo, Modelo2 ou qualquer outro tenant.
+4. Validar escopo por unidade, responsabilidade, delegacao e objeto.
+5. Criar, editar, aprovar, rejeitar, devolver, delegar e cancelar um workflow.
+6. Criar duas versoes de documento, recuperar a anterior, validar hash e auditar download.
+7. Publicar questionario, responder, alterar regra em nova versao e confirmar imutabilidade do historico.
+8. Gerar tarefa, alerta, notificacao e escalonamento a partir de prazo e IA.
+9. Testar falha de banco, timeout, retry, reexecucao de migration e reprocessamento de fila.
+10. Testar acentuacao, PT/EN/ES, teclado, contraste, responsividade e navegacao por leitor de tela.
+11. Restaurar backup em ambiente limpo e comparar contagens, chaves, views, procedures e checksums.
+12. Medir SLO de login, grid, consulta, upload, workflow, IA e exportacao por tenant.
+
+Evidencias devem ser armazenadas por versao em tests e docs, com data, ambiente, banco, usuario de teste, resultado e referencia de log.
+
+======================================================================
+13. DECISOES NECESSARIAS ANTES DA IMPLEMENTACAO COMPLETA
+======================================================================
+
+1. Definir se Questionarios e menus universais ficarao exclusivamente em guniversal_dbp ou se havera cache controlado por tenant.
+2. Definir provedor, modelo, custo, retencao e politica de dados para IA.
+3. Definir canais de notificacao: somente portal ou tambem e-mail, Teams, WhatsApp e webhook.
+4. Definir contrato e periodicidade de SAP, Power BI e SCIM.
+5. Definir politica de retencao e descarte por tipo documental e por requisito legal.
+6. Definir unidade minima de autorizacao: empresa, site, unidade, area, atividade e registro.
+7. Definir SLO, volume esperado, janela de backup e RPO/RTO.
+8. Definir estrategia de migracao: por dominio, por tenant ou por release.
+9. Definir compatibilidade dos nomes legados e a tabela de mapeamento para novos identificadores.
+10. Definir se o legado sera somente leitura apos migracao ou se existira sincronizacao temporaria.
+
+======================================================================
+14. PARECER FINAL
+======================================================================
+
+O caminho recomendado e evolutivo. A base atual deve ser preservada, estabilizada e protegida; em seguida, regras repetidas devem ser retiradas das paginas e concentradas em servicos universais. Legal/SGA, responsabilidades, seguranca, menus, alertas, GED inicial e IA formam o primeiro nucleo aproveitavel.
+
+O maior risco do projeto e declarar conformidade apenas porque existem telas semelhantes aos requisitos. Para Green Platform, a mesma regra precisa funcionar de maneira uniforme em todos os modulos, com isolamento por tenant/unidade, auditoria, workflow, historico, idempotencia e contratos estaveis.
+
+Recomendacao de aceite da proxima fase: concluir P0 e demonstrar os testes de isolamento, autorizacao, auditoria, backup/restore e reexecucao antes de ampliar novos modulos. Depois, implementar Workflow, Conteudo e Questionarios como servicos compartilhados; somente entao completar integracoes, ESG, Projetos e IA avancada.
+
+FIM DO DOCUMENTO

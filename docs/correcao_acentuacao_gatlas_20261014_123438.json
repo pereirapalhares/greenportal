@@ -1,0 +1,122 @@
+{
+    "executado_em": "2026-10-14T12:34:38+00:00",
+    "banco": "gatlas_dbp",
+    "registros_corrigidos": 13,
+    "alteracoes": [
+        {
+            "tabela": "monitoramento_cumprimento_legal_aux",
+            "coluna": "PADRAO",
+            "chave": [],
+            "antes": "Esta Portaria estabelece os critérios para elaboração, numeração, catalogação, publicação e arquivamento das Normas Técnicas previstas no Código de Segurança e Prevenção contra Incêndio e Pânico (COSCIP).\r\n\r\nCaberá ao Diretor Integrado Especializado (DIESP) propor ao Conselho Superior de A??vidade Técnicas (CSAT) a homologação da Norma Técnica.",
+            "depois": "Esta Portaria estabelece os critérios para elaboração, numeração, catalogação, publicação e arquivamento das Normas Técnicas previstas no Código de Segurança e Prevenção contra Incêndio e Pânico (COSCIP).\r\n\r\nCaberá ao Diretor Integrado Especializado (DIESP) propor ao Conselho Superior de Atividade Técnicas (CSAT) a homologação da Norma Técnica."
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODOCORRENCIA": 7041
+            },
+            "antes": "7.5 Informação documentada 7.5.1 Generalidades O sistema de gestão da qualidade da organização deve incluir: ââ‚¬Å a) informação documentada requerida por esta Norma; ââ‚¬Å b) informação documentada determinada pela organização como sendo necessária para a eficácia do sistema de gestão da qualidade. NOTA A extensão da informação documentada para um sistema de gestão da qualidade pode diferir de uma organização para outra devido:  ââ‚¬â€ ao porte da organização e seu tipo de atividades, processo",
+            "depois": "7.5 Informação documentada 7.5.1 Generalidades O sistema de gestão da qualidade da organização deve incluir: ââ‚¬Å a) informação documentada requerida por esta Norma; ââ‚¬Å b) informação documentada determinada pela organização como sendo necessária para a eficácia do sistema de gestão da qualidade. NOTA A extensão da informação documentada para um sistema de gestão da qualidade pode diferir de uma organização para outra devido:  ââ‚¬â€ ao porte da organização e seu tipo de atividades, processo"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6937
+            },
+            "antes": "Não foi formalmente estabelecido um procedimento de gerenciamento de resíduos para a atividade de controle de resíduos conforme estabelece a NBR 11174 e NBR 12235. Existe a intenção de colocar o documento â€œGestão e Destinação de Resíduos Fábricaâ€ no GED.",
+            "depois": "Não foi formalmente estabelecido um procedimento de gerenciamento de resíduos para a atividade de controle de resíduos conforme estabelece a NBR 11174 e NBR 12235. Existe a intenção de colocar o documento â€œGestão e Destinação de Resíduos Fábricaâ€ no GED."
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6964
+            },
+            "antes": "1.Segundo o item 5.6.1 Auditoria de Gestão da Qualidade (SGQ) e Gestão Ambiental (SGA) do documento Realização de Auditorias Internas - NÂº do documento: 001405 - Versão: 12 - Data: 10/05/2018, devem ser realizadas auditorias semestrais no caso da avaliação resultar numa nota vermelha. Este critério faz apenas referência a filiais e não menciona a unidade KW. O critério adotado não explicita o que está definido no requisito 9.2.2, ou seja, â€œao estabelecer o programa de auditoria interna, a organização deve levar em consideração a importância ambiental dos processos concernentes, as mudanças que afetam a organização e os resultados de auditorias anterioresâ€. Recomendamos, portanto, definir melhor o critério para priorização de auditorias na fábrica levando em consideração aquilo que está especificado no requisito 9.2.2.\n\nMelhoria\n2. Recomendamos estabelecer critérios específicos no procedimento Realização de Auditorias Internas â€“ 001405 â€“ Versão 12 â€“ 10/05/2018 para a qualificação / contratação de auditores internos contratados",
+            "depois": "1.Segundo o item 5.6.1 Auditoria de Gestão da Qualidade (SGQ) e Gestão Ambiental (SGA) do documento Realização de Auditorias Internas - NÂº do documento: 001405 - Versão: 12 - Data: 10/05/2018, devem ser realizadas auditorias semestrais no caso da avaliação resultar numa nota vermelha. Este critério faz apenas referência a filiais e não menciona a unidade KW. O critério adotado não explicita o que está definido no requisito 9.2.2, ou seja, â€œao estabelecer o programa de auditoria interna, a organização deve levar em consideração a importância ambiental dos processos concernentes, as mudanças que afetam a organização e os resultados de auditorias anterioresâ€. Recomendamos, portanto, definir melhor o critério para priorização de auditorias na fábrica levando em consideração aquilo que está especificado no requisito 9.2.2.\n\nMelhoria\n2. Recomendamos estabelecer critérios específicos no procedimento Realização de Auditorias Internas â€“ 001405 â€“ Versão 12 â€“ 10/05/2018 para a qualificação / contratação de auditores internos contratados"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6973
+            },
+            "antes": "1. Ao analisar a tabela Controle de Ações_SGA_Out.xlsx observou-se ações corretivas que não possuem correspondência com a respectiva causa:\nâ€¢ Ação NÂº 75 â€“ Não Conformidade identificada â€œchecklist de transporte de resíduos perigosos não preenchido para descarte de óleo usado destinado para a empresa Lwartâ€. Causa identificada â€œFalta de checklist desenvolvido para ajudar na verificação de resíduos perigosos â€\n\nExistem ainda situações em que não foram estabelecidas ações para causas identificadas:\nâ€¢ Ação NÂº 70 â€“ Não existem ações para a causa: â€œFornecedor não entregou as placas de identificação das caçambas metálicasâ€\nâ€¢ Ação NÂº 73 â€“ Não existem ações para a causa: â€œFalta de conscientização dos colaboradores que mesmo que temporário os materiais não podem obstruir as rotas de fuga. Baixo comprometimento dos colaboradores  quanto a coleta de resíduos adequado. Coletores foram identificados recentemente.â€\n\nEm outros pontos observou-se o estabelecimento de ações de contenção (ações imediatas) no lugar de ações corretivas:\nâ€¢ Ação NÂº 74 â€“ Não Conformidade identificada â€œNão foi apresentado procedimento de gerenciamento de resíduos conforme estabelece as normas NBR 11174 e NBR 12235â€. Causa identificada â€œMomento de transição de responsabilidades quanto ao gerenciamento de resíduos da empresa de limpeza e Recicla BR,  não foi identificado necessidade de procedimento anteriormente. Falta de conhecimento quanto necessidade do procedimento documentado para gerenciamento de resíduos estabelecido somente para Fábricaâ€. A ação corretiva apresentada â€œElaborar procedimento específico KW para Gestão e Destinação de Resíduos Classe I (Perigosos) - (11618)â€ é apenas uma ação de disposição.\n\n2. (Obs) Através da tabela Controle de Ações_SGA_Out.xlsx são registradas e tratadas as não conformidades identificadas no Sistema de Gestão da Qualidade e Ambiental, incluindo as resultantes de auditorias. Esta tabela possui um campo denominado â€œNÂº Nova Açãoâ€ para referenciar uma nova ação corretiva no caso das ações não se mostrarem eficazes. Este campo não vem sendo, no entanto, preenchido, por exemplo para as ações corretivas decorrentes da última auditoria interna",
+            "depois": "1. Ao analisar a tabela Controle de Ações_SGA_Out.xlsx observou-se ações corretivas que não possuem correspondência com a respectiva causa:\nâ€¢ Ação NÂº 75 â€“ Não Conformidade identificada â€œchecklist de transporte de resíduos perigosos não preenchido para descarte de óleo usado destinado para a empresa Lwartâ€. Causa identificada â€œFalta de checklist desenvolvido para ajudar na verificação de resíduos perigosos â€\n\nExistem ainda situações em que não foram estabelecidas ações para causas identificadas:\nâ€¢ Ação NÂº 70 â€“ Não existem ações para a causa: â€œFornecedor não entregou as placas de identificação das caçambas metálicasâ€\nâ€¢ Ação NÂº 73 â€“ Não existem ações para a causa: â€œFalta de conscientização dos colaboradores que mesmo que temporário os materiais não podem obstruir as rotas de fuga. Baixo comprometimento dos colaboradores  quanto a coleta de resíduos adequado. Coletores foram identificados recentemente.â€\n\nEm outros pontos observou-se o estabelecimento de ações de contenção (ações imediatas) no lugar de ações corretivas:\nâ€¢ Ação NÂº 74 â€“ Não Conformidade identificada â€œNão foi apresentado procedimento de gerenciamento de resíduos conforme estabelece as normas NBR 11174 e NBR 12235â€. Causa identificada â€œMomento de transição de responsabilidades quanto ao gerenciamento de resíduos da empresa de limpeza e Recicla BR,  não foi identificado necessidade de procedimento anteriormente. Falta de conhecimento quanto necessidade do procedimento documentado para gerenciamento de resíduos estabelecido somente para Fábricaâ€. A ação corretiva apresentada â€œElaborar procedimento específico KW para Gestão e Destinação de Resíduos Classe I (Perigosos) - (11618)â€ é apenas uma ação de disposição.\n\n2. (Obs) Através da tabela Controle de Ações_SGA_Out.xlsx são registradas e tratadas as não conformidades identificadas no Sistema de Gestão da Qualidade e Ambiental, incluindo as resultantes de auditorias. Esta tabela possui um campo denominado â€œNÂº Nova Açãoâ€ para referenciar uma nova ação corretiva no caso das ações não se mostrarem eficazes. Este campo não vem sendo, no entanto, preenchido, por exemplo para as ações corretivas decorrentes da última auditoria interna"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6987
+            },
+            "antes": "Elevador 211844 - No â€œCheck list de documentosâ€ consta como fornecido os documentos (Lista de materiais ZP38 e Especificação Geral de Obra â€“ EGO). Os documentos citados não foram encontrados durante a visita a obra e os Montadores informam que não receberam os mesmos. Documento â€œVerificação antes do inicio da Instalaçãoâ€ não preenchido corretamente (incompleto). â€ Docto 010779_V3, J44924375_PT_Br\n",
+            "depois": "Elevador 211844 - No â€œCheck list de documentosâ€ consta como fornecido os documentos (Lista de materiais ZP38 e Especificação Geral de Obra â€“ EGO). Os documentos citados não foram encontrados durante a visita a obra e os Montadores informam que não receberam os mesmos. Documento â€œVerificação antes do inicio da Instalaçãoâ€ não preenchido corretamente (incompleto). â€ Docto 010779_V3, J44924375_PT_Br\n"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 7012
+            },
+            "antes": "Não evidenciamos a â€œLAIAâ€\nreferente aos aspectos e impactos\nno setor de\nrecebimento/laboratório e\nutilidades bem como no setor de\nescada rolante, evidenciamos um\nâ€œLAIAâ€ desatualizado junto a um\noficial.",
+            "depois": "Não evidenciamos a â€œLAIAâ€\nreferente aos aspectos e impactos\nno setor de\nrecebimento/laboratório e\nutilidades bem como no setor de\nescada rolante, evidenciamos um\nâ€œLAIAâ€ desatualizado junto a um\noficial."
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 7013
+            },
+            "antes": "Evidenciamos que o procedimento\n001554, versão 20, referente a\nâ€œadmissãoâ€ não estava disponível\npara a consulta no momento da\nauditoria.",
+            "depois": "Evidenciamos que o procedimento\n001554, versão 20, referente a\nâ€œadmissãoâ€ não estava disponível\npara a consulta no momento da\nauditoria."
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 7028
+            },
+            "antes": "Filial Porto Alegre\nCPSY 5 anos â€“ Prioridade â€œ0â€, atraso de 558 elevadores em 2018. Conforme planejamento para execução do CPSY 5 anos atrasado de 2018, o novo planejamento também está atrasado: Semana W16 â€“ 6 elevadores não realizado o CPSY; Semana W17 â€“ 6 elevadores não realizado o CPSY; Semana W18 â€“ 5 elevadores não realizado o CPSY; Semana W19 â€“ 4 elevadores não realizado o CPSY.\nTCA â€“ 85 elevadores em atraso de 2018. Na semana W20/2019, existem 50 elevadores com a inspeção atrasada.\n",
+            "depois": "Filial Porto Alegre\nCPSY 5 anos â€“ Prioridade â€œ0â€, atraso de 558 elevadores em 2018. Conforme planejamento para execução do CPSY 5 anos atrasado de 2018, o novo planejamento também está atrasado: Semana W16 â€“ 6 elevadores não realizado o CPSY; Semana W17 â€“ 6 elevadores não realizado o CPSY; Semana W18 â€“ 5 elevadores não realizado o CPSY; Semana W19 â€“ 4 elevadores não realizado o CPSY.\nTCA â€“ 85 elevadores em atraso de 2018. Na semana W20/2019, existem 50 elevadores com a inspeção atrasada.\n"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 7033
+            },
+            "antes": "Evidência:\nDocumento â€œRegistro de entrega/recebimento de equipamento em referência pronto a funcionarâ€ (OS 515259630, EEL 1898510), assinado pelo cliente, pelo técnico e pelo Responsável com ficha de apontamento com data de início e término em 26/04/2019. Mas a requisição 177185812 (Correia de tração) ainda está pendente no almoxarifado, contando que o material ainda não chegou para a realização do reparo.\n",
+            "depois": "Evidência:\nDocumento â€œRegistro de entrega/recebimento de equipamento em referência pronto a funcionarâ€ (OS 515259630, EEL 1898510), assinado pelo cliente, pelo técnico e pelo Responsável com ficha de apontamento com data de início e término em 26/04/2019. Mas a requisição 177185812 (Correia de tração) ainda está pendente no almoxarifado, contando que o material ainda não chegou para a realização do reparo.\n"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 7035
+            },
+            "antes": "Evidência:\nEspecificado no Guia de Carreiras que a Função â€œSupervisor Comercial IE/MODâ€ necessita de Formação Superior e Pós Graduação, mas não foi evidenciado que a colaboradora que possui esse cargo tem o requisito de Pós Graduação.\n",
+            "depois": "Evidência:\nEspecificado no Guia de Carreiras que a Função â€œSupervisor Comercial IE/MODâ€ necessita de Formação Superior e Pós Graduação, mas não foi evidenciado que a colaboradora que possui esse cargo tem o requisito de Pós Graduação.\n"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 7037
+            },
+            "antes": "Evidência: â€œChecklist de documentos entregue ao Montador MODâ€ do equipamento EEL 702946,  estava com o montador e sem assinatura, o mesmo não foi encontrado pelo administrativo (010785_v.5).\nNo mesmo equipamento, o Checklist da lista inicial de verificação Cap.4  da â€œLista de verificação da instalaçãoâ€ (010779_v.4) Estava descrito como concluído, mas nem todos os itens estavam assinalados.\n",
+            "depois": "Evidência: â€œChecklist de documentos entregue ao Montador MODâ€ do equipamento EEL 702946,  estava com o montador e sem assinatura, o mesmo não foi encontrado pelo administrativo (010785_v.5).\nNo mesmo equipamento, o Checklist da lista inicial de verificação Cap.4  da â€œLista de verificação da instalaçãoâ€ (010779_v.4) Estava descrito como concluído, mas nem todos os itens estavam assinalados.\n"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 7043
+            },
+            "antes": "Posto São Luis \n- Não há local definido para o recebimento de material. Constatado que o material fica armazenado no chão entre os corredores do almoxarifado.\n- Não há local definido para o devolução, logística reversa e transferência de material. Constatado que o material fica armazenado no chão entre os corredores do almoxarifado.\n\nFilial Fortaleza\n- Não há local dedicado para armazenagem separada de cabos de aço oleados, cabos de aço secos (cabo do limitador de velocidade) e STMs. Material estava misturado, ficando um sobre o outro. STMs com a face externa contaminada.\n- Material armazenado na frente do almoxarifado, identificado como â€œFalta de Materialâ€ em local não identificado.\n",
+            "depois": "Posto São Luis \n- Não há local definido para o recebimento de material. Constatado que o material fica armazenado no chão entre os corredores do almoxarifado.\n- Não há local definido para o devolução, logística reversa e transferência de material. Constatado que o material fica armazenado no chão entre os corredores do almoxarifado.\n\nFilial Fortaleza\n- Não há local dedicado para armazenagem separada de cabos de aço oleados, cabos de aço secos (cabo do limitador de velocidade) e STMs. Material estava misturado, ficando um sobre o outro. STMs com a face externa contaminada.\n- Material armazenado na frente do almoxarifado, identificado como â€œFalta de Materialâ€ em local não identificado.\n"
+        }
+    ]
+}

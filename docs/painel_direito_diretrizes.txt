@@ -1,0 +1,40 @@
+GREEN PORTAL - DIRETRIZES DO PAINEL DIREITO
+
+O painel direito ocupa no maximo 5% da largura da area principal e apresenta
+atalhos visuais para informacoes importantes do usuario.
+
+Cada icone deve possuir:
+
+- icone Bootstrap;
+- tooltip;
+- label acessivel;
+- badge de quantidade quando houver itens;
+- URL propria para abertura em aba da main.
+
+Os primeiros atalhos sao Pendencias, Aprovacoes, Proximos prazos, Ajuda e
+Calendario. O calendario deve destacar o dia corrente e abrir a aba de
+pendencias do dia do usuario logado.
+
+A aba do calendario deve apresentar o mes completo em formato mensal, com
+sete colunas de dias, navegacao para mes anterior e proximo, retorno ao mes
+atual e destaque visual para o dia corrente. O calendario deve aparecer
+mesmo quando nao houver pendencias. Todas as 42 celulas da grade mensal devem
+exibir um numero de dia. Quando necessario, devem ser mostrados tambem os
+dias do mes anterior e do mes seguinte, com estilo visual discreto. A grade
+deve ocupar o espaco disponivel da aba, ajustando a altura das linhas ao
+tamanho da tela e evitando rolagem interna desnecessaria.
+O clique nao deve abrir popup; deve abrir uma aba na area de trabalho,
+reutilizando o sistema de abas da main.
+
+Separacao:
+
+- classes/PainelDireitoService.php: definicao dos atalhos e dados;
+- principal/painel_direito.php: renderizacao do painel;
+- assets/css/painel-direito.css: layout e temas;
+- paginas painel_*.php: contexto de cada aba.
+
+O painel deve ser responsivo, nao possuir rolagem horizontal e respeitar as
+permissoes do usuario quando os atalhos passarem a consultar dados reais.
+
+A entidade de pendencias/agendamentos ainda deve ser definida no modelo de
+dados. Alertas e logs nao devem ser usados como substitutos das pendencias.

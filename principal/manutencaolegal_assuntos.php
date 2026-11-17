@@ -1,0 +1,3 @@
+<?php
+require_once dirname(__DIR__) . '/classes/ManutencaoLegalCadastroGrid.php';
+ManutencaoLegalCadastroGrid::render(['menu' => 'ASSUNTOS', 'title' => ['pt' => 'Assuntos', 'en' => 'Subjects', 'es' => 'Asuntos'], 'transaction' => 'manutencaolegal_assuntos', 'database' => 'glegislacao_dbp', 'prefix' => 'GLEGISLACAO', 'table' => 'assuntos', 'view' => 'vw_assuntos_grid', 'primary' => 'CODASSUNTO', 'default_sort' => ['column' => 'DSCASSUNTO', 'direction' => 'asc'], 'fields' => ['CODASSUNTO' => ['label' => ['pt' => 'Código', 'en' => 'Code', 'es' => 'Código'], 'readonly' => true], 'DSCASSUNTO' => ['label' => ['pt' => 'Assunto', 'en' => 'Subject', 'es' => 'Asunto']]]]);

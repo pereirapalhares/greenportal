@@ -1,0 +1,62 @@
+.empresa-migracao-page { min-height:100vh; padding:1.25rem; background:var(--gp-page); color:var(--gp-text); }
+.empresa-migracao-header { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1rem; }
+.empresa-migracao-page h2 { margin:0 0 .25rem; color:var(--gp-primary-dark); font-family:var(--gp-font-heading); font-size:var(--gp-font-size-lg); }
+.empresa-migracao-header p { margin:0; color:var(--gp-muted); }
+.empresa-migracao-page .card { border: 1px solid var(--gp-border); border-radius: var(--gp-radius-lg); background: var(--gp-surface); box-shadow: var(--gp-shadow-sm); }
+.migration-request-card { margin-bottom:1rem; }
+.section-heading { display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; }
+.section-heading h3 { margin:0; color:var(--gp-primary-dark); font-family:var(--gp-font-heading); font-size:var(--gp-font-size-lg); }
+.section-heading-hint, .migration-field small, .grid-secondary { color:var(--gp-muted); font-size:var(--gp-font-size-sm); }
+.migration-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+.migration-field { min-width:0; }
+.migration-field-wide { grid-column:1 / -1; }
+.migration-field label { display:block; margin-bottom:.35rem; font-weight:600; }
+.migration-field small { display:block; margin-top:.3rem; }
+.migration-form-actions { display:flex; justify-content:flex-end; }
+.empresa-migracao-page .crud-toolbar { display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-wrap:wrap; padding:.75rem; border-bottom:1px solid var(--gp-border); }
+.grid-title { color:var(--gp-primary-dark); font-family:var(--gp-font-heading); font-weight:600; }
+.migration-search { display:flex; align-items:center; gap:.5rem; min-width:min(100%,520px); }
+.migration-search input { min-width:220px; }
+.empresa-migracao-page .form-control, .empresa-migracao-page .form-select { border-color:var(--gp-border); color:var(--gp-text); background:var(--gp-surface); }
+.empresa-migracao-page .form-control:focus, .empresa-migracao-page .form-select:focus { border-color:var(--gp-primary); box-shadow:0 0 0 3px var(--gp-focus-ring); }
+.empresa-migracao-page .table { margin:0; color:var(--gp-text); }
+.empresa-migracao-page .table th { color:var(--gp-primary-dark); background:var(--gp-primary-soft); border-color:var(--gp-border); font-family:var(--gp-font-heading); white-space:nowrap; }
+.empresa-migracao-page .table td { border-color:var(--gp-border); vertical-align:middle; }
+.empresa-migracao-page .table tbody tr:hover td { background:var(--gp-primary-soft); }
+.empresa-migracao-page .menu-grid-scroll { overflow-x:auto; border:0; border-radius:0; box-shadow:none; }
+.migration-grid { min-width:920px; }
+.migration-grid .migration-origins { max-width:230px; }
+.migration-grid .migration-origins .badge { display:inline-block; margin:.1rem .2rem .1rem 0; border:1px solid var(--gp-border); font-weight:500; }
+.migration-path { max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.migration-status { display:inline-flex; align-items:center; padding:.25rem .55rem; border-radius:999px; font-size:var(--gp-font-size-sm); font-weight:600; white-space:nowrap; }
+.migration-status-EM_CONSTRUCAO { color:var(--gp-muted); background:color-mix(in srgb,var(--gp-muted) 14%,transparent); }
+.migration-status-EM_EXECUCAO { color:var(--gp-warning); background:color-mix(in srgb,var(--gp-warning) 14%,transparent); }
+.migration-status-ERRO { color:var(--gp-danger); background:color-mix(in srgb,var(--gp-danger) 14%,transparent); }
+.migration-status-FINALIZADO_COM_SUCESSO { color:var(--gp-primary-dark); background:var(--gp-primary-soft); }
+.grid-error { max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--gp-danger); font-size:var(--gp-font-size-sm); }
+.steps-counter { color:var(--gp-muted); font-variant-numeric:tabular-nums; }
+.migration-actions { display:flex; justify-content:flex-end; gap:.35rem; white-space:nowrap; }
+.migration-row { cursor:pointer; }
+.migration-row.is-selected td { background:var(--gp-primary-soft); box-shadow:inset 0 1px 0 var(--gp-primary), inset 0 -1px 0 var(--gp-primary); }
+.row-select-hint { color:var(--gp-muted); font-size:var(--gp-font-size-sm); }
+.empresa-migracao-page .grid-pagination { display:flex; justify-content:space-between; align-items:center; gap:.75rem; flex-wrap:wrap; padding:.75rem; color:var(--gp-muted); }
+.empresa-migracao-page .text-muted { color:var(--gp-muted)!important; }
+.migration-modal[hidden] { display:none; }
+.migration-modal { position:fixed; inset:0; z-index:1060; display:flex; align-items:center; justify-content:center; padding:1rem; }
+.migration-modal-backdrop { position:absolute; inset:0; background:color-mix(in srgb,var(--gp-text) 42%,transparent); }
+.migration-modal-dialog { position:relative; width:min(760px,100%); max-height:calc(100vh - 2rem); overflow:auto; border:1px solid var(--gp-border); border-radius:var(--gp-radius-lg); background:var(--gp-surface); box-shadow:var(--gp-shadow-md); }
+.migration-modal-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 1.25rem; border-bottom:1px solid var(--gp-border); }
+.migration-modal-header h3 { margin:0; color:var(--gp-primary-dark); font-family:var(--gp-font-heading); font-size:var(--gp-font-size-lg); }
+.migration-modal-form { padding:1.25rem; }
+.migration-modal-open { overflow:hidden; }
+
+@media (max-width: 720px) {
+    .empresa-migracao-page { padding:.75rem; }
+    .empresa-migracao-header, .section-heading { align-items:flex-start; flex-direction:column; }
+    .migration-form { grid-template-columns:1fr; }
+    .migration-field-wide { grid-column:auto; }
+    .migration-form-actions { justify-content:stretch; }
+    .migration-form-actions .btn { width:100%; }
+    .migration-search { width:100%; min-width:0; flex-wrap:wrap; }
+    .migration-search input { flex:1 1 100%; min-width:0; }
+}

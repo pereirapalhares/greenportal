@@ -1,0 +1,55 @@
+Modulo Legal / Licencas - mapeamento legado
+
+Fonte consultada: banco hpr_configuracoes (o servidor nao possui hpr_configuracao), transacao liLicencasCrown, codigo 25.
+Implementacao: principal/manutencaolegal_licencas.php.
+Banco operacional: gmodelo_dbp.
+Tabela: li_licencas.
+View do grid: vw_licencas_grid.
+
+Ordem oficial do grid
+
+CODLICENCA (tecnico, oculto), Unidade, Descricao, Data de Vencimento,
+Data de Reacao, Data do protocolo, Responsavel, Arquivos, Lista de distribuicao,
+Em protocolo?, Protocolado em?, Protocolado no prazo?, Dias em protocolo,
+Status do protocolo, Observacao, Classificacao, Frequencia, Qtd dias vencimento,
+Qtd dias reacao e CODUNIDADE (tecnico, oculto).
+
+Correspondencia com configuracoes_grids
+
+- Unidade: filtro select, combo de unidade e largura 150.
+- Descricao: filtro texto, texto multilinha e largura 300.
+- As quatro datas legadas usam filtro select e seletor de calendario; a rotina
+  do grid converte a exibicao dd/mm/aaaa para o controle de data.
+- Responsavel: combo de usuarios ativos, em ordem alfabetica.
+- Em protocolo? e Protocolado no prazo?: combos Sim/Nao.
+- Status, Classificacao e Frequencia: combos carregados das tabelas
+  li_status_protocolo, li_classificacao e li_frequencia.
+- Arquivos, dias calculados e chave tecnica permanecem somente leitura.
+- Os filtros de dias calculados e dias em protocolo sao texto, conforme o
+  atributo busca da configuracao legada.
+
+Regras preservadas
+
+- O cadastro usa CODLICENCA como chave primaria automatica.
+- A unidade exibida e DSCUNIDADE; CODUNIDADE permanece como chave tecnica.
+- A view e a exportacao usam gmodelo_dbp e nao dependem de gmodelo_db.
+- As abas legadas de Condicionantes e Palavras-chave permanecem representadas
+  pelos botoes especificos da transacao.
+- O componente padrao continua responsavel por busca geral, filtros por coluna,
+  ordenacao, preferencias, CRUD, permissoes e exportacao Excel.
+
+Observacao de infraestrutura
+
+A configuracao legada referencia nc_listadistribuicao para o combo de Lista de
+distribuicao. Essa tabela nao existe em gmodelo_dbp neste ambiente; por isso o
+campo permanece editavel e com filtro select baseado nos valores presentes na
+view, sem inventar uma fonte de dados. A migracao dessa tabela deve ser tratada
+se a lista de distribuicao precisar ser exibida com descricao e combo completo.
+
+Validacao executada
+
+- A transacao foi comparada com as linhas de configuracoes_grids do codigo 25.
+- Foram conferidas as consultas cquery e cqueryexcel da transacao legada.
+- Foi verificada a existencia das tabelas de status, classificacao e frequencia
+  em gmodelo_dbp.
+- principal/manutencaolegal_licencas.php passou no php -l.

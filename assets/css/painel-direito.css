@@ -1,0 +1,9 @@
+.portal-right-rail { width: 5vw; max-width: 72px; min-width: 48px; flex: 0 0 5vw; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px 6px; border-left: 1px solid #e1ece7; background: #fff; }
+.right-rail-button { position: relative; width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 9px; color: #789087; background: transparent; font-size: 16px; }
+.right-rail-button:hover, .right-rail-button:focus { color: #27815f; background: #edf7f2; outline: 0; }
+.right-rail-badge { position: absolute; top: -3px; right: -3px; min-width: 14px; height: 14px; padding: 0 3px; border-radius: 8px; color: #fff; background: #d96b58; font-size: 8px; line-height: 14px; }
+.right-rail-calendar-day { position: absolute; right: 2px; bottom: 2px; color: #27815f; font-size: 8px; font-weight: 800; line-height: 1; }
+.portal-right-rail-frame { padding: 0; overflow: hidden; }
+.portal-right-rail-frame iframe { width: 100%; height: 100%; border: 0; display: block; background: #fff; }
+.portal-shell.theme-azul .portal-right-rail { border-color: #d5e4ef; }.portal-shell.theme-azul .right-rail-button:hover, .portal-shell.theme-azul .right-rail-button:focus { color: #356f9d; background: #edf4fa; }
+.portal-shell.theme-cinza .portal-right-rail { border-color: #dfe4e7; }.portal-shell.theme-cinza .right-rail-button:hover, .portal-shell.theme-cinza .right-rail-button:focus { color: #596b75; background: #eef1f3; }

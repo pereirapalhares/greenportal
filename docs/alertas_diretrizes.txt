@@ -1,0 +1,37 @@
+GREEN PORTAL - DIRETRIZES DE ALERTAS
+
+1. FINALIDADE
+
+O sino da main apresenta comunicacoes dirigidas ao usuario logado, como
+solicitacao e conclusao de exportacoes.
+
+2. DADOS
+
+Cada alerta deve possuir usuario, titulo, mensagem, link opcional, indicador
+de leitura e criado_em. A data e hora da solicitacao devem ser exibidas em
+cada mensagem no formato local do idioma do usuario.
+
+3. LIMPEZA
+
+O cabecalho do dropdown deve possuir icone de limpeza. A limpeza exige
+confirmacao e remove somente alertas do usuario atual. Nenhum usuario pode
+limpar alertas de outro usuario.
+
+4. ATUALIZACAO
+
+Os alertas podem ser consultados automaticamente, mas essa consulta nao
+deve recarregar ou ocultar o grid da tela ativa e nao deve renovar o timeout
+de inatividade.
+
+5. IDIOMAS
+
+Titulo, mensagens, confirmacao, estado vazio e labels devem respeitar PT,
+EN e ES.
+
+6. SEPARACAO DE RESPONSABILIDADES
+
+classes/AlertasService.php concentra consulta e limpeza dos alertas.
+principal/alertas.php e principal/alertas_limpar.php sao endpoints protegidos.
+assets/js/alertas.js concentra a atualizacao visual do sino, datas, contador
+e acao de limpeza. main.js deve permanecer responsavel somente pelo layout e
+eventos gerais da main.

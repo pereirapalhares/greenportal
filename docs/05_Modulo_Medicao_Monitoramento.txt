@@ -1,0 +1,428 @@
+﻿ESPECIFICAÇÃO FUNCIONAL — GREEN 4.0
+Versão: 1.0 — elaboração em 12/11/2026
+Fonte: Passo a passo mudança no Green4.0 — Revisão G — 13/08/2026.doc.
+Situação: especificação para revisão funcional; não representa validação do software existente.
+
+COMO INTERPRETAR
+- IDs dos requisitos preservam a numeração da fonte. Txxx/Rxxx identifica tabela/linha,
+  contando a partir de zero na ordem do documento, para rastreabilidade sem paginação variável.
+- "Sim" indica solicitação de implementação na fonte, não comprova implementação.
+- Campo "Implementar?" vazio significa decisão pendente. Requisito dependente de outro
+  item marcado Sim é identificado, mas a inconsistência da marcação é preservada.
+- Detalhamento da fonte é reproduzido em cada requisito para conservar campos, exemplos,
+  condições, exceções e fluxos. Exemplos não constituem listas fechadas de domínio.
+- Critérios de aceite e regras consolidadas são operacionalizações propostas para revisão.
+  Decisões ausentes não foram convertidas em regras definitivas.
+- Referências a capturas de concorrentes são referências visuais do DOC original; imagens
+  não são reproduzidas em TXT. Não foram inferidas regras a partir de elementos só visuais.
+- Não há definição de banco físico, linguagem, endpoints ou cronograma nesta versão.
+
+
+05 — Módulo Medição e Monitoramento
+
+OBJETIVO
+Especificar as mudanças deste tema preservando o escopo e as ressalvas da Revisão G.
+
+MODELO FUNCIONAL CONSOLIDADO
+Plano/tipo de medição -> eventos do cronograma (manuais ou recorrentes) -> evidências.
+Manter unidade, tipo de medição, equipamento, área, parâmetro, responsável e observações.
+Renomear Registro da Medição para Evidência da Medição; Documento de Referência para
+Documento de Referência para a Medição; Cronograma para Cronograma de Medições.
+Permitir n evidências por arquivo/link, tipo de MM, risco e histórico automático.
+Retirar Aspecto e Perigo das telas especificadas; destino dos dados existentes é pendente.
+Uniformizar vínculo às leis com os demais pilares, preservando os vínculos atuais.
+O equipamento é facultativo no fluxo 82.1; não tornar obrigatório por inferência.
+
+PENDÊNCIAS ESPECÍFICAS
+- Distinguir Tipo de Medição existente de Tipo de Medição e Monitoramento solicitado.
+- Confirmar nível do relacionamento: lei no tipo, no plano ou em ambos.
+- Definir convivência entre cronograma manual e recorrência sem duplicar eventos.
+- A fonte registra uma tela de calibração não utilizada e outras independentes;
+  não autoriza eliminar todos os controles de calibração/reagentes/padrões.
+- Definir situação de execução por evento versus vigência do plano e taxa de conformidade.
+
+REGRAS TRANSVERSAIS E DEPENDÊNCIAS
+Consultar 01_Mudancas_Gerais.txt para Home, permissões por grupo, personalização,
+notificações, agenda, delegação, usuários ativos, idiomas, logs e ajuda.
+As consultas pessoais e gerenciais devem respeitar a permissão de acesso e o âmbito
+da empresa/unidade. Ser responsável não substitui o permissionamento do item 7.
+Cards, gráficos e tabelas devem representar o mesmo conjunto de dados e filtros.
+Datas, estados, eventos de alerta e fórmulas dos indicadores precisam de definição
+única antes da implementação; divergências pendentes estão listadas neste arquivo.
+
+INTEGRAÇÃO COM O MÓDULO LEGAL — FONTE: ITEM 31 E RESUMO INICIAL
+1. Manter o módulo acessível independentemente da navegação pelo Legal.
+2. Receber sugestões da tabela de potenciais, por unidade e por Controle/Influência.
+3. Somente após validação transferir o potencial para a gestão e vincular as leis de origem.
+4. Permitir cadastro manual e associação manual às leis pelo mesmo padrão de navegação.
+5. Distinguir potenciais novos/pendentes dos já validados; reprocessamento não deve exigir
+   revalidação indistinta de todo o acervo. Política de duplicidades requer definição.
+6. Inativação/revogação da lei deve sinalizar revisão dos itens associados; cabe ao cliente
+   decidir mantê-los ou deixar de controlá-los. Não apagar automaticamente o item de gestão.
+7. Permitir um responsável, vários usuários ou grupo, por cadastro direto ou Tipo x Responsável.
+8. A precedência entre atribuição manual e automática ainda precisa ser definida.
+
+
+REQUISITOS FUNCIONAIS RASTREÁVEIS
+
+------------------------------------------------------------------------------
+MM-66 — Implementar uma nova Home para melhorar a experiência de navegabilidade e tornar a interface com o usuário mais amigável
+
+Origem: item 66; T049/R001, T050/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Alguns elementos essenciais na nova Home:
+Logo do Cliente
+Logo do Green
+Cards (com totalizações, estatísticas, pendências, avisos)
+Dashboard
+orientação para o usuário (schedule, notificações)
+foto do usuário (para aumentar a personalização do sistema. Essa foto deveria ser colocada junto ao nome do usuário como se fosse o Teams)
+navegabilidade entre tabelas
+navegabilidade a partir dos dashboards
+acessos rápidos
+
+Exemplo de Dashboards:
+
+Medições
+Total de Medições Vigentes
+Total de Medições em Dia
+Taxa de Conformidade
+Total de Medições Vencidas
+Total de Medições com Plano de Ação em Andamento
+
+Atualização Mensal
+Medições Novas
+Medições Vencidas
+Medições Próximas ao Vencimento
+
+Avisos (Card)
+
+Alertas Enviados (Card)
+
+Dashboard
+
+Continuação: Implementar uma nova Home para melhorar a experiência de navegabilidade e tornar a interface com o usuário mais amigável
+
+(Continuação)
+Gerar as estatísticas:
+por unidade
+por período
+por responsável
+etc.
+
+Os dashboards devem ser apresentados em forma gráfica e em forma de tabelas
+
+Os Dashboard deverão ser gerados por unidade, por período e por responsável.
+
+O cabeçalho pode conter informações para acessos rápidos. Veja o exemplo da imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir a Home com dados de duas unidades/períodos/responsáveis; conferir todos os indicadores descritos, comparar gráfico/tabela e clicar em um card para abrir apenas os registros correspondentes.
+
+------------------------------------------------------------------------------
+MM-67 — Colocar Medição e Monitoramento em validade "Recorrente".
+
+Origem: item 67; T051/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Existem medições e monitoramentos em que a validade é cíclica e sempre tem que ser renovada. Isso significa que não é necessário ficar renovando a data de validade a todo o momento. Para validade recorrente define-se uma data de início, uma data de término e um período (ex: semanal, mensal, anual) e o sistema revalida a medição automaticamente. A validade de término pode ser "o próximo século" para situações em que o ciclo de renovação nunca deve parar. Veja a imagem abaixo.
+
+É importante observar que a grande maioria das medições é do tipo recorrente (normalmente numa freqüência mensal, como por exemplo, inspeções de segurança do trabalho).
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+MM-68 — Implementar a associação manual das leis com as medições e monitoramentos da mesma forma como será realizada a associação manual das leis com licenças, controles, etc.
+
+Origem: item 68; T052/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Como o módulo de medição e monitoramento funciona hoje:
+A- É realizado o cadastro de equipamentos (de medição)
+B- É realizado o cadastro de Medição (Tipos de Medições). A cada medição (Tipos de Medições) é associada um ou mais requisitos legais
+C- O link Controle de Calibração não está sendo usado
+D- Ao cadastrar um plano de medição e monitoramento define-se o tipo de medição. Ao Tipo de Medição associa-se 1 ou mais requisitos legais. Desse modo, o sistema "puxa" automaticamente as leis relacionadas ao tipo de medição, conforme mencionado no item B acima. Ao Tipo de Medição associa-se 1 equipamento de medição. A cada Tipo de Medição associa-se:
+1 plano de ação
+"n" Registros de Medição
+"n" Documentos de Referência
+1 Cronograma com "n" eventos
+E- O controle calibração (que é diferente do controle de calibração que não está funcionando), o controle reagente, solução e indicador e o controle padrões são telas independentes do plano de medição e monitoramento
+F- Todos os demais itens são de suporte / consulta (estatística de medição e monitoramento, consolidação das estatísticas) ou de cadastro (tipo de item, empresas)
+
+Esse módulo de medição e monitoramento deveria funcionar como o módulo de licenças, principalmente no que diz respeito ao relacionamento das medições com os requisitos legais. O relacionamento manual das medições e monitoramentos com os requisitos legais é feito de modo totalmente diferente do relacionamento dos requisitos legais com as licenças. Esse relacionamento ocorre no próprio módulo de medição e monitoramento (vide item B e D acima) e não junto com as demais abas do sistema (licenças, controles, etc.). Temos que ter o mesmo tratamento para o relacionamento da medição e monitoramento com as leis que temos para o relacionamento dos demais módulos com as leis. Essa conduta homogênea é muito importante para facilitar o uso do sistema por parte do usuário.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Relacionar uma medição a uma lei pela navegação padronizada e confirmar a associação nos dois contextos, preservando vínculos legados no cenário migrado.
+
+------------------------------------------------------------------------------
+MM-69 — Criar a tabela Tipo de Medição e Monitoramento x Responsável
+
+Origem: item 69; T052/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Na tabela Responsável x Tipo de Medição e Monitoramento o responsável poderá ser 1 usuário, vários usuários ou um Grupo (com 1 ou mais pessoas)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Testar um usuário, múltiplos usuários e grupo; verificar atribuição direta e/ou por tipo/categoria conforme o item, consulta pessoal e destinatários de alerta. Testar usuário sem autorização.
+
+------------------------------------------------------------------------------
+MM-70 — Criar o Link "Minhas Medições e Monitoramentos"
+
+Origem: item 70; T052/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Veja o item 5.1 acima
+
+CRITÉRIO DE ACEITE PROPOSTO
+Entrar com dois usuários com responsabilidades distintas e conferir que a visão pessoal e a consulta gerencial autorizada apresentam os conjuntos corretos.
+
+------------------------------------------------------------------------------
+MM-71 — Implementar a nova atribuição de responsabilidade pelas medições e monitoramentos
+
+Origem: item 71; T053/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Passaríamos a ter a opção de atribuir automaticamente a responsabilidade por cada medição e monitoramento em função dos tipos de medição e monitoramento.
+
+Ao estabelecer os tipos de medição e monitoramento e amarrar com responsável(is) / grupos de responsáveis, o sistema atribuiria, automaticamente, a cada uma das medições e monitoramentos o(s) responsável(is) / grupos de responsáveis correspondente.
+
+Deverá ser mantida a opção de atribuição manual do responsável / grupo de responsável pela medição e monitoramento, independentemente da amarração automática tipo de medição e monitoramento x responsável.
+
+O sistema deve permitir, portanto, atribuir responsabilidade de 2 formas:
+Diretamente na tabela medição e monitoramento
+Por meio das tabelas Responsabilidade x Tipo de medição e monitoramento
+
+Em ambos os casos, a responsabilidade poderá ser para:
+1 usuário
+vários usuários ou
+para um grupo de usuários pré-definido
+
+Esse item é bastante importante para poder gerar alertas para todos os usuários responsáveis pelas medições e monitoramentos e não para um único usuário.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Testar um usuário, múltiplos usuários e grupo; verificar atribuição direta e/ou por tipo/categoria conforme o item, consulta pessoal e destinatários de alerta. Testar usuário sem autorização.
+
+------------------------------------------------------------------------------
+MM-72 — Estabelecer uma política de e-mails como nos outros módulos
+
+Origem: item 72; T053/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Atualmente não temos a parametrização da política de e-mails para o módulo de medição e monitoramento. O alerta ocorre através do formulário de cadastro da medição e monitoramento. Isso não permite que haja uma regra para a política de e-mails. O alerta tem que ser parametrizado para cada medição cadastrada.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Configurar destinatários por registro/tipo e evento; disparar cenário de teste e confirmar entrega apenas aos responsáveis elegíveis, incluindo múltiplos usuários/grupos, conforme regra aprovada.
+
+------------------------------------------------------------------------------
+MM-73 — Criar novos campos para a tabela de gestão de medição e monitoramento
+
+Origem: item 73; T054/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Novos campos:
+Tipo de Medição e Monitoramento
+Histórico (automático) do que foi feito para cada medição e monitoramento
+Nível de Risco (Alto, Médio, Baixo)
+
+Observação: Campos a serem mantidos:
+Unidade
+Tipo de Medição
+Equipamento de Medição
+Área
+Parâmetro
+Responsável
+Registro da Medição  Mudar para "Evidência da Medição"  Arquivo ou Link do Documento: Link para a cópia digital do documento ou arquivo carregado. Deverá ser possível carregar "n" arquivos
+Documento de Referência  Mudar para "Documento de Referência para a Medição"
+Cronograma  Mudar para "Cronograma de Medições"
+Observações
+
+O ponto fundamental é que para cada tipo de medição temos que ter "n" eventos de medição a ser definido um a um num cronograma de medição de modo manual ou recorrente.
+
+Observação: como previsto no item 31, a tabela de Gestão de Medições e Monitoramentos será preenchida a partir da validação das recomendações da IA (potenciais medições e monitoramentos) ou diretamente na própria tabela de Gestão de Medições e Monitoramentos.
+
+As tabelas de gestão devem ser separadas entre o que é de CONTROLE (ou seja, ações que o próprio cliente deve tomar) daquilo que é INFLUÊNCIA, ou seja, ações que os fornecedores do cliente devem tomar).
+
+CRITÉRIO DE ACEITE PROPOSTO
+Cadastrar, consultar e editar um exemplo contendo os campos e relacionamentos enumerados no detalhamento; conferir persistência, anexos múltiplos e regras explícitas de cálculo/obrigatoriedade.
+
+------------------------------------------------------------------------------
+MM-74 — Retirar campos da tabela de Gestão de medição e monitoramento
+
+Origem: item 74; T054/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Campos a serem retirados:
+Aspecto
+Perigo
+
+CRITÉRIO DE ACEITE PROPOSTO
+Conferir ausência de Aspecto e Perigo nas telas alteradas e verificar destino dos valores legados conforme decisão de migração.
+
+------------------------------------------------------------------------------
+MM-75 — Incluir um campo na tabela de Gestão de medição e monitoramento denominado "Risco".
+
+Origem: item 75; T055/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Os riscos poderiam ser:
+Alto
+Médio
+Baixo
+
+Esse risco estaria associado ao tipo de medição e monitoramento, ou seja, em caso de descumprimento da medição e monitoramento, qual seria o tamanho do problema que o cliente teria. Esse item risco deverá fazer parte dos dashboards, ou seja, deverá ser possível visualizar as estatísticas com a lente do risco. Ex: medições e monitoramentos não excecutadas com risco alto, médio e baixo, etc.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Registrar casos Alto, Médio e Baixo e conferir filtro/estatística de risco vinculados à entidade correta, sem contar registros fora da seleção.
+
+------------------------------------------------------------------------------
+MM-76 — Gerar a tabela de Potenciais Medições e Monitoramentos
+
+Origem: item 76; T055/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Vide item 31 sobre como gerar automaticamente a tabela de potenciais medições e monitoramentos. Após a validação desses itens potenciais ele passaria a integrar a tabela de Gestão de Medição e Monitoramento mencionada no item 73.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Receber potencial por unidade e Controle/Influência; validar um item e conferir criação na gestão com vínculo legal; manter pendente outro item sem convertê-lo em gestão.
+
+------------------------------------------------------------------------------
+MM-77 — Gerar Histórico automático das mudanças feitas na tabela de Gestão de medição e monitoramento
+
+Origem: item 77; T055/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Gerar um log das mudanças feita nos registros da tabela de medição e monitoramento. Creio que a aplicação de logs para todas as ações do sistema (vide item 16) é uma maneira de implementar essa funcionalidade.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Alterar um registro autorizado e consultar o histórico para identificar operação, registro, usuário e data; conferir acesso e retenção conforme política definida.
+
+------------------------------------------------------------------------------
+MM-78 — Tornar a parametrização da política de e-mails para o módulo de medição e monitoramento "friendly"
+
+Observação: isso poderia ser replicado para os demais módulos (medição e monitoramento, infraestrutura, controle e treinamento)
+
+Origem: item 78; T055/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A ideia é que o próprio usuário parametrize a política de e-mails, definindo para cada tipo de medição e monitoramento quem deve ser alertado. Isso poderia estar linkado com os múltiplos responsáveis pelas medições e monitoramentos (mencionados no item 71 acima).
+
+CRITÉRIO DE ACEITE PROPOSTO
+Configurar destinatários por registro/tipo e evento; disparar cenário de teste e confirmar entrega apenas aos responsáveis elegíveis, incluindo múltiplos usuários/grupos, conforme regra aprovada.
+
+------------------------------------------------------------------------------
+MM-79 — Gerar automaticamente as informações da medição e monitoramento via IA a partir do upload do documento
+
+Origem: item 79; T055/R004
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Extrair todos os dados do documento carregado como evidência da medição e monitoramento e preencher as informações da tabela de gestão de medição e monitoramento (da mesma forma como foi aplicado no novo GED-E)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Carregar documento de teste com dados conhecidos, comparar campos extraídos com o original e aplicar o procedimento aprovado para valores ausentes, divergentes ou ilegíveis. Política de confirmação humana deve ser definida.
+
+------------------------------------------------------------------------------
+MM-80 — Criar um visual mais "clean" para a Tabela de Gestão de Medição e Monitoramento
+
+Origem: item 80; T055/R005
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O visual atual torna a experiência pouco agradável. Temos que partir para ícones, "flags" ou coisas do gênero.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Revisar a tela com registros de diferentes situações, confirmar ícones/sinalizadores e legibilidade dos estados com os mesmos dados de origem.
+
+------------------------------------------------------------------------------
+MM-81 — Visualizar pendências do usuário.
+
+Origem: item 81; T056/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Através do ícone de um sininho é possível visualizar, de modo rápido e resumido, todas as pendências (do usuário logado):
+
+
+
+A imagem abaixo apresenta o resultado da consulta ao clicar no sininho. Na realidade ao clicar no sininho aparece uma versão com informações resumidas das pendências (o exemplo da figura abaixo é do módulo de licenças. Algo parecido terá que ser aplicado para o módulo de medição e monitoramento):
+
+
+
+
+
+
+
+
+
+
+
+
+Em algum outro link deve aparecer uma versão com informações mais completas, como na imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Com dois usuários, conferir resumo e lista completa de pendências do usuário logado e testar resolução/atualização sem expor itens não autorizados.
+
+------------------------------------------------------------------------------
+MM-82 — Visualizar o que tem agendado para o usuário
+
+Origem: item 82; T056/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Poderia ser adotado, por exemplo, o ícone de uma agenda para visualizar, de modo rápido e resumido, todas as ações futuras (do usuário logado). Essa é apenas 1 ideia. O importante é que exista uma agenda de pendências viva para o usuário que está logado para o módulo de medição e monitoramento:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Criar evento futuro relacionado ao módulo e conferir data, responsável e acesso ao registro pela agenda pessoal/gerencial autorizada.
+
+------------------------------------------------------------------------------
+MM-82.1 — Fluxo do estágio em que o processo DE GESTÃO se encontra tipo "Entrega do Mercado Livre" (como foi aplicado no caso do GED-E)
+
+Origem: item 82.1; T057/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse fluxo é bem interessante de ser aplicado em todos os módulos. As atividades de GESTÃO de todos os módulos, de alguma forma, funcionam como um processo. Segue o workflow do módulo:
+
+. No módulo medição e monitoramento a pessoa:
+1- cadastra a medição e monitoramento
+2- cadastra o equipamento de medição (facultativo)
+3- define o responsável
+4- define o cronograma de medição e monitoramento
+5- define o nível de risco (facultativo)
+6- carrega a evidência do atendimento
+
+CRITÉRIO DE ACEITE PROPOSTO
+Percorrer as etapas descritas com um registro de teste, conferir destaque do estágio atual e preservar etapas facultativas; validar transições e retornos após esclarecimento das pendências.
+
+------------------------------------------------------------------------------
+MM-82.2 — Prever o link "Ajuda" / "Como Funciona" em todos os módulos para servir como um treinamento para o usuário.
+
+Origem: item 82.2; T057/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Nesse link poderíamos carregar o texto da ajuda e um vídeo mostrando como o sistema funciona
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir Ajuda/Como Funciona no módulo e conferir texto e vídeo configurado explicando o processo correspondente.
+
+
+VALIDAÇÃO DO PACOTE
+Este TXT deve ser revisado em conjunto com as dependências indicadas. A implementação
+exige acesso ao código e banco atuais, ausentes deste anexo. As condições de aceite
+são propostas de homologação funcional, não resultados de testes já executados.

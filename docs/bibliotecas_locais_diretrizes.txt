@@ -1,0 +1,16 @@
+GREEN PORTAL - BIBLIOTECAS LOCAIS
+
+As bibliotecas de frontend devem ser mantidas localmente em assets/vendor, sem dependência de CDN em produção.
+
+Estrutura padrão:
+- assets/vendor/jquery/jquery-3.7.1.min.js
+- assets/vendor/bootstrap/css/bootstrap.min.css
+- assets/vendor/bootstrap/js/bootstrap.bundle.min.js
+- assets/vendor/bootstrap-icons/font/bootstrap-icons.min.css
+- assets/vendor/bootstrap-icons/font/fonts/bootstrap-icons.woff2
+- assets/vendor/pdfjs/pdf.min.js
+- assets/vendor/pdfjs/pdf.worker.min.js
+
+As páginas na raiz usam o caminho assets/vendor. As páginas em principal usam ../assets/vendor. A tela principal em principal/setup usa ../../assets/vendor.
+
+Quando uma biblioteca for atualizada, a versão deve ser registrada na documentação e os arquivos devem ser validados antes da publicação.

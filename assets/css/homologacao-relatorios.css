@@ -1,0 +1,99 @@
+/* Homologação de Fornecedores › Relatórios de Homologação (migração 314). Usa a base visual do Painel (homologacao-painel.css). */
+.rel .painel-corpo { flex-wrap: nowrap; }
+.rel-lado { flex: 0 0 290px; max-width: 290px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 12px; }
+.rel-catalogo { gap: 12px; }
+.rel-procurar { margin: 0; width: 100%; }
+.rel-procurar input { width: 100%; }
+.rel-item { align-items: center; min-height: 48px; }
+.rel-item-texto { display: flex; flex-direction: column; min-width: 0; }
+.rel-item-nome { font-weight: 600; }
+.rel-item-sub { font-size: 11px; color: #5b6f66; }
+.rel-badge { flex: none; min-width: 30px; padding: 1px 8px; border-radius: 999px; background: #fbe4e1; color: #7d2118; font-weight: 700; font-size: 12px; text-align: center; }
+.rel-visoes h2 { display: flex; align-items: center; gap: 6px; }
+.rel-visoes-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.rel-visao { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; align-items: center; padding: 4px 6px; border-radius: 8px; border: 1px solid transparent; }
+.rel-visao.ativo { border-color: var(--gp-primary, #247a5b); background: var(--gp-primary-soft, #e8f5ee); }
+.rel-visao-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rel-confirmar { background: #c0392b !important; color: #fff !important; }
+.rel-relatorio, .rel-unificado { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.rel-cab { gap: 4px; }
+.rel-cab h2 { font-size: 20px; font-weight: 800; }
+.rel-distribuicao { gap: 12px; }
+.rel-barra { display: flex; gap: 2px; height: 30px; border-radius: 8px; overflow: hidden; background: #eef3f0; }
+.rel-faixa { border: 0; padding: 0 6px; min-width: 6px; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; }
+.rel-faixa.cor-BRANCO { border: 1px dashed #9aa6a0 !important; color: #3d5248; }
+.rel-faixa.cor-AMARELO { color: #1d2b25; }
+.rel-faixa:hover, .rel-faixa.ativo { outline: 3px solid #1d2b25; outline-offset: -3px; }
+.rel-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.rel-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid #c9dbd1; background: #fff; color: inherit; font-size: 13px; }
+.rel-chip:hover { border-color: var(--gp-primary, #247a5b); }
+.rel-chip.ativo { border: 2px solid var(--gp-primary, #247a5b); background: var(--gp-primary-soft, #e8f5ee); font-weight: 600; }
+.rel-chip-n { font-weight: 700; color: #3d5248; }
+/* Grid */
+.rel-grid-barra { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 0 0 6px; border: 0; }
+.rel-grid-barra .crud-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.rel-grid-direita { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.rel-grid-direita .grid-pagination { margin: 0; padding: 0; }
+.rel-grid-direita .crud-search { margin-left: 0; }
+.rel-agrupar { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: 12px; font-weight: 600; color: #3d5248; }
+.rel-agrupar select { min-width: 150px; }
+.rel-grid .menu-batch-grid { min-width: 1200px; table-layout: auto; }
+.rel-grid .menu-batch-grid th { white-space: nowrap; }
+.rel-grid .menu-batch-grid th.rel-col-documento, .rel-grid .menu-batch-grid th.rel-col-observacao { min-width: 200px; }
+.rel-grid .menu-batch-grid th.rel-col-fornecedor { min-width: 180px; }
+.rel-grid .menu-batch-grid th.rel-sem-ordem { cursor: default; }
+.rel-grid .menu-batch-grid td { overflow-wrap: anywhere; }
+.rel-grupo > td { background: #e3efe8 !important; font-size: 12px; padding: 6px 10px; }
+.rel-grupo-resumo { color: #3d5248; }
+.rel-grupo-cor { display: inline-flex; align-items: center; gap: 4px; margin-right: 10px; font-weight: 600; }
+/* Unificado */
+.rel-uni-filtros { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.rel-uni-filtros label { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: 12px; font-weight: 600; color: #3d5248; }
+.rel-uni-filtros select { min-width: 200px; }
+.rel-legenda { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; color: #3d5248; }
+.rel-legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.rel-amostra { display: inline-block; width: 22px; height: 14px; border-radius: 4px; }
+.s-V, .rel-matriz > tbody > tr > td.s-V { background: #fdecea !important; border: 1px solid #e8b4ae; }
+.s-A, .rel-matriz > tbody > tr > td.s-A { background: #fff6dc !important; border: 1px solid #e6cf8a; }
+.s-G, .rel-matriz > tbody > tr > td.s-G { background: #eaf6ef !important; border: 1px solid #a9d3ba; }
+.s-B, .rel-matriz > tbody > tr > td.s-B { background: #fff !important; border: 1px dashed #9aa6a0; }
+.s-X, .s-N, .rel-matriz > tbody > tr > td.s-X, .rel-matriz > tbody > tr > td.s-N { background: #f1f3f2 !important; border: 1px solid #e1e6e3; color: #8a9a93; }
+.rel-uni-scroll { max-height: 66vh; }
+.rel-matriz { min-width: 0 !important; width: max-content !important; table-layout: auto !important; border-collapse: separate; border-spacing: 0; }
+.rel-matriz > thead > tr > th, .rel-matriz > tbody > tr > td { vertical-align: middle !important; }
+.rel-matriz thead th { position: sticky; top: 0; z-index: 2; background: #eef5f1; }
+.rel-fixa, .rel-matriz > tbody > tr > td.rel-fixa { position: sticky; z-index: 1; background: #fff !important; }
+.rel-matriz thead .rel-fixa { z-index: 3; background: #eef5f1; cursor: pointer; }
+.rel-fixa-0 { left: 0; min-width: 260px; max-width: 300px; }
+.rel-fixa-1 { left: 260px; min-width: 150px; box-shadow: 2px 0 0 #dce9e2; }
+.rel-item-col { min-width: 96px; max-width: 120px; white-space: normal !important; text-align: center; font-size: 11px; line-height: 1.2; }
+.rel-item-grupo { display: block; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #5b6f66; }
+.rel-item-titulo { display: block; font-weight: 700; color: #1d2b25; overflow-wrap: anywhere; }
+.rel-cat-INTEGRACAO, .rel-cat-DOCFUNC { background: #edf7f2 !important; }
+.rel-cat-TREINAMENTO { background: #e9f1fb !important; }
+.rel-celula { text-align: center; font-size: 12px; padding: 4px !important; white-space: nowrap; border-radius: 0; }
+.rel-celula-btn { width: 100%; min-height: 30px; border: 0; background: transparent; color: inherit; font-size: 12px; font-weight: 600; padding: 2px 4px; border-radius: 6px; }
+.rel-celula-btn:hover { outline: 2px solid #1d2b25; }
+.rel-celula.s-B { color: #3d5248; font-style: italic; }
+.rel-selo { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; padding: 2px 10px; border-radius: 999px; font-size: 12px; }
+.rel-selo-bloq { background: #fbe4e1; color: #7d2118; }
+.rel-selo-vence { background: #fff4d6; color: #6b4b00; }
+.rel-selo-lib { background: #e8f5ee; color: #185640; }
+/* Diálogo "Salvar como meu relatório" */
+.rel-dialogo { border: 1px solid var(--gp-border, #dce9e2); border-radius: 14px; padding: 18px 20px; width: min(460px, 92vw); box-shadow: 0 18px 48px rgba(22, 72, 55, .25); }
+.rel-dialogo::backdrop { background: rgba(20, 40, 32, .35); }
+.rel-dialogo form { display: flex; flex-direction: column; gap: 12px; }
+.rel-dialogo h2 { margin: 0; font-size: 18px; font-weight: 800; color: var(--gp-primary-dark, #185640); }
+.rel-dialogo label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: #3d5248; }
+.rel-dialogo .rel-check { flex-direction: row; align-items: center; gap: 8px; font-weight: 500; }
+.rel-dialogo-botoes { display: flex; justify-content: flex-end; gap: 8px; }
+@media (max-width: 900px) {
+  .rel .painel-corpo { flex-wrap: wrap; }
+  .rel-lado { position: static; flex: 1 1 100%; max-width: none; }
+}
+@media print {
+  .rel-lado, .rel-grid-barra .crud-actions, .rel-filtros .painel-filtros-botoes, .rel-dialogo { display: none !important; }
+  .rel-uni-scroll, .rel-grid .menu-grid-scroll { max-height: none !important; overflow: visible !important; }
+  .rel-faixa, .rel-celula, .s-V, .s-A, .s-G, .rel-grupo > td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .rel-fixa { position: static; }
+}

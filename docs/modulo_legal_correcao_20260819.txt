@@ -1,0 +1,15 @@
+Correções aplicadas em 2026-08-19
+
+1. Licenças
+- A transação manutencaolegal_licencas utiliza exclusivamente o banco gmodelo_dbp.
+- Foi criada a view gmodelo_dbp.vw_licencas_grid, baseada na projeção legada e nas tabelas li_licencas, unidades e usuarios do banco _dbp.
+- Migração/ajuste: database/070_licencas_gmodelo_dbp.sql.
+
+2. Requisitos legais do LAIA
+- O menu Módulo Legal / Requisitos legais utiliza modulolegal_requisitoslegais.php.
+- O botão Requisitos legais dentro do LAIA utiliza modulolegal_laiarequisitoslegais.php.
+- A transação contextual foi separada para modulolegal_laiarequisitoslegais, evitando conflito de permissões, ajuda e identificação com a transação principal.
+
+3. Acentuação
+- Foram corrigidos os padrões de texto corrompido nos arquivos do Módulo Legal e nos scripts JavaScript relacionados.
+- Os arquivos foram salvos em UTF-8 sem BOM.

@@ -1,0 +1,57 @@
+Módulo Legal — Requisitos legais / popups contextuais
+
+Origem legada analisada
+- E:/wamp/www/cadastros/requisitos_legais_porlei_c.php.
+- E:/wamp/www/configuracoes/requisitoslegaisxempresa.php.
+
+Conversão realizada
+As abas do legado foram convertidas em botões no grid moderno. Cada botão envia
+CODLEGISLACAO e CODUNIDADE da linha selecionada e abre um popup próprio:
+
+- manutencaolegalrequisitoslegais_situacao.php
+- manutencaolegalrequisitoslegais_licencas.php
+- manutencaolegalrequisitoslegais_controles.php
+- manutencaolegalrequisitoslegais_medicaomonitoramento.php
+- manutencaolegalrequisitoslegais_checklist.php
+- manutencaolegalrequisitoslegais_alteracoes.php
+
+Relacionamentos migrados AS-IS
+- legislacaoxdocumentos;
+- legislacaoxchecklist;
+- planodeacao.
+
+As views dos popups preservam as relações por legislação e unidade. A situação
+e os demais popups utilizam a permissão da transação `REQUISITOS_LEGAIS`.
+Quando o perfil possui autorização de incluir, editar ou excluir, as ações
+correspondentes de CRUD ficam disponíveis. Sem nenhuma dessas autorizações,
+o popup permanece acessível para consulta, com campos e controles em modo
+somente leitura.
+
+Auditoria
+- Script: database/065_modulo_legal_requisitos_popups.sql.
+- Registro: MODULO_LEGAL_REQUISITOS_POPUPS_065.
+- Status: CONCLUIDA.
+- Quantidade registrada: 221 registros migrados nas relações adicionais.
+
+Regra de identificação do popup
+
+O menu geral Requisitos legais utiliza `principal/modulolegal_requisitoslegais.php`.
+O botão Requisitos legais do LAIA utiliza exclusivamente
+`principal/modulolegal_laiarequisitoslegais.php`, com transação contextual própria.
+Todos os popups contextuais devem consultar somente bancos com sufixo `_dbp` e
+receber as chaves da linha selecionada para restringir os resultados.
+
+Atualização de permissões
+
+A regra anterior de somente leitura foi substituída pela autorização da
+transação `REQUISITOS_LEGAIS`. O perfil pode abrir o popup quando possui
+`pode_visualizar`. As ações são liberadas individualmente por:
+
+- `pode_incluir`: Novo e inclusão;
+- `pode_editar`: Salvar e edição;
+- `pode_excluir`: Excluir;
+- sem incluir, editar ou excluir: campos e controles em somente leitura.
+
+No Checklist, `pode_incluir` controla a associação de perguntas e
+`pode_excluir` controla a remoção. O backend rejeita tentativas sem a
+permissão correspondente.

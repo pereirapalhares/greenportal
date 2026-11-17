@@ -1,0 +1,55 @@
+ROTEIRO DE RETESTE FINAL — PER-008
+Mensagem de operação parcial sem falso alerta
+Data: 22/08/2026
+
+OBJETIVO
+Confirmar que a mensagem de inclusões/edições não autorizadas aparece somente quando uma tentativa real de edição sem permissão foi enviada, não aparecendo em inclusão simples ou exclusão simples.
+
+AMBIENTE
+URL: http://187.191.99.180/greenportal/
+Empresa: MODELO
+Banco: gmodelo_dbp
+Transação: HOMOLOGACAO_FORNECEDOR_FUNCIONARIO, código 495.
+Preparação e limpeza: admin / <senha de teste via variável de ambiente>
+Execução autorizada: ueditor / <senha de teste via variável de ambiente>
+Funcionário: CODFUNCIONARIO 13, se ainda estiver disponível.
+
+PRÉ-CONDIÇÕES
+1. Confirmar que existe pelo menos um vínculo ativo de teste para o funcionário.
+2. Registrar o estado das permissões e dos vínculos antes do teste.
+3. Não alterar vínculos legados nem usar registros do módulo TREINAMENTO.
+
+RT-F1 — Exclusão simples
+1. Configurar a transação com Visualizar=1, Incluir=0, Editar=0, Excluir=1.
+2. Entrar como ueditor e abrir a manutenção do funcionário.
+3. Remover pela lixeira somente um vínculo de teste.
+4. Salvar.
+Resultado esperado: mensagem normal de sucesso; não deve aparecer “Inclusões e edições não autorizadas foram ignoradas”. O vínculo deve ficar ATIVO=0.
+
+RT-F2 — Inclusão simples
+1. Configurar Visualizar=1, Incluir=1, Editar=0, Excluir=0.
+2. Abrir a manutenção do funcionário.
+3. Clicar em Adicionar e preencher somente a nova responsabilidade.
+4. Salvar sem tentar alterar registros existentes.
+Resultado esperado: mensagem normal de sucesso; não deve aparecer alerta de edição ignorada. A nova atribuição deve ser criada com ATIVO=1.
+
+RT-F3 — Inclusão com edição não autorizada
+1. Permanecer com Visualizar=1, Incluir=1, Editar=0, Excluir=0.
+2. Adicionar uma nova responsabilidade válida.
+3. Simular uma tentativa controlada de alterar a prioridade de uma responsabilidade existente, somente se o procedimento de homologação permitir a manipulação do DOM/requisição.
+4. Salvar.
+Resultado esperado: nova inclusão processada, edição existente preservada e mensagem exata “Operação concluída. Inclusões e edições não autorizadas foram ignoradas.”
+
+RT-F4 — Não regressão de segurança
+1. Tentar enviar alteração direta de registro existente com Editar=0.
+2. Confirmar HTTP 403 ou rejeição equivalente.
+3. Confirmar que nenhum valor existente foi alterado.
+
+LIMPEZA
+1. Excluir logicamente os vínculos criados para o reteste.
+2. Confirmar que os registros permanecem na tabela com ATIVO=0.
+3. Restaurar o GESTOR ao baseline: Visualizar=1, Incluir=0, Editar=0, Excluir=0.
+4. Restaurar Excel/PDF ao estado anterior.
+
+CRITÉRIO DE APROVAÇÃO
+RT-F1 e RT-F2 devem apresentar somente sucesso normal; RT-F3 deve apresentar o alerta parcial; RT-F4 deve confirmar a proteção server-side.

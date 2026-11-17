@@ -1,0 +1,937 @@
+AVALIACAO DO BACKLOG DO USUARIO
+Arquivo analisado: tests/backulog_usuario_2708.txt
+Data da avaliacao: 27/08/2026
+
+Classificacao:
+- RESOLVIDO: ha evidencia no codigo, banco ou teste executado.
+- PARCIAL/NAO HOMOLOGADO: existe implementacao, mas falta validacao completa ou ha parte divergente.
+- PENDENTE: nao ha evidencia de conclusao.
+
+BACKLOG ORIGINAL
+
+1. Tela de entrada responsiva e botao Login
+Status: PENDENTE / NAO HOMOLOGADO.
+Observacao: nao existe teste registrado neste ciclo comprovando a correcao em diferentes resolucoes.
+
+2. Links para pastas no Dashboard Home
+Status: PENDENTE.
+
+3. Aumentar popup de Situacao
+Status: PENDENTE / NAO HOMOLOGADO.
+
+4. Numeracao/indicador da primeira coluna dos requisitos
+Status: PENDENTE.
+Observacao: a numeracao foi retirada, mas o backlog solicita manter um indicador de pagina e item para localizacao.
+
+5. Botao discreto para baixar a Integra da norma
+Status: RESOLVIDO.
+Evidencia: existe icone/botao de abertura da Integra da norma na coluna Codigo, com tooltip.
+
+6. Filtros desconfigurando o grid
+Status: RESOLVIDO.
+Evidencia: teste de colunas/filtros executado com ocultacao e restauracao de CODIGO, incluindo persistencia e preservacao da ordem.
+
+7. Exportacao para Excel nao baixa arquivo
+Status: PARCIAL / NAO HOMOLOGADO.
+Observacao: existe fluxo de solicitacao e alertas, mas falta homologacao conclusiva do download.
+
+8. Edicao de condicionantes da Licenca
+Status: PARCIAL / NAO HOMOLOGADO.
+Observacao: existem telas CRUD relacionadas, mas falta teste conclusivo no backlog.
+
+9. Substituir colunas ambientais por pesquisa livre
+Status: PENDENTE.
+
+10. Checklist da pasta Legislacao
+Status: RESOLVIDO PARCIALMENTE / REDEFINIDO.
+Evidencia: o Checklist agora usa glegislacao_dbp.legislacaoxpergunta e glegislacao_dbp.perguntas; o Codigo da pergunta fica oculto e a lista usa busca remota.
+Observacao: os campos ATENDE, Atendimento e observacao pertenciam a gmodelo_dbp.legislacaoxchecklist e foram removidos conforme a nova decisao funcional.
+
+11. Historico de alteracoes de Situacao/Licencas
+Status: PENDENTE.
+Observacao: falta comprovar que exclusoes e alteracoes sejam registradas no historico.
+
+AJUSTES GREEN - 25/08/2026
+
+1. Edicao de datas, vencimento, reacao e protocolo em Licencas
+Status: PARCIAL / NAO HOMOLOGADO.
+Observacao: existem controles de edicao, mas o protocolo ainda foi apontado como incompleto.
+
+2. Licenca desaparecendo apos alterar responsavel
+Status: RESOLVIDO.
+Evidencia: o backlog registra que a alteracao foi efetivada na pasta Licencas lateral.
+
+3. Edicao de Protocolado em e datas
+Status: PENDENTE.
+Observacao: o proprio backlog informa que protocolo continua sem edicao adequada.
+
+4. Lista de distribuicao
+Status: PENDENTE.
+
+5. Integra da norma na pasta Licencas
+Status: PENDENTE / NAO HOMOLOGADO.
+
+6. Alertas de exportacao mais recente no topo
+Status: PARCIAL / NAO HOMOLOGADO.
+Observacao: existe ordenacao de jobs/alertas em alguns fluxos, mas falta teste especifico desta regra.
+
+7. Abertura do Excel da pasta
+Status: RESOLVIDO conforme anotacao do usuario (pasta ok).
+
+8. Grafia de usuarios nas Responsabilidades
+Status: PENDENTE / NAO HOMOLOGADO.
+
+9. Exportacao de Requisitos Legais com Excel corrompido, ordem e PADRAO
+Status: PENDENTE.
+Evidencia: a configuracao atual ainda inclui PADRAO em exportOrder; falta validar arquivo, ordem e exclusao dessa coluna para usuarios.
+
+10. Janelas/abas fantasmas
+Status: PENDENTE.
+
+11. Cadastrar LIC0088 na empresa Modelo CA
+Status: PENDENTE / NAO HOMOLOGADO.
+
+12. Checklist da LIC0115A
+Status: RESOLVIDO PARCIALMENTE.
+Evidencia: a tabela legada glegislacao_dbp.legislacaoxpergunta possui associacoes para legislacoes LIC0115A/relacionadas e o popup foi migrado para essa origem.
+Observacao: falta teste especifico com o codigo exibido ao usuario.
+
+13. Pasta de historico da manutencao legal por empresa
+Status: PENDENTE.
+
+14. Exportacao Excel da Situacao em branco/com aviso
+Status: PENDENTE.
+
+15. Cadastro de Planos de Acao em Licencas e Requisitos Legais
+Status: PARCIAL / NAO HOMOLOGADO.
+Observacao: ha referencias a telas de Plano de Acao no codigo, mas falta validar disponibilidade e cadastro nos dois contextos.
+
+16. Alertas do Dashboard com contagem incorreta
+Status: PENDENTE.
+
+17. Proximas tarefas sem indicacao/link de acao
+Status: PENDENTE.
+
+18. Correlacionamento ambiental sem aspectos, impactos e atividades
+Status: PENDENTE.
+Observacao: tambem permanece pendente a validacao dos icones e da geracao/relacionamento automatico.
+
+19. Quantidade diferente entre Requisitos Legais empresa CA e Correlacionamento Ambiental
+Status: PENDENTE.
+
+20. Pastas Revisoes do LPRO e LAIS
+Status: PENDENTE.
+
+21. Integra da norma no popup de Requisitos Legais da LAIA
+Status: PENDENTE / NAO HOMOLOGADO.
+
+22. Pasta de Objetivos e Metas
+Status: PENDENTE.
+
+23. Localizacao do Inventario no LAIA
+Status: PENDENTE / DECISAO FUNCIONAL.
+
+24. Menu de aspectos, impactos, perigos e riscos por empresa
+Status: PENDENTE / DECISAO FUNCIONAL.
+Observacao: falta concluir a relocacao para a area especifica da empresa e incluir Aspectos Sociais e Impactos Sociais.
+
+25. Pendencias do Dashboard com contagem divergente
+Status: PENDENTE.
+
+CHECKLIST MIGRADO PARA A TABELA LEGADA
+
+Implementado e verificado:
+- Origem principal: glegislacao_dbp.legislacaoxpergunta.
+- Descricoes: glegislacao_dbp.perguntas.
+- Legislacao: glegislacao_dbp.legislacao.
+- View: glegislacao_dbp.vw_modulolegal_requisitos_checklist_grid.
+- Grid exibe somente Pergunta.
+- Inclusao por busca remota.
+- Perguntas ja associadas sao excluidas da busca.
+- Exclusao de associacoes habilitada.
+- Duplicidade protegida por chave unica CODLEGISLACAO + CODPERGUNTA.
+
+PRIORIDADES RECOMENDADAS
+
+1. Homologar exportacoes Excel de Requisitos Legais e Situacao.
+2. Corrigir e testar historico de alteracoes.
+3. Resolver cadastro/edicao de Licencas e protocolo.
+4. Corrigir contagens e alertas do Dashboard.
+5. Concluir correlacionamentos ambiental, LPRO e LAIS.
+6. Concluir as decisoes funcionais de Inventario, Objetivos/Metas e menus por empresa.
+
+PLANO DE TESTES NAO VISUAIS E ACOES POR ITEM
+
+Formato: teste previsto -> criterio de aprovacao -> acao para resolver.
+
+1. Tela de entrada responsiva
+Teste: abrir a tela em viewports 1024x768, 1280x720 e 1440x900 e verificar que o botao Login esta visivel e habilitado.
+Criterio: formulario e botao dentro da area visivel sem zoom.
+Acao: ajustar layout responsivo do formulario e adicionar breakpoint; depois criar teste Playwright.
+
+2. Links das pastas no Dashboard Home
+Teste: localizar os links de todas as pastas e clicar em cada um, verificando URL, iframe e titulo.
+Criterio: cada link abre a transacao correta.
+Acao: cadastrar os links ausentes e validar o mapa menu -> transacao.
+
+3. Popup de Situacao maior
+Teste: abrir Situacao e verificar dimensoes do modal, iframe e ausencia de overflow horizontal indevido.
+Criterio: altura/largura minima definida nas diretrizes.
+Acao: definir dimensoes aceitas e aplicar classe padrao do popup.
+
+4. Indicador de pagina e item
+Teste: navegar paginas e conferir indicador, quantidade e estabilidade apos filtros.
+Criterio: indicador muda conforme pagina/linha sem ser confundido com coluna de dados.
+Acao: decidir formato do indicador; implementar como metadado visual, nao como coluna legado.
+
+5. Integra da norma
+Teste: clicar no icone em uma linha e verificar popup/PDF e codigo da legislacao.
+Criterio: arquivo correto abre sem erro.
+Acao: corrigir rota e validar codigo por identificador interno e codigo exibido.
+
+6. Filtros do grid
+Teste existente: aplicar filtros, conferir colunas, ordem personalizada e ausencia de deslocamento.
+Criterio: estado do grid permanece consistente.
+Acao: manter teste de regressao e executar apos mudancas de filtros.
+
+7. Exportacao Excel geral
+Teste: solicitar exportacao, verificar alerta, status e download com HTTP 200 e arquivo legivel.
+Criterio: arquivo abre e contem dados.
+Acao: revisar worker, status e caminho do arquivo.
+
+8. Edicao de condicionantes
+Teste: abrir condicionante, alterar campo permitido, salvar, recarregar e confirmar persistencia.
+Criterio: valor permanece no banco e no grid.
+Acao: concluir permissao CRUD e validar campos editaveis.
+
+9. Pesquisa livre ambiental
+Teste: pesquisar termo ambiental e confirmar associacoes e filtros.
+Criterio: resultado reproduz regra funcional definida.
+Acao: definir algoritmo de associacao e origem dos termos antes da automacao.
+
+10. Checklist
+Teste criado: abertura, origem legada, colunas, quantidade e associacoes.
+Criterio: usar glegislacao_dbp.legislacaoxpergunta e impedir duplicidade.
+Acao: manter teste de regressao; homologar inclusao e exclusao.
+
+11. Historico de Situacao/Licencas
+Teste: alterar e excluir registros, consultar historico por codigo e usuario.
+Criterio: cada operacao gera registro com data, usuario, acao e valores.
+Acao: revisar triggers/procedures e criar teste CRUD + historico.
+
+12. Edicao de Licencas pelo link
+Teste: abrir pela Home e lateral; editar datas/protocolo e confirmar persistencia.
+Criterio: ambas as entradas respeitam permissao e salvam na mesma tabela.
+Acao: corrigir campos e habilitar edicao somente onde permitido.
+
+13. Protocolo e datas de Licencas
+Teste: preencher protocolo, protocolado em, reacao e vencimento; recarregar.
+Criterio: valores persistem com formato de data correto.
+Acao: trocar dropdown inadequado por input date/texto conforme campo.
+
+14. Lista de distribuicao
+Teste: localizar campo/tela e incluir item de distribuicao; validar consulta.
+Criterio: origem e regra de uso documentadas.
+Acao: decidir se a coluna permanece; implementar cadastro se necessária.
+
+15. Integra em Licencas
+Teste: abrir arquivo da licença e verificar resposta HTTP, codigo e arquivo.
+Criterio: link funcional ou mensagem clara quando não houver arquivo.
+Acao: corrigir rota de arquivos e chave usada.
+
+16. Ordenacao de alertas
+Teste: criar duas exportacoes com intervalo conhecido e verificar a mais recente primeiro.
+Criterio: ordenacao decrescente por data de criacao.
+Acao: corrigir ORDER BY da consulta do Dashboard.
+
+17. Abertura do Excel
+Teste: baixar e validar assinatura/estrutura XLSX.
+Criterio: ZIP XLSX valido, planilhas e cabecalhos presentes.
+Acao: corrigir worker/geracao e registrar erro de processamento.
+
+18. Grafia de usuarios
+Teste: abrir Responsabilidades com todos os usuarios e procurar caracteres quebrados.
+Criterio: textos UTF-8 corretos.
+Acao: corrigir conversao/collation na view e no frontend.
+
+19. Exportacao de Requisitos Legais
+Teste: exportar, validar arquivo, ordem das colunas e ausencia de PADRAO para usuario comum.
+Criterio: arquivo abre e respeita ordem/privilegio.
+Acao: remover PADRAO do payload de usuario comum e revisar worker.
+
+20. Janelas/abas fantasmas
+Teste: abrir/fechar abas e popups repetidamente; contar iframes/modais ativos.
+Criterio: nenhum elemento residual apos fechamento.
+Acao: padronizar dispose/remove no fechamento.
+
+21. Cadastro LIC0088
+Teste: abrir cadastro de legislacao, incluir LIC0088 na empresa Modelo CA, salvar e consultar.
+Criterio: linha editavel e persistente.
+Acao: corrigir permissao, chave da empresa e modo de inclusao.
+
+22. Checklist LIC0115A
+Teste: selecionar LIC0115A e conferir associacoes esperadas no Checklist.
+Criterio: quantidade e perguntas iguais à tabela legada.
+Acao: validar carga/mapeamento da relacao legada.
+
+23. Historico da manutencao legal
+Teste: localizar pasta, abrir por empresa, consultar eventos e filtrar periodo.
+Criterio: historico acessivel e completo.
+Acao: criar transacao/view caso ausente e definir retenção.
+
+24. Planos de Acao
+Teste: abrir Plano de Acao nos contextos Licencas e Requisitos; incluir/editar/excluir.
+Criterio: contexto correto e persistencia.
+Acao: concluir endpoints e permissoes dos dois contextos.
+
+25. Alertas vazios
+Teste: comparar contador do Dashboard com quantidade retornada pela consulta de alertas.
+Criterio: contador = registros exibidos.
+Acao: corrigir filtros de lido/status/usuario e cache.
+
+26. Proximas tarefas
+Teste: abrir cada tarefa e verificar tipo, origem, prazo, descricao e link de resolucao.
+Criterio: tarefa aponta para tela editavel correta.
+Acao: definir catalogo de tipos e montar links contextuais.
+
+27. Correlacionamento ambiental
+Teste: consultar normas com relacionamentos e validar aspectos, impactos e atividades.
+Criterio: dados presentes ou mensagem explícita de ausência.
+Acao: revisar carga/consulta e integração de IA; definir icones depois.
+
+28. Quantidade empresa CA x ambiental
+Teste: contar normas distintas nos dois contextos e comparar.
+Criterio: contagens iguais conforme regra funcional.
+Acao: identificar filtros que removem registros e alinhar views.
+
+29. Pastas Revisoes LPRO/LAIS
+Teste: localizar menus, abrir telas e validar filtros/contexto por empresa.
+Criterio: transacoes acessiveis e dados carregados.
+Acao: criar menus, views e permissao se ausentes.
+
+30. Integra no LAIA
+Teste: abrir requisitos legais do LAIA e clicar Integra da norma.
+Criterio: popup/PDF correto.
+Acao: corrigir rota compartilhada e adicionar teste de regressao.
+
+31. Objetivos e Metas
+Teste: localizar menu, abrir CRUD e testar consulta/inclusao conforme permissao.
+Criterio: tela definida e acessivel.
+Acao: confirmar escopo e criar transacao se ausente.
+
+32. Inventario no LAIA
+Teste: validar presença/posição do menu e URL do Inventario.
+Criterio: localização conforme decisão funcional.
+Acao: decidir se pertence ao LAIA e ajustar menu.
+
+33. Menus por empresa
+Teste: comparar acesso de usuario administrador e usuario de empresa aos cadastros de aspectos, impactos, perigos e riscos.
+Criterio: dados isolados por empresa e permissao correta.
+Acao: mover menus e garantir filtros por empresa.
+
+34. Aspectos Sociais e Impactos Sociais
+Teste: localizar telas, consultar e validar isolamento por empresa.
+Criterio: transacoes existentes e sem dados universais indevidos.
+Acao: criar telas/views/menu se ausentes.
+
+35. Pendencias do Dashboard
+Teste: comparar contador com itens retornados e verificar deduplicacao.
+Criterio: contador = lista exibida.
+Acao: revisar query e critérios de pendência.
+
+ESTRATEGIA DE EXECUCAO
+
+Fase 1: executar testes já automatizados de Checklist, colunas, filtros e CRUD dos associados.
+Fase 2: criar testes de exportacao, alertas, historico e links de Integra.
+Fase 3: criar testes de menus, permissao, correlacionamentos e Dashboard.
+Fase 4: automatizar somente os itens cuja regra funcional estiver aprovada.
+
+Observacao: itens que dependem de uma decisao de negocio foram marcados como pendentes de criterio. O teste deve ser criado depois da definicao para evitar falsos negativos.
+
+EXECUCAO DO PRIMEIRO TESTE
+
+Item: 1 - Tela de entrada responsiva e botao Login.
+Arquivos:
+- scripts/teste-nao-visual-backlog-01-login-responsivo.js
+- scripts/executar-teste-nao-visual-backlog-01-login-responsivo.ps1
+- tests/resultado-backlog-01-login-responsivo.json
+
+Resultado da execucao local em 27/08/2026: NAO EXECUTADO.
+Motivo: o ambiente bloqueou a inicializacao do Chrome com erro `spawn EPERM` do Playwright. O erro ocorreu antes do acesso ao sistema; portanto, nao representa falha funcional do Login.
+Acao para executar: liberar a inicializacao do Chrome/Playwright no ambiente ou executar o mesmo comando no computador de homologacao.
+
+TESTE ALTERNATIVO SEM NAVEGADOR - ITEM 1
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-01-login.js
+- scripts/executar-teste-sem-navegador-backlog-01-login.ps1
+- tests/resultado-sem-navegador-backlog-01-login.json
+
+Resultado: APROVADO.
+Validado por HTTP/HTML: resposta HTTP 200, meta viewport, formulario de Login, botao submit e campos de empresa/usuario/senha.
+
+TESTE SEM NAVEGADOR - ITEM 2
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-02-links-home.js
+- scripts/executar-teste-sem-navegador-backlog-02-links-home.ps1
+- tests/resultado-sem-navegador-backlog-02-links-home.json
+
+Resultado da execucao local em 27/08/2026: APROVADO.
+Validado por analise estrutural dos arquivos PHP: Home com cinco cards, Dashboard com quatro cards, rotas declaradas, arquivos de destino existentes e atributos de navegacao presentes.
+Observacao: o teste nao abre navegador nem comprova o clique efetivo, iframe ou titulo; essa parte permanece pendente de teste visual quando o ambiente permitir iniciar o navegador.
+Limitacao: a posicao visual do botao dentro de cada resolucao continua dependendo de teste visual; este teste nao usa navegador.
+
+TESTE SEM NAVEGADOR - ITEM 3
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-03-popup-situacao.js
+- scripts/executar-teste-sem-navegador-backlog-03-popup-situacao.ps1
+- tests/resultado-sem-navegador-backlog-03-popup-situacao.json
+
+Resultado da execucao local em 27/08/2026: APROVADO.
+Validado por analise estrutural: popup com modal-xl e altura de 90vh, tela de Situacao existente, rota correta, titulo com referencia do requisito, envio de CODLEGISLACAO/CODUNIDADE e iframe ocupando a area interna.
+Observacao: a dimensao efetivamente renderizada e o comportamento em diferentes resolucoes continuam dependendo de teste visual.
+
+TESTE SEM NAVEGADOR - ITEM 4
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-04-indicador-requisitos.js
+- scripts/executar-teste-sem-navegador-backlog-04-indicador-requisitos.ps1
+- tests/resultado-sem-navegador-backlog-04-indicador-requisitos.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+O teste confirmou que o grid existe e possui linhas identificadas, mas nao localizou um indicador numerico dedicado na primeira coluna nem uma estrutura de pagina/item para localizacao do usuario.
+Acao necessaria: definir e implementar o indicador numerico independente do Codigo da legislacao, preservando a numeracao durante filtros, paginacao e ordenacao personalizada; depois repetir este teste.
+
+TESTE SEM NAVEGADOR - ITEM 6
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-06-filtros-grid.js
+- scripts/executar-teste-sem-navegador-backlog-06-filtros-grid.ps1
+- tests/resultado-sem-navegador-backlog-06-filtros-grid.json
+
+Resultado: REPROVADO / CORRECAO NECESSARIA.
+Filtros, recarga e parametros na URL passaram. Falhou a preservacao da ordem personalizada: o trecho que percorre $ordemLegado regrava prefs[field]['ordem'] e sobrescreve a ordem salva pelo usuario.
+Acao necessaria: usar a ordem legada somente como padrao quando nao houver preferencia do usuario e repetir o teste apos a correcao.
+
+TESTE SEM NAVEGADOR - ITEM 11
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-11-historico-situacao-licencas.js
+- scripts/executar-teste-sem-navegador-backlog-11-historico-situacao-licencas.ps1
+- tests/resultado-sem-navegador-backlog-11-historico-situacao-licencas.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE PARCIAL.
+O teste confirmou tela, tabela/view e registro do estado anterior, usuario e data nas alteracoes/exclusoes de Situacao, alem do botao de historico. Nao localizou estrutura equivalente de historico para Licencas.
+Acao necessaria: definir tabela/view e tela ou acao de historico das Licencas, registrar alteracoes e exclusoes com usuario/data/estado anterior e repetir o teste.
+
+TESTE SEM NAVEGADOR - ITEM 12
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-12-edicao-licencas.js
+- scripts/executar-teste-sem-navegador-backlog-12-edicao-licencas.ps1
+- tests/resultado-sem-navegador-backlog-12-edicao-licencas.json
+
+Resultado da execucao local em 27/08/2026: APROVADO ESTRUTURALMENTE.
+Validado: tela/view de Licencas, datas de validade/reacao/protocolo, Protocolado em, controles de protocolo, fluxo save_rows e atualizacao via sp_crud_update.
+Observacao: a persistencia real de uma data/protocolo e a permissao do usuario ainda exigem teste de integracao.
+
+TESTE SEM NAVEGADOR - ITEM 12
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-12-edicao-licencas.js
+- scripts/executar-teste-sem-navegador-backlog-12-edicao-licencas.ps1
+- tests/resultado-sem-navegador-backlog-12-edicao-licencas.json
+
+Resultado da execucao local em 27/08/2026: APROVADO ESTRUTURALMENTE.
+Validado: a tela de Licencas usa user_scope_field CODUSUARIO, possui campo editavel de responsavel, e o fluxo de salvamento atualiza a tabela li_licencas. A regra de visibilidade por usuario deve ser confirmada com alteracao real entre dois usuarios.
+
+TESTE SEM NAVEGADOR - ITEM 10
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-10-checklist-legislacao.js
+- scripts/executar-teste-sem-navegador-backlog-10-checklist-legislacao.ps1
+- tests/resultado-sem-navegador-backlog-10-checklist-legislacao.json
+
+Resultado da execucao local em 27/08/2026: APROVADO ESTRUTURALMENTE.
+Validado conforme a regra funcional atual: tabela legada glegislacao_dbp.legislacaoxpergunta, view correta, somente Pergunta visivel, inclusao/exclusao, busca remota, exclusao de perguntas ja associadas, limite/ordenacao e protecao contra duplicidade.
+Observacao: a consulta real no banco e a exibicao efetiva ainda exigem teste de integracao.
+
+TESTE SEM NAVEGADOR - ITEM 9
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-09-pesquisa-ambiental.js
+- scripts/executar-teste-sem-navegador-backlog-09-pesquisa-ambiental.ps1
+- tests/resultado-sem-navegador-backlog-09-pesquisa-ambiental.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+O teste confirmou que MEIO_AMBIENTE, SEGURANCA, QUALIDADE e RESPOSABILIDADE ainda permanecem declaradas no grid. Nao foi encontrada uma pesquisa livre com associacao automatica.
+Acao necessaria: definir o campo de pesquisa ambiental, sua fonte de dados, regra de associacao e substituir as quatro colunas no grid; depois repetir o teste.
+
+TESTE SEM NAVEGADOR - ITEM 8
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-08-condicionantes-licenca.js
+- scripts/executar-teste-sem-navegador-backlog-08-condicionantes-licenca.ps1
+- tests/resultado-sem-navegador-backlog-08-condicionantes-licenca.json
+
+Resultado da execucao local em 27/08/2026: APROVADO ESTRUTURALMENTE.
+Validado: tela, tabela/view, contexto da licenca, CRUD completo, campos editaveis, persistencia por insert/update/delete, abertura pelo menu e acesso a Plano de Acao.
+Observacao: o teste nao executa uma alteracao real no banco; a persistencia e as permissoes efetivas ainda precisam de teste de integracao.
+
+TESTE SEM NAVEGADOR - ITEM 7
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-07-exportacao-excel.js
+- scripts/executar-teste-sem-navegador-backlog-07-exportacao-excel.ps1
+- tests/resultado-sem-navegador-backlog-07-exportacao-excel.json
+
+Resultado da execucao local em 27/08/2026: APROVADO ESTRUTURALMENTE.
+Validado: botao, solicitacao backend, filtros e busca, colunas ordenadas, worker, endpoint de status, arquivo concluido, alerta e link de acompanhamento.
+Observacao: o teste nao executa a fila nem abre o arquivo Excel; a homologacao efetiva do download continua necessaria.
+
+TESTE SEM NAVEGADOR - ITEM 5
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-05-integra-norma.js
+- scripts/executar-teste-sem-navegador-backlog-05-integra-norma.ps1
+- tests/resultado-sem-navegador-backlog-05-integra-norma.json
+
+Resultado da execucao local em 27/08/2026: APROVADO.
+Validado por analise estrutural: botao discreto na coluna Codigo, tooltip explicativo, icone de PDF, evento de clique, URL com o codigo da norma, endpoint da Integra e opcao de download.
+Observacao: o download efetivo e a abertura do documento dependem de teste de integracao/visual.
+
+TESTE SEM NAVEGADOR - ITEM 14
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-14-protocolado.js
+- scripts/executar-teste-sem-navegador-backlog-14-protocolado.ps1
+- tests/resultado-sem-navegador-backlog-14-protocolado.json
+
+Resultado da execucao local em 27/08/2026: APROVADO ESTRUTURALMENTE.
+Validado: campo Protocolado em como data, opcoes de Em protocolo e Protocolado no prazo, quantidade de dias somente leitura, date picker e salvamento pelo CRUD.
+Observacao: o calculo de prazo e a persistencia real continuam dependendo de teste de integracao.
+
+TESTE SEM NAVEGADOR - ITEM 13
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-13-licenca-responsavel.js
+- scripts/executar-teste-sem-navegador-backlog-13-licenca-responsavel.ps1
+- tests/resultado-sem-navegador-backlog-13-licenca-responsavel.json
+
+Resultado da execucao local em 27/08/2026: APROVADO ESTRUTURALMENTE.
+Validado: responsavel em CODUSUARIO, escopo da consulta e do contador, atualizacao na tabela li_licencas e excecao para usuario com visualizacao total.
+Observacao: por regra de escopo, a Licenca deixa de aparecer para o responsavel anterior quando passa para outro usuario; essa regra precisa de homologacao funcional entre dois usuarios.
+
+TESTE SEM NAVEGADOR - ITEM 15
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-15-lista-distribuicao.js
+- scripts/executar-teste-sem-navegador-backlog-15-lista-distribuicao.ps1
+- tests/resultado-sem-navegador-backlog-15-lista-distribuicao.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+Validado: a tela de Licencas declara CODLISTA e a view vw_licencas_grid retorna o valor da lista.
+Problema encontrado: CODLISTA esta configurado apenas como texto livre, sem combo, options ou foreign/view de origem.
+Acao necessaria: definir a tabela/view oficial das listas de distribuicao e configurar o campo como selecao, incluindo a regra de preenchimento e persistencia; depois repetir o teste.
+
+TESTE SEM NAVEGADOR - ITEM 16
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-16-alertas-dashboard.js
+- scripts/executar-teste-sem-navegador-backlog-16-alertas-dashboard.ps1
+- tests/resultado-sem-navegador-backlog-16-alertas-dashboard.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+Problemas encontrados: o contador de alertas do dashboard.php consulta apenas lido = 0, sem filtrar pelo usuario autenticado; ao clicar no cartao Alertas, a abertura vai para painel_aprovacoes.php, que nao consulta nem exibe a lista de alertas.
+Acao necessaria: aplicar o filtro codusuario no contador e direcionar o cartao para uma tela que consulte os alertas reais, mantendo a mesma regra usada por AlertasService/alertas.php; depois repetir o teste com alerta nao lido.
+
+TESTE SEM NAVEGADOR - ITEM 17
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-17-proximas-tarefas.js
+- scripts/executar-teste-sem-navegador-backlog-17-proximas-tarefas.ps1
+- tests/resultado-sem-navegador-backlog-17-proximas-tarefas.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+Problemas encontrados: o dashboard carrega situacoes e planos sem filtro por usuario; o periodo selecionado nao limita o fim das tarefas; a lista mostra apenas icones, sem tipo textual nem link individual para resolver; e o cartao Proximas tarefas abre modulolegal_situacaocumprimento.php em vez da agenda painel_calendario.php.
+Acao necessaria: filtrar as fontes pelo usuario, aplicar inicio/fim do periodo, exibir o tipo da acao e criar link de edicao/resolucao por tarefa; direcionar o cartao para a agenda com esses detalhes.
+
+TESTE SEM NAVEGADOR - ITEM 18
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-18-correlacionamento-ambiental.js
+- scripts/executar-teste-sem-navegador-backlog-18-correlacionamento-ambiental.ps1
+- tests/resultado-sem-navegador-backlog-18-correlacionamento-ambiental.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+Validado: os grids de Aspectos, Atividades e Impactos existem, usam suas tabelas/views, recebem o contexto de legislacao e unidade e estao somente para consulta.
+Problema encontrado: os botoes usam diagram-3, list-check e graph-up-arrow, e nao os icones ambientais diferenciados solicitados (ferramentas, folha e impacto/fumaca).
+Observacao: a existencia de correlacionamentos para cada norma depende de consulta real no banco.
+Acao necessaria: substituir os icones por simbolos semanticamente distintos e homologar uma norma com associacoes reais.
+
+TESTE SEM NAVEGADOR - ITEM 19
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-19-contagem-requisitos-correlacionamento.js
+- scripts/executar-teste-sem-navegador-backlog-19-contagem-requisitos-correlacionamento.ps1
+- tests/resultado-sem-navegador-backlog-19-contagem-requisitos-correlacionamento.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+Validado: as duas funcionalidades usam a associacao legislacaoxempresa e suas respectivas views existem.
+Problemas encontrados: a view ambiental restringe as normas a MEIO_AMBIENTE = sim/1/true/s, enquanto Requisitos Legais representa o conjunto geral; tambem nao existe rotina implementada para comparar as duas contagens por empresa/unidade.
+Acao necessaria: definir o universo correto da comparacao, aplicar os mesmos filtros de empresa/unidade e criar consulta/indicador de divergencia; depois conferir os totais reais (901 x 843).
+
+TESTE SEM NAVEGADOR - ITEM 20
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-20-revisoes-lpro-lais.js
+- scripts/executar-teste-sem-navegador-backlog-20-revisoes-lpro-lais.ps1
+- tests/resultado-sem-navegador-backlog-20-revisoes-lpro-lais.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+Validado: as pastas principais LPRO e LAIS existem e estao presentes no menu.
+Problemas encontrados: nao foram localizadas paginas/transacoes de revisao do LPRO ou LAIS, nem estrutura de dados separada para essas revisoes. A unica revisao implementada e a do LAIA, usando lais_revisao.
+Acao necessaria: definir o escopo e o modelo de historico/revisao de cada modulo, criar tabelas/views, telas, menu e permissoes para LPRO e LAIS; depois repetir o teste.
+
+TESTE SEM NAVEGADOR - ITEM 21
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-21-integra-laia.js
+- scripts/executar-teste-sem-navegador-backlog-21-integra-laia.ps1
+- tests/resultado-sem-navegador-backlog-21-integra-laia.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+Validado: o LAIA possui o botao Requisitos Legais, a tela usa a view correta e a view retorna codigo/arquivo da norma.
+Problemas encontrados: o campo ARQUIVO configurado como type=link e renderizado como input readonly; o JavaScript de Integra procura a estrutura do grid geral (CODLEGISLACAO/CODIGO) e nao trata o grid LAIA (LEGISLACAO/ARQUIVO); nao existe URL da Integra vinculada ao codigo no contexto LAIA.
+Acao necessaria: criar o renderer/handler especifico para o grid LAIA e montar a URL legislacao_pdf.php?codigo=...; depois homologar clicando em uma norma real.
+
+TESTE SEM NAVEGADOR - ITEM 22
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-22-objetivos-metas.js
+- scripts/executar-teste-sem-navegador-backlog-22-objetivos-metas.ps1
+- tests/resultado-sem-navegador-backlog-22-objetivos-metas.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+Validado: existem telas de Objetivos e Metas para LAIA, LPRO e LAIS, com acessos contextuais nos tres modulos.
+Problemas encontrados: o MenuService nao declara todas as transacoes de Objetivos e Metas e a migration 063 desativa LAIA_OBJETIVOS_METAS, dificultando a localizacao da pasta pelo usuario.
+Acao necessaria: definir se Objetivos e Metas sera uma pasta principal ou apenas contextual, ativar e cadastrar corretamente os menus/permissoes de cada modulo e depois repetir o teste.
+
+TESTE SEM NAVEGADOR - ITEM 23
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-23-inventario-laia.js
+- scripts/executar-teste-sem-navegador-backlog-23-inventario-laia.ps1
+- tests/resultado-sem-navegador-backlog-23-inventario-laia.json
+
+Resultado da execucao local em 27/08/2026: APROVADO ESTRUTURALMENTE.
+Validado: o Inventario possui tela propria, esta associado ao botao contextual do LAIA, usa laia_inventario/vw_laia_inventario_grid, recebe CODLAIA e CODUNIDADE e nao foi duplicado como pasta independente.
+Conclusao: o Inventario esta corretamente posicionado dentro do LAIA como relacionamento contextual. A existencia de registros e a abertura efetiva dependem de homologacao com dados reais.
+
+TESTE SEM NAVEGADOR - ITEM 24
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-24-cadastros-especificos-empresa.js
+- scripts/executar-teste-sem-navegador-backlog-24-cadastros-especificos-empresa.ps1
+- tests/resultado-sem-navegador-backlog-24-cadastros-especificos-empresa.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+Validado: existem cadastros gerais de Aspectos, Impactos, Perigos e Riscos e o grupo Manutencao Legal esta definido.
+Problemas encontrados: nao existem pastas dedicadas para Aspectos Sociais e Impactos Sociais, nem tabelas especificas identificadas no script de cadastros gerais. Os cadastros gerais tambem nao possuem contexto explicito de empresa/unidade.
+Acao necessaria: criar os cadastros sociais com escopo por empresa/unidade e decidir a organizacao dos cadastros gerais dentro da Manutencao Legal; depois repetir o teste.
+
+TESTE SEM NAVEGADOR - ITEM 25
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-25-contador-pendencias.js
+- scripts/executar-teste-sem-navegador-backlog-25-contador-pendencias.ps1
+- tests/resultado-sem-navegador-backlog-25-contador-pendencias.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+Problemas encontrados: o Dashboard consulta situacoes e planos sem filtro explicito por usuario; Home e Dashboard mantem regras duplicadas; o painel lateral calcula Pendencias principalmente por SQL de nao conformidades e prazos, diferente do Dashboard; nao existe servico unico para consolidar a contagem.
+Conclusao: a divergencia 7 contra 4 e tecnicamente possivel com a implementacao atual.
+Acao necessaria: criar uma origem/regra unica de Pendencias, aplicar usuario, empresa, unidade e status de forma consistente e fazer todos os indicadores consumirem o mesmo resultado.
+
+TESTE SEM NAVEGADOR - ITEM 26
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-26-colunas-requisitos.js
+- scripts/executar-teste-sem-navegador-backlog-26-colunas-requisitos.ps1
+- tests/resultado-sem-navegador-backlog-26-colunas-requisitos.json
+
+Resultado da execucao local em 27/08/2026: APROVADO ESTRUTURALMENTE.
+Verificacoes aprovadas: CODIGO e UNIDADE estao declaradas no grid, possuem largura inicial positiva, nao sao chaves tecnicas forcadas como ocultas, aparecem no modal Colunas, e o salvamento envia as preferencias ao servidor e recarrega o grid.
+Conclusao: o codigo atual suporta a exibicao e a restauracao dessas duas colunas. A falha relatada em uma sessao real provavelmente depende das preferencias gravadas para o usuario ou dos valores retornados pela view vw_modulolegal_requisitos_grid; a existencia de dados LIC/AG e do nome da unidade ainda deve ser confirmada com a empresa afetada.
+Proximo passo: executar o teste visual com o usuario admin, restaurar CODIGO e UNIDADE no modal, salvar, recarregar e conferir os valores de uma linha real.
+
+RETESTE DO ITEM 26 - CODIGO E UNIDADE
+
+Analise adicional:
+- A consulta direta em gmodelo_dbp confirmou que vw_modulolegal_requisitos_grid retorna CODIGO e UNIDADE com valores reais, incluindo LB0001 e Modelo CA.
+
+Alteracoes implementadas:
+- O PHP usa DSCUNIDADE como fallback quando UNIDADE vier vazia.
+- O JavaScript identifica CODIGO e UNIDADE como colunas funcionais e preserva sua visibilidade quando nao existe preferencia salva.
+
+Validacao:
+- Sintaxe PHP: aprovada.
+- Sintaxe JavaScript: aprovada.
+- Teste sem navegador do item 26: aprovado, 12/12 verificacoes.
+- Resultado: tests/resultado-sem-navegador-backlog-26-colunas-requisitos.json
+
+Conclusao: item 26 aprovado estruturalmente. Falta homologacao visual no Chrome com o usuario admin, salvando as colunas, recarregando e aplicando filtros para confirmar o comportamento final.
+
+TESTE SEM NAVEGADOR - ITEM 27
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-27-contagem-requisitos.js
+- scripts/executar-teste-sem-navegador-backlog-27-contagem-requisitos.ps1
+- tests/resultado-sem-navegador-backlog-27-contagem-requisitos.json
+
+Resultado da execucao local em 27/08/2026: APROVADO ESTRUTURALMENTE.
+Verificacoes aprovadas: existe o endpoint count_rows, a contagem usa sp_crud_count sobre vw_modulolegal_requisitos_grid, o retorno utiliza total_registros, a tela inclui grid-pagination.js, o rodape mostra total e pagina atual, e filtros por coluna e busca geral acionam nova contagem.
+Conclusao: a funcionalidade esta implementada no codigo. O teste sem navegador nao confirma o total real retornado pelo banco nem se o texto esta visivel no Chrome para a sessao do usuario.
+Proximo passo: executar homologacao visual com mais de 25 requisitos, conferir o texto do rodape, avancar de pagina e repetir com filtro aplicado.
+
+TESTE SEM NAVEGADOR - ITEM 28
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-28-acentuacao-requisitos.js
+- scripts/executar-teste-sem-navegador-backlog-28-acentuacao-requisitos.ps1
+- tests/resultado-sem-navegador-backlog-28-acentuacao-requisitos.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+Verificacoes: foram encontradas 73 ocorrencias de sequencias de codificacao incorreta no PHP e 8 no JavaScript. As opcoes corretas de atendimento existem em parte do PHP, mas o JavaScript ainda contem textos como NÃ£o. Existe uma rotina auxiliar corrigir com MutationObserver, porem ela apenas tenta corrigir o texto em tempo de execucao e nao elimina o problema na origem.
+Conclusao: o item 28 ainda nao esta resolvido. A acentuacao pode continuar incorreta em cabecalhos, mensagens, titulos e opcoes de atendimento.
+Acao necessaria: converter os arquivos envolvidos para UTF-8 sem BOM, substituir os textos mojibake pela grafia correta na origem e manter a rotina auxiliar somente como protecao. Depois repetir o teste e homologar no Chrome.
+
+RETESTE DO ITEM 28 - ACENTUACAO
+
+Alteracoes implementadas:
+- Corrigidos textos mojibake no fluxo de Requisitos Legais.
+- Corrigidas mensagens de Padrão, Código, Não e Texto íntegro no JavaScript.
+- O mapa do corretor de acentuacao foi mantido com sequencias Unicode escapadas, sem texto corrompido na origem.
+
+Validacao:
+- Sintaxe PHP: aprovada.
+- Sintaxe JavaScript: aprovada nos arquivos alterados.
+- Teste sem navegador do item 28: aprovado, 7/7 verificacoes.
+- Resultado: tests/resultado-sem-navegador-backlog-28-acentuacao-requisitos.json
+
+Conclusao: item 28 aprovado estruturalmente. Falta apenas homologacao visual no Chrome para confirmar cabecalhos, opcoes de atendimento e modais em uma sessao real.
+
+TESTE VISUAL FIREFOX - ITEM 27
+
+Arquivos criados:
+- scripts/teste-visual-firefox-backlog-27-contagem-requisitos.js
+- scripts/executar-teste-visual-firefox-backlog-27-contagem-requisitos.ps1
+- Resultado previsto: tests/resultado-visual-firefox-backlog-27-contagem-requisitos.json
+- Evidencias previstas: tests/evidencias_visual_firefox_backlog_27/
+
+Escopo do teste:
+- Login e abertura do grid de Requisitos Legais no Firefox.
+- Validacao da contagem inicial e da pagina atual.
+- Navegacao para a segunda pagina quando houver mais de 25 registros.
+- Aplicacao do filtro CODIGO e validacao da contagem e retorno para a primeira pagina.
+
+Validacao preliminar: sintaxe JavaScript aprovada. O teste funcional ainda nao foi executado; portanto, o item 27 permanece aguardando homologacao visual.
+
+RESULTADO DA HOMOLOGACAO VISUAL FIREFOX - ITEM 27
+
+Execucao realizada pelo usuario:
+- Login e carregamento do grid: aprovados.
+- Contagem inicial: aprovada, 1284 registros na pagina 1.
+- Navegacao para a pagina 2: aprovada.
+- Filtro CODIGO localizado: aprovado.
+- Falha: apos informar LB0001, o grid apenas ocultou as linhas da pagina 2; permaneceu em pagina 2 com 1284 registros.
+
+Causa identificada: o listener de recarga da paginacao dependia da delegacao no fragmento e nao garantia a captura do evento dos filtros de coluna.
+
+Correcao implementada:
+- assets/js/grid-pagination.js agora registra diretamente no table os eventos input/change de data-column-filter e agenda a recarga server-side.
+- O teste visual aguarda explicitamente o retorno para a pagina 1 apos o filtro.
+
+Status: aguardando nova execucao do teste visual Firefox para homologar a correcao.
+
+HOMOLOGACAO FINAL DO ITEM 27
+
+Resultado da nova execucao visual no Firefox: APROVADO.
+- Contagem inicial: 1284 registros, pagina 1.
+- Segunda pagina: contador mantido e pagina 2 exibida.
+- Filtro CODIGO = LB0001: 2 registros, pagina 1.
+- Evidencias: tests/evidencias_visual_firefox_backlog_27/01-grid-contagem-inicial.png, 02-segunda-pagina.png e 03-contagem-apos-filtro.png.
+
+Conclusao: item 27 homologado. A contagem e a paginacao permanecem consistentes apos navegacao e filtros.
+
+TESTE SEM NAVEGADOR - ITEM 29
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-29-arquivos-licencas.js
+- scripts/executar-teste-sem-navegador-backlog-29-arquivos-licencas.ps1
+- tests/resultado-sem-navegador-backlog-29-arquivos-licencas.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+Verificacoes aprovadas: a coluna ARQUIVOS existe, esta configurada como somente leitura, existe a tela gestao_arquivos.php para licencas e o botao superior monta o contexto usando CODLICENCA.
+Problemas encontrados: nao foi localizado renderer ou acao de upload/download diretamente na celula ARQUIVOS; a inclusao e consulta continuam dependentes do botao superior. A configuracao do JavaScript de arquivos tambem nao foi reconhecida de forma consistente para o fragmento de licencas.
+Acao necessaria: criar botoes/links por linha na coluna ARQUIVOS, abrir a gestao no contexto da licenca selecionada e permitir upload/download respeitando permissoes. Depois repetir o teste e homologar com arquivo real.
+
+TESTE SEM NAVEGADOR - ITEM 30
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-30-nome-exportacoes.js
+- scripts/executar-teste-sem-navegador-backlog-30-nome-exportacoes.ps1
+- tests/resultado-sem-navegador-backlog-30-nome-exportacoes.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+Verificacoes aprovadas: o worker gera arquivos XLSX, inclui data e hora, possui configuracoes descritivas para Requisitos Legais e Licencas e usa o mesmo arquivo gerado no alerta/link.
+Problemas encontrados: a expressao que monta o nome fisico usa a base tecnica da transacao, o ID do job e a data/hora; nao inclui o usuario solicitante e nao usa diretamente os nomes funcionais solicitados (Requisitos legais / Licencas).
+Acao necessaria: alterar o nome para um padrao como Requisitos_legais_YYYYMMDD_HHmmss_usuario.xlsx ou Licencas_YYYYMMDD_HHmmss_usuario.xlsx, sanitizar o usuario e manter o mesmo nome no alerta e no download. Depois repetir o teste com as duas exportacoes.
+
+RETESTE DO ITEM 30 - NOME DAS EXPORTACOES
+
+Alteracoes implementadas:
+- O worker agora gera nomes funcionais para Requisitos Legais e Licencas.
+- O nome inclui data/hora e usuario solicitante, com sanitizacao para uso em arquivo.
+- O alerta e o campo de download continuam apontando para o mesmo arquivo gerado.
+
+Validacao:
+- Sintaxe PHP: aprovada.
+- Sintaxe JavaScript do teste: aprovada.
+- Teste sem navegador do item 30: aprovado, 10/10 verificacoes.
+- Resultado: tests/resultado-sem-navegador-backlog-30-nome-exportacoes.json
+
+Conclusao: item 30 aprovado estruturalmente. Falta homologacao funcional solicitando uma exportacao real de Requisitos Legais e uma de Licencas para confirmar os nomes no download.
+
+TESTE SEM NAVEGADOR - ITEM 31
+
+Arquivos:
+- scripts/teste-sem-navegador-backlog-31-assuntos-tipos.js
+- scripts/executar-teste-sem-navegador-backlog-31-assuntos-tipos.ps1
+- tests/resultado-sem-navegador-backlog-31-assuntos-tipos.json
+
+Resultado da execucao local em 27/08/2026: REPROVADO / PENDENTE.
+Verificacoes aprovadas: existem carregamento e salvamento de assuntos, a persistencia usa legislacaoxassunto, o popup permite selecao e busca, e a nova linha da legislacao possui editor de assuntos. Os tipos sao carregados da tabela oficial.
+Problema encontrado: nao foi localizada ordenacao alfabetica por DSCTIPO antes da montagem do combobox; o JavaScript tambem nao aplica essa ordenacao.
+Conclusao: a parte de assuntos esta implementada estruturalmente, mas o item 31 permanece pendente por causa da ordenacao dos tipos. A persistencia deve ser homologada com uma norma nova real.
+Acao necessaria: ordenar $tipos por DSCTIPO com comparacao adequada ao idioma antes de criar $tipoOptions e repetir o teste no combobox de inclusao e nos filtros.
+
+RETESTE DO ITEM 31b - ORDENACAO DOS TIPOS
+
+Alteracao implementada:
+- principal/manutencaolegal_legislacao.php agora ordena $tipos por DSCTIPO usando strnatcasecmp antes de montar $tipoOptions.
+
+Validacao:
+- Sintaxe PHP: aprovada, sem erros.
+- Teste sem navegador do item 31: aprovado, 10/10 verificacoes.
+- Resultado: tests/resultado-sem-navegador-backlog-31-assuntos-tipos.json
+
+Conclusao: item 31b aprovado estruturalmente. A lista de tipos deve aparecer em ordem alfabetica no combobox de inclusao e nos filtros; falta apenas confirmacao visual no Chrome.
+
+RETESTE DO ITEM 29 - ARQUIVOS POR LICENCA
+
+Implementacao:
+- A coluna ARQUIVOS de manutencaolegal_licencas.php permanece somente leitura e recebe um botao por linha.
+- O botao usa tipo licencas, chave CODLICENCA e abre gestao_arquivos.php no popup.
+- A configuracao da tela identifica explicitamente a pasta licencas.
+- A API do GED utiliza E:\projetoGreen\GED\<banco legado>\licencas\<CODLICENCA>, com validacao de caminho.
+- O popup permite listar, abrir/download, enviar e excluir arquivos conforme as permissoes do usuario.
+
+Validacao:
+- PHP: principal/manutencaolegal_licencas.php e principal/api/gestao_arquivos.php sem erros de sintaxe.
+- JavaScript: assets/js/modulo-legal-arquivos.js sem erros de sintaxe.
+- Teste sem navegador: aprovado, 9/9 verificacoes.
+- Resultado: tests/resultado-sem-navegador-backlog-29-arquivos-licencas.json
+
+Conclusao: item 29 aprovado estruturalmente. Falta homologacao funcional com upload e download de um arquivo real usando uma licença selecionada.
+RETESTE DO ITEM 5 - CORRELACIONAMENTOS AMBIENTAL, LPRO E LAIS
+
+Data: 28/08/2026
+Status: RESOLVIDO PARA OS CORRELACIONAMENTOS ANALISADOS.
+
+Correcoes aplicadas:
+- atividades consolidadas de 32 para 16 registros;
+- riscos consolidados de 22 para 11 registros;
+- chaves UNIQUE criadas para legislacao, atividade/risco e unidade;
+- codunidade tornado obrigatorio nas tabelas de atividades e riscos;
+- 189 associacoes empresa sem unidade removidas das relacoes ativas e
+  preservadas em tabelas zz_backup_153_*;
+- associacao legada ausente restaurada: legislacao 1, empresa 4, unidade 1,
+  chave contextual 11;
+- contagens das views ambientais ajustadas para COUNT(DISTINCT).
+
+Validacao executada sem navegador:
+- atividades: 16 no legado e 16 no destino, sem faltantes ou extras;
+- riscos: 11 no legado e 11 no destino, sem faltantes ou extras;
+- legislacaoxempresa: 1538 no legado e 1538 no destino, sem faltantes ou extras;
+- duplicidades de atividades e riscos: 0;
+- associacoes ativas sem unidade: 0;
+- registro legado restaurado: 1;
+- views ambientais: principal 1143, atividades 16, impactos 17, licencas 48,
+  documentos 36.
+
+Artefatos:
+- database/153_corrigir_correlacionamentos_legado.sql
+- scripts/executar-teste-sem-navegador-correlacionamentos-legado.ps1
+- scripts/teste-sem-navegador-correlacionamentos-legado.js
+- tests/resultado-sem-navegador-correlacionamentos-legado.json
+
+Proximo passo recomendado: homologar visualmente os grids Ambiental, LPRO e
+LAIS e depois tratar o proximo item pendente do backlog.
+HOMOLOGACAO VISUAL DO ITEM 5 - AMBIENTAL, LPRO E LAIS
+
+Data: 28/08/2026
+Navegador: Firefox
+Status: APROVADO.
+
+Resultado do teste visual:
+- Correlacionamento Ambiental: grid, colunas, paginacao, selecao, cinco
+  botoes contextuais e popup validados;
+- LPRO: grid, colunas, paginacao, selecao, seis botoes contextuais e popup
+  validados;
+- LAIS: grid, colunas, paginacao, selecao, tres botoes contextuais e popup
+  validados;
+- nenhum popup apresentou Fatal error, PDOException, SQLSTATE ou Call Stack;
+- evidencias geradas em tests/evidencias_visual_firefox_correlacionamentos;
+- resultado completo em tests/resultado-visual-firefox-correlacionamentos.json.
+
+Conclusao: o item 5 foi homologado visualmente no Firefox. Permanece como
+proximo passo opcional a repeticao no Chrome quando o ambiente permitir a
+execucao do navegador.
+
+HOMOLOGACAO MANUAL - REVISOES LAIA E LPRO
+
+Data: 28/08/2026
+Status: HOMOLOGADO MANUALMENTE.
+
+Validado pelo usuario:
+- Revisão LAIA: grid, inclusão, alteração, duplicação e exclusão funcionando;
+- Revisão LPRO: grid, inclusão, alteração, duplicação e exclusão funcionando;
+- coluna Código/CHAVE permanece oculta ao clicar em Novo;
+- acentuação e campos de data conferidos na interface.
+
+Observação: o teste automatizado visual ainda possui uma condição de corrida na
+confirmação/recarga e permanece em ajuste técnico separado da homologação manual.
+
+PRÓXIMAS ETAPAS PRIORIZADAS
+
+1. Item 31: homologação visual da ordenação alfabética dos tipos e inclusão de
+assuntos na nova legislação.
+2. Item 30: homologação funcional dos nomes dos arquivos Excel de Requisitos
+Legais e Licenças, incluindo data e usuário.
+3. Item 29: homologação funcional de upload e download de arquivos de licença.
+
+RESULTADOS DOS TESTES DOS ITENS 31 E 30 - 28/08/2026
+
+Item 31 - teste visual de inclusão de legislação e assuntos: REPROVADO.
+Resultado: tests/evidencias_inclusao_lei_geral/resultado.json.
+O teste confirmou login, carregamento do grid e ausência de contexto inicial,
+mas falhou ao localizar o campo CODIGO após a recarga da tela. Não homologar
+até ajustar o roteiro/identificação da linha e repetir a inclusão de assunto.
+
+Item 30 - teste sem navegador de nomes das exportações: REPROVADO.
+Resultado: tests/resultado-sem-navegador-backlog-30-nome-exportacoes.json.
+Nove verificações passaram, mas falhou a validação do padrão funcional do nome
+do arquivo. O item permanece pendente até validar uma exportação real de
+Requisitos Legais e uma de Licenças.

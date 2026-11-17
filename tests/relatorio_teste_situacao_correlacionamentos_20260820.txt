@@ -1,0 +1,207 @@
+===============================================================================
+GREEN PORTAL - RELATORIO DE VALIDACAO VISUAL E FUNCIONAL
+Tela testada: Modulo Legal > Situacao quanto ao cumprimento, Correlacionamento
+               Ambiental, Correlacionamento Ocupacional e Correlacionamento
+               Social (regras de negocio especificas de CRUD de cada tela)
+Ambiente: instancia local (http://localhost/greenportal), empresa "Modelo",
+          usuario "admin"
+Data do teste: 20/08/2026
+Metodo: navegacao e interacao manual via navegador (Chrome), validacao das
+        regras de negocio informadas para cada transacao, leitura do console
+        e das chamadas de rede da aplicacao.
+
+Regras de negocio informadas para este teste:
+  - "Situacao quanto ao cumprimento": deve permitir apenas Alterar, Excluir e
+    Consultar registros - NAO deve permitir Incluir nem Duplicar.
+  - "Correlacionamento Ambiental/Ocupacional/Social": a grid principal deve
+    ser somente consulta (sem incluir/alterar/excluir); os botoes especificos
+    que abrem grids relacionadas devem permitir CRUD completo nessas grids.
+===============================================================================
+
+-------------------------------------------------------------------------------
+0. RESUMO DO QUE FOI TESTADO
+-------------------------------------------------------------------------------
+
+  - "Situacao quanto ao cumprimento" (232 registros): barra de ferramentas,
+    edicao inline de celulas (Assunto, Situacao/descricao, Atendido?, Data de
+    avaliacao, Observacao), configuracao de colunas, busca no grid.
+  - "Correlacionamento Ambiental" (1279 registros): barra de ferramentas da
+    grid principal, tentativa de edicao inline, e os 5 botoes de
+    relacionamento (Aspectos, Atividades, Impactos, Licencas, Documentos).
+  - "Correlacionamento Ocupacional" (1710 registros): mesma verificacao -
+    barra de ferramentas, tentativa de edicao inline, e os 5 botoes de
+    relacionamento (Perigos ocupacionais, Atividades ocupacionais, Riscos
+    ocupacionais, Licencas relacionadas, Documentos relacionados).
+  - "Correlacionamento Social" (1710 registros): mesma verificacao - barra de
+    ferramentas, tentativa de edicao inline, e os 3 botoes de relacionamento
+    (Aspectos sociais, Impactos sociais, Documentos relacionados).
+
+===============================================================================
+1. CRITICO - DESVIOS DA REGRA DE NEGOCIO
+===============================================================================
+
+1.1 [CRITICO] "Situacao quanto ao cumprimento" nao permite Alterar nem
+    Excluir - ao contrario do que foi solicitado (a tela ficou mais
+    restritiva do que deveria)
+
+  A regra informada era: permitir Alterar, Excluir e Consultar, mas NAO
+  permitir Incluir nem Duplicar. Na pratica, a tela testada nao permite
+  NENHUMA das duas primeiras acoes:
+
+  - Nao ha botao de "Salvar" (check) nem de "Excluir" (lixeira) na barra de
+    ferramentas - ela contem apenas Ajuda, Atualizar, Exportar Excel e
+    Colunas do grid. Ou seja, a ausencia de Incluir/Duplicar esta correta,
+    mas Alterar/Excluir tambem estao ausentes, quando deveriam estar
+    presentes.
+  - As celulas da grid (Assunto, Situacao/descricao, Atendido?, Data de
+    avaliacao, Observacao) VISUALMENTE entram em modo de edicao ao serem
+    clicadas (viram caixas de texto editaveis, inclusive com o componente de
+    data mascarado funcionando corretamente), sugerindo ao usuario que a
+    edicao e possivel. Porem, ao digitar um novo valor (testado no campo
+    "Atendido?", alterando de "Sim" para "Parcial") e confirmar com Enter, o
+    valor digitado e descartado e o campo volta ao valor original - nenhuma
+    chamada de rede de gravacao e disparada (confirmado via inspecao de
+    rede), e nenhuma mensagem de erro e exibida ao usuario.
+  - Nao foi encontrado nenhum mecanismo de exclusao de registro nesta tela
+    (sem icone de lixeira, sem menu de contexto ao clicar com o botao
+    direito, sem icone de acao por linha).
+  - O proprio texto de ajuda da tela (icone "?") diz apenas: "Consulte a
+    situacao de atendimento das legislacoes por unidade e responsavel" - o
+    texto usa o verbo "Consulte", sem mencionar alteracao ou exclusao, o que
+    sugere que a tela pode ter sido implementada com a intencao de ser
+    somente-consulta, divergindo da regra de negocio combinada.
+
+  Impacto: nenhum usuario consegue registrar a situacao de atendimento a uma
+  legislacao (Situacao, Atendido?, Observacao, Data de avaliacao) nem excluir
+  um registro por esta tela - a funcionalidade central da tela (mais
+  restrita que Requisitos Legais, que ao menos permite consulta) esta
+  ausente, apesar de a interface sugerir visualmente que a edicao e
+  possivel, o que pode confundir e frustrar o usuario sem qualquer aviso.
+
+  Sugestao: implementar os botoes de "Alterar" (Salvar) e "Excluir" na barra
+  de ferramentas desta tela, mantendo a ausencia de "Novo" e "Duplicar"
+  conforme a regra de negocio. Enquanto a implementacao completa nao estiver
+  pronta, desabilitar a edicao inline das celulas (hoje o campo aceita clique
+  e digitacao, mas descarta o valor silenciosamente) para nao sugerir uma
+  funcionalidade inexistente ao usuario.
+
+-------------------------------------------------------------------------------
+1.2 [ALTO] Grid principal de Correlacionamento Ocupacional e Correlacionamento
+    Social permite iniciar edicao de celula, embora a regra exija somente
+    consulta (inconsistente com Correlacionamento Ambiental, que esta correto)
+
+  Passos para reproduzir: em "Correlacionamento Ocupacional" ou
+  "Correlacionamento Social", dar duplo-clique sobre qualquer celula da
+  coluna "Unidade" (ou outras colunas de texto) na grid principal.
+
+  Resultado observado: a celula entra em modo de edicao (o texto fica
+  selecionavel/editavel dentro de uma caixa de texto), exatamente como uma
+  celula editavel normal do sistema. Isso contraria a regra de que a grid
+  principal destas telas deve ser somente consulta.
+
+  Comparacao: o MESMO teste em "Correlacionamento Ambiental" NAO apresenta
+  esse comportamento - o duplo-clique na celula "Unidade" nao inicia edicao
+  nenhuma, mantendo a linha apenas selecionada, como esperado para uma tela
+  de consulta. A divergencia entre as tres telas (Ambiental correto vs.
+  Ocupacional e Social incorretos) indica uma inconsistencia de
+  implementacao entre grids que deveriam seguir a mesma regra.
+
+  Observacao importante: a barra de ferramentas principal destas duas telas
+  NAO exibe botoes de Novo/Salvar/Excluir/Duplicar (isso esta correto), o
+  que sugere que, mesmo que a celula "abra" para edicao, nao ha como de fato
+  persistir a alteracao (mesmo padrao de "campo editavel sem mecanismo de
+  gravacao" descrito no item 1.1) - ou seja, o dado provavelmente nao chega a
+  ser alterado de fato, mas a interface ainda assim permite iniciar uma
+  edicao que nao deveria ser possivel, o que e confuso para o usuario e
+  tecnicamente incorreto frente a regra definida.
+
+  Sugestao: aplicar na grid principal de Correlacionamento Ocupacional e
+  Correlacionamento Social a mesma configuracao de somente-leitura ja usada
+  corretamente em Correlacionamento Ambiental (provavelmente uma flag ou
+  parametro de configuracao do grid que esta setada de forma diferente entre
+  as tres telas, apesar de deverem se comportar de forma identica).
+
+===============================================================================
+2. OBSERVACOES / PONTOS POSITIVOS
+-------------------------------------------------------------------------------
+
+  - Os botoes de relacionamento que abrem grids especificas funcionam
+    corretamente nas quatro telas testadas e, em todos os casos verificados,
+    abrem popups com a barra de ferramentas de CRUD completa (Novo, Salvar,
+    Excluir, Duplicar, Atualizar, Exportar, Colunas), conforme a regra de
+    negocio solicitada:
+      - Correlacionamento Ambiental: Aspectos, Atividades, Impactos,
+        Licencas, Documentos (5 botoes).
+      - Correlacionamento Ocupacional: Perigos ocupacionais, Atividades
+        ocupacionais, Riscos ocupacionais, Licencas relacionadas,
+        Documentos relacionados (5 botoes).
+      - Correlacionamento Social: Aspectos sociais, Impactos sociais,
+        Documentos relacionados (3 botoes).
+  - A ausencia dos botoes "Novo" e "Duplicar" na tela "Situacao quanto ao
+    cumprimento" esta correta e de acordo com a regra de negocio combinada.
+  - A grid principal de "Correlacionamento Ambiental" segue corretamente a
+    regra de somente-consulta (nem a barra de ferramentas nem as celulas
+    permitem qualquer tentativa de edicao).
+  - O campo "Data de avaliacao" em "Situacao quanto ao cumprimento" usa
+    corretamente o componente de data mascarado (dd/mm/aaaa com segmentos
+    navegaveis via Tab), assim como observado em registros ja existentes no
+    relatorio de 19/08/2026 - o problema de mascara em linhas novas relatado
+    anteriormente nao se aplica aqui, pois esta tela nao permite criar linhas
+    novas.
+
+===============================================================================
+3. INCIDENTE DURANTE O TESTE (relevante para o time de desenvolvimento)
+-------------------------------------------------------------------------------
+
+  Ao testar o fluxo completo de gravacao em um dos popups de relacionamento
+  de "Correlacionamento Ambiental" (popup "Aspectos": clicar em "+" (Novo),
+  digitar um codigo de teste no campo "Codigo" e clicar em "Salvar"), o
+  navegador ficou completamente sem resposta - nenhuma acao subsequente
+  (cliques, capturas de tela, leitura de rede) funcionou, sendo necessario
+  fechar a aba para recuperar o teste.
+
+  Esse comportamento e consistente com uma caixa de dialogo de confirmacao
+  nativa do navegador (window.confirm(), sem estilizacao) sendo aberta e
+  bloqueando a pagina inteira - diferente do padrao de dialogo de
+  confirmacao ESTILIZADO ("Confirmacao", com botao "X") usado com sucesso em
+  outras partes do sistema (por exemplo, ao excluir um registro em LAIS, no
+  teste de 19/08/2026, e ao excluir em Requisitos Legais/Situacao, no teste
+  anterior). Nao foi possivel confirmar com certeza a causa exata devido ao
+  travamento, mas a suspeita e razoavel dado o padrao de comportamento.
+
+  Impacto: se este popup de fato usa uma confirmacao nativa do navegador em
+  vez do componente de dialogo padrao do sistema, isso e uma inconsistencia
+  visual (o usuario veria uma caixa de dialogo com aparencia diferente do
+  restante do sistema) e pode causar problemas em navegadores/configuracoes
+  que bloqueiam pop-ups nativos, alem de ter interrompido este teste
+  automatizado.
+
+  Sugestao: verificar se o fluxo de gravacao do popup "Aspectos" (e
+  possivelmente dos demais popups de relacionamento que seguem o mesmo
+  componente) usa window.confirm()/window.alert() em vez do componente de
+  modal de confirmacao padronizado usado no restante do sistema, e
+  padronizar para o componente estilizado.
+
+===============================================================================
+4. PROXIMOS PASSOS SUGERIDOS (EM ORDEM DE PRIORIDADE)
+-------------------------------------------------------------------------------
+
+  1. [CRITICO] Implementar os botoes/acoes de "Alterar" (Salvar) e "Excluir"
+     em "Situacao quanto ao cumprimento", que hoje estao completamente
+     ausentes apesar de exigidos pela regra de negocio - e desabilitar a
+     edicao inline enganosa das celulas ate que a gravacao funcione (item
+     1.1).
+
+  2. [ALTO] Corrigir a grid principal de Correlacionamento Ocupacional e
+     Correlacionamento Social para bloquear a edicao de celulas (duplo-
+     clique), igualando o comportamento ao ja correto em Correlacionamento
+     Ambiental (item 1.2).
+
+  3. [MEDIO] Investigar se os popups de relacionamento (a comecar por
+     "Aspectos" em Correlacionamento Ambiental) usam dialogos nativos do
+     navegador (window.confirm/alert) no fluxo de gravacao, e substituir
+     pelo componente de confirmacao padronizado do sistema (item 3).
+
+===============================================================================
+FIM DO RELATORIO
+===============================================================================

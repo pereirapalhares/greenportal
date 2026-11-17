@@ -1,0 +1,583 @@
+﻿ESPECIFICAÇÃO FUNCIONAL — GREEN 4.0
+Versão: 1.0 — elaboração em 12/11/2026
+Fonte: Passo a passo mudança no Green4.0 — Revisão G — 13/08/2026.doc.
+Situação: especificação para revisão funcional; não representa validação do software existente.
+
+COMO INTERPRETAR
+- IDs dos requisitos preservam a numeração da fonte. Txxx/Rxxx identifica tabela/linha,
+  contando a partir de zero na ordem do documento, para rastreabilidade sem paginação variável.
+- "Sim" indica solicitação de implementação na fonte, não comprova implementação.
+- Campo "Implementar?" vazio significa decisão pendente. Requisito dependente de outro
+  item marcado Sim é identificado, mas a inconsistência da marcação é preservada.
+- Detalhamento da fonte é reproduzido em cada requisito para conservar campos, exemplos,
+  condições, exceções e fluxos. Exemplos não constituem listas fechadas de domínio.
+- Critérios de aceite e regras consolidadas são operacionalizações propostas para revisão.
+  Decisões ausentes não foram convertidas em regras definitivas.
+- Referências a capturas de concorrentes são referências visuais do DOC original; imagens
+  não são reproduzidas em TXT. Não foram inferidas regras a partir de elementos só visuais.
+- Não há definição de banco físico, linguagem, endpoints ou cronograma nesta versão.
+
+
+01 — Mudanças Gerais: a Serem Aplicadas em Todos os Módulos do Green
+
+OBJETIVO
+Especificar as mudanças deste tema preservando o escopo e as ressalvas da Revisão G.
+
+ESCOPO CONSOLIDADO
+Aplicar aos módulos Legal, Licenças, Medição e Monitoramento, Controle/GED,
+Treinamento, Infraestrutura, Homologação, RNC, Auditoria e ESG quando houver escopo definido.
+Home: logos do Green e cliente, identificação/foto do usuário, cards, gráficos/tabelas,
+pendências, próximas tarefas e navegação por clique para o conjunto filtrado.
+Painel gerencial: consolidar módulos contratados, unidades e responsáveis, permitindo
+acompanhar tarefas feitas, não feitas e futuras; formato como módulo separado é sugestão.
+
+PENDÊNCIAS ESPECÍFICAS
+- Definir fórmulas dos indicadores e limiares de proximidade do vencimento.
+- Definir quando configurações pessoais de email exigem permissão administrativa.
+- Definir alcance e precedência da delegação, datas de vigência e pendências existentes.
+- Definir origem e periodicidade da verificação de usuários ativos.
+- Resolver logs contratáveis versus históricos obrigatórios dos itens 18.1–18.3, 36 e 41.
+- Definir retenção, volume, exportação, destinatários e frequência de envio de logs.
+- Itens 6, 10 e 12 não possuem marcação Sim: filtros favoritos, token API e Power BI.
+- Token API não substitui logs nem prova, por si só, vínculo ativo do usuário à empresa.
+- Definir eventos, periodicidades, repetição e encerramento das pendências e notificações.
+- Definir quais transições do fluxo são obrigatórias e quais são facultativas.
+
+CONTEXTO DO DOCUMENTO ORIGINAL
+
+Origem P0092: Todos os módulos significa:
+
+Origem P0093: Módulo Legal
+
+Origem P0094: Módulo de Licenças
+
+Origem P0095: Módulo de Medição e Monitoramento
+
+Origem P0096: Módulo de Treinamento
+
+Origem P0097: Módulo de Infraestrutura
+
+Origem P0098: Módulo de Controle / GED
+
+Origem P0099: Módulo de Não Conformidade
+
+Origem P0100: Módulo de Homologação
+
+Origem P0101: Módulo de Auditoria
+
+Origem P0102: Módulo ESG
+
+
+REQUISITOS FUNCIONAIS RASTREÁVEIS
+
+------------------------------------------------------------------------------
+GER-1 — Implementar uma nova Home e melhorar a experiência de navegabilidade
+
+Origem: item 1; T002/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Alguns elementos essenciais na nova Home:
+Logo do Cliente
+Logo do Green
+Cards (com totalizações, estatísticas, pendências, avisos)
+Dashboard
+orientação para o usuário (schedule, notificações)
+foto do usuário (para aumentar a personalização do sistema. Essa foto deveria ser colocada junto ao nome do usuário como se fosse o Teams)
+navegabilidade entre tabelas
+navegabilidade a partir dos dashboards
+acessos rápidos
+
+Os dashboards devem ser apresentados em forma gráfica e em forma de tabelas
+
+Os Dashboards deverão ser gerados por unidade, por período e por responsável.
+
+O cabeçalho pode conter informações para acessos rápidos. Veja o exemplo da imagem abaixo:
+
+
+
+A imagem abaixo mostra exemplo da Home de um concorrente:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir a Home com dados de duas unidades/períodos/responsáveis; conferir todos os indicadores descritos, comparar gráfico/tabela e clicar em um card para abrir apenas os registros correspondentes.
+
+------------------------------------------------------------------------------
+GER-2 — Criar um portal com planos de uso do GreenSolutions
+
+Origem: item 2; T004/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Desenvolver novo modelo de negócio em que consultores, empresas de reporte, etc possam vender uma solução white lable e, com isso, atrair novos vendedores / clientes para o Green
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+GER-3 — Criar uma interface "friendly" (fluida) para que o próprio usuário parametrize a política de emails.
+
+Origem: item 3; T004/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A ideia é que o próprio usuário parametrize a política de e-mails, definindo em cada módulo quem deve ser alertado pelo que.
+
+Hoje temos a possibilidade de enviar e-mail para “listas”, mas a parametrização desse processo não é "friendly" e não permite a individualização dos alertas por documento / situação.
+
+A parametrização poderia ser feita no próprio módulo, não numa tela de administração. O mais importante é que ela seja "friendly". A forma como está faz com que essa parametrização dependa de nós. O ideal é que o usuário perceba que tem liberdade de alterar a política como e quando quiser.
+
+Vide item 51
+
+CRITÉRIO DE ACEITE PROPOSTO
+Configurar destinatários por registro/tipo e evento; disparar cenário de teste e confirmar entrega apenas aos responsáveis elegíveis, incluindo múltiplos usuários/grupos, conforme regra aprovada.
+
+------------------------------------------------------------------------------
+GER-4 — Oferecer várias possibilidades de dashboards
+
+Origem: item 4; T004/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Os dashboards devem ser apresentados em forma gráfica e em forma de tabelas (vide imagem abaixo).
+
+Ao clicar no gráfico é possível visualizar automaticamente numa tabela logo abaixo os dados que aparecem no gráfico. Por exemplo, se o gráfico mostra as licenças vencidas e não vencidas, se eu clico nas licenças vencidas elas são listadas nessa tabela logo abaixo.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+GER-5 — Incluir em todos os planos de ação uma "flag" no final da tabela para indicar se é ou não necessário avaliar a eficácia do plano de ação
+
+Origem: item 5; T005/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A fonte informa apenas o título. Campos, fluxo e parâmetros precisam ser definidos.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+GER-5.1 — Prever uma personalização das informações dos módulos, limitando os dados aos do usuário que está logado
+
+Origem: item 5.1; T005/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Todos os módulos (Licença, Medição e monitoramento, Treinamento, Infraestrutura, Controle) deverão ter a tela "Minhas alguma coisa":
+Meus Requisitos Legais
+Minhas Licença
+Minhas Condicionantes
+Minhas Medição e monitoramento
+Meus Treinamento
+Minhas Infraestrutura
+Meus Controle
+Minhas Ações
+Meus Fornecedores
+Meus Funcionários de Fornecedores
+
+Resumindo: todas as telas do software teria o "Minhas" alguma coisa, personalizando a experiência do usuário e para que uma pessoa não veja a informação de outra.
+
+Óbviamente, também deve ser mantida uma tela gerencial em que o administrador veja todas as informações de todos os usuários.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Alterar um registro autorizado e consultar o histórico para identificar operação, registro, usuário e data; conferir acesso e retenção conforme política definida.
+
+------------------------------------------------------------------------------
+GER-5.2 — Criar o link "Minhas Ações"
+
+Origem: item 5.2; T005/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Todos os módulos que possuem Planos de Ação deveriam ter um link "Minhas Ações" (veja o item 5.1 acima)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Entrar com dois usuários com responsabilidades distintas e conferir que a visão pessoal e a consulta gerencial autorizada apresentam os conjuntos corretos.
+
+------------------------------------------------------------------------------
+GER-5.3 — Criar um Painel de Bordo Gerencial Geral
+
+Origem: item 5.3; T005/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Na medida em que descentralizamos as ações do sistema temos que ter um Painel de Bordo Gerencial Geral que possa "dedurar" quem fez e quem não fez as ações. Esse Painel de Bordo pode ser para cada um dos Módulos ou pode ser um Módulo a parte. Creio que a ideia de um Módulo a parte seja mais interessante. Isso ajudaria muito a vender o software, pois daria um poder bem interessante para quem nos contrata. Poder ver como cada usuário está trabalhando, com sinalizações na forma de "Flags" mostrando o caminho crítico, ou seja, onde a coisa está indo bem e onde a coisa não está indo tão bem.
+
+Entendo que esse módulo poderia ser ligado e desligado na medida em que os módulos periféricos são contratados pelo cliente. Desse modo, por exemplo, se o cliente contratasse o módulo legal e de homologação, esse painel de bordo traria informações de todos os usuários desses 2 módulos. A ideia aqui é dar poder para quem está olhando como um todo a gestão dos módulos e das unidades.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+GER-6 — O sistema do concorrente pré-define e "favorita" Filtros
+
+Origem: item 6; T006/R000
+Situação: DECISÃO PENDENTE (Implementar? não preenchido)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O filtro fica disponível no cabeçalho na forma de uma estrelinha:
+
+
+
+É possível deixar filtros pré-definidos. Uma vez criado o filtro, é dado um nome para ele. O filtro fica disponível na estrelinha para ser utilizado. Ele também pode ser compartilhado com outros usuários da empresa.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+GER-7 — Restrigir as permissões de:
+.  Visualizar
+.  Editar
+.  Inserir
+.  Excluir
+.  Exportar
+
+Origem: item 7; T006/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Essa restrição deveria estar disponível para todas as telas do Green. Deveria ser um parâmetro a ser aplicado ao grupo de usuários.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Revisar a tela com registros de diferentes situações, confirmar ícones/sinalizadores e legibilidade dos estados com os mesmos dados de origem.
+
+------------------------------------------------------------------------------
+GER-8 — Ampliar as possibilidades de transferência de responsabilidade para todos os módulo e diferentes situações, ou seja, sempre que existe um responsável por alguma coisa, deve ser possível aplicar a delegação de responsabilidade correspondente.
+
+Origem: item 8; T006/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Isso é muito importante, na medida em que o sistema passa a ser orientado para o usuário. Se o usuário sai da empresa, as delegações de responsabilidades atribuídas a ele deve ser algo facilitado.
+
+Deve ser possível fazer a delegação de modo diferenciado por tela do sistema. Veja imagem abaixo do concorrente:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Testar um usuário, múltiplos usuários e grupo; verificar atribuição direta e/ou por tipo/categoria conforme o item, consulta pessoal e destinatários de alerta. Testar usuário sem autorização.
+
+------------------------------------------------------------------------------
+GER-9 — Criar mecanismos para monitorar periodicamente se o usuário continua válido e atuante na empresa
+
+Origem: item 9; T006/R004
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Assim como fizémos no caso do AD da Crown, precisamos prever algum mecanismo para monitorar permanentemente se o usuário ainda está na empresa. Na medida em que o sistema passa a ser orientado para o usuário, garantir que a relação de usuários ativos está atualizada passa a ser algo vital para a boa aplicação do Green nas empresas
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+GER-10 — Implementar token API
+
+Origem: item 10; T007/R000
+Situação: DECISÃO PENDENTE (Implementar? não preenchido)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O sistema do concorrente possui um negócio chamado Token API veja imagem abaixo.
+
+Pelo que entendi, o token API é um token de acesso, ou seja, uma chave ou código criptográfico exclusivo gerado por um sistema de software para conceder a aplicativos, sistemas ou usuários o acesso autorizado a uma API, ou seja, um passaporte digital ou um crachá de identificação. Em vez de enviar o login e senha normais, a pessoa envia esses tokens nas suas requisições para provar que tem permissão para ler, alterar ou deletar dados naquele sistema. Não sei se isso é algo funcional para nós. Pelo que verifiquei, as principais características do token de API incluem:
+Autenticação e Segurança: valida quem está fazendo a solicitação, permitindo ou negando o acesso.
+Controle de Permissões: estabelece limitações específicas. Por exemplo, permitir apenas a leitura de dados (GET) e não a exclusão (DELETE).
+Validade: são configurados para expirar após um determinado período de tempo, o que diminui o risco caso o código seja vazado.
+
+Não sei se isso faria sentido implementar um negócio desses para:
+Garantir a segurança dos dados do sistema (evitar, por exemplo, ter que gerar os logs)
+Fazer a integração com outros softwares
+Garantir que apenas usuários ativos acesse o sistema
+
+Veja as imagens abaixo do software concorrente:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+GER-11 — Disponibilizar APIs para integração com outros sistemas.
+
+Origem: item 11; T010/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A possibilidade de criar interfaces com outros sistemas é muito importante. Não sei se isso tem que ser pensado caso a caso ou se podemos ter as portas do Green abertas para receber informações de outros softwares.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+GER-12 — Integrar com o Power BI
+
+Origem: item 12; T010/R001
+Situação: DECISÃO PENDENTE (Implementar? não preenchido)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Implementar API de dados para integração com o Power BI.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+GER-13 — Criar um calendário (geral e por usuário) em todos os módulos para visualizar todos os eventos planejados.
+
+Origem: item 13; T010/R002, T011/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Por exemplo, imagine que estamos no módulo de licenças, deverá ser possível ver num calendário todas as licenças que vão vencer e que precisam de ação de renovação. Esse calendário (schedule) tem que ser customizado por usuário logado. Veja imagem abaixo do concorrente 1:
+
+Continuação: Continuação
+Veja imagem abaixo do calendário do concorrente 2:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Criar evento futuro relacionado ao módulo e conferir data, responsável e acesso ao registro pela agenda pessoal/gerencial autorizada.
+
+------------------------------------------------------------------------------
+GER-14 — Incluir no Schedule um Lembre Avulso
+
+Origem: item 14; T012/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Além dos compromissos que vem dos módulos automaticamente, deverá ser possível acrescentar compromissos avulsos.
+
+Veja imagem abaixo do concorrente:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+GER-15 — Criar Notificações para os usuários logados com as pendências não realizadas
+
+Origem: item 15; T013/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Através do ícone de um sininho é possível visualizar, de modo rápido e resumido, todas as pendências (do usuário logado):
+
+
+
+A imagem abaixo apresenta o resultado da consulta ao clicar no sininho. Na realidade ao clicar no sininho aparece uma versão com informações resumidas das pendências:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Alterar um registro autorizado e consultar o histórico para identificar operação, registro, usuário e data; conferir acesso e retenção conforme política definida.
+
+------------------------------------------------------------------------------
+GER-16 — Ter um controle via Log para todas as mudanças no sistema.
+
+Origem: item 16; T013/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Para não carregar demais a quantidade de armazenamento e de processamento, isso pode ser algo adicional e contratado a parte (por tempo de armazenamento e por módulo)
+
+Uma vez gerados, os logs ficariam disponíveis ao usuário para download por um período estabelecido ou enviado automaticamente para o e-mail de um usuário pré-definido.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Alterar um registro autorizado e consultar o histórico para identificar operação, registro, usuário e data; conferir acesso e retenção conforme política definida.
+
+------------------------------------------------------------------------------
+GER-17 — Implementar a atualização dos menus para multi-idiomas
+
+Origem: item 17; T013/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A tradução das telas poderia ser feita por IA, dando maior flexibilidade para o usuário escolher idiomas além do padrão Espanhol e Inglês
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+GER-18 — Incluir no cadastro de usuário o idioma correspondente
+
+Origem: item 18; T014/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Isso fará com que o sistema mude os menus para o idioma do usuário que está logado.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+GER-18.1 — Mecanismo gerencial para deletar as pendências
+
+Origem: item 18.1; T014/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A deleção de pendências deve gerar um log correspondente
+
+CRITÉRIO DE ACEITE PROPOSTO
+Com dois usuários, conferir resumo e lista completa de pendências do usuário logado e testar resolução/atualização sem expor itens não autorizados.
+
+------------------------------------------------------------------------------
+GER-18.2 — Mecanismo gerencial para não gerar pendências
+
+Origem: item 18.2; T014/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A mudança da "chave" para não gerar pendência deve gerar um log correspondente
+
+CRITÉRIO DE ACEITE PROPOSTO
+Com dois usuários, conferir resumo e lista completa de pendências do usuário logado e testar resolução/atualização sem expor itens não autorizados.
+
+------------------------------------------------------------------------------
+GER-18.3 — Mecanismo gerencial para limpar pendências
+
+Origem: item 18.3; T014/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A limpeza manual de pendências, sem que a pendência seja resolvida, deve gerar um log correspondente
+
+CRITÉRIO DE ACEITE PROPOSTO
+Com dois usuários, conferir resumo e lista completa de pendências do usuário logado e testar resolução/atualização sem expor itens não autorizados.
+
+------------------------------------------------------------------------------
+GER-18.4 — Fluxo do estágio em que o processo DE GESTÃO se encontra tipo "Entrega do Mercado Livre" (como foi aplicado no caso do GED-E)
+
+Origem: item 18.4; T014/R004
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse fluxo é bem interessante de ser aplicado em todos os módulos. As atividades de GESTÃO de todos os módulos, de alguma forma, funcionam como um processo. Seguem os workflows dos módulos:
+
+. No módulo legal a pessoa:
+1- recebe a lei
+2- valida a lei (decide se ela vai ser mantida no banco ou retirada do banco)
+3- define o responsável pelo requisito legal
+4- analisa a padrão de desempenho
+5- define o atendimento da lei
+6- define as condicionantes (facultativo)
+7- define o atendimento das condicionantes (caso seja preenchido o atendimento das condicionantes)
+8- abre um plano de ação (caso a lei não esteja sendo atendida ou esteja parcialmente atendida) (facultativo)
+9- encerra o plano de ação (caso o plano de ação tenha sido aberto)
+10- define a data da próxima avaliação
+
+. No módulo licença (processo normal) a pessoa:
+1- cadastra a licença
+2- define o responsável
+3- define a validade
+4- define o nível de risco (facultativo)
+5- carrega a evidência do atendimento
+
+. No módulo licença (processo em protocolo) a pessoa:
+1- abre um protocolo
+2- carrega a nova licença
+3- encerra o protocolo
+4- inativa a licença antiga
+
+. No módulo taxas a pessoa:
+1- cadastra a taxa
+2- define o responsável
+3- define a validade
+4- define o nível de risco (facultativo)
+5- paga a taxa
+6- carrega a evidência do pagamento da taxa
+
+. No módulo medição e monitoramento a pessoa:
+1- cadastra a medição e monitoramento
+2- cadastra o equipamento de medição (facultativo)
+3- define o responsável
+4- define o cronograma de medição e monitoramento
+5- define o nível de risco (facultativo)
+6- carrega a evidência do atendimento
+
+. No módulo controle a pessoa:
+1- cadastra o controle
+2- define o responsável
+3- define a validade do controle (facultativo)
+4- define o prazo de guarda (facultativo)
+5- define o nível de risco (facultativo)
+6- carrega a evidência do atendimento
+
+. No módulo treinamento a pessoa:
+1- cadastra o treinamento
+2- define o responsável
+3- define a validade do treinamento (facultativo)
+4- define o nível de risco (facultativo)
+5- carrega a evidência do atendimento (evidência dos funcionários treinados)
+
+. No módulo infraestrutura a pessoa:
+1- cadastra a infraestrutura
+2- define o responsável
+3- carrega o plano de manutenção do equipamento (facultativo)
+5- define o nível de risco (facultativo)
+6- carrega a evidência do atendimento
+
+. No módulo homologação (empresa) a pessoa:
+1- cadastra a empresa
+2- define o responsável pela empresa
+3- define o nível de risco (facultativo)
+4- define critérios para a empresa (Tipo de Empresa) (associa um grupo homogêneo de critérios a ser atendido)
+5- define a validade dos documentos da empresa
+6- carrega as evidências
+7- aprova os documentos carregados
+8- define a necessidade de auditoria
+9- realiza a auditoria
+10- carrega as evidências da auditoria
+11- define a data da próxima auditoria
+12- abre um plano de ação (facultativo)
+13- encerra o plano de ação (caso o plano de ação tenha sido aberto)
+
+. No módulo homologação (funcionários da empresa) a pessoa:
+1- cadastra o funcionário da empresa
+2- define critérios para o funcionário da empresa (Tipo de função a ser exercida na Empresa) (associa um grupo homogêneo de critérios a ser atendido)
+3- define a data da integração
+4- define o responsável pela documentação do funcionário da empresa
+5- define a validade dos documentos do funcionário da empresa
+6- carrega as evidências dos documentos do funcionário da empresa
+7- aprova os documentos carregados (atendimento aos critérios)
+8- define o responsável pelo treinamento do funcionário da empresa
+informa se o treinamento foi realizado
+9- define a validade dos treinamentos do funcionário da empresa
+10- carrega as evidências dos treinamentos do funcionário da empresa
+
+. No módulo RNC a pessoa:
+1- cadastra ocorrência
+2- define o gestor da ocorrência
+3- classifica a ocorrência
+4- define ação imediada
+5- avalia abrangência
+6- avalia o risco
+7- define o responsável pela análise da causa raiz
+8- analisa a causa raiz da ocorrência
+9- define plano de ação
+10- avalia a eficácia da ocorrência
+
+. No módulo auditoria a pessoa:
+1- planeja a auditoria
+2- aprova o plano de auditoria
+3- executa a auditoria
+4- cadastra ocorrência
+5- classifica a ocorrência
+6- define ação imediada
+7- avalia abrangência
+8- avalia o risco
+9- analisa a causa raiz da ocorrência
+10- define plano de ação
+11- avalia a eficácia da ocorrência
+12- realiza o follow up das constatações da auditoria
+
+CRITÉRIO DE ACEITE PROPOSTO
+Percorrer as etapas descritas com um registro de teste, conferir destaque do estágio atual e preservar etapas facultativas; validar transições e retornos após esclarecimento das pendências.
+
+------------------------------------------------------------------------------
+GER-18.5 — Prever o link "Ajuda" / "Como Funciona" em todos os módulos para servir como um treinamento para o usuário.
+
+Origem: item 18.5; T014/R005
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Nesse link poderíamos carregar o texto da ajuda e um vídeo mostrando como o sistema funciona
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir Ajuda/Como Funciona no módulo e conferir texto e vídeo configurado explicando o processo correspondente.
+
+
+VALIDAÇÃO DO PACOTE
+Este TXT deve ser revisado em conjunto com as dependências indicadas. A implementação
+exige acesso ao código e banco atuais, ausentes deste anexo. As condições de aceite
+são propostas de homologação funcional, não resultados de testes já executados.

@@ -1,0 +1,104 @@
+/* Dimensões responsivas e hierarquia visual dos popups. */
+.green-portal-popup-transacao .modal-dialog,
+[data-popup-transacao-independent] .modal-dialog {
+    width: min(92vw, 1400px);
+    max-width: calc(100vw - 24px);
+    margin: .75rem auto;
+}
+
+.green-portal-popup-transacao .modal-content,
+[data-popup-transacao-independent] .modal-content {
+    display: flex;
+    min-height: 0;
+    max-height: calc(100vh - 24px);
+    overflow: hidden;
+    border: 1px solid var(--gp-border);
+    border-radius: var(--gp-radius-lg);
+    background: var(--gp-surface);
+    box-shadow: var(--gp-shadow-md);
+}
+
+.green-portal-popup-transacao .modal-content { height: auto !important; }
+
+.green-portal-popup-transacao .modal-header,
+[data-popup-transacao-independent] .modal-header {
+    flex: 0 0 auto;
+    border-bottom-color: var(--gp-border);
+    background: var(--gp-surface);
+}
+
+.green-portal-popup-transacao .modal-body,
+[data-popup-transacao-independent] .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+.green-portal-popup-transacao .modal-body > iframe,
+[data-popup-transacao-independent] .modal-body > iframe {
+    display: block;
+    width: 100%;
+    min-height: 280px;
+    border: 0;
+}
+
+[data-popup-transacao-independent].popup-child .modal-dialog {
+    width: 90%;
+}
+
+.green-portal-popup-resizable .modal-dialog {
+    min-width: 420px;
+    min-height: 260px;
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+    overflow: hidden;
+    resize: both;
+}
+
+.green-portal-popup-resizable .modal-content {
+    width: 100%;
+    height: 100%;
+}
+
+.green-portal-popup-resizable.popup-maximized .modal-dialog {
+    width: 100vw !important;
+    max-width: none !important;
+    height: 100vh !important;
+    max-height: none !important;
+    margin: 0;
+}
+
+.green-portal-popup-resizable.popup-maximized .modal-content { border-radius: 0; }
+
+.green-portal-popup-resizable.popup-minimized .modal-dialog {
+    width: 360px !important;
+    max-width: 360px !important;
+    min-width: 360px;
+    height: auto !important;
+    min-height: 0;
+    margin: auto 1rem 1rem auto;
+}
+
+.green-portal-popup-resizable.popup-minimized .modal-body { display: none; }
+
+.popup-resize-handle {
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+    z-index: 20;
+    width: 18px;
+    height: 18px;
+    cursor: nwse-resize;
+    opacity: .6;
+}
+
+.popup-resize-handle::after {
+    content: '';
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+    width: 12px;
+    height: 12px;
+    border-right: 2px solid var(--gp-muted);
+    border-bottom: 2px solid var(--gp-muted);
+}

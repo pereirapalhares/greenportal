@@ -1,0 +1,34 @@
+/* Migração 348 — Integração de funcionários: página do funcionário (integracao.php), pensada para celular e tablet */
+:root{--ip-verde:#1e7b45;--ip-borda:#d6e4dc;--ip-fundo:#f3f7f4;--ip-texto:#1f2a24;--ip-muted:#66766d}
+html,body{background:var(--ip-fundo)}
+body{font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ip-texto);font-size:16px}
+.ip{max-width:760px;margin:0 auto;padding:16px 16px 40px}
+.ip-topo{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+.ip-emp{font-size:13px;font-weight:700;color:var(--ip-verde);text-transform:uppercase;letter-spacing:.03em}
+.ip h1{font-size:22px;margin:2px 0 0;font-weight:700}
+.ip-idiomas{display:flex;gap:6px;flex-wrap:wrap}.ip-idiomas a{font-size:12px;color:var(--ip-muted);text-decoration:none;padding:3px 8px;border:1px solid var(--ip-borda);border-radius:999px;background:#fff}
+.ip-idiomas a.ativo{background:var(--ip-verde);border-color:var(--ip-verde);color:#fff}
+.ip-quem{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;background:#fff;border:1px solid var(--ip-borda);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.ip-quem span{display:block;font-size:12px;color:var(--ip-muted)}.ip-quem b{font-size:15px}
+.ip-intro{font-size:14px;color:var(--ip-muted);margin:6px 2px 14px}
+.ip-bloco{margin-bottom:18px}.ip-bloco h2{font-size:17px;font-weight:700;color:var(--ip-verde);margin:18px 2px 8px}
+.ip-pergunta{background:#fff;border:1px solid var(--ip-borda);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.ip-pergunta.falta{border-color:#d64545;box-shadow:0 0 0 2px rgba(214,69,69,.15)}
+.ip-pergunta legend{font-size:16px;font-weight:600;float:left;width:100%;padding:0;margin-bottom:10px;line-height:1.35}
+.ip-pergunta legend+*{clear:both}
+.ip-n{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;border-radius:50%;background:#e4f1e9;color:var(--ip-verde);font-size:13px;font-weight:700;margin-right:8px;vertical-align:1px}
+.ip-ob{color:#d64545}
+.ip-opcoes{display:flex;flex-direction:column;gap:8px}
+.ip-opcao{display:flex;align-items:center;gap:10px;border:1px solid var(--ip-borda);border-radius:10px;padding:12px;cursor:pointer;min-height:48px;margin:0}
+.ip-opcao input{width:22px;height:22px;flex:0 0 auto;accent-color:var(--ip-verde)}
+.ip-opcao:has(input:checked){border-color:var(--ip-verde);background:#eef7f1}
+.ip .form-control{font-size:16px;border-radius:10px;border-color:var(--ip-borda);height:auto;padding:10px 12px}
+.ip-enviar{position:sticky;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--ip-fundo);padding:12px 0}
+.ip-enviar .btn{border-radius:12px;background:var(--ip-verde);border-color:var(--ip-verde);min-height:52px;flex:0 0 auto}
+.ip-progresso{font-size:13px;color:var(--ip-muted)}
+.ip-falta{color:#b42318;font-weight:600;font-size:14px;text-align:right}
+.ip-aviso{background:#fff4e5;border:1px solid #f3c98b;color:#7a4b00;border-radius:12px;padding:12px 14px;margin:10px 0}
+.ip-ok{background:#fff;border:1px solid var(--ip-borda);border-radius:14px;padding:28px 20px;text-align:center;margin-top:20px}
+.ip-ok .bi{font-size:44px;color:var(--ip-verde)}.ip-ok h2{font-size:20px;margin:8px 0}.ip-ok p{color:var(--ip-muted);margin:0}
+.ip-rodape{font-size:12px;color:var(--ip-muted);text-align:center;margin-top:16px}
+@media (max-width:520px){.ip-topo{flex-direction:column}.ip-enviar{flex-direction:column-reverse;align-items:stretch}.ip-enviar .btn{width:100%}}

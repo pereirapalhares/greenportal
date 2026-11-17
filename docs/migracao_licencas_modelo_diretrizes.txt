@@ -1,0 +1,39 @@
+Migração dos cadastros de licenças do modelo
+
+Data da execução: 17/08/2026
+Script: database/050_migrar_licencas_modelo.sql
+
+Origem:
+- green_modelo.li_licencas
+- green_modelo.li_condicionantes
+- green_modelo.legislacaoxlicencas
+- green_modelo.legislacaoxperigo
+- green_modelo.legislacaoximpacto
+
+Destino:
+- gmodelo_db.li_licencas
+- gmodelo_db.li_condicionantes
+- gmodelo_db.legislacaoxlicencas
+- gmodelo_db.legislacaoxperigo
+- gmodelo_db.legislacaoximpacto
+
+Diretrizes aplicadas:
+- O banco gmodelo_db foi criado com utf8mb4_0900_ai_ci.
+- Os textos originalmente armazenados em latin1 foram convertidos para utf8mb4.
+- CODLICENCA foi preservado como chave primária de li_licencas.
+- CODCONDICIONANTE foi preservado como chave primária de li_condicionantes.
+- As tabelas de relacionamento mantiveram as colunas e os índices do legado.
+- As tabelas destino foram convertidas para InnoDB.
+- A migração é registrada em gmodelo_db.registros_migracao.
+
+Resultado validado:
+- li_licencas: 46 registros.
+- li_condicionantes: 17 registros.
+- legislacaoxlicencas: 48 registros.
+- legislacaoxperigo: 337 registros.
+- legislacaoximpacto: 17 registros.
+- Total origem e destino: 465 registros.
+
+Observação: esta etapa somente migra a estrutura e os dados. As transações e
+views para manutenção desses cadastros deverão ser criadas separadamente,
+seguindo as diretrizes dos grids e o banco de dados definido para cada módulo.

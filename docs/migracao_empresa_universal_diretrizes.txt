@@ -1,0 +1,27 @@
+MIGRACAO DO CADASTRO DE EMPRESAS PARA guniversal_dbp
+====================================================
+
+Origem: gmodelo_dbp.empresa.
+Destino: guniversal_dbp.empresa.
+Script: database/032_migrar_empresa_universal.sql.
+
+A migracao deve preservar a chave primaria codempresa, o codigo legado, os
+dados cadastrais, os indices unicos e a collation utf8mb4_0900_ai_ci. Tambem
+devem ser transferidos os dados de setup_empresa e as views
+vw_empresa_grid e vw_setup_empresa_grid. A carga deve ser idempotente,
+usando atualizacao quando o registro ja existir.
+
+Resultado inicial da migracao:
+
+- 29 registros migrados.
+- 18 registros de setup_empresa migrados.
+- Empresa MODELO preservada com codempresa 4.
+- Banco da empresa MODELO preservado como gmodelo_dbp.
+- Status da empresa MODELO preservado como ATIVA.
+- Registro criado em gmodelo_dbp.registros_migracao com o codigo
+  EMPRESA_UNIVERSAL.
+
+O banco guniversal_dbp passou a ser a fonte do combo de empresas na tela de
+login e da validacao da empresa no endpoint credenciais/logar.php. O setup
+multidioma da tela de login continua armazenado no Modelo e e lido
+separadamente de gmodelo_dbp.

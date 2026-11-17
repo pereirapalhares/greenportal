@@ -1,0 +1,32 @@
+/* Dicionário da pesquisa (principal/busca_dicionario.php). Grid no padrão da aplicação (menu-batch-grid de main.css). */
+html.gp-pagina, html.gp-pagina body.dic-pagina { height: 100%; }
+body.dic-pagina { margin: 0; overflow: hidden; }
+.dic { display: flex; flex-direction: column; gap: 8px; height: 100vh; padding: 10px 12px; box-sizing: border-box; }
+.dic-barra { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px 8px; }
+.dic-barra .btn { white-space: nowrap; }
+.dic-selecionados { font-size: 11px; color: var(--gp-muted, #6c757d); min-width: 90px; }
+.dic-filtro { display: inline-flex; flex-direction: column; gap: 2px; font-size: 10px; font-weight: 600; color: var(--gp-muted, #6c757d); margin-left: auto; }
+.dic-filtro + .dic-filtro { margin-left: 0; }
+.dic-filtro select { min-width: 150px; }
+.dic-busca { min-width: 220px; }
+.dic-form { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: flex-end; padding: 10px 12px; border: 1px solid var(--gp-border, #dee2e6); border-left: 3px solid var(--gp-primary, #247a5b); border-radius: 6px; background: var(--gp-surface, #fff); font-size: 12px; }
+.dic-form > label { display: flex; flex-direction: column; gap: 3px; font-size: 11px; font-weight: 600; color: var(--gp-muted, #6c757d); min-width: 160px; }
+.dic-form > label.dic-form-largo { flex: 1 1 280px; }
+.dic-form label.dic-form-check { flex-direction: row; align-items: center; gap: 6px; min-width: 0; font-weight: 400; color: inherit; }
+.dic-contexto { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; padding: 0; border: 0; }
+.dic-contexto legend { width: 100%; margin: 0 0 2px; font-size: 11px; font-weight: 600; color: var(--gp-muted, #6c757d); }
+.dic-contexto legend small { font-weight: 400; }
+.dic-form-acoes { flex: 1 1 100%; display: flex; gap: 6px; }
+.dic-grid-caixa { flex: 1 1 auto; min-height: 0; overflow: auto !important; }
+.dic-grid.menu-batch-grid { table-layout: fixed; width: 100%; min-width: 1050px; }
+.dic-grid th, .dic-grid td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dic-grid th { cursor: default !important; }
+.dic-grid th:nth-child(2) { width: 120px; } .dic-grid th:nth-child(3) { width: 26%; } .dic-grid th:nth-child(4) { width: 16%; }
+.dic-grid th:nth-child(5) { width: 18%; } .dic-grid th:nth-child(6) { width: 150px; } .dic-grid th:nth-child(7) { width: 140px; }
+.dic-col-sel { width: 30px; text-align: center; } .dic-col-num { width: 90px; text-align: right; } .dic-col-acoes { width: 130px; text-align: right; }
+.dic-col-acoes .btn { padding: 0 4px; }
+.dic-etq { margin-left: 4px; padding: 0 4px; border: 1px solid var(--gp-border, #dee2e6); border-radius: 3px; font-size: 9px; font-weight: 400; color: var(--gp-muted, #6c757d); text-transform: uppercase; }
+.dic-cadeado { color: var(--gp-muted, #6c757d); margin-right: 6px; }
+.dic-grid tr.dic-rejeitado td { color: var(--gp-muted, #6c757d); }
+.dic-aviso { text-align: center; padding: 24px !important; color: var(--gp-muted, #6c757d); }
+.dic-rodape { font-size: 11px; color: var(--gp-muted, #6c757d); }

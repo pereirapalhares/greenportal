@@ -1,0 +1,3 @@
+<?php
+require_once dirname(__DIR__) . '/classes/ManutencaoLegalCadastroGrid.php';
+ManutencaoLegalCadastroGrid::render(['menu' => 'ADMINISTRACAO_ATIVIDADES', 'title' => ['pt' => 'Atividades', 'en' => 'Activities', 'es' => 'Actividades'], 'transaction' => 'administracao_atividades', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT', 'table' => 'atividades', 'view' => 'vw_atividades_grid', 'primary' => 'CODATIVIDADE', 'default_sort' => ['column' => 'DSCATIVIDADE', 'direction' => 'asc'], 'fields' => ['CODATIVIDADE' => ['label' => ['pt' => 'Código', 'en' => 'Code', 'es' => 'Código'], 'readonly' => true], 'DSCATIVIDADE' => ['label' => ['pt' => 'Atividade', 'en' => 'Activity', 'es' => 'Actividad'], 'type' => 'textarea']]]);

@@ -1,0 +1,94 @@
+RELATÓRIO DE HOMOLOGAÇÃO OPERACIONAL — CROWN
+Data: 18/10/2026
+Empresa: Crown
+Banco: gcrown_dbp
+Usuário de teste: nathalia.capacla
+
+1. PERMISSÃO E EXPORTAÇÃO
+O usuário está no perfil ADM DA EMPRESA (codperfil 67).
+A view vw_permissoes_grid confirma o menu REQUISITOS_LEGAIS (codmenu 48) com pode_exportar_excel=1.
+O botão Exportar Excel foi retestado no Firefox e a solicitação foi criada sem erro fatal.
+O ExportWorker processou a fila Crown; a validação final não encontrou solicitações pendentes.
+
+2. CRUD DE REQUISITOS
+Teste controlado executado no Firefox usando marcador temporário:
+- Login Crown/Nathalia: aprovado.
+- Abertura do popup Situação: aprovada.
+- Controles Novo, Salvar, Duplicar e Excluir: disponíveis.
+- Inclusão: persistida após recarregar a tela.
+- Edição: persistida após recarregar a tela.
+- Duplicação: persistida após recarregar a tela.
+- Exclusão: persistida e confirmada.
+- Limpeza: marcador e registros derivados removidos ao final.
+
+3. TESTE DA TELA REQUISITOS LEGAIS
+Aprovado no Firefox:
+- login Crown/Nathalia;
+- carregamento de 25 requisitos;
+- seleção de requisito;
+- abertura das operações Licenças, Medição/Monitoramento, Treinamentos, Infraestrutura, Controles, Homologação, Situação, Checklist e Alterações;
+- Questionário Legal;
+- Análise de IA;
+- Relatório de Atendimento Legal;
+- filtros e busca;
+- permanência em uma única janela do Firefox.
+
+4. WORKERS
+- IA: dry-run concluído para gcrown_dbp, sem solicitações pendentes.
+- OCR: dry-run concluído para gcrown_dbp, sem solicitações pendentes.
+- Exportação: worker executado e fila Crown concluída.
+- Ranking de fornecedores: execução real concluída para gcrown_dbp, com 390 fornecedores processados.
+
+5. RECUPERAÇÃO E ROBUSTEZ
+- O runtime dos workers descobre automaticamente os bancos cadastrados em empresa_migracao_config e existentes no servidor.
+- O ExportWorker consulta a quantidade configurada de registros, em vez de limitar a fila a um pedido.
+- Solicitações em PROCESSANDO há mais de 30 minutos são recuperadas automaticamente como ERRO, com motivo registrado.
+
+6. AGENDADOR
+Foram validadas 13 tarefas GreenPortal em \GreenSolutions\:
+TaskWorker, AgendaWorker, ResponsibilityWorker, WorkflowWorker, ContentWorker, GedWorker, IaWorker, OcrWorker, NotificationWorker, ExportWorker, ServiceMonitor, BuscaWorker e RankingFornecedores.
+O validador retornou ok=true; as ações apontam para os scripts corretos e não foram encontradas tarefas legadas.
+
+7. EVIDÊNCIAS
+- CRUD: tests/evidencias-requisitos-crown-firefox/crud-controlado.json
+- Operações da tela: tests/evidencias-requisitos-crown-firefox/operacoes.json
+- Script do teste CRUD: scripts/teste-firefox-crud-crown-controlado.js
+
+8. AUDITORIA FINAL E GED
+- Raiz GED validada: E:\projetoGreen\GED\green_crown.
+- A política de acesso foi preservada: os arquivos permanecem no legado e são acessados por link; nenhum arquivo foi movido.
+- Menus da Crown conferidos contra guniversal_dbp: nenhuma divergência de código ou identificador nos menus aplicáveis.
+- ADMINISTRACAO_MIGRACAO_MENUS foi classificado como menu central reservado e não é exigido no catálogo operacional da Crown.
+- Foram identificadas 129 condicionantes sem licença correspondente e 6 responsáveis inexistentes no destino. Esses registros pertencem ao legado preservado; não foram apagados nem usados para criar vínculos inválidos.
+- A tabela migracao_registros_orfaos contém 1.315 registros únicos auditáveis, preservados para rastreabilidade.
+- Foram removidas 267 duplicidades exatas, preservando o menor codorfao de cada conjunto.
+- A tela administrativa existente administracao_migracao_log.php permite filtrar, consultar e exportar os registros órfãos.
+- A grade legal passou a validar referências estrangeiras antes de incluir ou alterar registros, bloqueando novos responsáveis inexistentes.
+- A tela administracao_migracao_orfaos.php foi generalizada para o banco da empresa em sessão e permite vincular licença válida, atribuir/remover responsável ou registrar justificativa, com auditoria em migracao_orfaos_decisoes.
+- Os 129 condicionantes sem licença foram classificados como órfãos históricos justificados, sem apagar o conteúdo.
+- Os 6 responsáveis inexistentes foram removidos dos vínculos e as decisões foram registradas.
+- O relatório detalhado está em storage/logs/homologacao-final-crown.json.
+
+8A. TESTE VISUAL DA INTEGRIDADE
+- A tela administrativa foi generalizada para usar o banco da empresa em sessÃ£o e foi incluÃ­da na administraÃ§Ã£o de migraÃ§Ã£o.
+- O teste Firefox especÃ­fico permanece pendente: a credencial Crown admin/<senha de teste via variável de ambiente> foi recusada pelo login, portanto nÃ£o foi considerado aprovado nem mascarado no resultado.
+
+10. ATUALIZACAO DA VALIDACAO DE INTEGRIDADE
+- A rotina reaplicar-decisoes-orfaos.php foi executada no gcrown_dbp e reaplicou 6 decisoes de remocao de responsavel.
+- A auditoria final confirmou zero responsaveis inexistentes ativos, zero condicionantes abertas sem licenca e 1.315 registros orfaos auditaveis.
+
+8B. HOMOLOGACAO VISUAL CONCLUIDA
+- Esta secao substitui a pendencia registrada anteriormente no item 10; a credencial administrativa valida foi informada posteriormente.
+- Firefox aprovado com o usuario Crown admin.
+- Login, abertura direta da tela administrativa, grid, dois filtros e ausencia de orfaos pendentes foram confirmados.
+- Evidencia: tests/evidencias-requisitos-crown-firefox/integridade-orfaos.json e integridade-orfaos.png.
+
+9. BACKUP FINAL
+- Backup lógico UTF-8 de gcrown_dbp concluído.
+- Arquivo: backups/gcrown_dbp_homologacao_20261018_213804/gcrown_dbp.sql
+- Tamanho: 328.082.255 bytes.
+- SHA-256: b6a28119c610d180fed27e6df65ddb827bf3d2d324e6b9a09a0d001e8875cd19
+- Manifesto: backups/gcrown_dbp_homologacao_20261018_213804/MANIFEST.json
+
+CONCLUSÃO
+Os itens 1 a 6 foram executados. CRUD, exportação, workers IA/OCR, ranking, GED, permissões aplicáveis e agendamento Windows estão validados. As duplicidades da auditoria foram eliminadas, os 135 casos foram classificados/regularizados e a aplicação passou a bloquear novos vínculos inválidos. Os registros históricos permanecem preservados e auditáveis; o teste CRUD não deixou dados temporários na base.

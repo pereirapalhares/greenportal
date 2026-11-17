@@ -1,0 +1,13 @@
+Options -Indexes
+ServerSignature Off
+ErrorDocument 400 /greenportal/erro.php?status=400
+ErrorDocument 403 /greenportal/erro.php?status=403
+ErrorDocument 404 /greenportal/erro.php?status=404
+ErrorDocument 500 /greenportal/erro.php?status=500
+ErrorDocument 502 /greenportal/erro.php?status=502
+ErrorDocument 503 /greenportal/erro.php?status=503
+
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
+    Header always unset Server
+</IfModule>

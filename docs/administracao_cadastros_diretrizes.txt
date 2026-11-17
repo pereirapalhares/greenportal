@@ -1,0 +1,23 @@
+GREEN PORTAL - DIRETRIZES DE ADMINISTRAÇÃO
+
+1. Menu
+
+O menu Administração possui os subitens:
+
+- Administração/Unidades: administracao_unidades.php, gmodelo_dbp.unidades;
+- Administração/Áreas: administracao_areas.php, gmodelo_dbp.areas;
+- Administração/Atividades: administracao_atividades.php, gmodelo_dbp.atividades.
+
+Os rótulos são multilíngues em PT, EN e ES. As URLs são mantidas em minúsculas.
+
+2. Migração
+
+O script database/045_administracao_cadastros.sql migra green_modelo.areas e green_modelo.atividades para gmodelo_dbp, preservando CODAREA e CODATIVIDADE e convertendo os textos de latin1 para utf8mb4_0900_ai_ci.
+
+A tabela gmodelo_dbp.unidades já existia, mas possuía 32 linhas duplicadas e nenhuma chave primária. A migração normaliza os registros para 16 unidades distintas e cria a chave primária CODUNIDADE, permitindo o CRUD genérico com segurança.
+
+3. Grid
+
+Os três grids usam ManutencaoLegalCadastroGrid.php e seguem o padrão comum de 25 registros por página, busca geral, filtro por coluna, ordenação, redimensionamento e ocultação persistente das colunas, CRUD com confirmação modal, permissões por perfil, carregamento AJAX, modal de espera e exportação Excel.
+
+Os campos de domínio de Unidades (`usado_em_manutencao_legal` e `tipo_de_rcl`) são comboboxes tanto no filtro quanto na edição. Os códigos permanecem persistidos no banco e as descrições exibidas seguem o idioma ativo.

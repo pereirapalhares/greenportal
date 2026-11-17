@@ -1,0 +1,60 @@
+Migração das tabelas LI para o banco da empresa Modelo
+
+Script executado: database/052_migrar_li_para_modelo_dbp.sql
+Banco de origem: green_modelo
+Banco de destino: gmodelo_dbp
+Data da execução: 18/08/2026
+
+Critério de análise
+
+Foram analisadas as tabelas iniciadas por li_, suas colunas iniciadas por COD,
+chaves primárias, índices e relacionamentos por nome de coluna. Como o legado
+possui tabelas MyISAM e nem todos os relacionamentos possuem FOREIGN KEY, o
+nome do campo foi tratado como indicação de relacionamento e validado pela
+estrutura e pelos dados.
+
+Tabelas migradas
+
+- li_classificacao: CODCLASSIFICACAO.
+- li_condicionantes: CODCONDICIONANTE, relacionada a li_licencas por CODLICENCA.
+- li_frequencia: CODFREQUENCIA.
+- li_licencas: CODLICENCA.
+- li_licencasxgrupos: relação por codlicenca e codgrupo.
+- li_licencasxpalavraschave: relação por codlicenca e codpalavrachave.
+- li_planodeacao: CODPLANOACAO, relacionada a li_condicionantes por CODCONDICIONANTE.
+- li_status_protocolo: CODSTATUS.
+
+Também foram migradas as relações diretas usadas pela legislação:
+
+- legislacaoxlicencas.
+- legislacaoxperigo.
+- legislacaoximpacto.
+
+Resultado validado
+
+- li_classificacao: 0 origem / 0 destino.
+- li_condicionantes: 17 origem / 17 destino.
+- li_frequencia: 4 origem / 4 destino.
+- li_licencas: 46 origem / 46 destino.
+- li_licencasxgrupos: 0 origem / 0 destino.
+- li_licencasxpalavraschave: 5 origem / 5 destino.
+- li_planodeacao: 13 origem / 13 destino.
+- li_status_protocolo: 0 origem / 0 destino.
+- legislacaoxlicencas: 48 origem / 48 destino.
+- legislacaoxperigo: 337 origem / 337 destino.
+- legislacaoximpacto: 17 origem / 17 destino.
+- Total: 487 registros na origem e no destino.
+
+Todas as tabelas destino foram convertidas para InnoDB e
+utf8mb4_0900_ai_ci. As chaves primárias e os códigos legados foram
+preservados. A tabela legislacaoxsituacao já existente no gmodelo_dbp não foi
+sobrescrita.
+
+Relacionamentos externos como grupos, usuários, unidades, listas de
+distribuição e palavras-chave devem ser tratados em etapas próprias. A tabela
+li_licencasxpalavraschave foi migrada, mas codpalavrachave pode pertencer a
+mais de um domínio legado; por isso nenhuma tabela externa de palavras-chave
+foi escolhida automaticamente.
+
+A migração foi registrada em gmodelo_dbp.registros_migracao com o código
+LI_MODELO_052 e status CONCLUIDA.

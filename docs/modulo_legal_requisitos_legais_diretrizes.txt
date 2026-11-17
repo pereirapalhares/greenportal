@@ -1,0 +1,124 @@
+GREEN PORTAL - MÓDULO LEGAL / REQUISITOS LEGAIS
+
+1. Origem e objetivo
+
+A transação modulolegal_requisitoslegais.php consolida as legislações não revogadas relacionadas às empresas e unidades. Ela substitui a consulta legada que usava funções MySQL para montar o resultado.
+
+2. Artefatos
+
+- gmodelo_dbp.legislacaoxempresa: relação da legislação com empresa e unidade;
+- gmodelo_dbp.legislacaoxpoder: poder associado à legislação e unidade;
+- gmodelo_dbp.legislacaoxsituacao: situação de atendimento migrada de green_modelo;
+- gmodelo_dbp.vw_modulolegal_requisitos_grid: view consolidada;
+- gmodelo_dbp.vw_modulolegal_responsaveis: usuários relacionados às situações;
+- glegislacao_dbp.vw_legislacao_nao_revogada: view equivalente à vlegislacao_naorevogada do legado.
+
+3. Funções legadas
+
+getPoder, getAtendido, getAmbito, getTipo e getAssunto não são executadas no PHP. Seus resultados são produzidos por relacionamentos e agregações SQL nas views, com conversão UTF8MB4 e índices nas colunas de relação.
+
+4. Grid
+
+O grid é de consulta consolidada e não permite CRUD direto na view. As ações Novo, Duplicar, Salvar e Excluir permanecem desabilitadas com tooltip multilíngue. Estão disponíveis busca geral, filtros de coluna, ordenação, paginação AJAX de 25 registros, colunas persistentes, rolagem interna, modal de carregamento e exportação Excel.
+
+O atendimento é calculado a partir de gmodelo_dbp.legislacaoxsituacao. Qualquer manutenção de situação deverá ocorrer em uma transação própria, preservando a separação entre consulta derivada e cadastro.
+
+A coluna Código é a primeira coluna visível do grid, antes de Unidade. A chave técnica CODLEGISLACAO permanece oculta por padrão. Ao lado do código é exibido o ícone Texto da Lei, que abre o documento associado e oferece a opção de download.
+
+5. Migração
+
+O script database/046_modulo_legal_requisitos.sql cria e migra legislacaoxsituacao, preservando a chave CODSITUACAO e demais códigos legados, além de converter campos textuais latin1 para utf8mb4_0900_ai_ci. O script database/047_filtro_responsaveis_requisitos.sql mantém os registros existentes, atualiza os dados migrados e cria os artefatos do filtro de responsáveis.
+
+A coluna Padrão fica posicionada antes de Assuntos. O conteúdo é somente leitura e possui um ícone que abre uma modal para leitura do texto completo, sem permitir alteração.
+
+6. Responsável pela situação
+
+A view vw_modulolegal_responsaveis lista os usuários que possuem registros em legislacaoxsituacao.
+
+O grid possui o filtro Responsável abaixo dos botões. Ao selecionar um usuário, a consulta considera somente as linhas de legislação e unidade que possuem o CODUSUARIO escolhido em legislacaoxsituacao. O filtro é aplicado no banco pela view vw_modulolegal_requisitos_grid, sem filtrar apenas os 25 registros já carregados. A mesma seleção é enviada para contagem, paginação e exportação.
+
+Os identificadores dos responsáveis são agregados por legislação e unidade em RESPONSAVEL_IDS para evitar duplicação das linhas do grid quando houver mais de um responsável para a mesma combinação.
+
+As chaves estrangeiras devem possuir campo técnico separado do campo de
+apresentação. No grid, a unidade é exibida pelo campo UNIDADE/DSCUNIDADE, com
+a descrição de unidades, enquanto CODUNIDADE permanece somente como campo
+técnico. A mesma regra se aplica a âmbito, tipo e demais relacionamentos.
+
+7. Filtro de lei revogada
+
+O grid possui também o filtro Lei revogada, com as opções Sim e Não. O valor
+Não é aplicado por padrão. A view consolidada mantém as duas situações e expõe
+o campo técnico LEI_REVOGADA; a filtragem ocorre no banco e é respeitada pela
+consulta inicial, contagem, paginação e exportação.
+
+8. Alteração do nível de controle
+
+O único campo editável nessa transação é PODER, apresentado ao usuário como
+Nível de controle em um combobox com Conhecimento, Influência e Controle. Os
+botões Novo, Duplicar e Excluir não são exibidos. A tela apresenta somente o
+botão Confirmar alteração, que é habilitado após uma mudança e atualiza a
+relação legislacaoxpoder por legislação e unidade.
+
+9. Ações complementares
+
+Ao lado de Confirmar alteração são exibidos, inicialmente sem funcionalidade,
+os botões Situação, Documentos Licenciatórios, Controles, Medição e
+Monitoramento, CheckList e Alterações. Cada botão utiliza ícone Bootstrap,
+tooltip e descrição nos idiomas PT, EN e ES. As funcionalidades serão
+implementadas em transações próprias, mantendo a separação de responsabilidades.
+
+10. Popup de Situação
+
+O botão Situação permanece desabilitado até que uma linha seja selecionada no
+grid. A seleção fornece CODLEGISLACAO e CODUNIDADE, que são enviados para
+modulolegal_situacao.php dentro do popup padrão de transação, por meio de um
+iframe. A transação filha exibe e permite CRUD somente para os registros de
+legislacaoxsituacao correspondentes à legislação e unidade selecionadas.
+
+O script database/048_filtros_textuais_like.sql atualiza os procedimentos
+universais para aplicar LIKE nos filtros textuais e igualdade nos filtros
+numéricos. Isso permite localizar um responsável mesmo quando a linha possui
+mais de um responsável agregado.
+
+12. Grid da Situação
+
+O grid modulolegal_situacao.php segue o padrão dos grids em lote. A ordem das
+colunas visíveis é: Situação, Atendido?, Responsável, Data de Avaliação, Data
+de Vencimento e Observação. As colunas técnicas Código, Legislação e Unidade
+permanecem ocultas por padrão. O campo Atendido? usa S/Sim, N/Não,
+AI/Atendimento Indefinido e PA/Parcialmente atendido!. A lista de responsáveis
+é carregada da empresa atual, ordenada alfabeticamente e não apresenta o
+usuário admin.
+
+11. Popup transacional sem cabeçalho externo
+
+O popup transacional padrão não possui cabeçalho próprio, pois a transação
+carregada no iframe apresenta seu título e seus controles. O iframe ocupa toda
+a área útil do popup, sem duplicar o título da transação. As transações abertas
+em popup devem disponibilizar um controle de fechamento no próprio cabeçalho da
+página filha, mantendo o fechamento pelo modal Bootstrap do portal.
+
+12. Separação entre Requisitos legais e LAIA
+
+O item de menu Módulo Legal / Requisitos legais utiliza exclusivamente o arquivo
+`principal/modulolegal_requisitoslegais.php` e a transação
+`modulolegal_requisitoslegais`.
+
+O botão Requisitos legais disponível no grid do LAIA é contextual e utiliza o
+popup `principal/modulolegal_laiarequisitoslegais.php`, com a transação própria
+`modulolegal_laiarequisitoslegais`. O popup recebe as chaves da linha selecionada
+e não deve reutilizar o arquivo nem o identificador da transação principal.
+
+13. Bancos de dados das transações
+
+As transações do Módulo Legal devem utilizar somente bancos com sufixo `_dbp`.
+Para Licenças, o banco oficial é `gmodelo_dbp` e a view utilizada pelo grid é
+`gmodelo_dbp.vw_licencas_grid`, criada pelo script
+`database/070_licencas_gmodelo_dbp.sql`.
+
+14. Codificação dos textos
+
+Os arquivos PHP e JavaScript do Módulo Legal devem ser mantidos em UTF-8, sem
+BOM, com acentuação correta nos títulos, rótulos, tooltips, filtros e mensagens
+dos idiomas PT, EN e ES. É proibida a gravação de texto com sequências de
+codificação corrompida resultantes de conversão incorreta entre latin1 e UTF-8.

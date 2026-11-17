@@ -1,0 +1,10 @@
+GREEN PORTAL - ÍCONE NO CÓDIGO DA LEGISLAÇÃO
+============================================
+
+Quando um grid possuir a coluna CODIGO representando o código de uma lei,
+junto com a chave CODLEGISLACAO, deve exibir o ícone de PDF à esquerda do
+código, seguindo o padrão da tela Manutenção Legal/Legislação.
+
+O ícone deve possuir tooltip "Texto da Lei" e abrir o texto/PDF da legislação.
+Não deve ser aplicado a códigos de documentos, objetivos, metas ou outros
+cadastros que também utilizem uma coluna chamada CODIGO.

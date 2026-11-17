@@ -1,0 +1,70 @@
+Modulo Legal / LAIA - conformidade com o legado
+
+Fontes analisadas:
+- newlegislacao/configuracoes/LAIA.php
+- newlegislacao/configuracoes/LAIAXDocumentos.php
+- newlegislacao/configuracoes/LAIAXLegislacao.php
+- newlegislacao/configuracoes/LAIAXObjetivosMetas.php
+
+LAIA principal
+
+A ordem oficial do grid e: Unidade, Area, Fonte/Atividade/Equipamento,
+Detalhamento, Aspecto, Situacao N/A/E, Tempo A/P/F, Influencia D/I,
+Classe A/B, Destino, Impacto, Escala, Severidade,
+Probabilidade/Frequencia, Total, Disposicao ou Atenuante,
+Aspectos Significativos, Atendimento Legislacao e Visao Partes Interessadas.
+
+Os campos CODUNIDADE, CODAREA, CODATIVIDADE, CODASPECTO, CODDESTINO e
+CODIMPACTO sao chaves estrangeiras e devem ser exibidos por combo com a
+descricao da tabela relacionada. As opcoes sao carregadas pelo componente
+padrao a partir das views de referencia e ordenadas alfabeticamente.
+
+Situacao, Temporalidade, Influencia e Classificacao usam os valores fixos
+definidos no legado. Resultado e Filtro B sao calculados pela view; os campos
+de trilha e o codigo tecnico ficam ocultos ou somente leitura conforme a
+regra geral do portal.
+
+Relacionamentos contextuais
+
+As chaves CODASPECTO, CODIMPACTO, CODATIVIDADE e CODUNIDADE sao enviadas aos
+popups de Requisitos Legais, Controles e Documentos e Objetivos e Metas.
+Os popups utilizam as views migradas em gmodelo_dbp e preservam os campos
+tecnicos ocultos somente para garantir o filtro contextual.
+
+LAIAXDocumentos
+
+Ordem: Codigo, Titulo, Arquivo, Aspecto, Impacto e Atividade. O filtro legado
+e textual em todas as colunas; os campos de relacionamento permanecem
+ocultos no grid, mas participam da consulta contextual.
+
+LAIAXLegislacao
+
+Ordem: Legislacao e Texto da Lei. O grid usa vlaiaxlegislacao através de
+vw_laia_requisitos_legais_grid e filtra simultaneamente pela unidade e por
+aspecto, impacto ou atividade recebidos da linha do LAIA.
+
+LAIAXObjetivosMetas
+
+Ordem: Codigo do Objetivo, Item Atendido da Politica, Objetivo, Meta,
+Indicador, Lider e Estrategico/Tatico. CODASPECTO e CODUNIDADE são chaves
+contextuais ocultas e não colunas de negócio do grid.
+
+Arquivos
+
+Os campos ARQUIVO mantêm o tipo link do legado. A exibição de arquivos deve
+ser integrada ao fluxo padrão de documentos do portal quando o endpoint de
+arquivos estiver disponível; não deve abrir visualizador instalado no cliente.
+
+Implementação atualizada
+
+Arquivos: principal/modulolegal_laia.php, modulolegal_laiarequisitoslegais.php,
+modulolegal_controles.php e modulolegal_objetivosmetas.php.
+Banco operacional: gmodelo_dbp.
+
+No grid principal, a sequência foi reproduzida a partir de `$campos` do
+legado: linha, Unidade, Área, Fonte/Atividade/Equipamento, Detalhamento,
+Aspecto, Situação, Temporalidade, Influência, Classificação, Destino, Impacto,
+Escala, Severidade, Probabilidade/Frequência, Resultado, Disposição/Atenuante,
+Filtro B, Filtro C e Filtro D. Os atributos legados de busca, largura, ordenação
+e tipo permanecem registrados na configuração da transação para preservar a
+migração por posição.

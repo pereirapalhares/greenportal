@@ -1,0 +1,205 @@
+RELATÓRIO DE HOMOLOGAÇÃO DAS CORREÇÕES — PER-004
+Permissão de exclusão de responsabilidades
+GreenPortal | Empresa Modelo | gmodelo_dbp
+Baseado em: roteiro_reteste_PER004_responsabilidades_20260821.txt
+Data: 21/08/2026
+
+===============================================================================
+1. OBJETIVO
+===============================================================================
+
+Confirmar, mediante repetição visual completa do roteiro PER-004 nos dois
+módulos (LICENCAS e REQUISITOS_LEGAIS), que as duas ressalvas de UX apontadas
+no relatório de reteste anterior (relatorio_reteste_PER004_responsabilidades_
+20260821.txt) foram efetivamente corrigidas:
+
+Correção 1 — Mensagem contraditória na gravação: ao salvar uma exclusão
+autorizada, o sistema exibia simultaneamente "Responsabilidades salvas com
+sucesso." e "Seu perfil não possui permissão para alterar responsabilidades.",
+uma combinação confusa e logicamente contraditória.
+
+Correção 2 — Inconsistência de bloqueio de campos entre módulos: na tela
+"Manter responsabilidades" de Licenças, os campos de finalidade, destino,
+responsável, prioridade, principalidade e vigência não ficavam desabilitados
+no lado do cliente (apesar de o servidor já ignorar corretamente qualquer
+alteração), enquanto em Requisitos Legais os mesmos campos já apareciam
+desabilitados. O roteiro original pedia bloqueio client-side nos dois
+módulos.
+
+===============================================================================
+2. CONTAS UTILIZADAS
+===============================================================================
+
+Administrador (preparação, correção e limpeza): admin / perfil ADMINISTRADOR
+Conta de teste (execução dos sub-testes): ueditor / perfil GESTOR
+
+===============================================================================
+3. CONFIGURAÇÃO DA PERMISSÃO
+===============================================================================
+
+Repetida a configuração original do roteiro PER-004 para o perfil GESTOR:
+
+LICENCAS (Código 74): Incluir=0 | Visualizar=1 | Editar=0 | Excluir=1
+REQUISITOS_LEGAIS (Código 306): Incluir=0 | Visualizar=1 | Editar=0 | Excluir=1
+
+Exportar Excel e Gerar PDF mantidos como estavam (fora do escopo).
+
+Lição aplicada nesta rodada: a gravação da linha 74 (Licenças) foi salva e
+confirmada ANTES de trocar o filtro de Transação para "Requisitos Legais",
+evitando o problema observado em rodada anterior em que a troca de filtro
+recarrega a grade do servidor e descarta silenciosamente edições não salvas
+da linha que sai do filtro.
+
+===============================================================================
+4. DADOS DE TESTE
+===============================================================================
+
+Vínculos de teste dedicados, criados pelo administrador especificamente para
+esta rodada de homologação, com vigência iniciada em 21/08/2026 (data do
+teste, usada como marcador para distingui-los de vínculos preexistentes):
+
+- Licença 1 (CODLICENCA=1 — Licença CETESB Nº 79/823.555): novo vínculo de
+  responsabilidade "Responsável pelo acesso" / Administrador Modelo /
+  Usuário.
+- Situação 39 (CODSITUACAO=39 — "As atividades da Crown são licenciadas pela
+  CETESB..."): novo vínculo de responsabilidade "Requisito legal" /
+  Administrador Modelo / Usuário.
+
+===============================================================================
+5. PER-004-A — LICENÇAS
+===============================================================================
+
+5.1 Acesso à consulta — PASSOU
+Popup de Responsabilidades abriu normalmente para a Licença 1, exibindo os
+vínculos ativos, incluindo o novo vínculo de teste (vigência 2026-08-21).
+
+5.2 Acesso à manutenção com exclusão autorizada — PASSOU (Correção 2 confirmada)
+A tela "Manter responsabilidades" abriu corretamente com Editar=0/Incluir=0,
+sem exibir mensagem de bloqueio, sem botão Adicionar. Inspeção do DOM
+confirmou que os campos de formulário (selects e inputs) agora retornam
+disabled=true — mesmo comportamento já existente em Requisitos Legais.
+A inconsistência anteriormente registrada não se repetiu.
+
+5.3 Exclusão lógica — PASSOU (Correção 1 confirmada)
+A lixeira do vínculo de teste foi acionada e a linha removida da visão ativa.
+Ao clicar em Salvar, o sistema exibiu uma única mensagem, coerente:
+"Operação concluída. Exclusões autorizadas foram processadas; alterações
+não autorizadas foram ignoradas."
+Não houve mais a combinação contraditória de mensagens observada
+anteriormente. Ao reabrir a consulta, o vínculo apareceu como HISTORICA,
+sem remoção física, e os demais vínculos permaneceram inalterados.
+
+5.4 Bloqueio de inclusão e edição — PASSOU
+Manter responsabilidades reaberto: botão Adicionar ausente, campos
+inacessíveis para edição (disabled=true confirmado via DOM), nenhuma
+alteração foi persistida ao tentar salvar.
+
+===============================================================================
+6. PER-004-B — REQUISITOS LEGAIS
+===============================================================================
+
+6.1 Acesso à consulta — PASSOU
+Popup de Responsabilidades do requisito abriu normalmente para a Situação
+39, exibindo os vínculos, incluindo o novo vínculo de teste (vigência
+2026-08-21).
+
+6.2 Acesso à manutenção — PASSOU (comportamento mantido, sem regressão)
+Tela "Manter responsabilidades" aberta com Editar=0/Incluir=0, botão
+Adicionar oculto, campos bloqueados (disabled=true, como já era o caso
+antes da correção), lixeira habilitada para o vínculo de teste.
+
+6.3 Exclusão lógica — PASSOU (Correção 1 confirmada também neste módulo)
+Lixeira acionada, Salvar exibiu a mesma mensagem única e coerente:
+"Operação concluída. Exclusões autorizadas foram processadas; alterações
+não autorizadas foram ignoradas."
+Vínculo removido da lista ATIVA e preservado como HISTORICA ao reconsultar
+a Situação 39; nenhum outro vínculo ou situação foi afetado.
+
+6.4 Bloqueio de inclusão e edição — PASSOU
+Campos permaneceram bloqueados, inclusão indisponível, alteração de
+prioridade/responsável não persistida, nenhuma mensagem técnica ou SQL
+exibida.
+
+===============================================================================
+7. VERIFICAÇÃO CONSOLIDADA DAS DUAS CORREÇÕES
+===============================================================================
+
+Correção 1 (mensagem de gravação): verificada em 2 operações de exclusão
+independentes (5.3 em Licenças, 6.3 em Requisitos Legais). Em ambas, a
+mensagem exibida foi a nova mensagem única "Operação concluída. Exclusões
+autorizadas foram processadas; alterações não autorizadas foram ignoradas.",
+substituindo a antiga combinação contraditória de duas mensagens
+simultâneas. CONFIRMADA CORRIGIDA nos dois módulos.
+
+Correção 2 (bloqueio client-side dos campos): verificada por inspeção do
+DOM em 5.2 (Licenças) e 6.2 (Requisitos Legais). Em Licenças, os campos de
+formulário agora retornam disabled=true, alinhando-se ao comportamento já
+existente em Requisitos Legais. Nenhuma regressão foi observada em
+Requisitos Legais. CONFIRMADA CORRIGIDA, com paridade total entre os dois
+módulos.
+
+===============================================================================
+8. LIMPEZA PELO ADMINISTRADOR
+===============================================================================
+
+1. Confirmado, na Consulta de Responsabilidades da Licença 1 (visão do
+   administrador), que o vínculo de teste (vigência 2026-08-21) aparece
+   como HISTORICA, sem remoção física — histórico anterior preservado.
+2. Confirmado, na Consulta de Responsabilidades do requisito da Situação 39
+   (visão do administrador), que o vínculo de teste (vigência 2026-08-21)
+   aparece como HISTORICA, sem remoção física — histórico anterior
+   preservado.
+3. Permissões do perfil GESTOR restauradas a zero (Incluir=Visualizar=
+   Editar=Excluir=0) nas transações LICENCAS (74) e REQUISITOS_LEGAIS (306),
+   verificado por inspeção da grade (JS e visual) após a gravação. Os flags
+   de Exportar Excel/Gerar PDF permaneceram inalterados em relação ao estado
+   pré-teste (LICENCAS: Excel=0/PDF=1; REQUISITOS_LEGAIS: Excel=0/PDF=0),
+   consistente com o padrão já observado na limpeza da rodada anterior.
+4. Confirmado, com login de ueditor após a restauração, que o acesso à
+   transação Licenças voltou a ser integralmente bloqueado: "Seu perfil não
+   tem permissão para acessar esta transação."
+
+===============================================================================
+9. CRITÉRIOS DE ACEITE — AVALIAÇÃO
+===============================================================================
+
+- PER-004 funciona em Licenças: ATENDIDO.
+- PER-004 funciona em Requisitos Legais: ATENDIDO.
+- Manutenção abre com Excluir=1 mesmo sem Editar/Incluir: ATENDIDO nos dois
+  módulos.
+- Campos ficam bloqueados sem Editar: ATENDIDO nos dois módulos, incluindo
+  bloqueio client-side (disabled=true) — corrigido em Licenças.
+- Adicionar fica oculto sem Incluir: ATENDIDO.
+- Lixeira fica habilitada com Excluir: ATENDIDO.
+- Exclusão é lógica e preserva histórico: ATENDIDO — nenhum registro
+  removido fisicamente.
+- Nenhum erro SQL é exposto: ATENDIDO.
+- Nenhum vínculo de outro registro é alterado: ATENDIDO.
+- Mensagem de gravação é única e coerente (sem contradição): ATENDIDO —
+  corrigido nos dois módulos.
+
+===============================================================================
+10. RESULTADO FINAL
+===============================================================================
+
+Responsável: QA (assistente de testes funcionais)
+Data: 21/08/2026
+Ambiente: GreenPortal — Empresa Modelo (gmodelo_dbp), http://localhost/greenportal/
+
+PER-004 Licenças: PASSOU
+PER-004 Requisitos Legais: PASSOU
+Resultado geral: PASSOU (sem ressalvas)
+
+Observações:
+As duas ressalvas registradas no relatório de reteste anterior
+(relatorio_reteste_PER004_responsabilidades_20260821.txt) foram verificadas
+e confirmadas como corrigidas nesta rodada de homologação: (1) a mensagem
+de gravação de uma exclusão autorizada agora é única e coerente nos dois
+módulos, eliminando a combinação contraditória de sucesso + bloqueio; (2) o
+bloqueio client-side dos campos de manutenção em Licenças agora tem paridade
+com Requisitos Legais, ambos exibindo os campos como desabilitados quando o
+usuário não possui permissão de edição. Nenhuma regressão foi identificada
+nas demais regras já validadas (bloqueio de inclusão/edição, preservação de
+histórico, ausência de mensagens técnicas/SQL, isolamento de outros
+vínculos). Recomenda-se encerrar o item PER-004 como homologado, sem
+pendências abertas.

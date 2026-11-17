@@ -1,0 +1,203 @@
+RELATÓRIO DE HOMOLOGAÇÃO DE PERMISSÕES — RESPONSABILIDADES
+Testes PER-001 a PER-004
+GreenPortal | Empresa Modelo | gmodelo_dbp
+Baseado em: roteiro_homologacao_permissoes_responsabilidades_20260820.txt
+
+===============================================================================
+1. OBJETIVO
+===============================================================================
+
+Validar, de forma isolada, as permissões de Visualizar, Incluir, Editar e
+Excluir nas responsabilidades de LICENCAS e REQUISITOS_LEGAIS, atribuídas ao
+perfil GESTOR, confirmando que o usuário consegue executar somente as ações
+autorizadas para o seu perfil.
+
+===============================================================================
+2. CONTAS UTILIZADAS
+===============================================================================
+
+Administrador (preparação das permissões): admin / perfil ADMINISTRADOR
+Conta de teste (execução dos 4 cenários): ueditor / perfil GESTOR
+
+===============================================================================
+3. DADOS DE TESTE UTILIZADOS
+===============================================================================
+
+Licença de teste: CODLICENCA=1 — Licença CETESB Nº 79/823.555
+Requisito legal / Situação de teste: CODSITUACAO=39 — "As atividades da Crown
+são licenciadas pela CETESB. Todas as expansões são devidamente comunicadas
+e licenciadas." (requisito "Obter e manter válido..." — Código LB0001)
+Usuário destino para inclusão/alteração: Administrador Modelo
+Grupo destino para inclusão/alteração: GESTORES
+Transações ajustadas na matriz de permissões: LICENCAS (Código 74) e
+REQUISITOS_LEGAIS (Código 306), ambas do perfil GESTOR.
+
+Confirmou-se, antes do início dos testes, que os dados acima estavam
+disponíveis e ativos nas telas correspondentes.
+
+===============================================================================
+4. RESULTADOS POR TESTE
+===============================================================================
+
+-------------------------------------------------------------------------
+PER-001 — SOMENTE CONSULTA (Incluir=0 | Visualizar=1 | Editar=0 | Excluir=0)
+-------------------------------------------------------------------------
+
+Execução: com as flags acima aplicadas em LICENCAS e REQUISITOS_LEGAIS, o
+usuário ueditor conseguiu abrir a Consulta de Responsabilidades tanto em
+Licenças (Licença 1) quanto em Requisitos Legais (Situação 39). A tentativa
+de abrir "Manter responsabilidades" foi bloqueada de forma limpa, exibindo a
+mensagem "Seu perfil não possui permissão para alterar responsabilidades.",
+sem qualquer mensagem técnica ou erro de SQL exposto ao usuário.
+
+Resultado: PASSOU (LICENCAS e REQUISITOS_LEGAIS)
+Evidência: consulta exibida normalmente em ambos os módulos; tela de
+manutenção bloqueada com mensagem padronizada da aplicação.
+
+-------------------------------------------------------------------------
+PER-002 — CONSULTA E INCLUSÃO (Incluir=1 | Visualizar=1 | Editar=0 | Excluir=0)
+-------------------------------------------------------------------------
+
+Execução: em Licenças, foi incluído um novo vínculo (Finalidade "Responsável
+pelo acesso", Destino "Usuário", Responsável "Administrador Modelo", vigência
+a partir da data do teste). O sistema exibiu "Responsabilidades salvas com
+sucesso." e o novo vínculo apareceu como ATIVA na Consulta. Em seguida,
+tentou-se alterar a prioridade de um vínculo existente e excluir um vínculo
+existente: em ambos os casos o sistema apresentou a mesma mensagem de
+sucesso genérica, porém a alteração/exclusão foi silenciosamente ignorada —
+o vínculo permaneceu inalterado e ativo ao reabrir a consulta. O mesmo
+roteiro foi repetido em Requisitos Legais (Situação 39, finalidade
+"Requisito legal"), com resultado equivalente.
+
+Observação técnica: uma primeira tentativa de inclusão duplicada (mesma
+Finalidade/Destino/Responsável de um vínculo já existente) foi corretamente
+rejeitada pela regra de negócio "Já existe um responsável com este vínculo
+em um período sobreposto" — este é um bloqueio de regra de negócio, não de
+permissão, e não deve ser confundido com o teste de bloqueio de edição/
+exclusão. O teste foi refeito com uma combinação distinta (Destino=Grupo/
+GESTORES) para isolar corretamente o comportamento de permissão.
+
+Resultado: PASSOU (LICENCAS e REQUISITOS_LEGAIS)
+Evidência: inclusão persistida e confirmada na consulta; edição e exclusão
+de vínculos existentes ignoradas silenciosamente pelo servidor, sem erro
+técnico exposto ao usuário.
+
+-------------------------------------------------------------------------
+PER-003 — CONSULTA E EDIÇÃO (Incluir=0 | Visualizar=1 | Editar=1 | Excluir=0)
+-------------------------------------------------------------------------
+
+Execução: em Licenças, o vínculo criado no teste PER-002 teve sua prioridade
+alterada de 0 para 7. A alteração foi salva, o popup foi fechado e, ao
+reabrir a manutenção, a prioridade 7 permaneceu — a edição foi efetivamente
+persistida. Em seguida, tentou-se incluir uma nova linha (bloqueada/
+ignorada) e excluir o vínculo ativo (também ignorada, o vínculo permaneceu
+ativo). O mesmo roteiro foi repetido em Requisitos Legais (Situação 39),
+alterando a prioridade do vínculo criado anteriormente pelo administrador,
+com resultado equivalente.
+
+Resultado: PASSOU (LICENCAS e REQUISITOS_LEGAIS)
+Evidência: prioridade alterada e persistida após reabertura da tela;
+inclusão e exclusão bloqueadas/ignoradas sem mensagem técnica; histórico não
+foi alterado.
+
+-------------------------------------------------------------------------
+PER-004 — CONSULTA E EXCLUSÃO (Incluir=0 | Visualizar=1 | Editar=0 | Excluir=1)
+-------------------------------------------------------------------------
+
+Execução: as flags foram ajustadas e salvas com sucesso para GESTOR em
+LICENCAS (Código 74) e REQUISITOS_LEGAIS (Código 306), confirmadas via
+inspeção do estado da grade após a gravação. Após logout/login do ueditor
+(para renovação da sessão), a Consulta de Responsabilidades foi acessada
+normalmente em ambos os módulos. Porém, ao tentar abrir "Manter
+responsabilidades" — necessário para executar a exclusão lógica autorizada
+— a tela não abriu: foi exibida a mesma mensagem "Seu perfil não possui
+permissão para alterar responsabilidades.", idêntica à observada quando
+Editar=0 e Excluir=0 (cenário PER-001). Isso ocorreu de forma consistente
+tanto em Licenças (Licença 1) quanto em Requisitos Legais (Situação 39).
+
+Conforme a advertência explícita do roteiro ("ATENÇÃO — validação da
+interface"), este comportamento caracteriza uma FALHA DE INTERFACE: a tela
+de manutenção está condicionada apenas à flag Editar, e não oferece o acesso
+mínimo necessário para executar a exclusão quando Editar=0 e Excluir=1.
+
+Resultado: FALHOU — FALHA DE INTERFACE (LICENCAS e REQUISITOS_LEGAIS)
+Evidência: tela "Manter responsabilidades" inacessível em ambos os módulos
+com Editar=0/Excluir=1, mensagem "Seu perfil não possui permissão para
+alterar responsabilidades." exibida em vez do formulário de manutenção.
+Nenhuma mensagem técnica/SQL foi exposta; o efeito líquido é um bloqueio
+total (mais restritivo do que o esperado), e não uma liberação indevida.
+
+===============================================================================
+5. LIMPEZA OBRIGATÓRIA (Seção 9 do roteiro)
+===============================================================================
+
+Executada integralmente pelo admin após a conclusão dos 4 testes:
+
+1. Removido logicamente (não fisicamente) o vínculo de teste criado em
+   Licença 1 durante PER-002/PER-003 (Finalidade "Responsável pelo acesso",
+   Responsável "Administrador Modelo", Destino "Usuário", prioridade 7) —
+   confirmado como HISTORICA na Consulta, com todo o histórico anterior
+   preservado (5 registros mantidos, nenhum removido fisicamente).
+2. Removido logicamente o vínculo de teste equivalente em Requisitos Legais/
+   Situação 39 (Finalidade "Requisito legal") — confirmado como HISTORICA na
+   Consulta, com os 4 registros de histórico preservados.
+3. Permissões do perfil GESTOR restauradas a zero (Incluir=Visualizar=
+   Editar=Excluir=0) em ambas as transações LICENCAS (74) e REQUISITOS_LEGAIS
+   (306), consistente com o estado de acesso zerado observado antes do
+   início desta rodada de homologação. Os flags de Exportar Excel/Gerar PDF
+   não foram alterados (fora do escopo destes 4 testes).
+4. Confirmado, com login de ueditor após a restauração, que o acesso à
+   transação Licenças voltou a ser integralmente bloqueado ("Seu perfil não
+   tem permissão para acessar esta transação."), consistente com o
+   comportamento esperado para GESTOR sem permissões atribuídas.
+
+===============================================================================
+6. CRITÉRIOS DE ACEITE — AVALIAÇÃO
+===============================================================================
+
+- PER-001 permite somente consulta: ATENDIDO.
+- PER-002 permite inclusão, mas bloqueia edição e exclusão: ATENDIDO.
+- PER-003 permite edição, mas bloqueia inclusão e exclusão: ATENDIDO.
+- PER-004 permite exclusão lógica, mas bloqueia inclusão e edição: NÃO
+  ATENDIDO — a interface impede totalmente o acesso à manutenção quando
+  Editar=0/Excluir=1, portanto a exclusão autorizada não pôde ser exercida.
+- Nenhuma mensagem SQL técnica aparece ao usuário: ATENDIDO em todos os
+  cenários.
+- Nenhum histórico é removido fisicamente: ATENDIDO — confirmado nas
+  consultas de Licenças e Requisitos Legais após a limpeza.
+- Nenhum vínculo de outra licença ou situação é exibido: ATENDIDO — os
+  vínculos exibidos corresponderam exclusivamente à Licença 1 e à Situação
+  39 em todos os testes.
+- A mesma regra funciona em LICENCAS e REQUISITOS_LEGAIS: ATENDIDO — o
+  comportamento (incluindo a falha de interface do PER-004) foi idêntico
+  nos dois módulos.
+
+===============================================================================
+7. RESULTADO FINAL
+===============================================================================
+
+Responsável: QA (assistente de testes funcionais)
+Data: 20/08/2026
+Ambiente: GreenPortal — Empresa Modelo (gmodelo_dbp), http://localhost/greenportal/
+
+PER-001: PASSOU
+PER-002: PASSOU
+PER-003: PASSOU
+PER-004: FALHOU (falha de interface — exclusão autorizada não pôde ser
+          exercida por bloqueio total da tela de manutenção)
+
+Resultado geral: PASSOU COM RESSALVAS
+
+Observações:
+O sistema demonstrou, de forma consistente e nos dois módulos avaliados
+(LICENCAS e REQUISITOS_LEGAIS), o comportamento de "ignorar silenciosamente"
+operações não autorizadas (edição/exclusão sem permissão) quando o usuário
+já está dentro da tela de manutenção — sem jamais expor mensagens técnicas
+ou de SQL, o que atende plenamente ao critério de segurança de informação
+mais crítico do roteiro. A única ressalva é de natureza funcional/UX: a tela
+"Manter responsabilidades" usa a flag Editar como porta de entrada única,
+impedindo que um perfil com Excluir=1/Editar=0 exerça a exclusão lógica à
+qual tem direito. Recomenda-se ajuste na regra de exibição da tela de
+manutenção para considerar Editar OU Excluir (liberando os campos e ações
+conforme a flag específica de cada operação), preservando o comportamento
+de bloqueio silencioso já validado para as operações não autorizadas.

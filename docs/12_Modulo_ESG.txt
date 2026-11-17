@@ -1,0 +1,56 @@
+﻿ESPECIFICAÇÃO FUNCIONAL — GREEN 4.0
+Versão: 1.0 — elaboração em 12/11/2026
+Fonte: Passo a passo mudança no Green4.0 — Revisão G — 13/08/2026.doc.
+Situação: especificação para revisão funcional; não representa validação do software existente.
+
+COMO INTERPRETAR
+- IDs dos requisitos preservam a numeração da fonte. Txxx/Rxxx identifica tabela/linha,
+  contando a partir de zero na ordem do documento, para rastreabilidade sem paginação variável.
+- "Sim" indica solicitação de implementação na fonte, não comprova implementação.
+- Campo "Implementar?" vazio significa decisão pendente. Requisito dependente de outro
+  item marcado Sim é identificado, mas a inconsistência da marcação é preservada.
+- Detalhamento da fonte é reproduzido em cada requisito para conservar campos, exemplos,
+  condições, exceções e fluxos. Exemplos não constituem listas fechadas de domínio.
+- Critérios de aceite e regras consolidadas são operacionalizações propostas para revisão.
+  Decisões ausentes não foram convertidas em regras definitivas.
+- Referências a capturas de concorrentes são referências visuais do DOC original; imagens
+  não são reproduzidas em TXT. Não foram inferidas regras a partir de elementos só visuais.
+- Não há definição de banco físico, linguagem, endpoints ou cronograma nesta versão.
+
+
+12 — Módulo ESG
+
+OBJETIVO
+Especificar as mudanças deste tema preservando o escopo e as ressalvas da Revisão G.
+
+CONSTATAÇÃO SOBRE A FONTE
+O sumário inclui Módulo ESG e a lista Grandes Mudanças solicita seu desenvolvimento.
+A lista de módulos abrangidos pelas mudanças gerais também cita ESG.
+Porém o corpo do documento termina no item 177 de Auditoria: não há seção ESG detalhada,
+requisitos numerados, campos, indicadores, cálculos, fluxos ou critérios ESG específicos.
+
+ESG-001 — PREPARAR O ESCOPO DO MÓDULO
+Origem: sumário, Grandes Mudanças item 7 e abrangência das mudanças gerais.
+Situação: intenção expressa; detalhamento pendente.
+Comportamento especificável: observar as regras transversais do arquivo 01 na definição
+futura do módulo; não assumir que os indicadores dos outros módulos equivalem a indicadores ESG.
+Critério de aceite para esta etapa: escopo funcional aprovado com fontes, responsáveis,
+periodicidades, evidências, indicadores, fórmulas, permissões e relatório esperado.
+
+PENDÊNCIAS PARA ELABORAÇÃO
+1. Qual processo e quais usuários o módulo atende?
+2. Quais temas/indicadores ambientais, sociais e de governança serão geridos?
+3. Quais unidades, fontes de dados, métodos de cálculo e períodos serão utilizados?
+4. Quais frameworks ou modelos de reporte devem ser suportados, se houver?
+5. Quais integrações com os módulos existentes e quais aprovações são necessárias?
+6. Quais telas, evidências, alertas e relatórios compõem a primeira entrega?
+Nenhuma resposta foi presumida como requisito do documento.
+
+
+REQUISITOS FUNCIONAIS RASTREÁVEIS
+
+
+VALIDAÇÃO DO PACOTE
+Este TXT deve ser revisado em conjunto com as dependências indicadas. A implementação
+exige acesso ao código e banco atuais, ausentes deste anexo. As condições de aceite
+são propostas de homologação funcional, não resultados de testes já executados.

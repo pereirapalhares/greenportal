@@ -1,0 +1,326 @@
+RELATÓRIO DE RETESTE VISUAL — PER-004
+Permissão de exclusão de responsabilidades
+GreenPortal | Empresa Modelo | gmodelo_dbp
+Baseado em: roteiro_reteste_PER004_responsabilidades_20260821.txt
+Data: 21/08/2026
+
+===============================================================================
+1. OBJETIVO
+===============================================================================
+
+Confirmar que um usuário com Visualizar=1 e Excluir=1, mas sem Incluir e
+Editar, consegue acessar a manutenção e remover logicamente responsabilidades
+nos dois módulos (LICENCAS e REQUISITOS_LEGAIS), reavaliando o achado
+"FALHA DE INTERFACE" registrado no teste PER-004 anterior
+(relatorio_homologacao_permissoes_responsabilidades_20260820.txt), no qual a
+tela "Manter responsabilidades" estava totalmente inacessível nesse cenário
+de permissões. Também deveria ser confirmado que o mesmo usuário continua
+sem conseguir incluir ou editar responsabilidades.
+
+===============================================================================
+2. CONTAS UTILIZADAS
+===============================================================================
+
+Administrador (preparação e limpeza): admin / perfil ADMINISTRADOR
+Conta de teste (execução dos 8 sub-testes): ueditor / perfil GESTOR
+
+===============================================================================
+3. CONFIGURAÇÃO DA PERMISSÃO
+===============================================================================
+
+Aplicada pelo admin em Segurança > Permissões > Perfil GESTOR:
+
+LICENCAS (código 74):
+- Incluir: 0 | Visualizar: 1 | Editar: 0 | Excluir: 1
+
+REQUISITOS_LEGAIS (código 306):
+- Incluir: 0 | Visualizar: 1 | Editar: 0 | Excluir: 1
+
+Exportar Excel e Gerar PDF não foram alterados. Configuração salva e
+confirmada via inspeção do estado da grade (DOM) logo após a gravação, para
+ambas as transações.
+
+===============================================================================
+4. DADOS DE TESTE
+===============================================================================
+
+Diferente do teste anterior, foram criados pelo admin dois vínculos NOVOS,
+dedicados exclusivamente a este reteste, para não reaproveitar nenhum
+vínculo histórico preexistente:
+
+- Licença 1 (Licença CETESB Nº 79/823.555): vínculo "Responsável pelo
+  acesso" / Usuário / Administrador Modelo, vigência a partir de
+  21/08/2026, confirmado como ATIVA antes do início dos sub-testes.
+- Situação 39 (Requisitos Legais, "As atividades da Crown são licenciadas
+  pela CETESB..."): vínculo "Requisito legal" / Usuário / Administrador
+  Modelo, vigência a partir de 21/08/2026, confirmado com a mensagem
+  "Responsabilidades salvas com sucesso." e listado como ATIVA.
+
+===============================================================================
+5. PER-004-A — LICENÇAS
+===============================================================================
+
+5.1 Acesso à consulta
+
+Login como ueditor, Licenças > Licença 1 > Responsabilidades. O popup abriu
+normalmente em modo Consulta, exibindo 6 vínculos (3 HISTORICA, 3 ATIVA,
+incluindo o vínculo de teste de 21/08/2026). Nenhuma mensagem de falta de
+permissão foi exibida.
+
+Resultado: PASSOU
+Evidência: popup de Responsabilidades exibido com os vínculos ativos e
+históricos, sem bloqueio de visualização.
+
+5.2 Acesso à manutenção com exclusão autorizada
+
+Clique em Manter: a tela "Manter responsabilidades" abriu normalmente,
+listando os 3 vínculos ATIVA (incluindo o vínculo de teste). Isso reverte
+integralmente a falha registrada no PER-004 original, na qual a mesma tela
+ficava totalmente bloqueada com Editar=0/Excluir=1.
+
+Confirmado via inspeção do DOM:
+- botão "Adicionar" presente no HTML, porém com atributo hidden e
+  display:none — não fica visível nem clicável para o usuário;
+- a lixeira (botão "Remover") do vínculo de teste está habilitada e
+  visível (disabled=false);
+- os campos de finalidade, destino, responsável, prioridade, principal e
+  vigência NÃO estão desabilitados no DOM (disabled=false, readOnly=false,
+  pointer-events:auto) — ou seja, o bloqueio de edição não é implementado
+  client-side neste módulo. Este ponto foi validado quanto ao efeito prático
+  no sub-teste 5.4, abaixo.
+
+Resultado: PASSOU, com ressalva registrada abaixo (ver item 5.4 e seção 7)
+Evidência: tela de manutenção acessível com Editar=0/Incluir=0; sem mensagem
+de bloqueio; botão Adicionar oculto; lixeira do vínculo ativo habilitada.
+
+5.3 Exclusão lógica
+
+Clique na lixeira do vínculo de teste (21/08/2026): a linha desapareceu da
+tabela imediatamente. Clique em Salvar: o sistema exibiu, simultaneamente,
+duas mensagens — "Responsabilidades salvas com sucesso." (verde) e "Seu
+perfil não possui permissão para alterar responsabilidades." (amarelo/
+aviso). Essa combinação de mensagens contraditórias é inesperada e está
+registrada como observação na seção 7.
+
+Reabertura da Consulta da Licença 1: o vínculo de teste passou a aparecer
+como HISTORICA (não mais ATIVA); os 5 demais vínculos permaneceram
+inalterados (nenhum foi removido fisicamente, nenhum outro teve seu status
+alterado). O efeito funcional da exclusão lógica ocorreu corretamente,
+apesar da mensagem de aviso exibida.
+
+Resultado: PASSOU (funcionalmente), com ressalva de UX registrada na seção 7
+Evidência: vínculo de teste passou de ATIVA para HISTORICA; total de 6
+registros preservados antes e depois; nenhum outro vínculo afetado.
+
+5.4 Bloqueio de inclusão e edição
+
+Reabertura de Manter responsabilidades: confirmado novamente, via DOM, que
+o botão Adicionar permanece oculto (hidden/display:none) e que restam 2
+vínculos ATIVA (os pré-existentes, não relacionados ao teste). Foi alterado
+via JavaScript o campo de Prioridade de um desses vínculos existentes (de 0
+para 9) e acionado Salvar. O sistema voltou a exibir a mesma dupla mensagem
+(sucesso + aviso de permissão). Ao reabrir a tela de manutenção novamente, o
+campo de Prioridade estava de volta ao valor original (0) — ou seja, a
+alteração não foi persistida pelo servidor, apesar de o campo não estar
+desabilitado no HTML.
+
+Resultado: PASSOU
+Evidência: nenhuma nova linha foi adicionada; a alteração de prioridade não
+persistiu após reabertura da tela; nenhum vínculo ativo foi alterado de
+fato.
+
+===============================================================================
+6. PER-004-B — REQUISITOS LEGAIS
+===============================================================================
+
+6.1 Acesso à consulta
+
+Continuando como ueditor: Requisitos Legais > requisito LB0001 > Situação >
+Situação 39 > Responsabilidades. O popup abriu normalmente, confirmando a
+situação (CODSITUACAO=39, "As atividades da Crown são licenciadas pela
+CETESB...") e exibindo 5 vínculos (4 HISTORICA, 1 ATIVA — o vínculo de
+teste de 21/08/2026). Nenhuma mensagem de bloqueio de visualização.
+
+Resultado: PASSOU
+Evidência: popup de Responsabilidades do requisito exibido corretamente,
+situação correspondente, vínculo ativo de teste listado.
+
+6.2 Acesso à manutenção
+
+Diferente de Licenças, o acesso à manutenção de Requisitos Legais não fica
+disponível dentro do próprio popup de Responsabilidades (que aqui é somente
+consulta); em vez disso, existe um botão dedicado "Manter responsabilidades"
+na barra de ferramentas do popup de Situação. Esse botão abriu a tela de
+manutenção normalmente, listando o único vínculo ATIVA (o vínculo de
+teste).
+
+Confirmado via inspeção do DOM — e aqui o comportamento difere do módulo de
+Licenças:
+- botão "Adicionar" presente, porém oculto (hidden/display:none);
+- lixeira do vínculo de teste habilitada e visível;
+- os campos (finalidade, destino, responsável, prioridade, principal,
+  vigência) estão de fato desabilitados no DOM (disabled=true) — este
+  módulo implementa o bloqueio de edição também no lado do cliente,
+  diferente de Licenças (ver item 5.2 e seção 7).
+
+Resultado: PASSOU
+Evidência: tela de manutenção acessível com Editar=0/Incluir=0; sem
+mensagem de bloqueio; botão Adicionar oculto; campos desabilitados no DOM;
+lixeira do vínculo ativo habilitada.
+
+6.3 Exclusão lógica
+
+Clique na lixeira do vínculo de teste: linha removida da tabela
+visualmente. Clique em Salvar: reproduziu-se a mesma dupla mensagem já
+observada em Licenças ("salvas com sucesso" + aviso de permissão
+insuficiente). Reabertura da consulta da Situação 39: o vínculo de teste
+passou a HISTORICA; os 4 vínculos históricos pré-existentes permaneceram
+inalterados; nenhuma outra situação foi afetada.
+
+Resultado: PASSOU (funcionalmente), com a mesma ressalva de UX da seção 7
+Evidência: vínculo de teste passou de ATIVA para HISTORICA; 5 registros
+preservados; nenhum outro vínculo ou situação afetado.
+
+6.4 Bloqueio de inclusão e edição
+
+Reabertura de Manter responsabilidades: confirmado que o botão Adicionar
+permanece oculto. Como o único vínculo ATIVA desta situação era exatamente
+o vínculo de teste já removido logicamente no sub-teste 6.3, não restou
+nenhum vínculo ativo disponível para uma tentativa de alteração de campo
+nesta situação específica — este ponto pontual do sub-teste é, portanto,
+NÃO APLICÁVEL por ausência de dado, e não por falha do sistema. A
+capacidade de bloqueio de edição já havia sido demonstrada de duas formas
+independentes: (a) no próprio item 6.2, os campos já estavam desabilitados
+no nível do DOM (disabled=true); e (b) no item 5.4 (módulo Licenças),
+confirmou-se que mesmo quando o campo é editável no DOM, a alteração não é
+persistida pelo servidor.
+
+Resultado: PASSOU (Adicionar ausente confirmado; alteração de campo N/A —
+sem vínculo ativo disponível para o teste após a exclusão do item 6.3)
+Evidência: botão Adicionar ausente da tela; nenhuma inclusão possível;
+inferência de bloqueio de edição sustentada pelos itens 5.4 e 6.2.
+
+===============================================================================
+7. TESTE DE SEGURANÇA DA SUBMISSÃO
+===============================================================================
+
+Durante a inspeção visual (sem qualquer exploração ativa ou manipulação de
+parâmetros fora do escopo autorizado), foram observados dois comportamentos
+que merecem registro:
+
+a) Mensagem dupla e contraditória ao salvar uma exclusão autorizada: em
+   TODAS as quatro operações de Salvar realizadas nos sub-testes 5.3, 5.4,
+   6.3 (a exclusão do vínculo de teste em Licenças, a tentativa de edição
+   de prioridade em Licenças, e a exclusão do vínculo de teste em
+   Requisitos Legais), o sistema exibiu simultaneamente a mensagem de
+   sucesso "Responsabilidades salvas com sucesso." e a mensagem de aviso
+   "Seu perfil não possui permissão para alterar responsabilidades.". Em
+   todos os casos o efeito real no banco de dados foi o correto (exclusão
+   lógica efetivada quando autorizada; alteração de campo ignorada quando
+   não autorizada) — ou seja, não há indício de falha de segurança, mas há
+   uma inconsistência de UX/mensagens que pode confundir o usuário sobre o
+   resultado real da ação.
+
+b) Inconsistência entre módulos quanto ao bloqueio de campos no lado do
+   cliente: no módulo de Licenças, os campos da tela "Manter
+   responsabilidades" não são desabilitados no HTML (disabled=false,
+   pointer-events:auto), embora o servidor ignore silenciosamente qualquer
+   alteração não autorizada (confirmado no item 5.4). Já no módulo de
+   Requisitos Legais, os mesmos campos SÃO desabilitados no HTML
+   (disabled=true). Não há evidência de risco de segurança em nenhum dos
+   dois casos — o servidor é a barreira efetiva em ambos — mas os dois
+   módulos implementam a trava visual de forma diferente, o que é
+   inconsistente do ponto de vista de experiência de uso e poderia induzir
+   um desenvolvedor a acreditar (erroneamente) que o bloqueio client-side é
+   suficiente em Requisitos Legais e replicar esse padrão sem a devida
+   validação server-side em outras telas.
+
+Nenhuma mensagem técnica ou de SQL foi exposta em nenhum momento.
+
+Resultado: PASSOU, com 2 observações registradas (nenhuma delas configura
+falha de segurança)
+Observação: ver itens (a) e (b) acima.
+
+===============================================================================
+8. LIMPEZA PELO ADMINISTRADOR
+===============================================================================
+
+Executada integralmente após a conclusão dos 8 sub-testes:
+
+1. Logout de ueditor, login como admin.
+2. Confirmado, na Consulta de Responsabilidades da Licença 1, que o vínculo
+   de teste (21/08/2026) está como HISTORICA, com os 6 registros
+   preservados (nenhuma exclusão física).
+3. Confirmado, na Consulta de Responsabilidades da Situação 39, que o
+   vínculo de teste (21/08/2026) está como HISTORICA, com os 5 registros
+   preservados (nenhuma exclusão física).
+4. Permissões do perfil GESTOR restauradas a zero (Incluir=Visualizar=
+   Editar=Excluir=0) em LICENCAS (74) e REQUISITOS_LEGAIS (306). Exportar
+   Excel e Gerar PDF não foram alterados, preservando os valores que já
+   tinham antes deste reteste (LICENCAS: ambos habilitados; REQUISITOS_
+   LEGAIS: ambos desabilitados).
+5. Logout do admin, login novamente como ueditor: confirmado que o acesso à
+   transação Licenças voltou a ser integralmente bloqueado, com a mensagem
+   "Seu perfil não tem permissão para acessar esta transação.", idêntica ao
+   comportamento documentado na rodada de homologação anterior.
+
+===============================================================================
+9. CRITÉRIOS DE ACEITE — AVALIAÇÃO
+===============================================================================
+
+- PER-004 funciona em Licenças: ATENDIDO — a tela de manutenção agora abre
+  com Excluir=1/Editar=0, e a exclusão lógica autorizada foi executada com
+  sucesso.
+- PER-004 funciona em Requisitos Legais: ATENDIDO — mesmo resultado,
+  incluindo bloqueio de campos reforçado no nível do DOM.
+- manutenção abre com Excluir=1 mesmo sem Editar/Incluir: ATENDIDO nos dois
+  módulos — reverte a FALHA DE INTERFACE do PER-004 original.
+- campos ficam bloqueados sem Editar: ATENDIDO NA PRÁTICA em ambos os
+  módulos (nenhuma alteração não autorizada persiste), mas com implementação
+  inconsistente entre módulos — ver observação (b) da seção 7.
+- Adicionar fica oculto sem Incluir: ATENDIDO nos dois módulos.
+- lixeira fica habilitada com Excluir: ATENDIDO nos dois módulos.
+- exclusão é lógica e preserva histórico: ATENDIDO — confirmado nos dois
+  módulos, com contagem de registros preservada e sem exclusão física.
+- nenhum erro SQL é exposto: ATENDIDO em todos os cenários.
+- nenhum vínculo de outro registro é alterado: ATENDIDO — confirmado nos
+  dois módulos.
+
+===============================================================================
+10. RESULTADO FINAL
+===============================================================================
+
+Responsável: QA (assistente de testes funcionais)
+Data: 21/08/2026
+Ambiente: GreenPortal — Empresa Modelo (gmodelo_dbp), http://localhost/greenportal/
+
+PER-004 Licenças: PASSOU
+PER-004 Requisitos Legais: PASSOU
+
+Resultado geral: PASSOU COM RESSALVAS
+
+Observações:
+O achado "FALHA DE INTERFACE" registrado no relatório de homologação de
+20/08/2026 (relatorio_homologacao_permissoes_responsabilidades_20260820.txt)
+foi CONFIRMADAMENTE CORRIGIDO: um perfil GESTOR com Excluir=1/Editar=0
+agora consegue abrir a tela "Manter responsabilidades" e executar a
+exclusão lógica de vínculos ativos, tanto em Licenças quanto em Requisitos
+Legais, sem que a inclusão ou a edição sejam liberadas indevidamente.
+
+Duas ressalvas de UX/consistência ficam registradas para acompanhamento,
+sem caráter de bloqueio e sem indício de risco de segurança:
+
+1. Ao salvar uma exclusão (ou uma tentativa de edição não autorizada), o
+   sistema exibe simultaneamente uma mensagem de sucesso e uma mensagem de
+   aviso de permissão insuficiente. Recomenda-se revisar a lógica de
+   mensagens da tela "Manter responsabilidades" para exibir apenas a
+   mensagem correspondente ao resultado real da operação, evitando
+   confundir o usuário.
+2. O bloqueio de campos no lado do cliente (atributo disabled) é
+   implementado em Requisitos Legais, mas não em Licenças — embora, em
+   ambos os casos, o servidor seja a barreira efetiva contra alterações não
+   autorizadas (nenhuma mudança indevida foi persistida em nenhum dos
+   testes). Recomenda-se padronizar os dois módulos, preferencialmente
+   aplicando o mesmo padrão de desabilitação client-side de Requisitos
+   Legais também em Licenças, como reforço de usabilidade — sem prejuízo da
+   validação server-side, que deve ser mantida como controle principal.

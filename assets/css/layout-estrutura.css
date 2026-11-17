@@ -1,0 +1,170 @@
+/*
+ * GreenSolutions — Estrutura do portal (cabeçalho, menu lateral e rodapé).
+ * Estilo "Cabeçalho colorido": cabeçalho em degradê da cor do tema, menu e
+ * rodapé em tom claro tingido, item ativo com fundo sólido.
+ * Vale para as paletas do setup_layout.php (verde, azul e cinza).
+ * Carregar depois de main.css. As telas internas (iframes) não são alteradas.
+ */
+
+/* Cores por tema -------------------------------------------------------- */
+.portal-shell.theme-verde, .portal-shell:not([class*="theme-"]), .layout-preview.theme-verde {
+    --ge-cab-ini: #185640; --ge-cab-fim: #2a8a65; --ge-cor: #247a5b; --ge-cor-escura: #185640;
+    --ge-tinta: #e3f1ea; --ge-tinta-forte: #d0e7db; --ge-texto: #17372e; --ge-icone: #2e8a66;
+}
+.portal-shell.theme-azul, .layout-preview.theme-azul {
+    --ge-cab-ini: #24496b; --ge-cab-fim: #3f78a8; --ge-cor: #3f74a3; --ge-cor-escura: #2b5579;
+    --ge-tinta: #e4eef7; --ge-tinta-forte: #d0e1f0; --ge-texto: #1f3a52; --ge-icone: #3f74a3;
+}
+.portal-shell.theme-cinza, .layout-preview.theme-cinza {
+    --ge-cab-ini: #3c4a52; --ge-cab-fim: #66787f; --ge-cor: #5f727b; --ge-cor-escura: #47575f;
+    --ge-tinta: #e9edef; --ge-tinta-forte: #d8dfe2; --ge-texto: #2d3b42; --ge-icone: #5f727b;
+}
+
+/* Cabeçalho -------------------------------------------------------------- */
+body.portal-shell[class] .portal-header {
+    background: linear-gradient(90deg, var(--ge-cab-ini) 0%, var(--ge-cab-fim) 100%);
+    border-bottom: 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .12);
+}
+body.portal-shell[class] .portal-header .brand-name { color: #fff; }
+body.portal-shell[class] .portal-header .brand-mark { background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .15); }
+body.portal-shell[class] .portal-header .header-custom-text { color: rgba(255, 255, 255, .88); }
+body.portal-shell[class] .portal-header .sidebar-toggle { color: #fff; background: rgba(255, 255, 255, .14); }
+body.portal-shell[class] .portal-header .sidebar-toggle:hover { color: #fff; background: rgba(255, 255, 255, .26); }
+body.portal-shell[class] .portal-header .company-chip { background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .22); }
+body.portal-shell[class] .portal-header .company-chip small { color: rgba(255, 255, 255, .72); }
+body.portal-shell[class] .portal-header .company-chip strong { color: #fff; }
+body.portal-shell[class] .portal-header .company-avatar,
+body.portal-shell[class] .portal-header .user-avatar { color: var(--ge-cor-escura); background: #fff; }
+body.portal-shell[class] .portal-header .header-icon-button,
+body.portal-shell[class] .portal-header .header-icon-button > i { color: #fff; }
+body.portal-shell[class] .portal-header .header-icon-button:hover { color: #fff; background: rgba(255, 255, 255, .18); }
+body.portal-shell[class] .portal-header .header-divider { background: rgba(255, 255, 255, .25); }
+body.portal-shell[class] .portal-header .user-menu,
+body.portal-shell[class] .portal-header .user-menu strong,
+body.portal-shell[class] .portal-header .user-menu > i { color: #fff; }
+body.portal-shell[class] .portal-header .user-menu small { color: rgba(255, 255, 255, .75); }
+body.portal-shell[class] .portal-header .alert-badge { box-shadow: 0 0 0 2px var(--ge-cab-fim); }
+body.portal-shell[class] .portal-header a:focus-visible,
+body.portal-shell[class] .portal-header button:focus-visible,
+body.portal-shell[class] .portal-header [tabindex]:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+/* O menu suspenso de alertas continua claro dentro do cabeçalho colorido. */
+body.portal-shell[class] .portal-header .alert-dropdown,
+body.portal-shell[class] .portal-header .alert-dropdown i { color: var(--ge-texto); }
+
+/* Menu lateral ----------------------------------------------------------- */
+body.portal-shell[class] .portal-sidebar { background: var(--ge-tinta); border-right: 1px solid var(--ge-tinta-forte); }
+body.portal-shell[class] .portal-sidebar .portal-menu-item,
+body.portal-shell[class] .portal-sidebar .portal-submenu-item { color: var(--ge-texto); }
+body.portal-shell[class] .portal-sidebar .portal-menu-item i,
+body.portal-shell[class] .portal-sidebar .portal-submenu-item i { color: var(--ge-icone); }
+body.portal-shell[class] .portal-sidebar .portal-menu-item:hover,
+body.portal-shell[class] .portal-sidebar .portal-submenu-item:hover { color: var(--ge-cor-escura); background: var(--ge-tinta-forte); }
+body.portal-shell[class] .portal-sidebar .portal-menu-item.active,
+body.portal-shell[class] .portal-sidebar .portal-submenu-item.active {
+    color: #fff; background: var(--ge-cor); box-shadow: 0 3px 10px rgba(0, 0, 0, .14);
+}
+body.portal-shell[class] .portal-sidebar .portal-menu-item.active i,
+body.portal-shell[class] .portal-sidebar .portal-submenu-item.active i { color: #fff; }
+body.portal-shell[class] .portal-sidebar .menu-section-label { color: var(--ge-icone); opacity: .8; }
+body.portal-shell[class] .portal-sidebar .menu-search input { background: #fff; border-color: var(--ge-tinta-forte); color: var(--ge-texto); }
+body.portal-shell[class] .portal-sidebar .menu-search input:focus { border-color: var(--ge-cor); box-shadow: 0 0 0 3px rgba(0, 0, 0, .05); }
+body.portal-shell[class] .portal-sidebar .menu-search i { color: var(--ge-icone); }
+body.portal-shell[class] .portal-sidebar .sidebar-bottom { border-top: 1px solid var(--ge-tinta-forte); padding-top: 8px; }
+body.portal-shell[class] .portal-sidebar .portal-menu { scrollbar-color: var(--ge-tinta-forte) transparent; }
+body.portal-shell[class] .portal-sidebar .portal-menu::-webkit-scrollbar-thumb { background: var(--ge-tinta-forte); }
+
+/* Rodapé ------------------------------------------------------------------ */
+body.portal-shell[class] .portal-footer { background: var(--ge-tinta); border-top: 1px solid var(--ge-tinta-forte); color: var(--ge-texto); }
+body.portal-shell[class] .portal-footer .footer-status-area,
+body.portal-shell[class] .portal-footer .footer-context { color: var(--ge-texto); }
+body.portal-shell[class] .portal-footer .footer-status-area i { color: var(--ge-icone); }
+body.portal-shell[class] .portal-footer .footer-status-area.footer-status-warning,
+body.portal-shell[class] .portal-footer .footer-status-area.footer-status-warning i { color: #a86a00; }
+body.portal-shell[class] .portal-footer .footer-company span + span { border-left: 1px solid var(--ge-tinta-forte); padding-left: 6px; }
+
+/* Prévia em Setup › Layout -------------------------------------------------- */
+.layout-preview[class] .layout-preview-header { background: linear-gradient(90deg, var(--ge-cab-ini) 0%, var(--ge-cab-fim) 100%); border-bottom: 0; }
+.layout-preview[class] .layout-preview-header strong,
+.layout-preview[class] .layout-preview-header span { color: #fff; }
+.layout-preview[class] aside { background: var(--ge-tinta); border-color: var(--ge-tinta-forte); }
+.layout-preview[class] aside button { color: var(--ge-texto); }
+.layout-preview[class] aside button i { color: var(--ge-icone); }
+.layout-preview[class] aside button.active { color: #fff; background: var(--ge-cor); }
+.layout-preview[class] aside button.active i { color: #fff; }
+.layout-preview[class] .preview-menu-title { color: var(--ge-icone); }
+.layout-preview[class] > footer, .layout-preview[class] footer { background: var(--ge-tinta); border-top: 1px solid var(--ge-tinta-forte); color: var(--ge-texto); }
+
+/* Ícones e identidade do cabeçalho ---------------------------------------- */
+/* Botões de ícone com o mesmo tamanho, forma e fundo translúcido. */
+body.portal-shell[class] .portal-header .sidebar-toggle,
+body.portal-shell[class] .portal-header .header-icon-button {
+    width: 38px; height: 38px; display: grid; place-items: center;
+    border: 0; border-radius: 0; box-shadow: none;
+    color: rgba(255, 255, 255, .88); background: transparent; font-size: 19px;
+    transition: color .15s ease, transform .15s ease;
+}
+body.portal-shell[class] .portal-header .sidebar-toggle:hover,
+body.portal-shell[class] .portal-header .header-icon-button:hover,
+body.portal-shell[class] .portal-header .header-icon-button:focus-visible,
+body.portal-shell[class] .portal-header .header-icon-button[aria-expanded="true"] {
+    color: #fff; background: transparent; transform: scale(1.12);
+}
+body.portal-shell[class] .portal-header .sidebar-toggle > i,
+body.portal-shell[class] .portal-header .header-icon-button > i { font-size: 19px; line-height: 1; }
+
+/* Dica com o nome do ícone ao passar o mouse (usa o aria-label já existente). */
+body.portal-shell[class] .portal-header .header-icon-button[aria-label]::after {
+    content: attr(aria-label); position: absolute; top: calc(100% + 8px); left: 50%; z-index: 1080;
+    padding: 4px 9px; border-radius: 6px; color: #fff; background: rgba(20, 30, 28, .92);
+    font-size: 11px; font-weight: 600; white-space: nowrap; pointer-events: none;
+    opacity: 0; transform: translate(-50%, -3px); transition: opacity .15s ease, transform .15s ease;
+}
+body.portal-shell[class] .portal-header .header-icon-button[aria-label]:hover::after,
+body.portal-shell[class] .portal-header .header-icon-button[aria-label]:focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
+body.portal-shell[class] .portal-header .header-icon-button[aria-expanded="true"]::after { display: none; }
+
+/* Alertas e guia agrupados; divisórias substituídas por espaçamento. */
+body.portal-shell[class] .portal-header .header-actions { gap: 10px; }
+body.portal-shell[class] .portal-header .header-divider { width: 1px; height: 24px; margin: 0 4px; background: rgba(255, 255, 255, .22); }
+body.portal-shell[class] .portal-header .alert-menu + .header-divider { display: none; }
+
+/* Selo de quantidade de alertas. */
+body.portal-shell[class] .portal-header .alert-badge {
+    top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 4px;
+    display: grid; place-items: center; border: 2px solid var(--ge-cab-fim); border-radius: 999px;
+    color: #fff; background: #e5484d; font-size: 10px; font-weight: 700; line-height: 1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+}
+body.portal-shell[class] .portal-header .alert-badge:not(.d-none) { animation: ge-badge-pulso 2.4s ease-out 2; }
+@keyframes ge-badge-pulso { 0% { box-shadow: 0 0 0 0 rgba(229, 72, 77, .55); } 70% { box-shadow: 0 0 0 8px rgba(229, 72, 77, 0); } 100% { box-shadow: 0 0 0 0 rgba(229, 72, 77, 0); } }
+
+/* Logotipo e nome do produto. */
+body.portal-shell[class] .portal-header .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+/* Logotipo apresentado no próprio formato circular, sem moldura quadrada. */
+body.portal-shell[class] .portal-header .brand-mark {
+    width: 38px; height: 38px; display: grid; place-items: center; overflow: hidden;
+    border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+}
+body.portal-shell[class] .portal-header .brand-mark img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+body.portal-shell[class] .portal-header .brand-name { font-weight: 800; letter-spacing: -.01em; text-shadow: 0 1px 2px rgba(0, 0, 0, .15); }
+body.portal-shell[class] .portal-header .header-page-title { padding-left: 16px; border-left: 1px solid rgba(255, 255, 255, .25); }
+
+/* Empresa e usuário: avatares com anel e área clicável destacada. */
+body.portal-shell[class] .portal-header .company-avatar,
+body.portal-shell[class] .portal-header .user-avatar {
+    width: 34px; height: 34px; border-radius: 50%; font-weight: 800;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .45), 0 2px 6px rgba(0, 0, 0, .18);
+}
+body.portal-shell[class] .portal-header .company-avatar { border-radius: 50%; }
+body.portal-shell[class] .portal-header .user-menu {
+    padding: 4px 10px 4px 4px; border-radius: 999px; cursor: pointer; transition: background .15s ease;
+}
+body.portal-shell[class] .portal-header .user-menu:hover,
+body.portal-shell[class] .portal-header .user-menu:focus-visible { background: rgba(255, 255, 255, .14); }
+body.portal-shell[class] .portal-header .user-menu > i { font-size: 12px; opacity: .85; }
+@media (prefers-reduced-motion: reduce) {
+    body.portal-shell[class] .portal-header .alert-badge { animation: none; }
+    body.portal-shell[class] .portal-header .sidebar-toggle,
+    body.portal-shell[class] .portal-header .header-icon-button { transition: none; }
+}

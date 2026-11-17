@@ -1,0 +1,330 @@
+ROTEIRO DE HOMOLOGAÇÃO DE PERMISSÕES — RESPONSABILIDADES
+Testes PER-001 a PER-004
+GreenPortal | Empresa Modelo | gmodelo_dbp
+Data sugerida: 20/08/2026
+
+===============================================================================
+1. OBJETIVO
+===============================================================================
+
+Validar, de forma isolada, as permissões de visualizar, incluir, editar e
+excluir nas responsabilidades de:
+
+- LICENCAS;
+- REQUISITOS_LEGAIS.
+
+Os testes devem confirmar que o usuário consegue executar somente as ações
+autorizadas para seu perfil.
+
+===============================================================================
+2. CONTAS E RESPONSABILIDADES
+===============================================================================
+
+Conta administradora para preparar as permissões:
+
+Usuário: admin
+Senha: <senha de teste via variável de ambiente>
+Perfil: ADMINISTRADOR
+Senha: senha temporária definida pelo responsável do ambiente
+
+Conta utilizada nos quatro testes:
+
+Usuário: ueditor
+Senha: <senha de teste via variável de ambiente>
+Nome: Editor de documentos
+Perfil: GESTOR
+Senha: senha temporária definida pelo responsável do ambiente
+
+
+===============================================================================
+3. DADOS DE TESTE
+===============================================================================
+
+Licença de teste:
+
+- CODLICENCA=1
+- Licença CETESB Nº 79/823.555
+
+Situação de requisito legal:
+
+- CODSITUACAO=39
+- Usar a situação exibida no grid, com descrição iniciada por:
+  “As atividades da Crown são licenciadas pela CETESB...”
+
+Usuário destino para inclusão/alteração:
+
+- Administrador Modelo
+
+Grupo destino para inclusão/alteração:
+
+- GESTORES
+
+Antes de iniciar, confirmar que os dados escolhidos aparecem como ativos nas
+listas de seleção.
+
+===============================================================================
+4. MATRIZ DE PERMISSÕES
+===============================================================================
+
+Em cada cenário, o administrador deve abrir Segurança > Permissões, localizar
+o perfil GESTOR e ajustar as duas transações:
+
+Transações:
+- LICENCAS
+- REQUISITOS_LEGAIS
+
+PER-001 — Somente consulta
+Incluir: 0 | Visualizar: 1 | Editar: 0 | Excluir: 0
+
+PER-002 — Consulta e inclusão
+Incluir: 1 | Visualizar: 1 | Editar: 0 | Excluir: 0
+
+PER-003 — Consulta e edição
+Incluir: 0 | Visualizar: 1 | Editar: 1 | Excluir: 0
+
+PER-004 — Consulta e exclusão
+Incluir: 0 | Visualizar: 1 | Editar: 0 | Excluir: 1
+
+Exportar Excel e Gerar PDF podem permanecer 0, pois não fazem parte destes
+quatro testes.
+
+IMPORTANTE: depois de alterar as permissões, salvar, sair da conta `ueditor`,
+entrar novamente e confirmar que a sessão foi renovada. A aplicação carrega
+as permissões durante a atualização da sessão.
+
+===============================================================================
+5. PER-001 — SOMENTE CONSULTA
+===============================================================================
+
+Configuração:
+
+- Visualizar: 1
+- Incluir: 0
+- Editar: 0
+- Excluir: 0
+
+Preparação pelo admin:
+
+1. Entrar como `admin`.
+2. Abrir Segurança > Permissões.
+3. Selecionar o perfil GESTOR.
+4. Ajustar LICENCAS e REQUISITOS_LEGAIS conforme a configuração acima.
+5. Salvar.
+6. Sair do admin.
+
+Execução com `ueditor`:
+
+1. Entrar como `ueditor`.
+2. Abrir Licenças.
+3. Selecionar a Licença 1.
+4. Abrir Responsabilidades.
+5. Confirmar que a consulta é exibida.
+6. Tentar abrir Manter responsabilidades.
+7. Abrir Requisitos Legais.
+8. Abrir Situação.
+9. Selecionar a Situação 39.
+10. Abrir Responsabilidades.
+11. Tentar abrir Manter responsabilidades.
+
+Resultado esperado:
+
+- consultas de Licenças e Requisitos Legais funcionam;
+- botão ou tela de manutenção fica bloqueado;
+- usuário não consegue incluir, alterar ou excluir;
+- não aparece erro SQL ou mensagem técnica.
+
+Resultado: PASSOU / FALHOU / BLOQUEADO
+Evidência: ________________________________________________
+
+===============================================================================
+6. PER-002 — CONSULTA E INCLUSÃO
+===============================================================================
+
+Configuração:
+
+- Visualizar: 1
+- Incluir: 1
+- Editar: 0
+- Excluir: 0
+
+Preparação:
+
+1. Entrar como `admin`.
+2. Alterar as flags do GESTOR nas duas transações.
+3. Salvar.
+4. Sair e entrar novamente como `ueditor`.
+
+Teste de inclusão em Licenças:
+
+1. Abrir Licenças e selecionar a Licença 1.
+2. Abrir Responsabilidades.
+3. Abrir Manter responsabilidades.
+4. Adicionar uma nova linha.
+5. Selecionar finalidade Responsável pelo acesso.
+6. Selecionar destino Usuário.
+7. Selecionar Administrador Modelo.
+8. Informar a data inicial do dia do teste.
+9. Salvar.
+10. Confirmar a mensagem de sucesso.
+11. Reabrir a consulta e confirmar o novo vínculo.
+
+Teste de bloqueio de edição:
+
+1. Tentar alterar prioridade ou responsável de um vínculo existente.
+2. Salvar.
+
+Teste de bloqueio de exclusão:
+
+1. Tentar remover um vínculo existente.
+2. Salvar.
+
+Resultado esperado:
+
+- inclusão permitida;
+- alteração de vínculo existente bloqueada ou ignorada;
+- exclusão bloqueada;
+- não deve ser possível apagar o vínculo criado pelo teste usando `ueditor`;
+- o administrador deverá fazer a limpeza posterior.
+
+Repetir o mesmo roteiro em Requisitos Legais usando a Situação 39 e a
+finalidade REQUISITO_LEGAL.
+
+Resultado: PASSOU / FALHOU / BLOQUEADO
+Evidência: ________________________________________________
+
+===============================================================================
+7. PER-003 — CONSULTA E EDIÇÃO
+===============================================================================
+
+Configuração:
+
+- Visualizar: 1
+- Incluir: 0
+- Editar: 1
+- Excluir: 0
+
+Preparação:
+
+1. Entrar como `admin`.
+2. Ajustar as flags do GESTOR nas duas transações.
+3. Salvar.
+4. Sair e entrar novamente como `ueditor`.
+
+Teste de edição em Licenças:
+
+1. Abrir Licenças > Licença 1 > Responsabilidades > Manter.
+2. Selecionar um vínculo ativo existente.
+3. Alterar somente a prioridade, por exemplo de 0 para 7.
+4. Salvar.
+5. Fechar o popup.
+6. Reabrir a manutenção.
+7. Confirmar que a prioridade 7 permaneceu.
+
+Teste de bloqueio de inclusão:
+
+1. Tentar adicionar nova linha.
+2. Preencher os campos e salvar.
+
+Teste de bloqueio de exclusão:
+
+1. Tentar remover um vínculo ativo.
+2. Salvar.
+
+Resultado esperado:
+
+- alteração de vínculo existente permitida;
+- inclusão bloqueada;
+- exclusão bloqueada;
+- histórico não é alterado.
+
+Repetir em Requisitos Legais usando a Situação 39, alterando a prioridade de
+um vínculo ativo criado previamente pelo administrador.
+
+Resultado: PASSOU / FALHOU / BLOQUEADO
+Evidência: ________________________________________________
+
+===============================================================================
+8. PER-004 — CONSULTA E EXCLUSÃO
+===============================================================================
+
+Configuração:
+
+- Visualizar: 1
+- Incluir: 0
+- Editar: 0
+- Excluir: 1
+
+Preparação:
+
+1. Entrar como `admin`.
+2. Ajustar as flags do GESTOR nas duas transações.
+3. Salvar.
+4. Sair e entrar novamente como `ueditor`.
+
+Teste:
+
+1. Abrir Licenças > Licença 1 > Responsabilidades.
+2. Abrir Manter responsabilidades.
+3. Remover um vínculo ativo de teste.
+4. Salvar.
+5. Reabrir a consulta.
+6. Confirmar que o vínculo não aparece como ATIVA.
+7. Confirmar que o vínculo aparece como HISTORICA.
+
+Repetir em Requisitos Legais usando a Situação 39.
+
+Resultado esperado:
+
+- exclusão lógica permitida;
+- vínculo desaparece da lista ativa;
+- vínculo permanece no histórico;
+- inclusão e edição continuam bloqueadas.
+
+ATENÇÃO — validação da interface:
+
+Se a tela de manutenção não abrir quando Editar=0 e Excluir=1, registrar o
+caso como FALHA DE INTERFACE. A tela deve permitir o acesso mínimo necessário
+para executar a exclusão autorizada, sem liberar edição ou inclusão.
+
+Resultado: PASSOU / FALHOU / BLOQUEADO
+Evidência: ________________________________________________
+
+===============================================================================
+9. LIMPEZA OBRIGATÓRIA
+===============================================================================
+
+1. Entrar como `admin`.
+2. Remover logicamente todos os vínculos criados durante PER-002 e PER-003,
+   caso ainda estejam ativos.
+3. Não remover fisicamente históricos.
+4. Restaurar as permissões finais do GESTOR conforme a política do ambiente.
+5. Se o perfil GESTOR não deve permanecer com acesso, retornar as flags para 0.
+6. Sair do admin.
+7. Entrar novamente como `ueditor` e confirmar o comportamento final.
+
+===============================================================================
+10. CRITÉRIOS DE ACEITE
+===============================================================================
+
+- PER-001 permite somente consulta.
+- PER-002 permite inclusão, mas bloqueia edição e exclusão.
+- PER-003 permite edição, mas bloqueia inclusão e exclusão.
+- PER-004 permite exclusão lógica, mas bloqueia inclusão e edição.
+- Nenhuma mensagem SQL técnica aparece ao usuário.
+- Nenhum histórico é removido fisicamente.
+- Nenhum vínculo de outra licença ou situação é exibido.
+- A mesma regra funciona em LICENCAS e REQUISITOS_LEGAIS.
+
+===============================================================================
+11. RESULTADO FINAL
+===============================================================================
+
+Responsável: ______________________________________________
+Data: ____/____/________
+Ambiente: _________________________________________________
+PER-001: PASSOU / FALHOU / BLOQUEADO
+PER-002: PASSOU / FALHOU / BLOQUEADO
+PER-003: PASSOU / FALHOU / BLOQUEADO
+PER-004: PASSOU / FALHOU / BLOQUEADO
+Resultado geral: PASSOU / PASSOU COM RESSALVAS / FALHOU
+Observações: ______________________________________________

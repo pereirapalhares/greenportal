@@ -1,0 +1,303 @@
+/* Green Portal - camada visual do módulo de Não Conformidades. */
+.nao-conformidades-grid-fragment,
+.nc-workflow-popup-content,
+.nc-workflow-popup,
+.nc-form-page {
+    color: var(--gp-text);
+    font-family: var(--gp-font-body);
+}
+
+.nao-conformidades-grid-fragment .menu-grid-scroll {
+    border: 1px solid var(--gp-border);
+    border-radius: var(--gp-radius-md);
+    background: var(--gp-surface);
+    box-shadow: var(--gp-shadow-sm);
+}
+
+.nao-conformidades-grid-fragment .menu-batch-grid {
+    color: var(--gp-text);
+    font-size: var(--gp-font-size-sm);
+}
+
+.nao-conformidades-grid-fragment .menu-batch-grid th {
+    color: var(--gp-primary-dark);
+    background: var(--gp-primary-soft);
+    border-color: var(--gp-border);
+    font-family: var(--gp-font-heading);
+    font-size: var(--gp-font-size-sm);
+}
+
+.nao-conformidades-grid-fragment .menu-batch-grid td {
+    border-color: var(--gp-border);
+    vertical-align: middle;
+}
+
+.nao-conformidades-grid-fragment .menu-batch-grid tbody tr:hover td,
+.nao-conformidades-grid-fragment .menu-batch-grid tbody tr.selected td {
+    background: var(--gp-primary-soft);
+}
+
+.nao-conformidades-grid-fragment .grid-input,
+.nao-conformidades-grid-fragment .column-filter {
+    color: var(--gp-text);
+    border-color: var(--gp-border);
+    background: var(--gp-surface);
+    font-family: var(--gp-font-body);
+}
+
+.nao-conformidades-grid-fragment .grid-input:focus,
+.nao-conformidades-grid-fragment .column-filter:focus {
+    border-color: var(--gp-primary);
+    box-shadow: 0 0 0 3px var(--gp-focus-ring);
+}
+
+.nao-conformidades-grid-fragment .grid-crud-button {
+    border-radius: var(--gp-radius-sm);
+}
+
+.nc-form-page {
+    min-height: 100vh;
+    margin: 0;
+    padding: 1rem;
+    background: var(--gp-page);
+}
+
+.nc-form-page main,
+.nc-form-page .container,
+.nc-form-page .container-fluid {
+    color: var(--gp-text);
+}
+
+.nc-form-page header {
+    margin-bottom: .75rem;
+}
+
+.nc-form-page h4,
+.nc-form-page h5,
+.nc-form-page h6 {
+    color: var(--gp-primary-dark);
+    font-family: var(--gp-font-heading);
+}
+
+.nc-form-page .card {
+    overflow: hidden;
+    border: 1px solid var(--gp-border) !important;
+    border-radius: var(--gp-radius-lg);
+    background: var(--gp-surface);
+    box-shadow: var(--gp-shadow-sm) !important;
+}
+
+.nc-form-page .card-body {
+    background: var(--gp-surface);
+}
+
+.nc-form-page .card-footer {
+    border-top: 1px solid var(--gp-border);
+    background: var(--gp-page);
+}
+
+.nc-form-page .form-label {
+    color: var(--gp-primary-dark);
+    font-weight: 600;
+}
+
+.nc-form-page .form-control,
+.nc-form-page .form-select {
+    color: var(--gp-text);
+    border-color: var(--gp-border);
+    background: var(--gp-surface);
+    font-family: var(--gp-font-body);
+}
+
+.nc-form-page .form-control:focus,
+.nc-form-page .form-select:focus {
+    border-color: var(--gp-primary);
+    box-shadow: 0 0 0 3px var(--gp-focus-ring);
+}
+
+.nc-form-page .form-control[readonly],
+.nc-form-page .form-select:disabled,
+.nc-form-page .form-control:disabled {
+    color: var(--gp-muted);
+    background: color-mix(in srgb, var(--gp-page) 82%, var(--gp-surface));
+}
+
+.nc-form-page .table-responsive {
+    border: 1px solid var(--gp-border);
+    border-radius: var(--gp-radius-md);
+    box-shadow: var(--gp-shadow-sm);
+}
+
+.nc-form-page .table {
+    margin-bottom: 0;
+    color: var(--gp-text);
+    background: var(--gp-surface);
+}
+
+.nc-form-page .table > :not(caption) > * > * {
+    border-color: var(--gp-border);
+}
+
+.nc-form-page .table thead th {
+    color: var(--gp-primary-dark);
+    background: var(--gp-primary-soft);
+    font-family: var(--gp-font-heading);
+    white-space: nowrap;
+}
+
+.nc-form-page .table tbody tr:hover td {
+    background: var(--gp-primary-soft);
+}
+
+.nc-form-page .text-muted {
+    color: var(--gp-muted) !important;
+}
+
+.nc-form-page .badge.text-bg-secondary {
+    color: var(--gp-primary-dark) !important;
+    background: var(--gp-primary-soft) !important;
+}
+
+.nc-workflow-popup-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+}
+
+.nc-workflow-tabs {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px;
+    border-bottom: 1px solid var(--gp-border);
+    background: var(--gp-page);
+}
+
+.nc-workflow-tabs .btn {
+    color: var(--gp-primary-dark);
+    border-color: var(--gp-border);
+    background: var(--gp-surface);
+}
+
+.nc-workflow-tabs .btn.active,
+.nc-workflow-tabs .btn:hover {
+    color: var(--gp-primary-dark);
+    border-color: var(--gp-primary);
+    background: var(--gp-primary-soft);
+}
+
+.nc-workflow-tab-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.nc-workflow-tab-body iframe {
+    width: 100%;
+    height: 100%;
+    min-height: 420px;
+    border: 0;
+    background: var(--gp-page);
+}
+
+@media (max-width: 768px) {
+    .nc-form-page { padding: .75rem; }
+    .nc-form-page .card-footer { flex-wrap: wrap; }
+}
+
+/* As telas legadas ainda não recebem uma classe no body; estes marcadores
+   permitem a migração visual sem alterar o HTML funcional de cada fluxo. */
+body:has(#ncForm),
+body:has(#ncExistingForm),
+body:has(#workflow),
+body:has(form input[name="workflow_action"]) {
+    background: var(--gp-page) !important;
+    color: var(--gp-text);
+    font-family: var(--gp-font-body);
+}
+
+body:has(#ncForm) h4,
+body:has(#ncExistingForm) h4,
+body:has(#workflow) h4,
+body:has(form input[name="workflow_action"]) h4,
+body:has(form input[name="workflow_action"]) h6 {
+    color: var(--gp-primary-dark);
+    font-family: var(--gp-font-heading);
+}
+
+body:has(#ncForm) .card,
+body:has(#ncExistingForm) .card,
+body:has(#workflow) .card,
+body:has(form input[name="workflow_action"]) .card {
+    border: 1px solid var(--gp-border) !important;
+    border-radius: var(--gp-radius-lg);
+    background: var(--gp-surface);
+    box-shadow: var(--gp-shadow-sm) !important;
+}
+
+body:has(#ncForm) .card-body,
+body:has(#ncExistingForm) .card-body,
+body:has(#workflow) .card-body,
+body:has(form input[name="workflow_action"]) .card-body {
+    background: var(--gp-surface);
+}
+
+body:has(#ncForm) .card-footer,
+body:has(#ncExistingForm) .card-footer,
+body:has(form input[name="workflow_action"]) .card-footer {
+    border-top: 1px solid var(--gp-border);
+    background: var(--gp-page);
+}
+
+body:has(#ncForm) .form-label,
+body:has(#ncExistingForm) .form-label,
+body:has(#workflow) .form-label,
+body:has(form input[name="workflow_action"]) .form-label {
+    color: var(--gp-primary-dark);
+    font-weight: 600;
+}
+
+body:has(#ncForm) .form-control,
+body:has(#ncForm) .form-select,
+body:has(#ncExistingForm) .form-control,
+body:has(#ncExistingForm) .form-select,
+body:has(#workflow) .form-control,
+body:has(#workflow) .form-select,
+body:has(form input[name="workflow_action"]) .form-control,
+body:has(form input[name="workflow_action"]) .form-select {
+    color: var(--gp-text);
+    border-color: var(--gp-border);
+    background: var(--gp-surface);
+    font-family: var(--gp-font-body);
+}
+
+body:has(#ncForm) .form-control:focus,
+body:has(#ncForm) .form-select:focus,
+body:has(#ncExistingForm) .form-control:focus,
+body:has(#ncExistingForm) .form-select:focus,
+body:has(#workflow) .form-control:focus,
+body:has(#workflow) .form-select:focus,
+body:has(form input[name="workflow_action"]) .form-control:focus,
+body:has(form input[name="workflow_action"]) .form-select:focus {
+    border-color: var(--gp-primary);
+    box-shadow: 0 0 0 3px var(--gp-focus-ring);
+}
+
+body:has(form input[name="workflow_action"]) .table-responsive {
+    border: 1px solid var(--gp-border);
+    border-radius: var(--gp-radius-md);
+    box-shadow: var(--gp-shadow-sm);
+}
+
+body:has(form input[name="workflow_action"]) .table {
+    color: var(--gp-text);
+    background: var(--gp-surface);
+}
+
+body:has(form input[name="workflow_action"]) .table thead th {
+    color: var(--gp-primary-dark);
+    background: var(--gp-primary-soft);
+    font-family: var(--gp-font-heading);
+}

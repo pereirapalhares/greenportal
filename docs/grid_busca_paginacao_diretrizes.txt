@@ -1,0 +1,16 @@
+Busca, paginação e alinhamento das colunas
+
+Quando uma busca ou paginação substituir o corpo do grid por AJAX, a ordem das
+células deve ser reaplicada conforme a ordem atual do cabeçalho e as
+preferências do usuário. Cabeçalho e linhas nunca podem usar ordens diferentes.
+
+Após o evento gridPageLoaded, o componente genérico deve:
+
+- reaplicar a ordem das colunas;
+- reaplicar a visibilidade, mantendo a chave primária oculta por padrão;
+- reaplicar as larguras persistidas;
+- reinstalar comportamentos específicos dos campos.
+
+Esse procedimento evita que uma busca faça a coluna Código reaparecer ou que
+uma célula fique abaixo de uma coluna diferente, como uma data aparecer sob
+Responsável.

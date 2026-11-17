@@ -1,0 +1,4 @@
+<?php
+declare(strict_types=1);
+require_once dirname(__DIR__).'/classes/GreenPortalDatabase.php';require_once dirname(__DIR__).'/classes/GedStorageService.php';
+$e=GreenPortalDatabase::env();$p=GreenPortalDatabase::connect($e,'gatlas_dbp','GPT');$session=['tenant'=>['banco_dados'=>'gatlas_dbp','banco_legado'=>'green_atlas']];$s=new GedStorageService($p,$e,$session);$root=$s->root();$files=$s->list('documentos',1,'api/gestao_arquivos.php?tipo=documentos&valor=1');$traversal=$s->resolve('documentos',1,'..'.DIRECTORY_SEPARATOR.'fora.txt');$ok=$root===(string)$e['GGED_STORAGE_LOCAL_ROOT']&&is_array($files)&&$traversal===null;echo json_encode(['ok'=>$ok,'root'=>$root,'arquivos_listados'=>count($files),'path_traversal_bloqueado'=>$traversal===null],JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT).PHP_EOL;

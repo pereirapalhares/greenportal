@@ -1,0 +1,281 @@
+ANÁLISE DA SUGESTÃO DE RICARDO SOBRE DOCUMENTOS, LICENÇAS E CONTROLES
+GreenPortal
+
+1. OBJETIVO
+
+A sugestão analisada apresenta dois cenários importantes que precisam ser suportados pelo GreenPortal:
+
+1) Um mesmo tipo de documento licenciatório pode possuir vários documentos físicos ou registros.
+
+Exemplo:
+
+Tipo: Licença Ambiental
+    - Licença Ambiental da Unidade A
+    - Licença Ambiental da Unidade B
+    - Licença Ambiental da Unidade C
+
+2) Um único documento pode atender vários controles ou requisitos legais.
+
+Exemplo:
+
+Um procedimento de homologação de fornecedores pode tratar de:
+    - empresas de transporte;
+    - empresas de resíduos;
+    - empresas de dedetização;
+    - outros controles relacionados.
+
+Nesse caso, a IA pode identificar vários controles, mas a empresa utiliza um único documento para atender todos eles.
+
+2. CONCLUSÃO PRINCIPAL
+
+O sistema não pode trabalhar com uma relação rígida de um documento para um requisito.
+
+É necessário suportar dois relacionamentos muitos-para-muitos:
+
+    Tipo de documento licenciatório <-> vários documentos/licenças
+    Documento <-> vários requisitos, controles ou tratamentos
+
+O modelo conceitual necessário é:
+
+    Requisito legal <-> Documento <-> Controle ou tratamento
+
+O arquivo físico não deve ser duplicado quando for utilizado para atender vários requisitos.
+
+3. O QUE JÁ EXISTE NO GREENPORTAL
+
+3.1 Licenças
+
+A tabela legislacaoxlicencas já permite associar várias licenças a um requisito legal.
+
+Isso atende parcialmente o cenário de um requisito ou tipo de licença possuir vários documentos/licenças associados.
+
+Entretanto, a distinção entre o tipo do documento licenciatório e cada licença física ainda precisa ser melhor formalizada. Atualmente, a descrição da licença pode funcionar como identificação, mas não representa necessariamente um catálogo normalizado de tipos.
+
+Os arquivos das licenças são armazenados no GED associado ao registro individual da licença.
+
+3.2 Controles
+
+A tabela documentos representa o documento de controle.
+
+A tabela legislacaoxdocumentos já permite associar documentos a requisitos legais, inclusive considerando a unidade.
+
+Esse relacionamento já atende parcialmente o cenário em que um único documento aborda vários assuntos e atende vários requisitos.
+
+O principal ponto pendente é garantir que a interface e a IA utilizem essa relação de forma completa, permitindo reutilizar o mesmo documento sem duplicar o arquivo.
+
+3.3 Análise de IA
+
+A tabela ml_potenciais registra sugestões geradas pela IA por requisito legal.
+
+Atualmente, a sugestão possui um codrequisitolegal e um destino principal. Isso é suficiente para sugerir uma ação, mas não representa completamente a situação em que:
+
+    - uma análise gera vários controles;
+    - vários controles utilizam o mesmo documento;
+    - um documento atende requisitos de unidades diferentes, quando permitido;
+    - o usuário precisa confirmar individualmente os vínculos sugeridos.
+
+A IA deve continuar sendo assistiva. Ela deve sugerir os vínculos, mas a confirmação definitiva precisa ser feita pelo usuário.
+
+3.4 GED
+
+O GreenPortal já possui:
+
+    - content_documents, para o documento lógico;
+    - content_versions, para as versões e arquivos físicos;
+    - ged_analises_ia, para o histórico das análises feitas pela IA.
+
+Essa estrutura pode ser aproveitada como base de uma camada documental reutilizável.
+
+O ponto que falta é uma tabela de vínculos permitindo relacionar um mesmo documento a vários requisitos, controles, licenças ou outros registros.
+
+4. PROPOSTA DE IMPLEMENTAÇÃO
+
+4.1 Usar um documento lógico reutilizável
+
+O cadastro lógico deve representar o documento, independentemente de quantos requisitos ele atende.
+
+O documento pode possuir:
+
+    - código;
+    - título;
+    - tipo de documento;
+    - descrição;
+    - empresa;
+    - unidade;
+    - responsável;
+    - status;
+    - versão atual;
+    - origem.
+
+O arquivo físico e suas versões devem continuar sendo controlados por content_versions.
+
+4.2 Criar uma tabela de vínculos documentais
+
+Recomenda-se criar uma tabela semelhante a:
+
+    content_document_links
+
+Campos sugeridos:
+
+    - coddocumento;
+    - tipo_entidade;
+    - id_entidade;
+    - codrequisitolegal;
+    - codunidade;
+    - papel;
+    - origem_vinculo;
+    - status;
+    - codusuario;
+    - criado_em;
+    - atualizado_em.
+
+Essa tabela permitiria relacionar o mesmo documento a:
+
+    - vários requisitos legais;
+    - vários controles;
+    - uma ou várias licenças;
+    - treinamentos;
+    - infraestrutura;
+    - medições e monitoramentos.
+
+O vínculo poderia ser removido sem apagar o documento ou o arquivo físico.
+
+4.3 Separar tipo de documento e documento físico
+
+Para licenças, o modelo deve separar:
+
+    Tipo: Licença Ambiental
+    Documento físico: Licença Ambiental da Unidade A
+
+A IA pode identificar o tipo, mas o usuário deve selecionar ou cadastrar a licença física correspondente.
+
+4.4 Adaptar a análise de IA
+
+O fluxo recomendado é:
+
+    1. A IA lê o requisito legal.
+    2. Identifica possíveis licenças, controles, treinamentos, infraestrutura ou monitoramentos.
+    3. Identifica documentos que podem atender essas obrigações.
+    4. Apresenta as sugestões ao usuário.
+    5. O usuário seleciona ou associa os documentos aplicáveis.
+    6. O usuário confirma cada vínculo.
+    7. O sistema grava os vínculos documentais.
+
+Cada sugestão da IA deveria poder registrar:
+
+    - requisito relacionado;
+    - tipo de atendimento;
+    - documento associado;
+    - trecho ou justificativa extraída;
+    - confiança da IA;
+    - status da sugestão;
+    - usuário que confirmou;
+    - data da confirmação.
+
+4.5 Adaptar as telas
+
+Na tela do requisito legal:
+
+    - mostrar todos os documentos vinculados;
+    - permitir anexar um novo documento;
+    - permitir selecionar um documento já existente;
+    - permitir remover apenas o vínculo;
+    - informar quantos requisitos o documento atende.
+
+Na tela do documento:
+
+    - mostrar todos os requisitos atendidos;
+    - mostrar todos os controles relacionados;
+    - mostrar as unidades vinculadas;
+    - mostrar o histórico de versões;
+    - mostrar as análises realizadas pela IA.
+
+Na tela do resultado da IA:
+
+    - mostrar os controles sugeridos;
+    - permitir selecionar documentos existentes;
+    - permitir associar o mesmo documento a vários controles;
+    - exigir confirmação do usuário antes de gravar os vínculos.
+
+5. REGRAS IMPORTANTES
+
+5.1 Exclusão
+
+Excluir um vínculo não pode excluir o arquivo se ele ainda estiver sendo utilizado por outro requisito ou controle.
+
+5.2 Versionamento
+
+Uma nova versão deve preservar o histórico da versão anterior e permitir saber qual versão estava válida no momento da confirmação.
+
+5.3 Análise da IA
+
+A análise deve estar associada ao arquivo ou à versão específica analisada, e não apenas ao cadastro genérico do documento.
+
+5.4 Confirmação humana
+
+A IA não deve declarar automaticamente que um requisito foi atendido.
+
+O usuário deve confirmar:
+
+    - se o documento realmente atende ao requisito;
+    - quais controles são cobertos;
+    - qual unidade é atendida;
+    - se a sugestão deve ser aprovada ou rejeitada.
+
+5.5 Segurança
+
+Os vínculos devem respeitar empresa, unidade e permissões do usuário. Toda associação, alteração, confirmação ou remoção deve ser auditável.
+
+6. ESTRATÉGIA DE MIGRAÇÃO
+
+A implementação deve ser incremental:
+
+Fase 1 - Modelo e vínculos
+
+    - criar a tabela de vínculos documentais;
+    - relacionar content_documents aos registros atuais;
+    - preservar as tabelas documentos e legislacaoxdocumentos;
+    - criar índices e regras de unicidade para evitar vínculos duplicados.
+
+Fase 2 - Controles
+
+    - usar os vínculos para permitir que um documento atenda vários controles;
+    - reaproveitar os registros já existentes em legislacaoxdocumentos;
+    - impedir que a exclusão de um vínculo apague o arquivo compartilhado.
+
+Fase 3 - Licenças
+
+    - separar o tipo de licença do registro da licença;
+    - manter várias licenças vinculadas ao mesmo requisito ou tipo;
+    - relacionar arquivos e versões à licença correta.
+
+Fase 4 - IA
+
+    - incluir os vínculos documentais no resultado da análise;
+    - permitir seleção e confirmação pelo usuário;
+    - registrar a origem da sugestão e a decisão humana.
+
+Fase 5 - Interfaces e relatórios
+
+    - ajustar telas de requisitos, controles, licenças e GED;
+    - permitir navegação do requisito para o documento e do documento para os requisitos;
+    - incluir relatórios de documentos compartilhados e requisitos sem evidência.
+
+7. CONCLUSÃO
+
+O GreenPortal já possui uma base importante para implementar essa necessidade:
+
+    - legislacaoxlicencas atende parte do relacionamento entre requisitos e licenças;
+    - legislacaoxdocumentos já permite que um documento seja associado a vários requisitos;
+    - content_documents e content_versions podem formar a base documental reutilizável;
+    - ged_analises_ia já controla as análises e confirmações da IA.
+
+O principal trabalho é criar uma camada única de vínculos documentais e adaptar as telas e o fluxo da IA para utilizá-la.
+
+Dessa forma, o sistema representará corretamente a realidade operacional:
+
+    - vários documentos podem atender um mesmo tipo ou requisito;
+    - um documento pode atender vários controles e requisitos;
+    - o arquivo não precisa ser duplicado;
+    - a decisão final permanece com o usuário;
+    - versões, permissões e auditoria continuam controladas.

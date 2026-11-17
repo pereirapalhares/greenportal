@@ -1,0 +1,399 @@
+﻿ESPECIFICAÇÃO FUNCIONAL — GREEN 4.0
+Versão: 1.0 — elaboração em 12/11/2026
+Fonte: Passo a passo mudança no Green4.0 — Revisão G — 13/08/2026.doc.
+Situação: especificação para revisão funcional; não representa validação do software existente.
+
+COMO INTERPRETAR
+- IDs dos requisitos preservam a numeração da fonte. Txxx/Rxxx identifica tabela/linha,
+  contando a partir de zero na ordem do documento, para rastreabilidade sem paginação variável.
+- "Sim" indica solicitação de implementação na fonte, não comprova implementação.
+- Campo "Implementar?" vazio significa decisão pendente. Requisito dependente de outro
+  item marcado Sim é identificado, mas a inconsistência da marcação é preservada.
+- Detalhamento da fonte é reproduzido em cada requisito para conservar campos, exemplos,
+  condições, exceções e fluxos. Exemplos não constituem listas fechadas de domínio.
+- Critérios de aceite e regras consolidadas são operacionalizações propostas para revisão.
+  Decisões ausentes não foram convertidas em regras definitivas.
+- Referências a capturas de concorrentes são referências visuais do DOC original; imagens
+  não são reproduzidas em TXT. Não foram inferidas regras a partir de elementos só visuais.
+- Não há definição de banco físico, linguagem, endpoints ou cronograma nesta versão.
+
+
+07 — Módulo Treinamento
+
+OBJETIVO
+Especificar as mudanças deste tema preservando o escopo e as ressalvas da Revisão G.
+
+MODELO FUNCIONAL CONSOLIDADO
+Separar curso/treinamento de evidências individuais de realização.
+Curso: unidade, identificação, tipo, carga horária, reciclagem em meses, responsável,
+risco e observação. Curso possui n trabalhadores internos ou terceiros.
+Realização: matrícula, nome, cargo/função, setor, responsável pela qualificação,
+realização, validade, reação, status, classificação, histórico e n certificados/links.
+Responsável pela qualificação assume inicialmente o responsável do treinamento.
+Validade individual = realização + período de reciclagem, quando aplicável.
+Classificações exemplificadas: Formação Inicial, Reciclagem Periódica e Treinamento Eventual.
+
+PENDÊNCIAS ESPECÍFICAS
+- Definir identificação única de trabalhador e integração ao cadastro de terceiros.
+- Definir manutenção de múltiplas realizações/reciclagens do mesmo trabalhador.
+- Definir regra de soma de meses, ausência de reciclagem e efeito de mudança do período.
+- Definir se dashboards contam cursos, pessoas, realizações ou uma combinação explícita.
+- Definir integração dos treinamentos de influência com funcionários de fornecedores (130).
+
+REGRAS TRANSVERSAIS E DEPENDÊNCIAS
+Consultar 01_Mudancas_Gerais.txt para Home, permissões por grupo, personalização,
+notificações, agenda, delegação, usuários ativos, idiomas, logs e ajuda.
+As consultas pessoais e gerenciais devem respeitar a permissão de acesso e o âmbito
+da empresa/unidade. Ser responsável não substitui o permissionamento do item 7.
+Cards, gráficos e tabelas devem representar o mesmo conjunto de dados e filtros.
+Datas, estados, eventos de alerta e fórmulas dos indicadores precisam de definição
+única antes da implementação; divergências pendentes estão listadas neste arquivo.
+
+INTEGRAÇÃO COM O MÓDULO LEGAL — FONTE: ITEM 31 E RESUMO INICIAL
+1. Manter o módulo acessível independentemente da navegação pelo Legal.
+2. Receber sugestões da tabela de potenciais, por unidade e por Controle/Influência.
+3. Somente após validação transferir o potencial para a gestão e vincular as leis de origem.
+4. Permitir cadastro manual e associação manual às leis pelo mesmo padrão de navegação.
+5. Distinguir potenciais novos/pendentes dos já validados; reprocessamento não deve exigir
+   revalidação indistinta de todo o acervo. Política de duplicidades requer definição.
+6. Inativação/revogação da lei deve sinalizar revisão dos itens associados; cabe ao cliente
+   decidir mantê-los ou deixar de controlá-los. Não apagar automaticamente o item de gestão.
+7. Permitir um responsável, vários usuários ou grupo, por cadastro direto ou Tipo x Responsável.
+8. A precedência entre atribuição manual e automática ainda precisa ser definida.
+
+
+REQUISITOS FUNCIONAIS RASTREÁVEIS
+
+------------------------------------------------------------------------------
+TRE-99 — Implementar uma nova Home para melhorar a experiência de navegabilidade e tornar a interface com o usuário mais amigável
+
+Origem: item 99; T064/R001, T065/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Alguns elementos essenciais na nova Home:
+Logo do Cliente
+Logo do Green
+Cards (com totalizações, estatísticas, pendências, avisos)
+Dashboard
+orientação para o usuário (schedule, notificações)
+foto do usuário (para aumentar a personalização do sistema. Essa foto deveria ser colocada junto ao nome do usuário como se fosse o Teams)
+navegabilidade entre tabelas
+navegabilidade a partir dos dashboards
+acessos rápidos
+
+Exemplo de Dashboards:
+
+Treinamentos
+Total de Treinamentos Vigentes
+Total de Treinamentos em Dia
+Taxa de Conformidade
+Total de Treinamentos Vencidos
+Total de Treinamentos com Plano de Ação em Andamento
+
+Atualização Mensal
+Treinamentos Novos
+Treinamentos Vencidos
+Treinamentos Próximos ao Vencimento
+
+Avisos (Card)
+
+Continuação: Implementar uma nova Home para melhorar a experiência de navegabilidade e tornar a interface com o usuário mais amigável
+
+(Continuação)
+Alertas Enviados (Card)
+
+Dashboard
+
+Gerar as estatísticas:
+por unidade
+por período
+por responsável
+etc.
+
+Os dashboards devem ser apresentados em forma gráfica e em forma de tabelas
+
+Os Dashboard deverão ser gerados por unidade, por período e por responsável.
+
+O cabeçalho pode conter informações para acessos rápidos. Veja o exemplo da imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir a Home com dados de duas unidades/períodos/responsáveis; conferir todos os indicadores descritos, comparar gráfico/tabela e clicar em um card para abrir apenas os registros correspondentes.
+
+------------------------------------------------------------------------------
+TRE-100 — Garantir que haja a associação manual das leis com os Treinamentos
+
+Origem: item 100; T065/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A fonte informa apenas o título. Campos, fluxo e parâmetros precisam ser definidos.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Cadastrar item manualmente, associar uma ou mais leis e conferir o vínculo ao consultar o item e os requisitos legais correspondentes.
+
+------------------------------------------------------------------------------
+TRE-101 — Criar a tabela Tipo de Treinamento x Responsável
+
+Origem: item 101; T065/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Na tabela Responsável x Tipo de Treinamento o responsável poderá ser 1 usuário, vários usuários ou um Grupo (com 1 ou mais pessoas)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Testar um usuário, múltiplos usuários e grupo; verificar atribuição direta e/ou por tipo/categoria conforme o item, consulta pessoal e destinatários de alerta. Testar usuário sem autorização.
+
+------------------------------------------------------------------------------
+TRE-102 — Criar o Link Meus Treinamentos
+
+Origem: item 102; T065/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Veja o item 5.1 acima
+
+CRITÉRIO DE ACEITE PROPOSTO
+Entrar com dois usuários com responsabilidades distintas e conferir que a visão pessoal e a consulta gerencial autorizada apresentam os conjuntos corretos.
+
+------------------------------------------------------------------------------
+TRE-103 — Implementar a nova atribuição de responsabilidade pelos Treinamentos
+
+Origem: item 103; T065/R004
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Passaríamos a ter a opção de atribuir automaticamente a responsabilidade por cada Treinamento em função do tipo de Treinamento.
+
+Ao estabelecer o tipo de Treinamento e amarrar com responsável(is) / grupos de responsáveis, o sistema atribuiria, automaticamente, a cada um dos Treinamentos o(s) responsável(is) / grupos de responsáveis correspondente.
+
+Deverá ser mantida a opção de atribuição manual do responsável / grupo de responsável pelo Treinamento, independentemente da amarração automática tipo de Treinamento x responsável.
+
+O sistema deve permitir, portanto, atribuir responsabilidade de 2 formas:
+Diretamente na tabela de gestão de Treinamento
+Por meio das tabelas Responsabilidade x Tipo de Treinamento
+
+Em ambos os casos, a responsabilidade poderá ser para:
+1 usuário
+vários usuários ou
+para um grupo de usuários pré-definido
+
+Esse item é bastante importante para poder gerar alertas para todos os usuários responsáveis pelos Treinamentos e não para um único usuário.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Testar um usuário, múltiplos usuários e grupo; verificar atribuição direta e/ou por tipo/categoria conforme o item, consulta pessoal e destinatários de alerta. Testar usuário sem autorização.
+
+------------------------------------------------------------------------------
+TRE-104 — Criar novos campos para a tabela de gestão de Treinamento
+
+Origem: item 104; T065/R005
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A tabela de gestão de Treinamentos atualmente está dentro no link: Módulo Legal>Documentos>Treinamentos. É uma tabela bem simples e não permite a correta gestão desses Treinamentos. Ela possui apenas os campos:
+Descrição
+Arquivo (para fazer o upload do documento)
+
+A tabela de Gestão de Treinamentos deveria contar com mais elementos para a efetiva gestão da informação, ou seja:
+
+1- Cursos / Treinamentos
+Unidade
+Identificação do Treinamento: (ex: Trabalho em Altura, Trabalho em Espaço Confinado, Trabalho com Empilhadeira, etc.)
+Tipo de Treinamento: (ex: Saúde, Segurança do Trabalho, Meio Ambiente, etc.)
+Carga Horária: Duração em horas
+Período para Reciclagem: Período em meses (ex: 12, 24, 36, etc.)
+Responsável pelo Treinamento: pessoa responsável pelo curso / treinamento
+Nível de Risco: (Alto, Médio, Baixo)
+Observação
+
+Para cada linha (Curso / Treinamento) poderá ser possível registrar evidências da realização do treinamento, cadastrando o nome de "n" trabalhadores (e os respectivos elementos que comprovam que o treinamento foi realizado. Vide item 2 abaixo)
+
+2- Evidência de Realização do Treinamento  para registrar a evidência deverá ser possível cadastrar quantos trabalhadores forem necessários, sejam internos (funcionários), sejam terceiros (contratados). Cada Curso / Treinamento poderá ter "n" trabalhadores associados. Campos da tabela de "Evidência de Realização do Treinamento":
+Matrícula: Código de identificação do trabalhador
+Nome Completo: Nome do trabalhador
+Cargo / Função: Ocupação atual do trabalhador na empresa
+Departamento/Setor: Área em que o trabalhador atua
+Responsável pela Qualificação: pessoa responsável pela capacitação do trabalhador. Como default, será o responsável pelo treinamento especificado no item anterior
+Data de Realização do Treinamento
+Data de Validade do Treinamento: Data limite para reciclagem (fórmula automática calculada com base na Data de Realização do Treinamento + Período para Reciclagem)
+Nº de Dias para Reação: número de dias antes da validade
+Status: Alerta visual sobre o prazo de validade e reação (Ex: "Válido", "A Vencer em 30 dias", "Vencido").
+Classificação: Classificação legal do treinamento (ex: Formação Inicial, Reciclagem Periódica ou Treinamento Eventual)
+Histórico (automático): do que foi feito para cada Treinamento
+Arquivo ou Link do Certificado: Link para a cópia digital do certificado ou arquivo carregado. Deverá ser possível carregar "n" arquivos
+
+Observação: como previsto no item 31, a tabela de Gestão de Treinamentos (abaixo) será preenchida a partir da validação das recomendações da IA (potenciais treinamentos) ou diretamente na própria tabela de Gestão de Treinamentos.
+
+As tabelas de gestão devem ser separadas entre o que é de CONTROLE (ou seja, ações que o próprio cliente deve tomar) daquilo que é INFLUÊNCIA, ou seja, ações que os fornecedores do cliente devem tomar).
+
+CRITÉRIO DE ACEITE PROPOSTO
+Cadastrar curso e dois trabalhadores, interno e terceiro; registrar realizações/certificados e conferir validade individual pela soma do período de reciclagem e responsável inicial.
+
+------------------------------------------------------------------------------
+TRE-105 — Incluir um campo na tabela de Gestão de Treinamentos denominado "Risco".
+
+Origem: item 105; T065/R006
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Os riscos poderiam ser:
+Alto
+Médio
+Baixo
+
+Esse risco estaria associado ao tipo de Treinamento, ou seja, em caso de descumprimento do Treinamento, qual seria o tamanho do problema que o cliente teria. Esse item risco deverá fazer parte dos dashboards, ou seja, deverá ser possível visualizar as estatísticas com a lente do risco. Ex: Treinamentos não excecutadas com risco alto, médio e baixo, etc.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Registrar casos Alto, Médio e Baixo e conferir filtro/estatística de risco vinculados à entidade correta, sem contar registros fora da seleção.
+
+------------------------------------------------------------------------------
+TRE-106 — Estabelecer uma política de e-mails como nos outros módulos
+
+Origem: item 106; T065/R007
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Atualmente não temos a parametrização da política de e-mails para o módulo de Treinamento. O alerta deveria ser parametrizado para cada Treinamento cadastrado.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Configurar destinatários por registro/tipo e evento; disparar cenário de teste e confirmar entrega apenas aos responsáveis elegíveis, incluindo múltiplos usuários/grupos, conforme regra aprovada.
+
+------------------------------------------------------------------------------
+TRE-107 — Gerar a tabela de Potenciais Treinamentos
+
+Origem: item 107; T065/R008
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Vide item 31 sobre como gerar automaticamente a tabela de potenciais Treinamentos. Após a validação desses itens potenciais ele passaria a integrar a tabela de Gestão de Treinamento mencionada no item 104 acima.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Receber potencial por unidade e Controle/Influência; validar um item e conferir criação na gestão com vínculo legal; manter pendente outro item sem convertê-lo em gestão.
+
+------------------------------------------------------------------------------
+TRE-108 — Gerar Histórico automático das mudanças feitas na tabela de Gestão de Treinamento
+
+Origem: item 108; T065/R009
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Gerar um log das mudanças feita nos registros da tabela de Treinamento. Creio que a aplicação de logs para todas as ações do sistema (vide item 16) é uma maneira de implementar essa funcionalidade.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Alterar um registro autorizado e consultar o histórico para identificar operação, registro, usuário e data; conferir acesso e retenção conforme política definida.
+
+------------------------------------------------------------------------------
+TRE-109 — Garantir que a parametrização da política de e-mails para o módulo de Treinamento seja "friendly"
+
+Observação: isso poderia ser replicado para os demais módulos (medição e monitoramento, infraestrutura, etc.)
+
+Origem: item 109; T065/R010
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A ideia é que o próprio usuário parametrize a política de e-mails, definindo para cada tipo de Treinamento quem deve ser alertado. Isso poderia estar linkado com os múltiplos responsáveis pelos Treinamentos (mencionados no item 103 acima).
+
+CRITÉRIO DE ACEITE PROPOSTO
+Configurar destinatários por registro/tipo e evento; disparar cenário de teste e confirmar entrega apenas aos responsáveis elegíveis, incluindo múltiplos usuários/grupos, conforme regra aprovada.
+
+------------------------------------------------------------------------------
+TRE-110 — Gerar automaticamente as informações dos Treinamentos via IA a partir do upload do documento
+
+Origem: item 110; T065/R011
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Extrair todos os dados do documento carregado como evidência do Treinamento e preencher as informações da tabela de gestão de Treinamento (da mesma forma como foi aplicado no novo GED-E)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Carregar documento de teste com dados conhecidos, comparar campos extraídos com o original e aplicar o procedimento aprovado para valores ausentes, divergentes ou ilegíveis. Política de confirmação humana deve ser definida.
+
+------------------------------------------------------------------------------
+TRE-111 — Criar um visual mais "clean" para a Tabela de Gestão de Treinamento
+
+Origem: item 111; T065/R012
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O visual atual torna a experiência pouco agradável. Temos que partir para ícones, "flags" ou coisas do gênero.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Revisar a tela com registros de diferentes situações, confirmar ícones/sinalizadores e legibilidade dos estados com os mesmos dados de origem.
+
+------------------------------------------------------------------------------
+TRE-112 — Visualizar pendências do usuário.
+
+Origem: item 112; T066/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Através do ícone de um sininho é possível visualizar, de modo rápido e resumido, todas as pendências (do usuário logado):
+
+
+
+A imagem abaixo apresenta o resultado da consulta ao clicar no sininho. Na realidade ao clicar no sininho aparece uma versão com informações resumidas das pendências (o exemplo da figura abaixo é do módulo de licenças. Algo parecido terá que ser aplicado para o módulo de Treinamento):
+
+
+
+
+
+
+
+
+
+
+
+
+Em algum outro link deve aparecer uma versão com informações mais completas, como na imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Com dois usuários, conferir resumo e lista completa de pendências do usuário logado e testar resolução/atualização sem expor itens não autorizados.
+
+------------------------------------------------------------------------------
+TRE-113 — Visualizar o que tem agendado para o usuário
+
+Origem: item 113; T066/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Poderia ser adotado, por exemplo, o ícone de uma agenda para visualizar, de modo rápido e resumido, todas as ações futuras (do usuário logado). Essa é apenas 1 ideia. O importante é que exista uma agenda de pendências viva para o usuário que está logado para o módulo de Treinamento:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Criar evento futuro relacionado ao módulo e conferir data, responsável e acesso ao registro pela agenda pessoal/gerencial autorizada.
+
+------------------------------------------------------------------------------
+TRE-113.1 — Fluxo do estágio em que o processo DE GESTÃO se encontra tipo "Entrega do Mercado Livre" (como foi aplicado no caso do GED-E)
+
+Origem: item 113.1; T067/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse fluxo é bem interessante de ser aplicado em todos os módulos. As atividades de GESTÃO de todos os módulos, de alguma forma, funcionam como um processo. Segue o workflow do módulo:
+
+. No módulo treinamento a pessoa:
+1- cadastra o treinamento
+2- define o responsável
+3- define a validade do treinamento (facultativo)
+4- define o nível de risco (facultativo)
+5- carrega a evidência do atendimento (evidência dos funcionários treinados)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Percorrer as etapas descritas com um registro de teste, conferir destaque do estágio atual e preservar etapas facultativas; validar transições e retornos após esclarecimento das pendências.
+
+------------------------------------------------------------------------------
+TRE-113.2 — Prever o link "Ajuda" / "Como Funciona" em todos os módulos para servir como um treinamento para o usuário.
+
+Origem: item 113.2; T067/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Nesse link poderíamos carregar o texto da ajuda e um vídeo mostrando como o sistema funciona
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir Ajuda/Como Funciona no módulo e conferir texto e vídeo configurado explicando o processo correspondente.
+
+
+VALIDAÇÃO DO PACOTE
+Este TXT deve ser revisado em conjunto com as dependências indicadas. A implementação
+exige acesso ao código e banco atuais, ausentes deste anexo. As condições de aceite
+são propostas de homologação funcional, não resultados de testes já executados.

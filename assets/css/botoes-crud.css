@@ -1,0 +1,12 @@
+.crud-actions-standard { display: flex; align-items: center; gap: 5px; }
+.crud-actions-standard .grid-crud-button { width: 30px; min-width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0; }
+.crud-actions-standard .grid-crud-button i { margin: 0; font-size: 14px; line-height: 1; }
+.crud-actions-standard .grid-crud-button:hover,
+.crud-actions-standard .grid-crud-button:focus { transform: translateY(-1px); }
+.crud-context-actions { display: inline-flex; align-items: center; gap: 5px; margin-left: 8px; }
+.crud-context-separator, .crud-pagination-separator { margin: 0 3px 0 8px; color: #a3b2ac; font-size: 18px; font-weight: 400; line-height: 1; }
+.crud-context-actions > .grid-crud-button { width: 30px; min-width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0; }
+.crud-context-actions > .grid-crud-button i { margin: 0; font-size: 14px; }
+.menu-grid-toolbar .crud-actions .grid-icon-button { width: 30px; min-width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0; }
+.menu-grid-toolbar .crud-actions .grid-icon-button i { margin: 0 !important; font-size: 14px; line-height: 1; }
+.menu-grid-toolbar .crud-actions > .grid-pagination { display: inline-flex; align-items: center; gap: 5px; margin-left: 8px; padding-left: 8px; border-left: 0; }

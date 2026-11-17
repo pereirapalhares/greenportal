@@ -1,0 +1,3 @@
+<?php
+require_once dirname(__DIR__) . '/classes/ManutencaoLegalCadastroGrid.php';
+ManutencaoLegalCadastroGrid::render(['menu' => 'AMBITOS', 'title' => ['pt' => 'Âmbitos', 'en' => 'Scopes', 'es' => 'Ámbitos'], 'transaction' => 'manutencaolegal_ambitos', 'database' => 'glegislacao_dbp', 'prefix' => 'GLEGISLACAO', 'table' => 'ambitos', 'view' => 'vw_ambitos_grid', 'primary' => 'CODAMBITO', 'default_sort' => ['column' => 'DSCAMBITO', 'direction' => 'asc'], 'fields' => ['CODAMBITO' => ['label' => ['pt' => 'Código', 'en' => 'Code', 'es' => 'Código'], 'readonly' => true], 'DSCAMBITO' => ['label' => ['pt' => 'Âmbito', 'en' => 'Scope', 'es' => 'Ámbito']]]]);

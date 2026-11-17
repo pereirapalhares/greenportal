@@ -1,0 +1,9 @@
+Ordem das colunas — Requisitos legais
+
+A ordem visível do novo grid foi alinhada ao legado:
+
+Unidade, Nível de controle, Atendido?, Código, Âmbito, Tipo, Número, Ano,
+Padrão, Assuntos agrupados, Artigos, Meio ambiente, Segurança, Qualidade e
+Responsabilidade.
+
+As colunas técnicas permanecem ocultas por padrão.

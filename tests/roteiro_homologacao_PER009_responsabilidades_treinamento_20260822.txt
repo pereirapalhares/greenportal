@@ -1,0 +1,92 @@
+ROTEIRO DE HOMOLOGAÇÃO — PER-009
+Responsabilidades por registro de Treinamento
+Data: 22/08/2026
+
+OBJETIVO
+Homologar o botão contextual, consulta e manutenção de responsabilidades do registro de treinamento, usando o campo legado fo_funcionarioxtiposxtreinamentos.codusuario somente quando houver usuário correspondente no tenant.
+
+ESCOPO
+Entidade: fo_funcionarioxtiposxtreinamentos
+Identificador: codigo
+Módulo: TREINAMENTO
+Tipo: TREINAMENTO
+Os 953 registros órfãos não devem aparecer como vínculos válidos nem ser alterados.
+
+AMBIENTE E USUÁRIOS
+URL: http://localhost/greenportal/
+Empresa: MODELO
+Banco: gmodelo_dbp
+Preparação e limpeza: admin / <senha de teste via variável de ambiente>
+Execução autorizada: ueditor / <senha de teste via variável de ambiente>
+Transação: HOMOLOGACAO_FORNECEDOR_FUNCIONARIO, código 495.
+
+DADOS DE TESTE
+Selecionar Gestão de Funcionários > um funcionário com treinamentos.
+Treinamento legado válido: usar um dos dois registros que possuem codusuario correspondente no gmodelo_dbp. Confirmar o código no banco antes do teste.
+Treinamento de controle: selecionar outro registro válido, se disponível.
+Não usar nem alterar registros órfãos.
+
+PRÉ-CONDIÇÕES
+1. Confirmar que a tela Gestão de Funcionários está acessível.
+2. Configurar temporariamente o perfil GESTOR com Visualizar=1, Incluir=1, Editar=1 e Excluir=1 para o fluxo completo.
+3. Manter Excel/PDF no estado anterior.
+4. Acessar a tela pelo menu e abrir o relacionamento Treinamentos do Funcionário.
+
+PER-009.1 — Botão contextual
+1. Selecionar uma linha de treinamento.
+2. Confirmar que o botão Responsabilidades está desabilitado antes da seleção e habilitado depois.
+3. Clicar no botão.
+Resultado esperado: a consulta abre sem “Treinamento inválido”, identifica o CODIGO correto e não mistura o funcionário ou treinamento selecionado anteriormente.
+
+PER-009.2 — Consulta do vínculo legado válido
+1. Confirmar título “Responsabilidades do treinamento”.
+2. Confirmar o código e a descrição do treinamento.
+3. Confirmar o responsável legado válido, quando existir.
+4. Confirmar origem, destino, situação e validade.
+5. Confirmar que registros órfãos não são apresentados como responsáveis válidos.
+
+PER-009.3 — Manutenção e inclusão
+1. Clicar em Manter.
+2. Adicionar responsabilidade por usuário ativo.
+3. Salvar e confirmar mensagem de sucesso.
+4. Confirmar o registro na consulta com situação ATIVA.
+5. Adicionar uma responsabilidade por grupo ativo.
+6. Confirmar alternância visual entre Usuário e Grupo.
+7. Salvar e confirmar o grupo exibido corretamente.
+
+PER-009.4 — Edição e exclusão lógica
+1. Alterar prioridade de uma responsabilidade criada para teste.
+2. Salvar e confirmar o novo valor.
+3. Excluir logicamente apenas o vínculo criado para teste.
+4. Confirmar que ele passa para HISTORICA/ATIVO=0 e não é removido fisicamente.
+5. Confirmar que o vínculo legado válido permanece preservado.
+
+PER-009.5 — Permissões
+Validar pelo menos:
+- V=1,I=0,E=0,X=0: consulta e manutenção em modo somente leitura;
+- V=1,I=0,E=0,X=1: lixeira habilitada e exclusão lógica disponível;
+- V=1,I=1,E=0,X=0: inclusão disponível, edição bloqueada;
+- V=1,I=0,E=1,X=0: edição disponível, inclusão bloqueada;
+- V=0,I=0,E=0,X=0: acesso bloqueado.
+O servidor deve validar as permissões mesmo com manipulação do navegador.
+
+PER-009.6 — Troca de contexto
+1. Selecionar outro treinamento.
+2. Abrir Responsabilidades.
+3. Confirmar código, descrição e vínculos próprios do segundo registro.
+4. Testar a URL direta com CODIGO=<código> usando o prefixo completo da aplicação.
+
+VERIFICAÇÃO DE BANCO
+Confirmar:
+- view vw_responsabilidade_treinamentos criada;
+- exatamente 2 vínculos legados válidos carregados;
+- registros órfãos fora da carga;
+- inclusões novas com ENTIDADE=fo_funcionarioxtiposxtreinamentos;
+- exclusão lógica com ATIVO=0;
+- nenhum vínculo legado órfão alterado.
+
+LIMPEZA
+Excluir logicamente os vínculos criados, restaurar o GESTOR ao baseline anterior, restaurar Excel/PDF e registrar as contagens finais.
+
+CRITÉRIO DE APROVAÇÃO
+PER-009 será aprovado quando contexto, consulta, legado válido, manutenção, permissões, exclusão lógica e preservação dos órfãos estiverem corretos.

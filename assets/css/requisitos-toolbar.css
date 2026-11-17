@@ -1,0 +1,20 @@
+/* Requisitos legais — barra de botões em grupos rotulados. */
+.menu-grid-toolbar .requisitos-toolbar-grupos { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 6px 0; }
+.requisitos-toolbar-grupos .req-grupo { display: flex; flex-direction: column; gap: 3px; padding: 0 12px; border-left: 1px solid var(--gp-border, #dce9e3); }
+.requisitos-toolbar-grupos .req-grupo:first-child { padding-left: 0; border-left: 0; }
+.requisitos-toolbar-grupos .req-grupo-rotulo { color: var(--gp-muted, #7f938a); font-size: 9.5px; font-weight: 700; letter-spacing: .06em; line-height: 1; text-transform: uppercase; white-space: nowrap; }
+.requisitos-toolbar-grupos .req-grupo-botoes { display: flex; align-items: center; gap: 5px; }
+.menu-grid-toolbar .requisitos-toolbar-grupos .req-grupo-botoes > button { width: 30px; min-width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0; }
+.menu-grid-toolbar .requisitos-toolbar-grupos .req-grupo-botoes > button i { margin: 0 !important; font-size: 14px; line-height: 1; }
+.menu-grid-toolbar .requisitos-toolbar-grupos .req-grupo-botoes > button:hover,
+.menu-grid-toolbar .requisitos-toolbar-grupos .req-grupo-botoes > button:focus { transform: translateY(-1px); }
+.menu-grid-toolbar .requisitos-toolbar-grupos > .crud-pagination-separator { display: none; }
+.menu-grid-toolbar .requisitos-toolbar-grupos > .grid-pagination { align-self: flex-end; height: 30px; margin-left: 0; padding-left: 12px; border-left: 1px solid var(--gp-border, #dce9e3); }
+
+/* Distribuição: a barra ocupa a largura disponível e os grupos quebram linha
+   inteiros (nunca um grupo partido ao meio); a busca fica à direita. */
+.menu-grid-toolbar:has(> .requisitos-toolbar-grupos) { flex-wrap: wrap; align-items: flex-end; row-gap: 8px; }
+.setup-fragment .menu-grid-toolbar .crud-actions.requisitos-toolbar-grupos { flex: 1 1 auto; min-width: 0; row-gap: 8px; }
+.requisitos-toolbar-grupos .req-grupo { flex: 0 0 auto; }
+.requisitos-toolbar-grupos .req-grupo-botoes { flex-wrap: nowrap; }
+.menu-grid-toolbar:has(> .requisitos-toolbar-grupos) > .crud-search { flex: 0 1 260px; min-width: 180px; margin-left: auto; }

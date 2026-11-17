@@ -1,0 +1,30 @@
+[data-user-account] { cursor: pointer; }
+[data-user-account]:focus { outline: 2px solid #bfe3d0; outline-offset: 3px; border-radius: 8px; }
+.account-section h6 { margin-bottom: 12px; color: #245846; font-size: 13px; }
+.account-themes { display: grid; gap: 8px; color: #49665b; font-size: 12px; }
+.account-message { min-height: 18px; font-size: 12px; }
+.account-iframe-page { min-height: 100%; margin: 0; padding: 0; background: #f7faf8; }
+.account-iframe-content { min-height: 100%; padding: 18px 22px; }
+.account-tabs { margin-bottom: 18px; }
+.account-tabs .nav-link { color: #5e776d; font-size: 12px; }
+.account-tabs .nav-link.active { color: #246b50; font-weight: 700; }
+.account-tab-content { min-height: 260px; padding: 4px 2px; }
+.account-tab-content h6 { margin-bottom: 16px; color: #245846; font-size: 14px; }
+.account-tab-content .form-label { margin-bottom: 4px; color: #49665b; font-size: 12px; }
+.account-tab-content form { max-width: 560px; }
+
+/* Menu do usuário no cabeçalho (principal/main.php): Profile, Alterar senha, Layout, Perfil de atribuições, Sair */
+.user-dropdown .user-menu { cursor: pointer; }
+.user-dropdown .user-menu[aria-expanded="true"] .user-chevron { transform: rotate(180deg); }
+.user-dropdown .user-chevron { transition: transform .15s ease; }
+.user-account-dropdown { min-width: 250px; padding: 6px; border: 1px solid var(--gp-border, #dfe7e3); border-radius: 12px; box-shadow: 0 12px 30px rgba(20, 40, 30, .16); }
+.user-account-dropdown-header { padding: 8px 10px 10px; border-bottom: 1px solid var(--gp-border, #dfe7e3); margin-bottom: 4px; }
+.user-account-dropdown-header strong { display: block; font-size: 13px; color: var(--gp-text, #23332c); }
+.user-account-dropdown-header small { display: block; font-size: 11px; color: var(--gp-muted, #6b7a73); overflow: hidden; text-overflow: ellipsis; }
+.user-account-dropdown .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; font-size: 13px; color: var(--gp-text, #23332c); }
+.user-account-dropdown .dropdown-item i { width: 18px; color: var(--gp-primary, #3ba179); font-size: 15px; text-align: center; }
+.user-account-dropdown .dropdown-item:hover, .user-account-dropdown .dropdown-item:focus { background: var(--gp-primary-soft, #eaf5f0); color: var(--gp-primary-dark, #2f7a5c); }
+.user-account-dropdown .user-account-sair, .user-account-dropdown .user-account-sair i { color: var(--bs-danger, #b8442f); }
+.user-account-dropdown .user-account-sair:hover { background: #fbe9e5; color: #9c3622; }
+/* Popup de uma só seção da Minha conta (?aba=senha): sem as abas */
+.account-iframe-page.account-uma-aba .account-tabs { display: none; }

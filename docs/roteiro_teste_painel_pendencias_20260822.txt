@@ -1,0 +1,261 @@
+ROTEIRO DE TESTE — PAINEL DE PENDÊNCIAS POR MÓDULO
+Projeto: Green Portal
+Data: 22/08/2026
+Arquivo principal: principal/painel_pendencias.php
+Arquivos relacionados: principal/main.php, principal/main_pendencias.php
+
+1. OBJETIVO
+
+Validar se o painel de Pendências apresenta cards por módulo, respeita as
+permissões do usuário, mostra somente pendências associadas ao usuário logado
+e abre o grid correspondente com os filtros corretos.
+
+2. PRÉ-REQUISITOS
+
+- Ambiente de desenvolvimento disponível.
+- Banco tenant Modelo acessível.
+- Usuário administrador disponível para o teste completo.
+- Usuário comum com acesso parcial a módulos.
+- Usuário sem acesso ao módulo de Não Conformidades.
+- Navegador com cache atualizado.
+- Sessão autenticada no Green Portal.
+
+3. TESTE DE ACESSO AO PAINEL
+
+Passos:
+
+1. Acessar o Green Portal.
+2. Confirmar que o menu lateral direito foi carregado.
+3. Clicar no ícone Pendências.
+
+Resultado esperado:
+
+- Deve abrir uma aba chamada Pendências no workspace principal.
+- A tela deve ser `painel_pendencias.php`.
+- A tela deve apresentar cards dos módulos permitidos.
+- Não deve abrir diretamente `naoconformidades_minhasocorrencias.php`.
+- O painel não deve apresentar erro PHP ou tela em branco.
+
+Resultado obtido: _________________________________________________
+Status: ( ) Aprovado  ( ) Reprovado
+
+4. TESTE DOS CARDS DE NÃO CONFORMIDADES
+
+Passos:
+
+1. Localizar o card Não Conformidades.
+2. Conferir a quantidade exibida.
+3. Para o usuário admin, comparar com a quantidade esperada de 212
+   pendências, considerando a base de teste atual.
+4. Clicar no card.
+
+Resultado esperado:
+
+- Deve abrir uma nova aba do workspace para Minhas Ocorrências.
+- O grid deve utilizar `vminhasocorrenciasnc`.
+- O filtro obrigatório deve manter `CODUSUARIO_ENVOLVIDO` igual ao usuário
+  autenticado.
+- O filtro de etapa deve excluir `Finalizado`.
+- O grid deve apresentar 212 registros para o usuário admin na base atual.
+- Nenhuma ocorrência sem envolvimento do usuário deve aparecer.
+- Ocorrências finalizadas não devem aparecer neste card.
+
+Resultado obtido: _________________________________________________
+Quantidade encontrada: __________
+Status: ( ) Aprovado  ( ) Reprovado
+
+5. TESTE DO CARD DE LEGISLAÇÃO
+
+Passos:
+
+1. Localizar o card Situações legais.
+2. Conferir a quantidade apresentada.
+3. Clicar no card.
+
+Resultado esperado:
+
+- Deve abrir o grid de situação de cumprimento da legislação.
+- O filtro deve considerar o usuário responsável.
+- Devem aparecer somente situações não atendidas, parcialmente atendidas
+  ou indefinidas.
+- Situações com atendimento `S` não devem aparecer.
+
+Resultado obtido: _________________________________________________
+Quantidade encontrada: __________
+Status: ( ) Aprovado  ( ) Reprovado
+
+6. TESTE DO CARD DE LICENÇAS
+
+Passos:
+
+1. Localizar o card Licenças.
+2. Conferir a quantidade apresentada.
+3. Clicar no card.
+
+Resultado esperado:
+
+- Deve abrir `manutencaolegal_licencas.php`.
+- O grid deve filtrar pelo responsável igual ao usuário autenticado.
+- Devem aparecer licenças vencidas ou com vencimento nos próximos 30 dias.
+- Licenças fora do período de pendência não devem aparecer.
+
+Na base atual, para o usuário admin, a expectativa é de 21 licenças
+pendentes, sujeita a alteração conforme os dados do ambiente.
+
+Resultado obtido: _________________________________________________
+Quantidade encontrada: __________
+Status: ( ) Aprovado  ( ) Reprovado
+
+7. TESTE DO CARD DE HOMOLOGAÇÃO DE FORNECEDORES
+
+Passos:
+
+1. Localizar o card Homologação de Fornecedores.
+2. Conferir a quantidade apresentada.
+3. Clicar no card.
+
+Resultado esperado:
+
+- Deve abrir `homologacaofornecedor_fornecedor.php`.
+- O grid deve filtrar pelo responsável pelo fornecedor.
+- Devem aparecer fornecedores com avaliação próxima ou vencida.
+- Fornecedores fora do período de pendência não devem aparecer.
+- O card não deve aparecer para usuário sem permissão no módulo.
+
+Resultado obtido: _________________________________________________
+Quantidade encontrada: __________
+Status: ( ) Aprovado  ( ) Reprovado
+
+8. TESTE DO CARD DE APROVAÇÕES
+
+Passos:
+
+1. Verificar se existem alertas ou aprovações pendentes para o usuário.
+2. Conferir se o card Aprovações aparece somente quando houver pendência.
+3. Clicar no card.
+
+Resultado esperado:
+
+- O card deve mostrar a quantidade de solicitações ou alertas não lidos.
+- Deve abrir `painel_aprovacoes.php`.
+- Nenhuma aprovação de outro usuário deve ser exibida.
+
+Resultado obtido: _________________________________________________
+Quantidade encontrada: __________
+Status: ( ) Aprovado  ( ) Reprovado
+
+9. TESTE DE PERMISSÕES
+
+9.1 Usuário sem acesso a Não Conformidades
+
+Passos:
+
+1. Entrar com usuário sem permissão de leitura em Não Conformidades.
+2. Abrir o painel de Pendências.
+
+Resultado esperado:
+
+- O card Não Conformidades não deve aparecer.
+- Nenhuma consulta de Não Conformidades deve ser executada para montar o
+  painel.
+- O usuário não deve conseguir acessar os dados de NC pelo card.
+
+9.2 Usuário sem acesso a Homologação
+
+Resultado esperado:
+
+- O card Homologação de Fornecedores não deve aparecer.
+- Nenhuma informação de fornecedor deve ser exibida no painel.
+
+9.3 Usuário com acesso parcial
+
+Resultado esperado:
+
+- Devem aparecer somente os cards correspondentes aos módulos autorizados.
+- Os registros devem permanecer limitados ao envolvimento do usuário quando
+  aplicável.
+
+Resultado obtido: _________________________________________________
+Status: ( ) Aprovado  ( ) Reprovado
+
+10. TESTE DE REUTILIZAÇÃO E ATUALIZAÇÃO DAS ABAS
+
+Passos:
+
+1. Abrir Pendências.
+2. Abrir o card Não Conformidades.
+3. Voltar ao painel e clicar novamente no card.
+4. Criar ou alterar uma pendência em outra aba, quando aplicável.
+5. Reabrir o painel.
+
+Resultado esperado:
+
+- A aba não deve permanecer presa em uma versão antiga do grid.
+- O identificador versionado da aba deve permitir carregar a correção atual.
+- O painel lateral deve atualizar independentemente do workspace.
+
+11. TESTE DE ATUALIZAÇÃO AUTOMÁTICA
+
+Passos:
+
+1. Manter o `main.php` aberto.
+2. Observar o iframe lateral.
+3. Aguardar cinco minutos ou reduzir temporariamente o intervalo somente em
+   ambiente de teste.
+
+Resultado esperado:
+
+- Somente o iframe `main_pendencias.php` deve ser atualizado.
+- Menu, abas e workspace não devem ser recarregados.
+- Os badges devem refletir os dados mais recentes.
+
+12. VALIDAÇÃO TÉCNICA PHP
+
+Executar no diretório do projeto:
+
+php -l principal/main.php
+php -l principal/main_pendencias.php
+php -l principal/painel_pendencias.php
+php -l principal/naoconformidades_minhasocorrencias.php
+
+Resultado esperado:
+
+- Todos os arquivos devem informar `No syntax errors detected`.
+
+13. VALIDAÇÃO TÉCNICA DO BANCO
+
+Para o usuário admin de código 1, validar:
+
+- Contagem direta de NCs pendentes: 212 na base atual.
+- Contagem pelo `vminhasocorrenciasnc` com contexto: 212 na base atual.
+- Contagem de licenças pendentes: 21 na base atual.
+- Filtro de `ETAPA <> 'Finalizado'` aplicado pelo contexto.
+
+Procedures relacionadas:
+
+- `sp_crud_select`
+- `sp_crud_count`
+- `sp_crud_context_select`
+- `sp_crud_context_count`
+
+14. CRITÉRIOS DE APROVAÇÃO
+
+O teste será considerado aprovado quando:
+
+- O ícone Pendências abrir primeiro o painel de cards.
+- Os cards forem exibidos conforme as permissões.
+- Cada card abrir o grid ou painel correto.
+- Os filtros limitarem os resultados ao usuário e às pendências.
+- O card de NC e o grid apresentarem a mesma quantidade.
+- Não houver acesso indevido a dados de outros usuários.
+- Não houver erro de PHP, SQL ou JavaScript.
+
+Observações finais:
+
+________________________________________________________________________
+________________________________________________________________________
+________________________________________________________________________
+
+Responsável pelo teste: _______________________________________________
+Data da execução: ____/____/________
+Assinatura: __________________________________________________________

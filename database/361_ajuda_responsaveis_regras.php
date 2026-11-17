@@ -1,0 +1,29 @@
+<?php
+declare(strict_types=1);
+
+// Migração 361 — Ajuda da tela Responsáveis e avisos (transação responsaveis_regras; trecho entre <!-- ml361 --> no texto).
+// Só as marcas aceitas pela Ajuda: p, ul/ol/li, strong/b, em/i e a.
+$L = static fn(string $pt, string $en, string $es): array => ['pt' => $pt, 'en' => $en, 'es' => $es];
+$pt = '<p><strong>Responsáveis e avisos</strong></p>'
+    . '<p>Diz quem responde pelos registros do módulo e quem recebe os avisos. Cada módulo tem a sua tela, no menu logo depois da tela do módulo: Licenças, Medição e monitoramento, Controles, Treinamentos e Infraestrutura.</p>'
+    . '<p><strong>Regra</strong></p><ul>'
+    . '<li><strong>Para quais registros:</strong> Licenças por Tipo documental e Unidade; Medição por Tipo de medição e Unidade; Controles, Treinamentos e Infraestrutura por Unidade. Deixe em <em>Todos/Todas</em> para não filtrar. Licença: só a versão em vigor;</li>'
+    . '<li><strong>Quem:</strong> um usuário ou um grupo (valem os usuários ativos do grupo, inclusive quem entrar no grupo depois);</li>'
+    . '<li><strong>Vale na hora</strong> para registros novos e antigos e <strong>nada é gravado no registro</strong>: desmarque <em>Ativa</em> ou exclua a regra e a pessoa deixa de responder;</li>'
+    . '<li><strong>Soma</strong> com o Responsável do registro e com as atribuições: ninguém perde o que já tinha;</li>'
+    . '<li>A coluna <em>Cobre hoje</em> mostra quantos registros e pessoas a regra alcança agora.</li></ul>'
+    . '<p><strong>Um registro só:</strong> selecione a linha na grade do módulo (ou na tela Minhas) e use o botão <strong>Responsáveis</strong> (ícone de pessoas). A janela mostra quem responde hoje pelo registro e por quê, e permite incluir usuários ou grupos só para ele (inclusive grupo na Medição).</p>'
+    . '<p><strong>Avisos</strong> (chegam nos Alertas e por e-mail, conforme Minha conta › Alertas por e-mail; um alerta por pessoa, módulo e tipo, com a lista dos registros; o mesmo aviso não se repete):</p><ul>'
+    . '<li><strong>Prazos</strong> (Licenças e Medição): validade em até 30 dias, data de reação atingida nos últimos 7 dias e medição prevista em até 7 dias. O <strong>Responsável do registro e quem tem atribuição recebem sempre</strong>; marque Prazos na regra para avisar também as pessoas dela;</li>'
+    . '<li><strong>Atribuição:</strong> quando a pessoa passa a responder por registros pela regra;</li>'
+    . '<li><strong>Alteração</strong> (Medição, Controles, Treinamentos e Infraestrutura): quando outra pessoa altera o registro (histórico). Quem fez a alteração não é avisado.</li></ul>'
+    . '<p>As telas <strong>Minhas</strong> (Minhas licenças, Minhas medições, Meus controles, Meus treinamentos, Minhas infraestruturas e Home › Minhas atividades) mostram os registros do Responsável, das atribuições e das regras. Os avisos são gerados pelo serviço de Responsabilidades, algumas vezes por dia.</p>';
+$en = '<p><strong>People responsible and alerts</strong></p>'
+    . '<p>Each rule says who is responsible for the module records that match it (Licenses: document type and unit; Measurement: measurement type and unit; Controls, Training and Infrastructure: unit) — a user or a group (its active users). It applies right away to new and existing records, nothing is written to the record, and it adds to the record owner and the assignments. For a single record, select it in the grid and use the <strong>People</strong> button.</p>'
+    . '<p><strong>Alerts</strong> (Alerts and e-mail): <strong>Deadlines</strong> — expiry within 30 days, reaction date reached, measurement due within 7 days; the record owner and assignees always get them, the rule adds more people. <strong>Assignment</strong> — when the person becomes responsible through the rule. <strong>Change</strong> — when someone else changes the record. The same alert is never repeated.</p>';
+$es = '<p><strong>Responsables y avisos</strong></p>'
+    . '<p>Cada regla dice quién responde por los registros del módulo que coinciden con ella (Licencias: tipo documental y unidad; Medición: tipo de medición y unidad; Controles, Capacitaciones e Infraestructura: unidad) — un usuario o un grupo (sus usuarios activos). Vale de inmediato para registros nuevos y antiguos, no se graba nada en el registro y se suma al Responsable y a las asignaciones. Para un solo registro, selecciónelo en la grilla y use el botón <strong>Responsables</strong>.</p>'
+    . '<p><strong>Avisos</strong> (Alertas y correo): <strong>Plazos</strong> — vencimiento en hasta 30 días, fecha de reacción alcanzada, medición prevista en hasta 7 días; el Responsable del registro y quien tiene asignación siempre los reciben, la regla agrega más personas. <strong>Asignación</strong> — cuando la persona pasa a responder por la regla. <strong>Cambio</strong> — cuando otra persona cambia el registro. El mismo aviso no se repite.</p>';
+return [
+    'responsaveis_regras' => ['titulo' => $L('Responsáveis e avisos', 'People responsible and alerts', 'Responsables y avisos'), 'texto' => $L($pt, $en, $es)],
+];

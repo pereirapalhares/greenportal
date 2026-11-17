@@ -1,0 +1,3 @@
+<?php
+declare(strict_types=1);require_once dirname(__DIR__).'/classes/GreenPortalDatabase.php';require_once dirname(__DIR__).'/classes/AssistenteAplicacaoService.php';
+$e=GreenPortalDatabase::env();$p=GreenPortalDatabase::connect($e,'guniversal_dbp','GUNIVERSAL');$r=AssistenteAplicacaoService::chamarProcedure($p,'sp_migracao_solicitacao_criar',[20,1,json_encode(['green_gd_americana','green_gd_americana_seguranca']),'ggdamericana_dbp','E:\\projetoGreen\\GED\\green_gd_americana','Teste controlado da fila']);$id=(int)$r[0]['codsolicitacao'];AssistenteAplicacaoService::chamarProcedure($p,'sp_migracao_solicitacao_iniciar',[$id,1]);echo json_encode(['codsolicitacao'=>$id,'status'=>'EM_EXECUCAO'],JSON_UNESCAPED_UNICODE).PHP_EOL;

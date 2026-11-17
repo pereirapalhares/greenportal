@@ -1,0 +1,8 @@
+body.login-theme-azul { --green-900: #294e70; --green-700: #356f9d; --green-500: #5b8fc4; --line: #d5e4ef; --cream: #f4f8fb; }
+body.login-theme-azul .brand-mark { background: #e3eff8; }
+body.login-theme-azul .marketing-panel { background: #294e70; }
+body.login-theme-azul .marketing-panel:before { background: linear-gradient(145deg, rgba(53,111,157,.72), rgba(24,52,79,.2) 58%), radial-gradient(circle at 85% 13%, rgba(153,201,239,.2), transparent 30%); }
+body.login-theme-cinza { --green-900: #526169; --green-700: #596b75; --green-500: #7f8d96; --line: #dfe4e7; --cream: #f5f6f7; }
+body.login-theme-cinza .brand-mark { background: #e9edef; }
+body.login-theme-cinza .marketing-panel { background: #526169; }
+body.login-theme-cinza .marketing-panel:before { background: linear-gradient(145deg, rgba(89,107,117,.72), rgba(46,57,63,.2) 58%), radial-gradient(circle at 85% 13%, rgba(203,213,218,.2), transparent 30%); }

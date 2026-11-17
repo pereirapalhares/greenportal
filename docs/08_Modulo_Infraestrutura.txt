@@ -1,0 +1,383 @@
+﻿ESPECIFICAÇÃO FUNCIONAL — GREEN 4.0
+Versão: 1.0 — elaboração em 12/11/2026
+Fonte: Passo a passo mudança no Green4.0 — Revisão G — 13/08/2026.doc.
+Situação: especificação para revisão funcional; não representa validação do software existente.
+
+COMO INTERPRETAR
+- IDs dos requisitos preservam a numeração da fonte. Txxx/Rxxx identifica tabela/linha,
+  contando a partir de zero na ordem do documento, para rastreabilidade sem paginação variável.
+- "Sim" indica solicitação de implementação na fonte, não comprova implementação.
+- Campo "Implementar?" vazio significa decisão pendente. Requisito dependente de outro
+  item marcado Sim é identificado, mas a inconsistência da marcação é preservada.
+- Detalhamento da fonte é reproduzido em cada requisito para conservar campos, exemplos,
+  condições, exceções e fluxos. Exemplos não constituem listas fechadas de domínio.
+- Critérios de aceite e regras consolidadas são operacionalizações propostas para revisão.
+  Decisões ausentes não foram convertidas em regras definitivas.
+- Referências a capturas de concorrentes são referências visuais do DOC original; imagens
+  não são reproduzidas em TXT. Não foram inferidas regras a partir de elementos só visuais.
+- Não há definição de banco físico, linguagem, endpoints ou cronograma nesta versão.
+
+
+08 — Módulo Infraestrutura
+
+OBJETIVO
+Especificar as mudanças deste tema preservando o escopo e as ressalvas da Revisão G.
+
+MODELO FUNCIONAL CONSOLIDADO
+Expandir cadastro com unidade, descrição, tipo, responsável, setor, condições,
+risco, classe A/B/C, plano de manutenção com n arquivos/links, propriedade,
+conformidade, evidências com n arquivos/links, histórico e observação.
+Tipos exemplificados: TI, Predial, Elétrico, Mecânico, Climatização e Hidráulico.
+Situações exemplificadas: Conforme, Não Conforme e Parcialmente Conforme.
+Alertas baseados na situação de conformidade; plano de manutenção é facultativo.
+
+PENDÊNCIAS ESPECÍFICAS
+- Definir destino dos subitens Atributo e Valor existentes, não eliminados explicitamente.
+- Confirmar lista de condições, classes e critérios de conformidade.
+- Definir eventos futuros que alimentam agenda quando o cadastro não possui vencimento.
+- A fonte pede anexar plano de manutenção; não detalha um sistema completo de manutenção.
+
+REGRAS TRANSVERSAIS E DEPENDÊNCIAS
+Consultar 01_Mudancas_Gerais.txt para Home, permissões por grupo, personalização,
+notificações, agenda, delegação, usuários ativos, idiomas, logs e ajuda.
+As consultas pessoais e gerenciais devem respeitar a permissão de acesso e o âmbito
+da empresa/unidade. Ser responsável não substitui o permissionamento do item 7.
+Cards, gráficos e tabelas devem representar o mesmo conjunto de dados e filtros.
+Datas, estados, eventos de alerta e fórmulas dos indicadores precisam de definição
+única antes da implementação; divergências pendentes estão listadas neste arquivo.
+
+INTEGRAÇÃO COM O MÓDULO LEGAL — FONTE: ITEM 31 E RESUMO INICIAL
+1. Manter o módulo acessível independentemente da navegação pelo Legal.
+2. Receber sugestões da tabela de potenciais, por unidade e por Controle/Influência.
+3. Somente após validação transferir o potencial para a gestão e vincular as leis de origem.
+4. Permitir cadastro manual e associação manual às leis pelo mesmo padrão de navegação.
+5. Distinguir potenciais novos/pendentes dos já validados; reprocessamento não deve exigir
+   revalidação indistinta de todo o acervo. Política de duplicidades requer definição.
+6. Inativação/revogação da lei deve sinalizar revisão dos itens associados; cabe ao cliente
+   decidir mantê-los ou deixar de controlá-los. Não apagar automaticamente o item de gestão.
+7. Permitir um responsável, vários usuários ou grupo, por cadastro direto ou Tipo x Responsável.
+8. A precedência entre atribuição manual e automática ainda precisa ser definida.
+
+
+REQUISITOS FUNCIONAIS RASTREÁVEIS
+
+------------------------------------------------------------------------------
+INF-114 — Implementar uma nova Home para melhorar a experiência de navegabilidade e tornar a interface com o usuário mais amigável
+
+Origem: item 114; T068/R001, T069/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Alguns elementos essenciais na nova Home:
+Logo do Cliente
+Logo do Green
+Cards (com totalizações, estatísticas, pendências, avisos)
+Dashboard
+orientação para o usuário (schedule, notificações)
+foto do usuário (para aumentar a personalização do sistema. Essa foto deveria ser colocada junto ao nome do usuário como se fosse o Teams)
+navegabilidade entre tabelas
+navegabilidade a partir dos dashboards
+acessos rápidos
+
+Exemplo de Dashboards:
+
+Infraestruturas
+Total de Infraestruturas Existentes
+Total de Infraestruturas Conformes
+Taxa de Conformidade
+Total de Infraestruturas com Plano de Ação em Andamento
+
+Atualização Mensal
+Total de Infraestruturas Novas
+
+Avisos (Card)
+
+Continuação: Implementar uma nova Home para melhorar a experiência de navegabilidade e tornar a interface com o usuário mais amigável
+
+(Continuação)
+Alertas Enviados (Card)
+
+Dashboard
+
+Gerar as estatísticas:
+por unidade
+por período
+por responsável
+etc.
+
+Os dashboards devem ser apresentados em forma gráfica e em forma de tabelas
+
+Os Dashboard deverão ser gerados por unidade, por período e por responsável.
+
+O cabeçalho pode conter informações para acessos rápidos. Veja o exemplo da imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir a Home com dados de duas unidades/períodos/responsáveis; conferir todos os indicadores descritos, comparar gráfico/tabela e clicar em um card para abrir apenas os registros correspondentes.
+
+------------------------------------------------------------------------------
+INF-115 — Garantir que haja a associação manual das leis com os Infraestruturas
+
+Origem: item 115; T069/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A fonte informa apenas o título. Campos, fluxo e parâmetros precisam ser definidos.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Cadastrar item manualmente, associar uma ou mais leis e conferir o vínculo ao consultar o item e os requisitos legais correspondentes.
+
+------------------------------------------------------------------------------
+INF-116 — Criar a tabela Tipo de Infraestrutura x Responsável
+
+Origem: item 116; T069/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Na tabela Responsável x Tipo de Infraestrutura o responsável poderá ser 1 usuário, vários usuários ou um Grupo (com 1 ou mais pessoas)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Testar um usuário, múltiplos usuários e grupo; verificar atribuição direta e/ou por tipo/categoria conforme o item, consulta pessoal e destinatários de alerta. Testar usuário sem autorização.
+
+------------------------------------------------------------------------------
+INF-117 — Criar o Link Minhas Infraestruturas
+
+Origem: item 117; T069/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Veja o item 5.1 acima
+
+CRITÉRIO DE ACEITE PROPOSTO
+Entrar com dois usuários com responsabilidades distintas e conferir que a visão pessoal e a consulta gerencial autorizada apresentam os conjuntos corretos.
+
+------------------------------------------------------------------------------
+INF-118 — Implementar a nova atribuição de responsabilidade pelas Infraestruturas
+
+Origem: item 118; T069/R004
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Passaríamos a ter a opção de atribuir automaticamente a responsabilidade por cada Infraestrutura em função do tipo de Infraestrutura.
+
+Ao estabelecer o tipo de Infraestrutura e amarrar com responsável(is) / grupos de responsáveis, o sistema atribuiria, automaticamente, a cada uma das Infraestruturas o(s) responsável(is) / grupos de responsáveis correspondente.
+
+Deverá ser mantida a opção de atribuição manual do responsável / grupo de responsável pela Infraestrutura, independentemente da amarração automática tipo de Infraestrutura x responsável.
+
+O sistema deve permitir, portanto, atribuir responsabilidade de 2 formas:
+Diretamente na tabela de gestão de Infraestrutura
+Por meio das tabelas Responsabilidade x Tipo de Infraestrutura
+
+Em ambos os casos, a responsabilidade poderá ser para:
+1 usuário
+vários usuários ou
+para um grupo de usuários pré-definido
+
+Esse item é bastante importante para poder gerar alertas para todos os usuários responsáveis pelas Infraestruturas e não para um único usuário.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Testar um usuário, múltiplos usuários e grupo; verificar atribuição direta e/ou por tipo/categoria conforme o item, consulta pessoal e destinatários de alerta. Testar usuário sem autorização.
+
+------------------------------------------------------------------------------
+INF-119 — Criar novos campos para a tabela de gestão de Infraestrutura
+
+Origem: item 119; T069/R005
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A tabela de gestão de Infraestrutura atualmente está dentro no link: Módulo Legal>Documentos>Infra Estrutura. É uma tabela bem simples e não permite a correta gestão das Infraestruturas. Ela possui apenas os campos:
+Descrição
+Arquivo (para fazer o upload do documento)
+
+Observação: associada à descrição da infraestrutura existes os sub-itens denominados atributo e valor.
+
+A tabela de Gestão de Infraestruturas deveria contar com mais elementos para a efetiva gestão da informação, ou seja:
+Unidade
+Descrição da Infraestrutura
+Tipo de Infraestrutura: (ex: TI, Predial, Sistema Elétrico, Sistema Mecânico, Sistema de Climatização, Sistema Hidráulico, etc.)
+Responsável pela Infraestrutura
+Departamento/Setor: Área em que a infraestrutura está instalada
+Condições da Infraestruturais: (ex: Acessibilidade, Atendimento à normas técnicas)
+Nível de Risco: (Alto, Médio, Baixo)
+Classe (Ex: Equipamentos da classe A (Máxima Segurança e Disponibilidade Máxima), Equipamentos da classe B (Continuidade Operacional e Qualidade Máxima), Equipamentos da classe C (Não se Enquadra nas Categorias Anteriores)
+Plano de Manutenção Associado: Arquivo ou Link do documento: Link para a cópia digital do documento ou arquivo carregado. Deverá ser possível carregar "n" arquivos
+Propriedade da Infraestrutura (ex: própria, de terceiro)
+Situação da Infraestrutura: (ex: conforme, não conforme, parcialmente conforme)
+Evidência de Atendimento: Arquivo ou Link do documento: Link para a cópia digital do documento ou arquivo carregado. Deverá ser possível carregar "n" arquivos
+Histórico (automático): do que foi feito para cada Infraestrutura
+Observação
+
+Observação: como previsto no item 31, a tabela de Gestão de Infraestruturas será preenchida a partir da validação das recomendações da IA (potenciais Infraestruturas) ou diretamente na própria tabela de Gestão de Infraestruturas.
+
+As tabelas de gestão devem ser separadas entre o que é de CONTROLE (ou seja, ações que o próprio cliente deve tomar) daquilo que é INFLUÊNCIA, ou seja, ações que os fornecedores do cliente devem tomar).
+
+CRITÉRIO DE ACEITE PROPOSTO
+Cadastrar infraestrutura com classe, propriedade, conformidade, responsável e múltiplas evidências/arquivos de manutenção; consultar o histórico da alteração.
+
+------------------------------------------------------------------------------
+INF-120 — Incluir um campo na tabela de Gestão de Infraestruturas denominado "Risco".
+
+Origem: item 120; T069/R006
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Os riscos poderiam ser:
+Alto
+Médio
+Baixo
+
+Esse risco estaria associado ao tipo de Infraestrutura, ou seja, em caso de descumprimento de requisitos legais associados à Infraestrutura, qual seria o tamanho do problema que o cliente teria. Esse item risco deverá fazer parte dos dashboards, ou seja, deverá ser possível visualizar as estatísticas com a lente do risco. Ex: Infraestruturas em desacordo com a legislação com risco alto, médio e baixo, etc.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Registrar casos Alto, Médio e Baixo e conferir filtro/estatística de risco vinculados à entidade correta, sem contar registros fora da seleção.
+
+------------------------------------------------------------------------------
+INF-121 — Estabelecer uma política de e-mails como nos outros módulos
+
+Origem: item 121; T069/R007
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Atualmente não temos a parametrização da política de e-mails para o módulo de Infraestrutura. O alerta deveria ser parametrizado para cada Infraestrutura cadastrada baseado na situação de conformidade da infraestrutura.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Configurar destinatários por registro/tipo e evento; disparar cenário de teste e confirmar entrega apenas aos responsáveis elegíveis, incluindo múltiplos usuários/grupos, conforme regra aprovada.
+
+------------------------------------------------------------------------------
+INF-122 — Gerar a tabela de Potenciais Infraestruturas
+
+Origem: item 122; T069/R008
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Vide item 31 sobre como gerar automaticamente a tabela de potenciais Infraestruturas. Após a validação desses itens potenciais ele passaria a integrar a tabela de Gestão de Infraestrutura mencionada no item 119 acima.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Receber potencial por unidade e Controle/Influência; validar um item e conferir criação na gestão com vínculo legal; manter pendente outro item sem convertê-lo em gestão.
+
+------------------------------------------------------------------------------
+INF-123 — Gerar Histórico automático das mudanças feitas na tabela de Gestão de Infraestrutura
+
+Origem: item 123; T069/R009
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Gerar um log das mudanças feita nos registros da tabela de Infraestrutura. Creio que a aplicação de logs para todas as ações do sistema (vide item 16) é uma maneira de implementar essa funcionalidade.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Alterar um registro autorizado e consultar o histórico para identificar operação, registro, usuário e data; conferir acesso e retenção conforme política definida.
+
+------------------------------------------------------------------------------
+INF-124 — Garantir que a parametrização da política de e-mails para o módulo de Infraestrutura seja "friendly"
+
+Observação: isso poderia ser replicado para os demais módulos (medição e monitoramento, etc.)
+
+Origem: item 124; T069/R010
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A ideia é que o próprio usuário parametrize a política de e-mails, definindo para cada tipo de Infraestrutura quem deve ser alertado. Isso poderia estar linkado com os múltiplos responsáveis pelos Infraestruturas (mencionados no item 118 acima).
+
+CRITÉRIO DE ACEITE PROPOSTO
+Configurar destinatários por registro/tipo e evento; disparar cenário de teste e confirmar entrega apenas aos responsáveis elegíveis, incluindo múltiplos usuários/grupos, conforme regra aprovada.
+
+------------------------------------------------------------------------------
+INF-125 — Gerar automaticamente as informações das Infraestruturas via IA a partir do upload do documento
+
+Origem: item 125; T069/R011
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Extrair todos os dados do documento carregado como evidência da adequação da Infraestrutura e preencher as informações da tabela de gestão de Infraestrutura (da mesma forma como foi aplicado no novo GED-E)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Carregar documento de teste com dados conhecidos, comparar campos extraídos com o original e aplicar o procedimento aprovado para valores ausentes, divergentes ou ilegíveis. Política de confirmação humana deve ser definida.
+
+------------------------------------------------------------------------------
+INF-126 — Criar um visual mais "clean" para a Tabela de Gestão de Infraestrutura
+
+Origem: item 126; T069/R012
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O visual atual torna a experiência pouco agradável. Temos que partir para ícones, "flags" ou coisas do gênero.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Revisar a tela com registros de diferentes situações, confirmar ícones/sinalizadores e legibilidade dos estados com os mesmos dados de origem.
+
+------------------------------------------------------------------------------
+INF-127 — Visualizar pendências do usuário.
+
+Origem: item 127; T070/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Através do ícone de um sininho é possível visualizar, de modo rápido e resumido, todas as pendências (do usuário logado):
+
+
+
+A imagem abaixo apresenta o resultado da consulta ao clicar no sininho. Na realidade ao clicar no sininho aparece uma versão com informações resumidas das pendências (o exemplo da figura abaixo é do módulo de licenças. Algo parecido terá que ser aplicado para o módulo de Infraestrutura):
+
+
+
+
+
+
+
+
+
+
+
+
+Em algum outro link deve aparecer uma versão com informações mais completas, como na imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Com dois usuários, conferir resumo e lista completa de pendências do usuário logado e testar resolução/atualização sem expor itens não autorizados.
+
+------------------------------------------------------------------------------
+INF-128 — Visualizar o que tem agendado para o usuário
+
+Origem: item 128; T070/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Poderia ser adotado, por exemplo, o ícone de uma agenda para visualizar, de modo rápido e resumido, todas as ações futuras (do usuário logado). Essa é apenas 1 ideia. O importante é que exista uma agenda de pendências viva para o usuário que está logado para o módulo de Infraestrutura:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Criar evento futuro relacionado ao módulo e conferir data, responsável e acesso ao registro pela agenda pessoal/gerencial autorizada.
+
+------------------------------------------------------------------------------
+INF-128.1 — Fluxo do estágio em que o processo DE GESTÃO se encontra tipo "Entrega do Mercado Livre" (como foi aplicado no caso do GED-E)
+
+Origem: item 128.1; T071/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse fluxo é bem interessante de ser aplicado em todos os módulos. As atividades de GESTÃO de todos os módulos, de alguma forma, funcionam como um processo. Segue o workflow do módulo:
+
+. No módulo infraestrutura a pessoa:
+1- cadastra a infraestrutura
+2- define o responsável
+3- carrega o plano de manutenção do equipamento (facultativo)
+5- define o nível de risco (facultativo)
+6- carrega a evidência do atendimento
+
+CRITÉRIO DE ACEITE PROPOSTO
+Percorrer as etapas descritas com um registro de teste, conferir destaque do estágio atual e preservar etapas facultativas; validar transições e retornos após esclarecimento das pendências.
+
+------------------------------------------------------------------------------
+INF-128.2 — Prever o link "Ajuda" / "Como Funciona" em todos os módulos para servir como um treinamento para o usuário.
+
+Origem: item 128.2; T071/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Nesse link poderíamos carregar o texto da ajuda e um vídeo mostrando como o sistema funciona
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir Ajuda/Como Funciona no módulo e conferir texto e vídeo configurado explicando o processo correspondente.
+
+
+VALIDAÇÃO DO PACOTE
+Este TXT deve ser revisado em conjunto com as dependências indicadas. A implementação
+exige acesso ao código e banco atuais, ausentes deste anexo. As condições de aceite
+são propostas de homologação funcional, não resultados de testes já executados.

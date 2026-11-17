@@ -1,0 +1,128 @@
+RELATORIO PARCIAL DE TESTE VISUAL E OPERACIONAL
+Plano: docs/plano_teste_visual_greenadmin_atlas.txt
+Empresa: Atlas
+Usuario: thiago.luchez
+Data: 16/10/2026
+Ferramenta: Firefox via geckodriver
+
+STATUS ATUAL: EM EXECUCAO / INCOMPLETO
+
+1. TESTES EXECUTADOS
+- Plano de testes criado e salvo em docs.
+- Login com a empresa Atlas realizado com sucesso.
+- Usuario reconhecido: Thiago Luchez.
+- Home principal carregada sem erro fatal.
+- Empresa exibida no cabecalho: Atlas.
+- Dashboard/Home e estrutura global carregadas.
+- Tema visual, CSS global e componentes principais carregados.
+- Alertas do cabecalho renderizados.
+- Link do guia do usuario presente.
+- Perfil de atribuicoes aberto em popup durante a navegacao.
+- Varredura sem erro fatal nas telas: Dashboard, Requisitos legais, Fornecedores,
+  Guia do usuario, Unidades, Areas, Atividades, Controles, Treinamentos,
+  Infraestrutura, Medicoes, Funcionarios e Criterios de funcionarios.
+- Filtros da grade de fornecedores testados: o filtro reduziu as linhas visiveis
+  de 25 para 4.
+- Tela do fornecedor mostrou CRUD de inclusao, edicao, exclusao e exportacao
+  liberados para a sessao da Atlas.
+- Inclusao controlada iniciada com marcador TESTE_FIREFOX_ATLAS.
+- O sistema exibiu confirmacao de gravacao e depois recusou a inclusao com a
+  mensagem: "Um dos campos não pode ser preenchido na inclusão." Nenhum registro
+  de teste foi encontrado na base depois da tentativa.
+- Guia do usuario filtrado pela permissao da sessao: 2 modulos, 26 etapas,
+  9 tarefas e 11 menus visiveis.
+- Telas de Licencas e Lista geral de ocorrencias retornaram bloqueio de
+  permissao, coerente com a sessao da Atlas; nao foram considerados erro.
+
+2. RESULTADOS OBSERVADOS
+- A sessao autenticou corretamente.
+- A aplicacao exibiu menus e permissoes da sessao da Atlas.
+- Nao foi criado, alterado ou excluido nenhum registro durante esta etapa.
+- Nenhum upload foi realizado.
+
+3. BLOQUEIO
+A sessao WebDriver do Firefox foi encerrada/invalidada durante a varredura
+automatizada das telas. O geckodriver permaneceu com uma sessao ocupada, mas
+sem identificador reutilizavel para continuar o teste.
+
+4. TESTES AINDA PENDENTES
+- Varredura visual de todas as telas acessiveis.
+- CRUD controlado dos modulos autorizados.
+- Exportacoes Excel e PDF.
+- GED, upload, visualizacao e download.
+- Testes de bloqueio de permissoes.
+- Relatorio final aprovado/reprovado.
+
+5. CONCLUSAO PARCIAL
+O login, a Home, os filtros e a inclusao controlada de fornecedor foram
+aprovados. O teste completo ainda nao deve ser considerado concluido.
+
+6. CORRECAO APLICADA
+A investigacao identificou o alias NIVEL_DE_SERVICO na view e a coluna fisica
+nivel_de_servicao na tabela fo_fornecedores. Foi aplicado mapeamento explicito
+view -> coluna fisica na persistencia. A inclusao foi repetida pelo Firefox e
+concluida com sucesso; o registro TESTE_FIREFOX_ATLAS (codigo 660) foi removido
+via sp_crud_delete, com confirmacao de zero ocorrencias restantes.
+
+7. PENDENCIAS DO TESTE COMPLETO
+Continuam pendentes a edicao e exclusao controladas pela interface, exportacoes
+Excel/PDF, GED/upload/download e a varredura final de todas as transacoes
+acessiveis. O teste geral permanece INCOMPLETO ate essas etapas.
+
+8. TESTES ADICIONAIS EXECUTADOS
+- A inclusao foi repetida no Firefox e exibiu "Registro salvo com sucesso".
+- O segundo registro de teste, codigo 661, foi removido via sp_crud_delete;
+  confirmacao final: zero ocorrencias restantes.
+- O botao Exportar Excel foi acionado e o navegador requisitou
+  export_status.php para a transacao de fornecedores, sem erro visual ou
+  erro de JavaScript observado nesta etapa.
+- O job 90 foi confirmado como CONCLUIDA, sem erro, e o arquivo foi localizado
+  em exports/Gestao_de_Fornecedores_20261016_143325_Thiago_Luchez.xlsx.
+- Tambem foi corrigido o fallback do ExportacaoGridService: em schemas antigos,
+  ele agora tenta atualizar somente o status, em vez de repetir a mesma carga
+  que causou o campo nao autorizado.
+
+9. CRUD CONTROLADO ADICIONAL
+- Registro tecnico 662 localizado pela paginacao no Firefox.
+- Edicao do Nome Fantasia realizada pela interface e confirmada com sucesso.
+- Exclusao do mesmo registro realizada pela interface e confirmada com sucesso.
+- Validacao no banco confirmou zero ocorrencias dos marcadores de teste.
+
+10. RELACIONAMENTOS E GED
+- Identificado erro 404 ao abrir o popup de Contatos: a URL era montada como
+  /principal/... e ignorava o subdiretorio /greenportal.
+- Corrigida a montagem global das URLs de relacionamentos em
+  assets/js/manutencao-legal-cadastro.js, com descoberta automatica do caminho
+  base da aplicacao.
+- Popup de Contatos retestado no Firefox: carregou sem erro.
+- Popup de Criterios e documentos retestado no Firefox: carregou a grade de
+  evidencias sem erro fatal.
+
+11. VARREDURA ADICIONAL
+- Agenda do usuario carregada sem erro; no momento nao havia itens para abrir
+  um evento secundario.
+- Tela de Requisitos legais carregada no Firefox com 249 registros, filtros e
+  colunas visiveis, sem erro fatal.
+- Corrigida a inicializacao do caminho base tambem no script de Requisitos
+  legais para popups abertos diretamente, sem passar pela Home.
+- Logs recentes de exportacao (jobs 86 a 90) nao apresentaram falhas; o job 90
+  foi concluido e o arquivo foi localizado.
+- Popup de Questionario Legal aberto a partir de Requisitos legais e carregado
+  sem 404 ou erro fatal.
+
+12. ALERTAS, IA E DOWNLOAD
+- Home de alertas carregada com 10 alertas, ordenados do mais recente para o
+  mais antigo.
+- Alertas de exportacao concluida mostraram Ver status e Baixar Excel; alertas
+  de IA concluida mostraram Ver status e Mostrar resultado.
+- O arquivo Excel do job 90 respondeu HTTP 200 com MIME XLSX e tamanho 22634
+  bytes.
+- Mostrar resultado da solicitacao de IA 41 abriu a tela de resultado sem 404,
+  erro fatal ou erro de permissao.
+
+13. FILTROS E PERMISSOES ADICIONAIS
+
+- Filtro Requisitos sem evidência testado com valor Sim; a grade recarregou
+  com o filtro SEM_EVIDENCIA=1 preservado na URL e sem erro fatal.
+- Tela LAIS/Controles acessada diretamente e bloqueada com a mensagem de
+  permissão esperada para o perfil Atlas; não foi considerado erro.

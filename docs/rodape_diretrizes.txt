@@ -1,0 +1,20 @@
+GREEN PORTAL - DIRETRIZES DO RODAPE INTELIGENTE
+
+O rodape e um componente independente da main e deve fornecer feedback
+visual, sem substituir os logs de auditoria.
+
+Componentes:
+
+- principal/footer.php: estrutura HTML;
+- assets/js/footer.js: status, contexto e mensagens;
+- assets/css/footer.css: apresentacao visual;
+- main.php: inclui o componente;
+- main.js: encaminha eventos das abas.
+
+O lado esquerdo apresenta o estado atual, como Pronto, Carregando,
+Alteracoes nao salvas, Salvando, Salvo e Exportacao em andamento. O centro
+apresenta a transacao ou aba ativa. O lado direito apresenta empresa e texto
+institucional.
+
+Eventos de formularios e Ajax dos iframes podem atualizar o status do rodape.
+O rodape deve respeitar o idioma PT, EN e ES e nunca exibir dados sensiveis.

@@ -1,0 +1,101 @@
+/* Camada visual compartilhada da Homologação de Fornecedores. */
+.homologacao-fornecedor-grid-fragment,
+.homologacao-funcionario-grid-fragment,
+.homologacao-tipo-grid-fragment,
+.homologacao-popup,
+[data-vinculos] {
+    color: var(--gp-text);
+    font-family: var(--gp-font-body);
+}
+
+.homologacao-fornecedor-grid-fragment .menu-grid-scroll,
+.homologacao-funcionario-grid-fragment .menu-grid-scroll,
+.homologacao-tipo-grid-fragment .menu-grid-scroll {
+    border: 1px solid var(--gp-border);
+    border-radius: var(--gp-radius-md);
+    background: var(--gp-surface);
+    box-shadow: var(--gp-shadow-sm);
+}
+
+.homologacao-fornecedor-grid-fragment .menu-batch-grid th,
+.homologacao-funcionario-grid-fragment .menu-batch-grid th,
+.homologacao-tipo-grid-fragment .menu-batch-grid th {
+    color: var(--gp-primary-dark);
+    background: var(--gp-primary-soft);
+    border-color: var(--gp-border);
+    font-family: var(--gp-font-heading);
+    font-size: var(--gp-font-size-sm);
+}
+
+.homologacao-fornecedor-grid-fragment .menu-batch-grid td,
+.homologacao-funcionario-grid-fragment .menu-batch-grid td,
+.homologacao-tipo-grid-fragment .menu-batch-grid td {
+    border-color: var(--gp-border);
+    vertical-align: middle;
+}
+
+.homologacao-fornecedor-grid-fragment .menu-batch-grid tbody tr:hover td,
+.homologacao-funcionario-grid-fragment .menu-batch-grid tbody tr:hover td,
+.homologacao-tipo-grid-fragment .menu-batch-grid tbody tr:hover td {
+    background: var(--gp-primary-soft);
+}
+
+.homologacao-fornecedor-grid-fragment .grid-input,
+.homologacao-funcionario-grid-fragment .grid-input,
+.homologacao-tipo-grid-fragment .grid-input,
+.homologacao-popup .form-control,
+.homologacao-popup .form-select,
+[data-vinculos] .form-control,
+[data-vinculos] .form-select {
+    color: var(--gp-text);
+    border-color: var(--gp-border);
+    background: var(--gp-surface);
+    font-family: var(--gp-font-body);
+}
+
+.homologacao-fornecedor-grid-fragment .grid-input:focus,
+.homologacao-funcionario-grid-fragment .grid-input:focus,
+.homologacao-tipo-grid-fragment .grid-input:focus,
+.homologacao-popup .form-control:focus,
+.homologacao-popup .form-select:focus,
+[data-vinculos] .form-control:focus,
+[data-vinculos] .form-select:focus {
+    border-color: var(--gp-primary);
+    box-shadow: 0 0 0 3px var(--gp-focus-ring);
+}
+
+.homologacao-popup .table-responsive,
+.homologacao-popup .border,
+[data-vinculos] .vinc-painel {
+    border-color: var(--gp-border) !important;
+    border-radius: var(--gp-radius-md);
+    box-shadow: var(--gp-shadow-sm);
+}
+
+.homologacao-popup .table,
+[data-vinculos] .vinc-painel { background: var(--gp-surface); }
+.homologacao-popup .table thead th,
+[data-vinculos] .vinc-cab { color: var(--gp-primary-dark); background: var(--gp-primary-soft); }
+.homologacao-popup .text-muted,
+[data-vinculos] .text-muted { color: var(--gp-muted) !important; }
+[data-vinculos] .vinc-lista li { border-color: var(--gp-border); }
+[data-vinculos] .vinc-lista li:hover { background: var(--gp-primary-soft); }
+
+html.gp-pagina body { font-family: var(--gp-font-body) !important; font-size: var(--gp-font-size) !important; }
+
+/* Inclui os grids de tipos, critérios e treinamentos, que usam classes
+ * específicas por transação. */
+[class*="homologacao-"][class*="grid-fragment"] .menu-grid-scroll {
+    border: 1px solid var(--gp-border);
+    border-radius: var(--gp-radius-md);
+    background: var(--gp-surface);
+    box-shadow: var(--gp-shadow-sm);
+}
+[class*="homologacao-"][class*="grid-fragment"] .menu-batch-grid th {
+    color: var(--gp-primary-dark);
+    background: var(--gp-primary-soft);
+    border-color: var(--gp-border);
+    font-family: var(--gp-font-heading);
+}
+[class*="homologacao-"][class*="grid-fragment"] .menu-batch-grid td { border-color: var(--gp-border); }
+[class*="homologacao-"][class*="grid-fragment"] .menu-batch-grid tbody tr:hover td { background: var(--gp-primary-soft); }

@@ -1,0 +1,34 @@
+const fs=require('fs');
+const base='http://127.0.0.1:4444',app='http://187.191.99.180/greenportal';
+const testUser=process.env.GREEN_TEST_ADM_USER||'';
+const testPassword=process.env.GREEN_TEST_ADM_PASSWORD||'';
+async function call(path,method='GET',body){const r=await fetch(base+path,{method,headers:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});const j=await r.json();if(j.value&&j.value.error)throw Error(j.value.message||j.value.error);return j.value;}
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+(async()=>{let sid;const checks=[];const check=(name,ok,detail='')=>{checks.push({name,ok,detail});console.log((ok?'PASS':'FAIL')+' - '+name+(detail?': '+detail:''));};try{if(!testUser||!testPassword)throw Error('Defina GREEN_TEST_ADM_USER e GREEN_TEST_ADM_PASSWORD para executar o teste.');
+sid=(await call('/session','POST',{capabilities:{alwaysMatch:{browserName:'firefox','moz:firefoxOptions':{binary:'C:\\Program Files\\Mozilla Firefox\\firefox.exe',args:['-headless']}}}})).sessionId;
+const a=p=>'/session/'+sid+p;
+await call(a('/url'),'POST',{url:app+'/index.php'});await wait(800);
+await call(a('/execute/sync'),'POST',{script:`var e=document.querySelector('#empresa'),u=document.querySelector('#userid'),p=document.querySelector('#senha'),f=document.querySelector('form.login-form');if(e.tagName==='SELECT'){var o=Array.from(e.options).find(x=>/atlas/i.test(x.textContent)||/atlas/i.test(x.value));if(o)e.value=o.value;}else{e.value='ATLAS';}u.value=${JSON.stringify(testUser)};p.value=${JSON.stringify(testPassword)};f.submit();`,args:[]});await wait(2200);
+await call(a('/url'),'POST',{url:app+'/principal/seguranca_usuarios.php'});await wait(1800);
+const state=await call(a('/execute/sync'),'POST',{script:`return (function(){var t=document.querySelector('#userBatchGrid');if(!t)return {problema:'grid ausente',url:location.href,body:document.body.innerText.slice(0,800)};return {headers:Array.from(t.querySelectorAll('thead th')).map(x=>x.dataset.column),rows:t.querySelectorAll('tbody tr[data-key]').length,body:t.innerText.toUpperCase(),status:(document.querySelector('.grid-page-status')||{}).textContent||'',nextDisabled:document.querySelector('.grid-page-next')?.disabled===true};})()`,args:[]});
+check('Tela carregada como ADM DA EMPRESA',!state.problema,state.problema||'');
+if(state.problema) throw Error(JSON.stringify(state));
+check('ADMINISTRADOR não aparece na grade',!state.body.includes('ADMINISTRADOR'),state.body.includes('ADMINISTRADOR')?'texto localizado':'');
+check('Grade possui registros',state.rows>0,String(state.rows));
+check('Paginação informa total',/\d+/.test(state.status),state.status);
+const beforePage=await call(a('/execute/sync'),'POST',{script:"var r=document.querySelector('#userBatchGrid tbody tr[data-key]');var i=r&&Array.from(r.querySelectorAll('input')).find(x=>(x.name||'').endsWith('[userid]'));return i?i.value:'';",args:[]});
+const next=await call(a('/execute/sync'),'POST',{script:"var b=document.querySelector('.grid-page-next');if(!b||b.disabled)return false;b.click();return true;",args:[]});
+if(next){await wait(1000);const afterPage=await call(a('/execute/sync'),'POST',{script:"var r=document.querySelector('#userBatchGrid tbody tr[data-key]');var i=r&&Array.from(r.querySelectorAll('input')).find(x=>(x.name||'').endsWith('[userid]'));return i?i.value:'';",args:[]});check('Paginação executada',afterPage!==beforePage,`${beforePage} -> ${afterPage}`);}else check('Paginação disponível',false,'botão Próxima desabilitado');
+const blockedAssign=await call(a('/execute/sync'),'POST',{script:`return fetch(location.href,{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest','Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({'action':'save_rows','rows[${0}][userid]':'teste_bloqueio_perfil','rows[${0}][nome]':'Teste bloqueio','rows[${0}][email]':'','rows[${0}][codperfil]':'1','rows[${0}][codgrupo]':'1','rows[${0}][codusuario_superior]':'','rows[${0}][ativo]':'1'})}).then(r=>r.json())`,args:[]});
+check('Atribuição de ADMINISTRADOR bloqueada',blockedAssign&&blockedAssign.ok===false,JSON.stringify(blockedAssign));
+const blockedEdit=await call(a('/execute/sync'),'POST',{script:"return fetch(location.href,{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest','Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({'action':'save_rows','rows[1][userid]':'admin','rows[1][nome]':'Administrador','rows[1][email]':'','rows[1][codperfil]':'1','rows[1][codgrupo]':'1','rows[1][codusuario_superior]':'','rows[1][ativo]':'1'})}).then(r=>r.json())",args:[]});
+check('Edição de usuário ADMINISTRADOR bloqueada',blockedEdit&&blockedEdit.ok===false,JSON.stringify(blockedEdit));
+const newRow=await call(a('/execute/sync'),'POST',{script:"var b=document.querySelector('[data-new-user]');if(!b)return false;b.click();return new Promise(r=>setTimeout(()=>r(!!document.querySelector('tbody tr[data-key^=novo_] td[data-column=codusuario_superior] select')),180));",args:[]});
+check('Novo usuário possui Usuário superior',newRow===true);
+const exportResult=await call(a('/execute/sync'),'POST',{script:`return fetch('${app}/principal/seguranca_usuarios.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'action=export_request'}).then(r=>r.text()).then(t=>/Exporta/i.test(t));`,args:[]});
+check('Solicitação de exportação aceita',exportResult===true);
+let job=null;for(let i=0;i<12;i++){await wait(1000);const s=await call(a('/execute/sync'),'POST',{script:`return fetch('${app}/principal/export_status.php?transacao=seguranca_usuarios').then(r=>r.json())`,args:[]});if(s&&s.job){job=s.job;if(['CONCLUIDA','ERRO'].includes(job.status))break;}}
+check('Exportação concluída',job&&job.status==='CONCLUIDA',JSON.stringify(job||{}));
+if(job&&job.arquivo)check('Arquivo de exportação informado',/^\/exports\/.+\.xlsx$/i.test(job.arquivo),job.arquivo);
+fs.mkdirSync('docs',{recursive:true});const shot=await call(a('/screenshot'));fs.writeFileSync('docs/teste-seguranca-usuarios-adm-empresa-firefox.png',Buffer.from(shot,'base64'));fs.writeFileSync('docs/teste-seguranca-usuarios-adm-empresa-firefox.json',JSON.stringify({checks,job},null,2));if(checks.some(x=>!x.ok))process.exitCode=1;
+}catch(e){console.error('ERRO - '+e.message);process.exitCode=1;}finally{if(sid)await call('/session/'+sid,'DELETE').catch(()=>{});}})();

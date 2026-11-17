@@ -1,0 +1,64 @@
+ROTEIRO DE RETESTE — PER-008
+Permissões parciais e mensagens em Responsabilidades de Funcionários
+Data: 22/08/2026
+
+OBJETIVO
+Confirmar as três correções apontadas no relatório PER-008:
+1. modo somente leitura quando o perfil possui apenas Visualizar;
+2. disponibilidade da exclusão lógica quando possui apenas Excluir;
+3. mensagem clara quando uma submissão contém inclusão permitida e edição não autorizada.
+
+AMBIENTE E USUÁRIOS
+URL: http://187.191.99.180/greenportal/
+Empresa: MODELO
+Banco: gmodelo_dbp
+USUÁRIOS
+Preparação e limpeza: admin / <senha de teste via variável de ambiente>
+Execução autorizada: ueditor / <senha de teste via variável de ambiente>
+Transação: HOMOLOGACAO_FORNECEDOR_FUNCIONARIO, código 495.
+Funcionário de teste: usar um funcionário válido com pelo menos uma responsabilidade ativa criada para teste, por exemplo CODFUNCIONARIO 13, se ainda estiver disponível.
+
+PRÉ-CONDIÇÕES
+1. Confirmar que a grade Gestão de Funcionários está acessível pelo menu.
+2. Confirmar que o funcionário de teste possui uma responsabilidade ativa ou criar uma somente para o teste completo.
+3. Não utilizar vínculos de treinamento do legado como dados de teste.
+4. Registrar as permissões originais e manter Excel/PDF sem alterações.
+
+RT-A — Somente Visualizar
+1. Com admin, configurar no perfil GESTOR: Visualizar=1, Incluir=0, Editar=0, Excluir=0.
+2. Sair e entrar novamente como ueditor.
+3. Abrir Homologação de Fornecedores > Gestão de Funcionários.
+4. Selecionar o funcionário e clicar em Responsabilidades > Manter.
+5. Confirmar que a manutenção abre e identifica o funcionário correto.
+6. Confirmar que os registros existentes permanecem visíveis.
+7. Confirmar que tipo, destino, usuário/grupo, prioridade, principal e vigência estão desabilitados.
+8. Confirmar que Adicionar está oculto, a lixeira desabilitada e Salvar desabilitado.
+Resultado esperado: modo somente leitura, sem bloqueio total indevido.
+
+RT-E — Somente Excluir
+1. Configurar: Visualizar=1, Incluir=0, Editar=0, Excluir=1.
+2. Reabrir a manutenção do funcionário.
+3. Confirmar que a tela e os registros são exibidos.
+4. Confirmar campos desabilitados, Adicionar oculto e Salvar sem inclusão/edição.
+5. Confirmar que a lixeira está habilitada.
+6. Excluir logicamente somente o vínculo criado para teste e salvar.
+7. Confirmar mensagem de sucesso, ausência do vínculo entre ativos e ATIVO=0 no banco.
+Resultado esperado: exclusão lógica disponível pela interface, sem exclusão física.
+
+RT-C — Inclusão permitida e edição não autorizada
+1. Configurar: Visualizar=1, Incluir=1, Editar=0, Excluir=0.
+2. Confirmar registros existentes desabilitados e Adicionar disponível.
+3. Adicionar uma responsabilidade de teste e salvar.
+4. Se possível, repetir a submissão incluindo tentativa controlada de alterar registro existente.
+5. Confirmar que a inclusão válida é processada e a edição não autorizada é ignorada.
+6. Confirmar a mensagem: “Operação concluída. Inclusões e edições não autorizadas foram ignoradas.”
+Resultado esperado: o usuário é informado de que parte da submissão não foi autorizada.
+
+VALIDAÇÃO DE NÃO REGRESSÃO
+Confirmar que Visualizar=1, Incluir=1, Editar=1, Excluir=1 continua permitindo manutenção completa e que a troca para outro funcionário não mistura responsabilidades.
+
+LIMPEZA
+Excluir logicamente os vínculos criados, restaurar o baseline do GESTOR (V=1, I=0, E=0, X=0), restaurar Excel/PDF e confirmar que nenhum vínculo legado foi alterado.
+
+CRITÉRIO DE APROVAÇÃO
+RT-A, RT-E e RT-C devem ser aprovados, sem alteração indevida de dados e com a mensagem parcial correta no cenário de inclusão permitida com edição bloqueada.

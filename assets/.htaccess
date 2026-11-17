@@ -1,0 +1,9 @@
+# Os assets do portal nao devem ser reutilizados pelo cache do navegador.
+# Isso evita ERR_CACHE_READ_FAILURE em paginas carregadas dentro de iframes.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|woff|woff2|eot|ttf|svg|ico|png|jpg|jpeg|gif)$">
+        Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+        Header always set Pragma "no-cache"
+        Header always set Expires "0"
+    </FilesMatch>
+</IfModule>

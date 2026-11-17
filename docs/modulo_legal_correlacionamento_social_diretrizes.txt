@@ -1,0 +1,35 @@
+Modulo Legal - Correlacionamento Social
+
+Origem
+- E:/wamp/www/cadastros/lais_legislacaoxambiental_c.php.
+- E:/wamp/www/configuracoes/lais_legislacaoxambiental.php.
+
+Implementacao oficial
+- Existe somente um item de menu: Modulo Legal > Correlacionamento Social.
+- Menu: CORRELACIONAMENTO_SOCIAL.
+- Transacao principal: modulolegal_correlacionamentosocial.php.
+- Banco: gmodelo_dbp.
+- View principal: vw_modulolegal_correlacionamento_social_grid.
+- Chaves de contexto: CODLEGISLACAO e CODUNIDADE.
+
+Os relacionamentos nao sao itens de menu. Sao acessados por botoes contextuais:
+
+- Aspectos sociais: lais_legislacaoxaspectossociais.
+- Impactos sociais: lais_legislacaoximpactossociais.
+- Documentos: legislacaoxdocumentos.
+
+A implementacao preserva a logica do legado, que lista as legislacoes vinculadas
+as empresas/unidades sem aplicar filtro adicional por RESPONSABILIDADE. As telas
+contextuais sao somente leitura, respeitam os filtros da legislacao e unidade e
+oferecem exportacao Excel em segundo plano.
+
+A transacao principal usa ManutencaoLegalCadastroGrid, com autenticacao,
+permissoes, busca, filtros, paginacao, colunas persistentes, exportacao Excel,
+ajuda e abertura do PDF por visualizadopdf.php/PDF.js local.
+
+O script database/077_modulo_legal_correlacionamento_social.sql registra as
+views, o menu unico, permissoes, ajuda e a migracao em registros_migracao.
+Nenhum submenu deve ser criado para os relacionamentos.
+
+O grid principal preserva a ordem, os filtros e as larguras do legado; os
+identificadores tecnicos CODLEGISLACAO e CODUNIDADE permanecem ocultos.

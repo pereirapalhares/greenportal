@@ -1,0 +1,280 @@
+ROTEIRO DE RETESTE VISUAL — PER-004
+Permissão de exclusão de responsabilidades
+GreenPortal | Empresa Modelo | gmodelo_dbp
+Data: 21/08/2026
+
+===============================================================================
+1. OBJETIVO
+===============================================================================
+
+Confirmar que um usuário com Visualizar=1 e Excluir=1, mas sem Incluir e
+Editar, consegue acessar a manutenção e remover logicamente responsabilidades
+nos dois módulos:
+
+- LICENCAS;
+- REQUISITOS_LEGAIS.
+
+Também deve ser confirmado que o mesmo usuário não consegue incluir nem editar.
+
+===============================================================================
+2. CONTAS
+===============================================================================
+
+Administrador para preparar e limpar o teste:
+
+- Usuário: admin 
+Senha: <senha de teste via variável de ambiente>
+- Perfil: ADMINISTRADOR
+
+Usuário para executar o teste:
+
+- Usuário: ueditor
+Senha: <senha de teste via variável de ambiente>
+- Perfil: GESTOR
+
+===============================================================================
+3. CONFIGURAÇÃO DA PERMISSÃO
+===============================================================================
+
+Entrar como `admin` e abrir:
+
+Segurança > Permissões > Perfil GESTOR
+
+Configurar as duas transações exatamente assim:
+
+LICENCAS:
+- Incluir: 0
+- Visualizar: 1
+- Editar: 0
+- Excluir: 1
+
+REQUISITOS_LEGAIS:
+- Incluir: 0
+- Visualizar: 1
+- Editar: 0
+- Excluir: 1
+
+Exportar Excel e Gerar PDF podem permanecer como estavam, pois não fazem parte
+deste reteste.
+
+Salvar as permissões, sair do admin e entrar novamente como `ueditor` para
+renovar a sessão e carregar as novas flags.
+
+===============================================================================
+4. DADOS DE TESTE
+===============================================================================
+
+Licença:
+
+- CODLICENCA=1
+- Licença CETESB Nº 79/823.555
+
+Situação de requisito legal:
+
+- CODSITUACAO=39
+- Descrição iniciada por “As atividades da Crown são licenciadas pela CETESB”
+
+Os registros removidos devem ser vínculos ativos existentes ou vínculos
+criados previamente pelo administrador exclusivamente para este teste.
+
+Não remover um vínculo histórico preexistente.
+
+===============================================================================
+5. PER-004-A — LICENÇAS
+===============================================================================
+
+5.1 Acesso à consulta
+
+1. Entrar como `ueditor`.
+2. Abrir o menu Licenças.
+3. Selecionar a Licença 1.
+4. Clicar em Responsabilidades.
+
+Resultado esperado:
+
+- popup de Responsabilidades abre normalmente;
+- vínculos ativos são exibidos;
+- não há mensagem de falta de visualização.
+
+Resultado: PASSOU / FALHOU
+Evidência: ________________________________________________
+
+5.2 Acesso à manutenção com exclusão autorizada
+
+1. No popup de Responsabilidades, clicar em Manter.
+2. Confirmar que a tela de manutenção abre.
+3. Confirmar que o vínculo ativo escolhido para o teste está listado.
+
+Resultado esperado:
+
+- a tela abre mesmo com Editar=0 e Incluir=0;
+- não aparece a mensagem “Seu perfil não possui permissão para alterar
+  responsabilidades.”;
+- o botão Adicionar não aparece;
+- os campos de finalidade, destino, responsável, prioridade, principalidade e
+  vigência ficam bloqueados;
+- a lixeira do vínculo ativo fica habilitada.
+
+Resultado: PASSOU / FALHOU
+Evidência: ________________________________________________
+
+5.3 Exclusão lógica
+
+1. Clicar na lixeira do vínculo de teste.
+2. Confirmar que a linha desaparece da tabela visual.
+3. Clicar em Salvar.
+4. Confirmar a mensagem de sucesso.
+5. Fechar a manutenção.
+6. Reabrir a consulta de Responsabilidades da Licença 1.
+
+Resultado esperado:
+
+- o vínculo não aparece como ATIVA;
+- o vínculo aparece como HISTORICA, quando a consulta apresentar o histórico;
+- o vínculo não é removido fisicamente;
+- os demais vínculos permanecem inalterados.
+
+Resultado: PASSOU / FALHOU
+Evidência: ________________________________________________
+
+5.4 Bloqueio de inclusão e edição
+
+1. Reabrir Manter responsabilidades.
+2. Confirmar que não há botão Adicionar.
+3. Tentar alterar um campo existente.
+4. Tentar salvar uma alteração.
+
+Resultado esperado:
+
+- não é possível editar os campos;
+- não é possível incluir nova linha;
+- nenhum vínculo ativo é alterado.
+
+Resultado: PASSOU / FALHOU
+Evidência: ________________________________________________
+
+===============================================================================
+6. PER-004-B — REQUISITOS LEGAIS
+===============================================================================
+
+6.1 Acesso à consulta
+
+1. Continuar conectado como `ueditor`.
+2. Abrir Requisitos Legais.
+3. Localizar a legislação/unidade da Situação 39.
+4. Abrir Situação.
+5. Selecionar a Situação 39.
+6. Clicar em Responsabilidades.
+
+Resultado esperado:
+
+- popup de Responsabilidades do requisito abre normalmente;
+- a situação exibida corresponde ao CODSITUACAO=39;
+- os vínculos ativos são exibidos.
+
+Resultado: PASSOU / FALHOU
+Evidência: ________________________________________________
+
+6.2 Acesso à manutenção
+
+1. Clicar em Manter responsabilidades.
+2. Confirmar que a tela abre.
+3. Confirmar que o vínculo ativo de teste está disponível.
+
+Resultado esperado:
+
+- tela aberta com Editar=0 e Incluir=0;
+- botão Adicionar oculto;
+- campos bloqueados;
+- lixeira habilitada para o vínculo ativo.
+
+Resultado: PASSOU / FALHOU
+Evidência: ________________________________________________
+
+6.3 Exclusão lógica
+
+1. Clicar na lixeira do vínculo de teste.
+2. Clicar em Salvar.
+3. Fechar e reabrir o popup.
+4. Consultar novamente a situação 39.
+
+Resultado esperado:
+
+- vínculo removido da lista ATIVA;
+- vínculo preservado como HISTORICA;
+- nenhum outro vínculo ou situação é afetado.
+
+Resultado: PASSOU / FALHOU
+Evidência: ________________________________________________
+
+6.4 Bloqueio de inclusão e edição
+
+1. Reabrir Manter responsabilidades.
+2. Confirmar ausência do botão Adicionar.
+3. Tentar alterar prioridade ou responsável.
+4. Tentar salvar.
+
+Resultado esperado:
+
+- campos permanecem bloqueados;
+- inclusão não disponível;
+- alteração não persistida;
+- nenhuma mensagem técnica ou SQL exibida.
+
+Resultado: PASSOU / FALHOU
+Evidência: ________________________________________________
+
+===============================================================================
+7. TESTE DE SEGURANÇA DA SUBMISSÃO
+===============================================================================
+
+Durante a inspeção visual, observar se o navegador permite modificar campos
+desabilitados. Mesmo que algum campo seja manipulado localmente, o servidor
+deve manter Editar=0 e não persistir alterações de dados.
+
+Não executar exploração ativa ou manipulação de parâmetros fora do escopo
+autorizado. Apenas registrar se houve tentativa acidental ou comportamento
+inesperado.
+
+Resultado: PASSOU / FALHOU / NÃO APLICÁVEL
+Observação: ______________________________________________
+
+===============================================================================
+8. LIMPEZA PELO ADMINISTRADOR
+===============================================================================
+
+1. Sair da conta `ueditor`.
+2. Entrar como `admin`.
+3. Confirmar que os vínculos criados especificamente para o teste foram
+   removidos logicamente.
+4. Confirmar que aparecem como HISTORICA.
+5. Confirmar que não houve exclusão física.
+6. Restaurar as permissões finais do perfil GESTOR conforme a política do
+   ambiente.
+7. Sair do admin.
+8. Entrar novamente como `ueditor` e confirmar o estado final.
+
+===============================================================================
+9. CRITÉRIOS DE ACEITE
+===============================================================================
+
+- PER-004 funciona em Licenças;
+- PER-004 funciona em Requisitos Legais;
+- manutenção abre com Excluir=1 mesmo sem Editar/Incluir;
+- campos ficam bloqueados sem Editar;
+- Adicionar fica oculto sem Incluir;
+- lixeira fica habilitada com Excluir;
+- exclusão é lógica e preserva histórico;
+- nenhum erro SQL é exposto;
+- nenhum vínculo de outro registro é alterado.
+
+===============================================================================
+10. RESULTADO FINAL
+===============================================================================
+
+Responsável: ______________________________________________
+Data: ____/____/________
+PER-004 Licenças: PASSOU / FALHOU / BLOQUEADO
+PER-004 Requisitos Legais: PASSOU / FALHOU / BLOQUEADO
+Resultado geral: PASSOU / PASSOU COM RESSALVAS / FALHOU
+Observações: ______________________________________________

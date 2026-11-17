@@ -1,0 +1,104 @@
+﻿ESPECIFICAÇÃO FUNCIONAL — GREEN 4.0
+Versão: 1.0 — elaboração em 12/11/2026
+Fonte: Passo a passo mudança no Green4.0 — Revisão G — 13/08/2026.doc.
+Situação: especificação para revisão funcional; não representa validação do software existente.
+
+COMO INTERPRETAR
+- IDs dos requisitos preservam a numeração da fonte. Txxx/Rxxx identifica tabela/linha,
+  contando a partir de zero na ordem do documento, para rastreabilidade sem paginação variável.
+- "Sim" indica solicitação de implementação na fonte, não comprova implementação.
+- Campo "Implementar?" vazio significa decisão pendente. Requisito dependente de outro
+  item marcado Sim é identificado, mas a inconsistência da marcação é preservada.
+- Detalhamento da fonte é reproduzido em cada requisito para conservar campos, exemplos,
+  condições, exceções e fluxos. Exemplos não constituem listas fechadas de domínio.
+- Critérios de aceite e regras consolidadas são operacionalizações propostas para revisão.
+  Decisões ausentes não foram convertidas em regras definitivas.
+- Referências a capturas de concorrentes são referências visuais do DOC original; imagens
+  não são reproduzidas em TXT. Não foram inferidas regras a partir de elementos só visuais.
+- Não há definição de banco físico, linguagem, endpoints ou cronograma nesta versão.
+
+
+13 — Outros Elementos a Serem Considerados
+
+OBJETIVO
+Especificar as mudanças deste tema preservando o escopo e as ressalvas da Revisão G.
+
+CONSTATAÇÃO SOBRE A FONTE
+O título Outros Elementos a Serem Considerados aparece somente no sumário.
+Não existe corpo correspondente após Auditoria. A lista abaixo é consolidação editorial
+de decisões transversais encontradas em outras partes; não é conteúdo atribuído a uma
+seção 13 inexistente e não introduz funcionalidades adicionais obrigatórias.
+
+OUT-001 — CONTRATAÇÃO E ATIVAÇÃO DE RECURSOS
+Origem: itens 2, 5.3, 16, 88, 130 e 148.
+Definir planos/white label, módulos contratados, GED, atualização legal e logs opcionais.
+Aceite proposto: demonstrar cada recurso condicionado ao contrato no cenário correspondente.
+
+OUT-002 — INTEGRAÇÃO COM IA
+Origem: observação Grandes Mudanças; itens 19, 28, 31, 54, 79, 95, 110, 125, 133–135, 160 e 170.
+A fonte atribui possíveis trabalhos de IA ao Tomás e a preparação da integração ao Paulo.
+Definir contrato de dados para receber sugestões, unidade, origem legal, validação e gestão.
+Aceite proposto: uma sugestão validada alcança o registro de gestão e sua origem pode ser consultada.
+Definir formatos, falhas, reprocessamento e manutenção antes de implementar; não há endpoints na fonte.
+
+OUT-003 — RELATÓRIOS E TEMPLATES
+Origem: itens 45 e 131 e introdução da Auditoria.
+Definir conteúdo e template dos relatórios Legal, Legal de Fornecedores e Auditoria.
+Aceite proposto: documento gerado a partir de dados de teste coincide com o template aprovado.
+
+OUT-004 — CATÁLOGO DE DECISÕES EM ABERTO
+- Itens com Implementar? vazio: consultar a lista gerada abaixo, preservando suas dependências.
+- Escopo ESG ausente; seção 13 sem detalhamento; número 169 ausente.
+- Logs opcionais versus históricos obrigatórios; recorrência versus comprovação real;
+  precedência de responsáveis; estados de protocolo; fluxos de Auditoria e RNC.
+- Confirmar campos e regras só visíveis em capturas de tela antes de fechar desenho de interface.
+
+OUT-005 — SEQUÊNCIA TÉCNICA SUGERIDA (NÃO PRAZO DA FONTE)
+1. Resolver decisões críticas, conhecer banco/telas atuais e corrigir defeitos impeditivos.
+2. Implementar permissões, responsabilidades, histórico, agenda, alertas e navegação comuns.
+3. Consolidar questionário/categorias/Legal e gestão dos cinco pilares.
+4. Integrar IA com validação e rastreabilidade e depois Homologação/RNC/Auditoria.
+5. Homologar migração e relatórios; definir ESG para uma especificação posterior.
+Essa sequência é proposta para revisão e não substitui a ordem documental dos 13 TXT.
+
+
+REQUISITOS FUNCIONAIS RASTREÁVEIS
+
+
+VALIDAÇÃO DO PACOTE
+Este TXT deve ser revisado em conjunto com as dependências indicadas. A implementação
+exige acesso ao código e banco atuais, ausentes deste anexo. As condições de aceite
+são propostas de homologação funcional, não resultados de testes já executados.
+
+ITENS SEM MARCAÇÃO EXPLÍCITA DE IMPLEMENTAÇÃO
+- Arquivo 01; item 6: O sistema do concorrente pré-define e "favorita" Filtros
+- Arquivo 01; item 10: Implementar token API
+- Arquivo 01; item 12: Integrar com o Power BI
+- Arquivo 02; item 21: Prever como migrar informações dos módulos legal, de licenças e de homologação de softwares concorrentes para o Green.
+- Arquivo 03; item 35: Permitir selecionar os campos que seriam visualizados na tabela de requisitos legais
+- Arquivo 03; item 42: Criar um registro que o RCL foi lido pelo usuário.
+- Arquivo 04; item 63: Apenas como informação, o sistema do concorrente permite criar campos personalizados no módulo de licenças
+- Arquivo 04; item 65: Gerar a tabela de Potenciais Licenças
+- Arquivo 09; item 149: Cadastrar Tipo de Veículo
+- Arquivo 09; item 150: Cadastrar Tipo de Equipamento
+- Arquivo 09; item 151: Fazer a integração de funcionários dentro da plataforma, com aplicação de questionário e liberação do funcionário para entrar na empresa
+- Arquivo 09; item 153: Rankear Fornecedores
+
+ÍNDICE E CONFERÊNCIA DE COBERTURA
+01_Mudancas_Gerais.txt: 26 requisitos numerados; 0 linhas de revisão de menus.
+02_Escalabilidade.txt: 3 requisitos numerados; 0 linhas de revisão de menus.
+03_Modulo_Legal.txt: 29 requisitos numerados; 0 linhas de revisão de menus.
+04_Modulo_Licencas.txt: 20 requisitos numerados; 0 linhas de revisão de menus.
+05_Modulo_Medicao_Monitoramento.txt: 19 requisitos numerados; 0 linhas de revisão de menus.
+06_Modulo_Controle.txt: 18 requisitos numerados; 0 linhas de revisão de menus.
+07_Modulo_Treinamento.txt: 17 requisitos numerados; 0 linhas de revisão de menus.
+08_Modulo_Infraestrutura.txt: 17 requisitos numerados; 0 linhas de revisão de menus.
+09_Modulo_Homologacao.txt: 27 requisitos numerados; 30 linhas de revisão de menus.
+10_Modulo_RNC.txt: 10 requisitos numerados; 63 linhas de revisão de menus.
+11_Modulo_Auditoria.txt: 11 requisitos numerados; 7 linhas de revisão de menus.
+12_Modulo_ESG.txt: 0 requisitos numerados; 0 linhas de revisão de menus.
+13_Outros_Elementos.txt: 0 requisitos numerados; 0 linhas de revisão de menus.
+
+Limites: ESG e Outros Elementos sem seção detalhada; item 169 ausente; capturas
+de tela não transcritas como novos requisitos. Itens continuados reunidos sob o
+mesmo ID; itens semelhantes em seções diferentes preservados com referências.

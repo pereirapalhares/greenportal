@@ -1,0 +1,128 @@
+ROTEIRO DE HOMOLOGAÇÃO — PER-010
+Responsabilidades por registro de Infraestrutura
+
+Data: 23/08/2026
+Tenant: gmodelo_dbp — Empresa MODELO
+Módulo: LPRO — Infraestrutura
+Transação contextual: LPRO_INFRAESTRUTURA
+Entidade: infraestrutura
+Chave contextual: CODINFRAESTRUTURA
+
+1. OBJETIVO
+
+Homologar a consulta, o botão contextual e a manutenção de responsabilidades
+para uma infraestrutura. O destino permitido nesta primeira versão é somente
+Usuário. Não devem ser migrados responsáveis legados, pois o legado não possui
+CODUSUARIO ou CODGRUPO nas tabelas de infraestrutura.
+
+2. CONTAS
+
+- admin: preparação, ajuste temporário de permissões e limpeza.
+- ueditor: execução autorizada com perfil GESTOR.
+
+As senhas devem ser informadas somente no formulário de login do ambiente de
+homologação e não devem ser gravadas neste roteiro ou enviadas no chat.
+
+3. DADOS DE TESTE
+
+- Infraestrutura principal: CODINFRAESTRUTURA 1, descrição “infra 12”, se ainda
+  estiver disponível na grade.
+- Infraestrutura de controle de contexto: CODINFRAESTRUTURA 5, descrição
+  “Dique de Contenção”, se estiver disponível.
+- Responsável: selecionar um usuário ativo exibido pela interface, de
+  preferência UEditor, sem alterar o cadastro do usuário.
+- Vigência: data do teste.
+- Prioridade: 10.
+
+Antes do teste, confirmar com admin se a infraestrutura escolhida não possui
+responsabilidade ativa de teste. Não alterar vínculos de outros módulos.
+
+4. PERMISSÕES
+
+Com admin, confirmar temporariamente para o perfil GESTOR na transação
+LPRO_INFRAESTRUTURA:
+
+- Visualizar=1;
+- Incluir=1;
+- Editar=1;
+- Excluir=1.
+
+Registrar o estado original e restaurá-lo ao final. Excel e PDF não fazem parte
+deste PER-010 e devem permanecer no estado anterior.
+
+5. PER-010.1 — BOTÃO E CONTEXTO
+
+1. Entrar como ueditor.
+2. Abrir o menu correspondente ao relacionamento LPRO — Infraestrutura.
+3. Selecionar uma linha com CODINFRAESTRUTURA 1.
+4. Confirmar que o botão Responsabilidades está desabilitado antes da seleção.
+5. Confirmar que fica habilitado após selecionar a linha.
+6. Clicar em Responsabilidades.
+
+Resultado esperado: abrir a consulta sem HTTP 400, sem “Infraestrutura inválida”,
+com código 1 e descrição corretos.
+
+6. PER-010.2 — CONSULTA VAZIA E CONSULTA COM VÍNCULO
+
+1. Na consulta da infraestrutura 1, confirmar o título “Responsabilidades da
+   infraestrutura”.
+2. Se não houver vínculo, confirmar a mensagem informativa de ausência.
+3. Clicar em Manter.
+4. Confirmar que código e descrição continuam corretos.
+
+Resultado esperado: consulta e manutenção preservam o mesmo
+CODINFRAESTRUTURA.
+
+7. PER-010.3 — INCLUSÃO POR USUÁRIO
+
+1. Clicar em Adicionar.
+2. Confirmar que não existe destino Grupo nesta primeira versão.
+3. Selecionar um usuário ativo.
+4. Informar prioridade 10 e vigência a partir da data do teste.
+5. Salvar.
+6. Retornar à consulta.
+
+Resultado esperado: a responsabilidade aparece como destino Usuário, com nome,
+finalidade, origem DIRETA, situação ATIVA e vigência correta.
+
+8. PER-010.4 — EDIÇÃO E EXCLUSÃO LÓGICA
+
+1. Voltar à manutenção.
+2. Alterar a prioridade para 99 e salvar.
+3. Confirmar a alteração na consulta.
+4. Acionar a lixeira da responsabilidade criada.
+5. Salvar e reabrir a consulta.
+
+Resultado esperado: o vínculo deixa de aparecer entre os ativos e permanece como
+histórico, sem exclusão física.
+
+9. PER-010.5 — TROCA DE CONTEXTO
+
+1. Voltar ao grid LPRO — Infraestrutura.
+2. Selecionar a infraestrutura 5.
+3. Clicar em Responsabilidades.
+4. Confirmar código 5 e descrição “Dique de Contenção”.
+5. Confirmar que o vínculo criado para a infraestrutura 1 não aparece.
+
+10. PER-010.6 — PERMISSÕES
+
+Repetir o acesso com as seguintes combinações, ajustadas por admin:
+
+- V=1,I=0,E=0,X=0: consulta somente leitura;
+- V=1,I=1,E=0,X=0: Adicionar visível, campos existentes bloqueados;
+- V=1,I=0,E=1,X=0: edição disponível, Adicionar oculto;
+- V=1,I=0,E=0,X=1: lixeira disponível, campos bloqueados;
+- V=0,I=0,E=0,X=0: acesso bloqueado sem SQL exposto.
+
+11. LIMPEZA
+
+- Excluir logicamente somente os vínculos criados no teste.
+- Confirmar que nenhuma responsabilidade de Licença, Requisito, Monitoramento,
+  Fornecedor, Funcionário ou Treinamento foi alterada.
+- Restaurar as permissões originais do GESTOR.
+
+12. CRITÉRIO DE ACEITE
+
+PER-010 será aprovado quando o contexto, a consulta, inclusão, edição,
+exclusão lógica, troca de infraestrutura e permissões funcionarem sem mistura
+de registros e sem alteração dos dados legados.

@@ -1,0 +1,89 @@
+Diretrizes do Dashboard
+
+Atualização do painel de pendências por módulo — 2026-08-22
+
+- `painel_pendencias.php` apresenta cards independentes para Situações legais,
+  Não Conformidades, Licenças, Homologação de Fornecedores e Aprovações,
+  conforme as permissões e pendências do usuário.
+- Cada card abre o grid ou painel correspondente com filtros de usuário e de
+  pendência.
+- As procedures `sp_crud_select` e `sp_crud_count` passaram a aceitar os
+  operadores `lt`, `lte`, `gt` e `gte` em filtros JSON, permitindo filtrar
+  datas de vencimento sem carregar registros fora do escopo.
+
+Painel lateral — 2026-08-22
+
+- O painel lateral direito do `main.php` é carregado pelo iframe
+  `principal/main_pendencias.php`.
+- O iframe concentra os ícones de Pendências, Aprovações, Próximos prazos,
+  Ajuda e Pendências do dia.
+- A atualização automática ocorre a cada cinco minutos somente no iframe,
+  sem recarregar o menu, o workspace ou as abas abertas.
+- Os cliques continuam abrindo as telas correspondentes nas abas do workspace
+  por meio da comunicação com a janela principal.
+- Os indicadores são recalculados para o usuário autenticado e respeitam as
+  permissões dos módulos.
+
+Painel de Pendências — 2026-08-22
+
+- `principal/painel_pendencias.php` apresenta cards somente para módulos nos
+  quais o usuário possui permissão mínima de leitura.
+- O card de Situações legais consulta somente registros atribuídos ao usuário
+  cujo atendimento ainda não está concluído.
+- O card de Não Conformidades considera o usuário como emitente, gestor,
+  responsável ou responsável por plano de ação e exclui as ocorrências
+  finalizadas.
+- Ao clicar no card, o sistema abre o grid correspondente em uma nova aba do
+  workspace e envia os filtros de usuário e pendência pela URL.
+- A tela Minhas Ocorrências preserva filtros adicionais recebidos pela URL,
+  mantendo sempre o contexto obrigatório do usuário envolvido.
+
+AtualizaÃ§Ã£o 2026-08-22 â€” controle por permissÃ£o e envolvimento
+
+- O dashboard atualiza a sessÃ£o e as permissÃµes antes de montar os indicadores.
+- As consultas de LicenÃ§as, SituaÃ§Ãµes e Planos de AÃ§Ã£o sÃ£o filtradas pelo
+  CODUSUARIO autenticado.
+- HomologaÃ§Ã£o de Fornecedores sÃ³ Ã© consultada e exibida quando o usuÃ¡rio tem
+  permissÃ£o de visualizaÃ§Ã£o no mÃ³dulo ou em uma de suas telas.
+- NÃ£o Conformidades sÃ³ Ã© consultada e exibida quando o usuÃ¡rio tem permissÃ£o
+  de leitura no mÃ³dulo, na Lista geral ou em Minhas OcorrÃªncias. Seus totais e
+  registros recentes consideram apenas NCs em que o usuÃ¡rio Ã© emitente, gestor,
+  responsÃ¡vel ou responsÃ¡vel por um plano de aÃ§Ã£o.
+- Sem a permissÃ£o mÃ­nima de leitura, nÃ£o hÃ¡ consulta, card, tabela ou outro
+  indicador de NÃ£o Conformidades no HTML do dashboard.
+
+O dashboard.php é aberto automaticamente na área de trabalho após o login e
+trata somente os indicadores do usuário e da empresa da sessão.
+
+Componentes:
+
+- Cards com números grandes para licenças, pendências, próximas tarefas e
+  alertas novos.
+- Filtro de período com 30, 90 e 365 dias.
+- Gráfico de anel para o progresso das situações legais.
+- Tabela resumida com quantidade e percentual por situação.
+- Área de pendências do usuário autenticado.
+- Agenda das próximas tarefas, ordenada pela data.
+
+Fontes dos dados:
+
+- gmodelo_dbp.vw_dashboard_licencas.
+- gmodelo_dbp.vw_dashboard_situacoes.
+- gmodelo_dbp.vw_dashboard_planos_acao.
+- gmodelo_dbp.vw_alertas_grid.
+- gmodelo_dbp.vw_dashboard_homologacao.
+- gmodelo_dbp.vw_dashboard_nao_conformidades.
+
+As consultas são realizadas por sp_crud_select e as views são responsáveis por
+isolar a estrutura do banco da apresentação. O usuário logado é identificado
+por CODUSUARIO. Situações não atendidas e planos de ação ainda não concluídos
+formam as pendências. As datas são apresentadas no formato DD/MM/YYYY para PT
+e ES e MM/DD/YYYY para EN, conforme a diretriz geral de datas.
+
+As views basicas foram criadas pelo script database/053_dashboard_indicadores.sql.
+As views de Homologacao e Nao Conformidades foram criadas pelo script
+database/147_views_dashboard_homologacao_nc.sql. O dashboard utiliza
+sp_crud_select para todos os indicadores e nao deve executar SELECT direto
+em tabelas operacionais.
+Quando não existem registros, o dashboard apresenta valores zerados e uma
+mensagem amigável, sem expor erros técnicos.

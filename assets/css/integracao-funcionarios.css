@@ -1,0 +1,16 @@
+/* Migração 348 — Homologação › Integração de funcionários: popups da decisão e da configuração */
+.ifn{padding:12px 16px;font-size:12.5px;color:var(--gp-text,#1f2a24)}
+.ifn .form-control,.ifn .form-select{height:auto!important;padding:4px 8px!important;font-size:12.5px!important}
+.ifn-h{font-size:16px;margin:0 0 4px}
+.ifn-cab{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;background:#fff;border:1px solid var(--gp-border,#dfe6e1);border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.ifn-cab h2{font-size:16px;margin:0 0 2px}
+.ifn-nota{text-align:center;min-width:150px;border-radius:10px;padding:8px 12px;border:1px solid}
+.ifn-nota.ok{border-color:#9fd3bb;background:#eef8f2}.ifn-nota.nao{border-color:#f0b4b4;background:#fdf1f1}
+.ifn-nota .v{font-size:24px;font-weight:700}.ifn-nota .l{font-size:11px;color:var(--gp-muted,#6c7a72)}.ifn-nota .s{font-weight:600;margin-top:2px}
+.ifn-nota.ok .s{color:#1e7b45}.ifn-nota.nao .s{color:#b42318}
+.ifn-bloco{background:#fff;border:1px solid var(--gp-border,#dfe6e1);border-radius:10px;padding:10px 14px;margin-bottom:10px}
+.ifn-bloco h3{font-size:13px;color:var(--gp-primary,#1e7b45);margin:0 0 6px}
+.ifn-resp{margin:0;font-size:12px}.ifn-resp td{vertical-align:top}.ifn-resp td:first-child{width:58%}
+.ifn-decidir{background:#fff;border:1px solid var(--gp-border,#dfe6e1);border-radius:10px;padding:10px 14px;position:sticky;bottom:0}
+.ifn-cfg{background:#fff;font-size:12px}.ifn-cfg td{vertical-align:middle}
+.ifn-resp td:nth-child(2){width:36%}.ifn-resp td:nth-child(3){width:70px;text-align:right}

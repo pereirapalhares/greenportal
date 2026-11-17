@@ -1,0 +1,6 @@
+<?php
+declare(strict_types=1);
+require_once dirname(__DIR__).'/classes/GreenPortalDatabase.php';
+$env=GreenPortalDatabase::env();$sql=file_get_contents(dirname(__DIR__).'/database/192_ia_aprovada_tarefas_p1.sql');if($sql===false)throw new RuntimeException('Migração 192 não localizada.');$out=[];
+foreach(['gatlas_dbp','gmodelo_dbp','gmodelo2_dbp'] as $db){$p=GreenPortalDatabase::connect($env,$db,'GPT');$p->exec('USE `'.$db.'`; '.$sql);$out[$db]=['codunidade'=>(int)$p->query("SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='green_tasks' AND column_name='codunidade'")->fetchColumn(),'migration'=>(int)$p->query("SELECT COUNT(*) FROM registros_migracao WHERE codigo_migracao='GREEN_AI_APPROVED_TASKS_192'")->fetchColumn()];}
+echo json_encode(['ok'=>true,'migration'=>'192','targets'=>$out],JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT).PHP_EOL;

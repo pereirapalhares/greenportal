@@ -1,0 +1,311 @@
+ANÁLISE DE CUSTO DA IA - REQUISITOS LEGAIS
+GreenPortal
+Data da análise: 21/10/2026
+
+1. OBJETIVO
+
+Este documento registra como foram obtidos os valores estimados para analisar os
+cinco pilares da transação modulolegal_requisitoslegais.php:
+
+1) Licenças
+2) Medição e Monitoramento
+3) Treinamentos
+4) Infraestrutura
+5) Documentos
+
+Os valores são uma estimativa de consumo de API. Eles não representam uma
+fatura definitiva, porque o valor real depende do texto enviado, da resposta
+gerada, de cache, de reprocessamentos, de anexos e da cotação efetivamente
+aplicada pelo provedor.
+
+2. DADOS DE ORIGEM
+
+Quantidade de requisitos legais informada no documento docs/financeiro.txt:
+
+Empresa                         Requisitos
+Goodyear SBO                    2.346
+Goodyear Anchieta               1.878
+Goodyear Epiacaba               2.101
+Goodyear Americana              3.039
+Goodyear Diadema                  683
+Goodyear Gravatai               1.957
+Goodyear São Paulo              1.725
+------------------------------------------------
+Total                           13.729
+
+3. COMO A QUANTIDADE DE ANÁLISES FOI CALCULADA
+
+Cada requisito é analisado nos cinco pilares. Portanto:
+
+    análises = quantidade de requisitos x 5
+    análises = 13.729 x 5
+    análises = 68.645 análises de IA
+
+Quantidade por empresa:
+
+Goodyear SBO       2.346 x 5 = 11.730 análises
+Goodyear Anchieta  1.878 x 5 =  9.390 análises
+Goodyear Epiacaba  2.101 x 5 = 10.505 análises
+Goodyear Americana 3.039 x 5 = 15.195 análises
+Goodyear Diadema      683 x 5 =  3.415 análises
+Goodyear Gravatai   1.957 x 5 =  9.785 análises
+Goodyear São Paulo  1.725 x 5 =  8.625 análises
+                               ----------------
+                                68.645 análises
+
+4. PREMISSAS USADAS NA ESTIMATIVA
+
+Para tornar os três provedores comparáveis, foi usado o mesmo volume médio
+para cada análise de pilar:
+
+- Entrada média: 2.000 tokens por análise.
+- Saída média: 500 tokens por análise.
+- Análises totais: 68.645.
+- Câmbio de referência: R$ 5,50 para US$ 1,00.
+
+O câmbio de R$ 5,50 é uma premissa de planejamento, não uma cotação oficial.
+O sistema deve permitir informar a cotação usada no momento do processamento.
+
+Volume total estimado:
+
+    tokens de entrada = 68.645 x 2.000 = 137.290.000 tokens = 137,29 milhões
+    tokens de saída   = 68.645 x   500 =  34.322.500 tokens =  34,3225 milhões
+
+5. FÓRMULA DO CUSTO
+
+    custo em dólar =
+        (tokens de entrada / 1.000.000 x preço da entrada) +
+        (tokens de saída / 1.000.000 x preço da saída)
+
+    custo em reais = custo em dólar x 5,50
+
+6. PREÇOS UTILIZADOS - CENÁRIO PADRÃO
+
+Preços por 1 milhão de tokens:
+
+Provedor/modelo                  Entrada       Saída
+OpenAI GPT-5 mini                US$ 0,25      US$ 2,00
+Google Gemini 3.1 Flash-Lite    US$ 0,25      US$ 1,50
+Anthropic Claude Haiku 4.5      US$ 1,00      US$ 5,00
+
+6.1 OpenAI GPT-5 mini
+
+Entrada: 137,29 x US$ 0,25 = US$ 34,3225
+Saída:    34,3225 x US$ 2,00 = US$ 68,6450
+Total:                         US$ 102,9675
+Conversão: 102,9675 x R$ 5,50 = R$ 566,32
+
+6.2 Google Gemini 3.1 Flash-Lite
+
+Entrada: 137,29 x US$ 0,25 = US$ 34,3225
+Saída:    34,3225 x US$ 1,50 = US$ 51,48375
+Total:                         US$ 85,80625
+Conversão: 85,80625 x R$ 5,50 = R$ 471,93
+
+6.3 Anthropic Claude Haiku 4.5
+
+Entrada: 137,29 x US$ 1,00 = US$ 137,2900
+Saída:    34,3225 x US$ 5,00 = US$ 171,6125
+Total:                         US$ 308,9025
+Conversão: 308,9025 x R$ 5,50 = R$ 1.698,96
+
+Resumo do cenário padrão:
+
+OpenAI GPT-5 mini             US$ 102,9675       R$    566,32
+Google Gemini 3.1 Flash-Lite  US$  85,80625      R$    471,93
+Anthropic Claude Haiku 4.5    US$ 308,9025       R$  1.698,96
+
+7. CENÁRIO EM LOTE (BATCH)
+
+O processamento em lote pode reduzir o preço em alguns provedores. Com os
+mesmos volumes e premissas:
+
+Google Gemini 3.1 Flash-Lite em lote:
+Entrada: 137,29 x US$ 0,125 = US$ 17,16125
+Saída:    34,3225 x US$ 0,75  = US$ 25,741875
+Total:                         US$ 42,903125
+Conversão: 42,903125 x 5,50  = R$ 235,97
+
+Anthropic Claude Haiku 4.5 em lote:
+Entrada: 137,29 x US$ 0,50 = US$ 68,645
+Saída:    34,3225 x US$ 2,50 = US$ 85,80625
+Total:                         US$ 154,45125
+Conversão: 154,45125 x 5,50  = R$ 849,48
+
+Para o GPT-5 mini foi mantido o preço padrão de US$ 0,25/US$ 2,00 neste
+documento, pois a tabela oficial consultada não apresentou de forma inequívoca
+um preço Batch específico para este modelo. Assim, o valor de R$ 566,32 é uma
+estimativa conservadora para o GPT-5 mini até a confirmação da tarifa Batch na
+conta de API utilizada pelo GreenPortal.
+
+Resumo do cenário em lote:
+
+OpenAI GPT-5 mini             R$ 566,32  (padrão conservador)
+Google Gemini 3.1 Flash-Lite  R$ 235,97
+Anthropic Claude Haiku 4.5    R$ 849,48
+
+Esse resumo não é totalmente equivalente entre os três provedores enquanto a
+tarifa Batch do GPT-5 mini não for confirmada.
+
+8. ESTIMATIVA PADRÃO POR EMPRESA
+
+Os valores abaixo usam as mesmas premissas da seção 6 e servem para comparar o
+impacto de cada unidade no custo total.
+
+Empresa                  GPT-5 mini    Gemini Flash-Lite    Claude Haiku 4.5
+Goodyear SBO             R$  96,77      R$  80,83             R$ 290,32
+Goodyear Anchieta        R$  77,47      R$  64,56             R$ 232,40
+Goodyear Epiacaba        R$  86,67      R$  72,16             R$ 260,00
+Goodyear Americana       R$ 125,36      R$ 104,47             R$ 376,08
+Goodyear Diadema         R$  28,22      R$  23,48             R$  84,55
+Goodyear Gravatai        R$  80,73      R$  67,40             R$ 242,18
+Goodyear São Paulo       R$  71,16      R$  59,30             R$ 213,47
+--------------------------------------------------------------------------
+Total                    R$ 566,32      R$ 471,93             R$ 1.698,96
+
+9. O QUE PODE ALTERAR O VALOR REAL
+
+- O requisito possuir texto legal, anexos ou evidências extensas.
+- Repetir o mesmo contexto cinco vezes em vez de reutilizar/cachear o contexto.
+- Respostas maiores ou menores que os 500 tokens adotados.
+- Reprocessamento por erro, alteração do prompt ou solicitação do usuário.
+- Uso de OCR, extração de PDF/XLSX e outros serviços cobrados separadamente.
+- Conversão cambial, impostos, tarifas da conta e condições comerciais.
+- Utilização de processamento padrão ou em lote.
+
+10. CONCLUSÃO E PRÓXIMO CONTROLE NECESSÁRIO
+
+Com as premissas atuais, o lote de 13.729 requisitos e 68.645 análises teria
+estimativa padrão de aproximadamente:
+
+- R$ 566,32 no OpenAI GPT-5 mini.
+- R$ 471,93 no Google Gemini 3.1 Flash-Lite.
+- R$ 1.698,96 no Anthropic Claude Haiku 4.5.
+
+O valor do Gemini é o menor nesta simulação, mas a decisão final não deve usar
+somente preço. É necessário comparar qualidade da análise, tempo de resposta,
+limites, disponibilidade, privacidade e capacidade de explicar o resultado.
+
+Para transformar esta estimativa em custo real do GreenPortal, recomenda-se
+registrar, para cada execução:
+
+- empresa e requisito;
+- pilar analisado;
+- provedor e modelo;
+- tokens de entrada e saída efetivamente consumidos;
+- quantidade de tentativas;
+- preço por milhão de tokens vigente;
+- cotação cambial utilizada;
+- custo estimado em dólar e em real.
+
+Com esse histórico, o GreenPortal poderá recalcular o custo real por empresa,
+por pilar, por lote e por período, sem depender de médias fixas.
+
+11. CUSTO ADICIONAL DOS ARQUIVOS ASSOCIADOS
+
+Além da análise inicial do requisito, cada item gerado nos cinco pilares poderá
+receber um arquivo associado. Nesse caso, o processamento será:
+
+1) O usuário associa o arquivo ao item do pilar.
+2) O sistema identifica o tipo de arquivo.
+3) O texto é extraído; se o arquivo for imagem ou PDF digitalizado, poderá ser
+   necessário OCR.
+4) A IA interpreta o conteúdo extraído.
+5) A IA devolve metadados estruturados para indexação.
+6) O usuário valida o resultado.
+7) Os campos aplicáveis são gravados na tabela do domínio, por exemplo,
+   data de vencimento em li_licencas.
+
+Neste cálculo foi adotada uma nova premissa de planejamento:
+
+- Um arquivo associado por item analisado.
+- Texto médio extraído por arquivo: 5.000 tokens de entrada.
+- Resposta estruturada média: 400 tokens de saída.
+- Não foi incluído o preço de OCR, armazenamento ou outro serviço de extração,
+  porque o provedor e a tarifa ainda não foram definidos.
+
+Como existem 68.645 itens possíveis nos cinco pilares, a quantidade de arquivos
+deve ser calculada por cenário. O usuário pode anexar arquivo somente a parte
+dos itens; portanto, não se deve multiplicar automaticamente 68.645 por cinco.
+
+12. FÓRMULA DA LEITURA E INTERPRETAÇÃO
+
+    arquivos processados = 68.645 x percentual de itens com arquivo
+
+    custo por arquivo =
+        (5.000 / 1.000.000 x preço da entrada) +
+        (400 / 1.000.000 x preço da saída)
+
+    custo dos arquivos = arquivos processados x custo por arquivo
+
+12.1 Custo estimado por arquivo
+
+Provedor/modelo                  Entrada       Saída        Custo/arquivo
+OpenAI GPT-5 mini                US$ 0,25      US$ 2,00     US$ 0,00205
+Google Gemini 3.1 Flash-Lite    US$ 0,25      US$ 1,50     US$ 0,00185
+Anthropic Claude Haiku 4.5      US$ 1,00      US$ 5,00     US$ 0,00700
+
+Conversão usando US$ 1,00 = R$ 5,50:
+
+OpenAI GPT-5 mini                R$ 0,011275 por arquivo
+Google Gemini 3.1 Flash-Lite    R$ 0,010175 por arquivo
+Anthropic Claude Haiku 4.5      R$ 0,038500 por arquivo
+
+12.2 Cenários de anexação
+
+Percentual       Arquivos       GPT-5 mini       Gemini Flash-Lite       Claude Haiku 4.5
+25%              17.161         R$ 193,49         R$ 174,62               R$ 660,71
+50%              34.323         R$ 386,99         R$ 349,23               R$ 1.321,42
+100%             68.645         R$ 773,97         R$ 698,46               R$ 2.642,83
+
+Os valores acima representam somente a leitura e interpretação dos arquivos.
+Eles não incluem a análise inicial dos cinco pilares apresentada nas seções
+anteriores.
+
+12.3 Custo total: análise inicial mais arquivos
+
+Somando o cenário padrão da seção 6 ao cenário de 100% de itens com arquivo:
+
+Provedor/modelo                  Análise inicial   Arquivos       Total estimado
+OpenAI GPT-5 mini                R$    566,32       R$ 773,97      R$ 1.340,29
+Google Gemini 3.1 Flash-Lite    R$    471,93       R$ 698,46      R$ 1.170,39
+Anthropic Claude Haiku 4.5      R$  1.698,96       R$ 2.642,83     R$ 4.341,79
+
+No cenário de 50% de itens com arquivo, os totais aproximados seriam:
+
+OpenAI GPT-5 mini                R$    953,31
+Google Gemini 3.1 Flash-Lite    R$    821,16
+Anthropic Claude Haiku 4.5      R$  3.020,38
+
+13. OCR, VALIDAÇÃO E REPROCESSAMENTO
+
+Quando o arquivo não possui texto pesquisável, será necessário OCR. O custo
+do OCR deve ser registrado separadamente, pois depende do serviço adotado e da
+quantidade de páginas. Também podem ocorrer custos adicionais quando:
+
+- o arquivo possui muitas páginas;
+- a extração precisar ser repetida;
+- o usuário corrigir ou solicitar nova interpretação;
+- forem extraídos vários arquivos para o mesmo item;
+- a resposta precisar atualizar mais de uma tabela;
+- houver validação automática e uma segunda chamada da IA.
+
+O controle de custos do GreenPortal deverá registrar, no mínimo, o arquivo,
+quantidade de páginas, tokens extraídos, tokens enviados, tokens retornados,
+OCR utilizado, tentativas, resultado validado e custo final.
+
+14. FONTES OFICIAIS CONSULTADAS
+
+OpenAI GPT-5 mini:
+https://developers.openai.com/api/docs/models/gpt-5-mini
+
+Google Gemini 3.1 Flash-Lite:
+https://ai.google.dev/gemini-api/docs/pricing
+
+Anthropic Claude Haiku 4.5 e tabela de preços:
+https://www.anthropic.com/claude/haiku
+https://www-cdn.anthropic.com/files/4zrzovbb/website/5678bc2f5978e5bcd4f1fe7c14b2c72284dcf9f8.pdf
+
+As tarifas podem mudar. Antes de uma contratação ou execução em produção, as
+tarifas devem ser confirmadas novamente nas páginas oficiais e na conta usada
+pelo GreenPortal.

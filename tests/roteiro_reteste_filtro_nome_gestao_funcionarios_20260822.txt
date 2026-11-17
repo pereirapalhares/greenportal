@@ -1,0 +1,101 @@
+ROTEIRO DE RETESTE VISUAL — FILTRO DE COLUNA NOME
+Gestão de Funcionários — Green Portal
+
+Data prevista: 22/08/2026
+Ambiente: homologação, tenant gmodelo_dbp, empresa MODELO
+URL: usar a URL de homologação disponível para a estação de testes
+Módulo: Homologação de Fornecedores > Gestão de Funcionários
+Perfil recomendado: GESTOR, usuário ueditor
+Transação: HOMOLOGACAO_FORNECEDOR_FUNCIONARIO
+
+1. OBJETIVO
+
+Confirmar que o filtro de coluna “Nome” da grade Gestão de Funcionários envia o
+valor informado ao servidor e retorna somente registros compatíveis, sem afetar
+a busca geral, a paginação, o cabeçalho fixo ou os demais filtros.
+
+2. PREPARAÇÃO
+
+1. Entrar no ambiente de homologação com o usuário autorizado ueditor.
+2. Não alterar permissões, cadastros ou responsabilidades durante este roteiro.
+3. Abrir Homologação de Fornecedores > Gestão de Funcionários.
+4. Pressionar Ctrl+F5 para garantir o carregamento do JavaScript atualizado.
+5. Confirmar visualmente que a grade foi carregada com seu cabeçalho visível.
+6. Identificar um nome que apareça na grade ou usar um nome parcial conhecido.
+   Sugestão: localizar “Luciene” se o registro ainda estiver disponível.
+
+3. RETESTE F-001 — FILTRO EXATO/PARCIAL POR NOME
+
+1. Localizar o campo de filtro da coluna Nome no cabeçalho da grade.
+2. Digitar um trecho de nome, por exemplo: Luciene.
+3. Aguardar o recarregamento automático do grid.
+4. Confirmar que a grade apresenta somente registros cujo nome corresponde ao
+   valor informado, considerando o comportamento de busca parcial do sistema.
+5. Confirmar que o cabeçalho continua visível e alinhado às linhas retornadas.
+
+Resultado esperado: o filtro funciona e o resultado não permanece igual ao
+conjunto completo quando existe correspondência específica.
+
+4. RETESTE F-002 — VALOR SEM CORRESPONDÊNCIA
+
+1. Substituir o filtro Nome por um texto inexistente, por exemplo:
+   TESTE_NOME_INEXISTENTE_20260822.
+2. Aguardar o recarregamento.
+
+Resultado esperado: a grade fica vazia ou exibe a mensagem padrão de nenhum
+registro encontrado. Não deve exibir registros não relacionados ao filtro.
+
+5. RETESTE F-003 — LIMPAR FILTRO
+
+1. Apagar o conteúdo do filtro Nome.
+2. Aguardar o recarregamento automático.
+
+Resultado esperado: a grade retorna ao conjunto normal de registros e a
+paginação é recalculada corretamente.
+
+6. RETESTE F-004 — COMBINAÇÃO COM BUSCA GERAL
+
+1. Informar um valor válido no filtro Nome.
+2. Informar também um termo na caixa “Buscar no grid”.
+3. Aguardar o recarregamento.
+4. Confirmar que o resultado atende simultaneamente ao filtro de coluna e à
+   busca geral.
+5. Limpar primeiro a busca geral e depois o filtro Nome.
+
+Resultado esperado: os dois mecanismos funcionam sem apagar o valor um do
+outro e sem gerar erro HTTP ou mensagem SQL.
+
+7. RETESTE F-005 — PAGINAÇÃO E TROCA DE CONTEXTO
+
+1. Limpar os filtros e confirmar que existem registros suficientes para mais de
+   uma página, se possível.
+2. Navegar para a página seguinte.
+3. Informar novamente um filtro Nome.
+4. Selecionar um funcionário retornado pela busca.
+5. Confirmar que os botões contextuais continuam funcionando somente após a
+   seleção da linha.
+6. Não abrir manutenção nem alterar dados.
+
+Resultado esperado: o filtro permanece aplicado após paginação e a linha
+selecionada corresponde ao nome exibido.
+
+8. REGISTRO DO RESULTADO
+
+Registrar para cada etapa: PASSOU ou FALHOU, valor digitado, quantidade de linhas
+exibidas, mensagem apresentada, URL, usuário e horário.
+
+Evidências recomendadas:
+- captura da grade antes do filtro;
+- captura com filtro Nome aplicado;
+- captura com valor sem correspondência;
+- captura após limpar o filtro;
+- captura da paginação, se aplicável.
+
+9. CRITÉRIO DE ACEITE
+
+O reteste será aprovado quando F-001, F-002, F-003 e F-004 funcionarem sem erro,
+com resultados coerentes com os valores informados. F-005 deve confirmar que a
+correção não interfere na seleção de registros e nos botões contextuais.
+
+Não utilizar credenciais de produção. Não executar inclusões, edições ou
+exclusões neste roteiro.

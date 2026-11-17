@@ -1,0 +1,273 @@
+ROTEIRO DE TESTES VISUAIS — RESPONSABILIDADES
+GreenPortal | Data: 20/08/2026
+
+1. OBJETIVO
+
+Validar visualmente o que foi implementado para o modelo de responsabilidades da empresa Modelo, incluindo consulta, manutenção, histórico, grupos, permissões e separação por tenant.
+
+2. PRÉ-CONDIÇÕES
+
+- Aplicação disponível no ambiente local.
+- Banco ativo: gmodelo_dbp.
+- Usuário administrador disponível.
+- Usuário com permissão somente de visualização.
+- Usuário sem permissão de visualização.
+- Não executar testes de inclusão, alteração ou exclusão em dados produtivos sem identificar o registro de teste.
+- Registrar evidências com captura de tela, data, usuário e resultado.
+
+2.1 CONTAS DE TESTE
+
+Usar as seguintes contas existentes no gmodelo_dbp:
+
+CONTA A — acesso completo
+Usuário: admin
+Nome: Administrador Modelo
+Perfil: ADMINISTRADOR
+Senha: definir ou resetar temporariamente antes do teste
+Uso: todos os testes de consulta, inclusão, edição, exclusão lógica e segurança.
+
+CONTA B — teste de edição controlada
+Usuário: ueditor
+Nome: Editor de documentos
+Perfil: GESTOR
+Senha: definir ou resetar temporariamente antes do teste
+Uso: validar as permissões efetivas de incluir, editar e excluir. Confirmar primeiro as flags da transação LICENCAS e REQUISITOS_LEGAIS.
+
+CONTA C — teste sem acesso
+Usuário: visitante
+Nome: visitante
+Perfil: sem perfil configurado
+Senha: definir ou resetar temporariamente antes do teste
+Uso: RG-002, PER-001 e testes de bloqueio de acesso.
+
+CONTA D — alternativa sem acesso
+Usuário: visitante3
+Nome: visitante3
+Perfil: sem perfil configurado
+Senha: definir ou resetar temporariamente antes do teste
+Uso: repetir os testes da Conta C, caso a Conta C esteja indisponível.
+
+IMPORTANTE SOBRE SENHAS
+
+As senhas são todas `<senha de teste via variável de ambiente>` para qualquer usuario
+
+As contas usadas como destino de responsabilidades — por exemplo, usuários ativos exibidos na lista — não precisam ser contas de login do agente. O agente deve selecionar usuários e grupos pelos nomes apresentados na interface.
+
+Dados sugeridos para consulta:
+
+- Licença: CODLICENCA=1.
+- Situação de requisito legal: CODSITUACAO=6728.
+- Licença com grupo TODOS: selecionar uma licença que mostre esse grupo na consulta.
+- Registro histórico: selecionar uma licença ou situação com situação HISTORICA.
+
+3. PADRÃO DE REGISTRO
+
+Para cada teste informar:
+
+- Resultado: PASSOU / FALHOU / BLOQUEADO.
+- Usuário e perfil utilizados.
+- Data e hora.
+- Registro consultado.
+- Evidência: nome do arquivo da captura de tela.
+- Observação ou mensagem de erro.
+
+4. TESTES GERAIS DE ACESSO
+
+RG-001 — Acesso autorizado
+Passos: entrar com usuário que possui visualizar em LICENCAS e REQUISITOS_LEGAIS.
+Esperado: os menus e telas são exibidos normalmente.
+
+RG-002 — Acesso sem permissão
+Passos: entrar com perfil sem visualizar responsabilidades/módulo.
+Esperado: o acesso é bloqueado ou a transação não é exibida; não deve haver dados na tela.
+
+RG-003 — Sessão expirada
+Passos: abrir a consulta após encerrar a sessão.
+Esperado: redirecionamento para a tela de login ou mensagem de sessão expirada.
+
+RG-004 — Tenant atual
+Passos: acessar a aplicação com o tenant Modelo.
+Esperado: as responsabilidades exibidas pertencem somente ao gmodelo_dbp.
+
+5. TESTES DE LICENÇAS — CONSULTA
+
+LIC-C-001 — Botão inicial desabilitado
+Passos: abrir o cadastro de licenças sem selecionar linha.
+Esperado: botão Responsabilidades desabilitado.
+
+LIC-C-002 — Seleção de licença
+Passos: selecionar uma licença existente.
+Esperado: botão Responsabilidades habilitado.
+
+LIC-C-003 — Abrir consulta
+Passos: clicar em Responsabilidades.
+Esperado: popup com título Responsabilidades, identificação da licença e tabela de vínculos.
+
+LIC-C-004 — Campos exibidos
+Esperado: a tabela mostra finalidade, responsável, destino, origem, situação e validade.
+
+LIC-C-005 — Usuário responsável
+Passos: consultar licença com destino USUARIO.
+Esperado: nome do usuário, finalidade e situação são exibidos corretamente.
+
+LIC-C-006 — Grupo responsável
+Passos: consultar licença com destino GRUPO.
+Esperado: nome do grupo é exibido como grupo e a quantidade de usuários ativos é apresentada quando disponível.
+
+LIC-C-007 — Grupo TODOS
+Passos: consultar licença vinculada ao grupo TODOS.
+Esperado: aparece “Todos os usuários ativos”; não são exibidas 1.242 linhas individuais.
+
+LIC-C-008 — Histórico
+Passos: consultar licença com vínculo histórico.
+Esperado: vínculo aparece como HISTORICA e o texto informa que ele é mantido para rastreabilidade.
+
+LIC-C-009 — Nova licença não salva
+Passos: iniciar uma nova linha no grid sem salvar e tentar consultar responsabilidades.
+Esperado: botão permanece desabilitado ou a consulta não é aberta para registro novo.
+
+6. TESTES DE LICENÇAS — MANUTENÇÃO
+
+LIC-M-001 — Abrir manutenção
+Passos: na consulta de uma licença, clicar em Manter.
+Esperado: tela de manutenção é aberta e mostra somente atribuições ativas.
+
+LIC-M-002 — Incluir usuário
+Passos: adicionar uma linha, selecionar finalidade, destino Usuário, usuário ativo e data inicial; salvar.
+Esperado: mensagem de sucesso e novo vínculo aparece na consulta.
+
+LIC-M-003 — Incluir grupo
+Passos: adicionar uma linha com destino Grupo e grupo ativo; salvar.
+Esperado: vínculo de grupo aparece na consulta com a quantidade de usuários ativos.
+
+LIC-M-004 — Alterar atribuição
+Passos: alterar usuário/grupo, prioridade ou vigência de um vínculo ativo; salvar.
+Esperado: alteração aparece após recarregar a consulta.
+
+LIC-M-005 — Principalidade
+Passos: marcar ou desmarcar Principal e salvar.
+Esperado: valor permanece após recarregar a tela.
+
+LIC-M-006 — Data inválida
+Passos: informar data final anterior à inicial.
+Esperado: gravação bloqueada com mensagem de vigência inválida.
+
+LIC-M-007 — Duplicidade
+Passos: tentar cadastrar o mesmo tipo, destino e responsável com vigência sobreposta.
+Esperado: gravação bloqueada com mensagem de vínculo duplicado.
+
+LIC-M-008 — Exclusão lógica
+Passos: remover vínculo ativo e salvar; abrir novamente a consulta.
+Esperado: vínculo não aparece entre os ativos, mas aparece como histórico quando a consulta histórica for exibida.
+
+LIC-M-009 — Histórico não editável
+Passos: localizar vínculo HISTORICA.
+Esperado: não é possível alterá-lo pela manutenção ativa.
+
+7. TESTES DE REQUISITOS LEGAIS — CONSULTA
+
+REQ-C-001 — Abrir situações
+Passos: abrir Requisitos Legais, selecionar legislação/unidade e abrir Situação.
+Esperado: grid de situações é exibido.
+
+REQ-C-002 — Botões sem seleção
+Passos: abrir o grid de situações sem selecionar linha.
+Esperado: Responsabilidades e Manter responsabilidades desabilitados.
+
+REQ-C-003 — Selecionar situação
+Passos: selecionar uma situação, por exemplo CODSITUACAO=6728.
+Esperado: os dois botões são habilitados.
+
+REQ-C-004 — Consultar situação
+Passos: clicar em Responsabilidades.
+Esperado: popup identifica o CODSITUACAO e mostra finalidade, responsável, destino, origem, situação e validade.
+
+REQ-C-005 — Correspondência do registro
+Passos: comparar a descrição da situação no grid e no popup.
+Esperado: a responsabilidade pertence à situação selecionada, não somente à legislação ou unidade.
+
+REQ-C-006 — Histórico de requisito
+Passos: consultar situação com vínculo HISTORICA.
+Esperado: histórico aparece identificado e não é confundido com ativo.
+
+8. TESTES DE REQUISITOS LEGAIS — MANUTENÇÃO
+
+REQ-M-001 — Abrir manutenção
+Passos: selecionar situação e clicar em Manter responsabilidades.
+Esperado: tela mostra somente vínculos ativos daquela situação.
+
+REQ-M-002 — Incluir usuário
+Passos: adicionar usuário ativo, finalidade REQUISITO_LEGAL e vigência válida; salvar.
+Esperado: vínculo aparece na consulta da mesma situação.
+
+REQ-M-003 — Incluir grupo
+Passos: adicionar grupo ativo e salvar.
+Esperado: vínculo de grupo aparece com quantidade de usuários ativos.
+
+REQ-M-004 — Alterar vínculo
+Passos: alterar responsável, prioridade ou vigência; salvar e recarregar.
+Esperado: dados permanecem alterados.
+
+REQ-M-005 — Validar duplicidade
+Passos: repetir vínculo ativo com vigência sobreposta.
+Esperado: gravação bloqueada.
+
+REQ-M-006 — Validar vigência
+Passos: informar data final anterior à inicial.
+Esperado: gravação bloqueada.
+
+REQ-M-007 — Exclusão lógica
+Passos: remover vínculo ativo e salvar.
+Esperado: vínculo sai da lista ativa e permanece no histórico.
+
+9. TESTES DE PERMISSÕES
+
+PER-001 — Somente consulta
+Perfil: visualizar=1, incluir=0, editar=0, excluir=0.
+Esperado: consultas funcionam; Manter ou Salvar ficam bloqueados.
+
+PER-002 — Pode incluir
+Perfil: incluir=1, editar=0.
+Esperado: inclusão permitida conforme regra do perfil; alteração de vínculo existente não permitida.
+
+PER-003 — Pode editar
+Perfil: editar=1, excluir=0.
+Esperado: alteração permitida; remoção bloqueada.
+
+PER-004 — Pode excluir
+Perfil: excluir=1.
+Esperado: remoção lógica permitida e histórico preservado.
+
+PER-005 — Administrador
+Esperado: administrador acessa consulta e manutenção conforme as regras gerais da aplicação.
+
+10. TESTES DE SEGURANÇA E ISOLAMENTO
+
+SEC-001 — URL sem identificador
+Esperado: endpoint rejeita acesso sem CODLICENCA ou CODSITUACAO.
+
+SEC-002 — Identificador inválido
+Esperado: endpoint rejeita texto, zero ou valor negativo.
+
+SEC-003 — Outro registro
+Esperado: usuário não consegue alterar atribuição pertencente a outra licença ou situação apenas modificando o ID enviado.
+
+SEC-004 — Tenant futuro
+Esperado: não criar gcrown_dbp durante estes testes; a interface somente deve ser replicada quando o tenant possuir a estrutura.
+
+11. CRITÉRIOS DE ACEITE
+
+- Todos os testes críticos de acesso, consulta, manutenção e permissão devem passar.
+- Nenhum teste pode criar duplicidade ativa.
+- Nenhuma exclusão pode remover fisicamente o histórico.
+- Nenhuma responsabilidade de outro tenant pode aparecer.
+- Mensagens de erro devem ser compreensíveis ao usuário.
+- Capturas de tela devem ser arquivadas junto ao relatório de homologação.
+
+12. RESULTADO FINAL
+
+Responsável pelo teste: ______________________________________
+Data: ____/____/________
+Ambiente: _________________________________________________
+Resultado geral: PASSOU / FALHOU / BLOQUEADO
+Observações: _______________________________________________

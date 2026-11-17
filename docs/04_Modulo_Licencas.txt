@@ -1,0 +1,501 @@
+﻿ESPECIFICAÇÃO FUNCIONAL — GREEN 4.0
+Versão: 1.0 — elaboração em 12/11/2026
+Fonte: Passo a passo mudança no Green4.0 — Revisão G — 13/08/2026.doc.
+Situação: especificação para revisão funcional; não representa validação do software existente.
+
+COMO INTERPRETAR
+- IDs dos requisitos preservam a numeração da fonte. Txxx/Rxxx identifica tabela/linha,
+  contando a partir de zero na ordem do documento, para rastreabilidade sem paginação variável.
+- "Sim" indica solicitação de implementação na fonte, não comprova implementação.
+- Campo "Implementar?" vazio significa decisão pendente. Requisito dependente de outro
+  item marcado Sim é identificado, mas a inconsistência da marcação é preservada.
+- Detalhamento da fonte é reproduzido em cada requisito para conservar campos, exemplos,
+  condições, exceções e fluxos. Exemplos não constituem listas fechadas de domínio.
+- Critérios de aceite e regras consolidadas são operacionalizações propostas para revisão.
+  Decisões ausentes não foram convertidas em regras definitivas.
+- Referências a capturas de concorrentes são referências visuais do DOC original; imagens
+  não são reproduzidas em TXT. Não foram inferidas regras a partir de elementos só visuais.
+- Não há definição de banco físico, linguagem, endpoints ou cronograma nesta versão.
+
+
+04 — Módulo Licenças
+
+OBJETIVO
+Especificar as mudanças deste tema preservando o escopo e as ressalvas da Revisão G.
+
+MODELO FUNCIONAL CONSOLIDADO
+Licença tem múltiplos arquivos/links, responsáveis, condicionantes e taxas.
+Gestão de taxas pode ser acessada diretamente; taxa também pode existir sem licença.
+Taxas: identificação, tipo, órgão/fornecedor, risco, datas de emissão/reação/vencimento,
+recorrência, valor previsto, pagamento, forma/conta, juros/multas, total pago,
+status Pendente/Agendado/Pago/Atrasado, comprovantes e totalização mensal.
+Protocolo: preservar licença anterior no arquivo, criar representação ativa em protocolo,
+registrar nova licença ao encerrar e preservar relação entre documentos e histórico.
+Arquivar/desarquivar também deve funcionar fora do processo de protocolo.
+Validade inexistente e validade recorrente são situações distintas.
+
+PENDÊNCIAS ESPECÍFICAS
+- Item 52 contém ambiguidade textual no estado final de Em Protocolo; confirmar que
+  ambas as licenças terminam sem protocolo ativo e como tratar protocolo cancelado.
+- Confirmar em que condições documento em protocolo é tratado como vigente; a descrição
+  da fonte não fornece regra universal para todos os tipos de licença.
+- Definir se data de reação do protocolo é data calculada ou quantidade de dias.
+- Recorrência: definir limites, último dia do mês, feriados, histórico por ciclo e se
+  revalidação automática altera só o vencimento ou também o atendimento documental.
+- Definir efeito do desarquivamento nos alertas, vínculos e duplicidade de licença ativa.
+- Item 63 (campos personalizados) é proposta; item 65 sem marcação, mas dependente do 31.
+- Definir comprovantes, valores parciais, descontos e divergência entre previsto e pago.
+
+REGRAS TRANSVERSAIS E DEPENDÊNCIAS
+Consultar 01_Mudancas_Gerais.txt para Home, permissões por grupo, personalização,
+notificações, agenda, delegação, usuários ativos, idiomas, logs e ajuda.
+As consultas pessoais e gerenciais devem respeitar a permissão de acesso e o âmbito
+da empresa/unidade. Ser responsável não substitui o permissionamento do item 7.
+Cards, gráficos e tabelas devem representar o mesmo conjunto de dados e filtros.
+Datas, estados, eventos de alerta e fórmulas dos indicadores precisam de definição
+única antes da implementação; divergências pendentes estão listadas neste arquivo.
+
+INTEGRAÇÃO COM O MÓDULO LEGAL — FONTE: ITEM 31 E RESUMO INICIAL
+1. Manter o módulo acessível independentemente da navegação pelo Legal.
+2. Receber sugestões da tabela de potenciais, por unidade e por Controle/Influência.
+3. Somente após validação transferir o potencial para a gestão e vincular as leis de origem.
+4. Permitir cadastro manual e associação manual às leis pelo mesmo padrão de navegação.
+5. Distinguir potenciais novos/pendentes dos já validados; reprocessamento não deve exigir
+   revalidação indistinta de todo o acervo. Política de duplicidades requer definição.
+6. Inativação/revogação da lei deve sinalizar revisão dos itens associados; cabe ao cliente
+   decidir mantê-los ou deixar de controlá-los. Não apagar automaticamente o item de gestão.
+7. Permitir um responsável, vários usuários ou grupo, por cadastro direto ou Tipo x Responsável.
+8. A precedência entre atribuição manual e automática ainda precisa ser definida.
+
+
+REQUISITOS FUNCIONAIS RASTREÁVEIS
+
+------------------------------------------------------------------------------
+LIC-48 — Criar novos campos para a tabela de Gestão de Licenças
+
+Origem: item 48; T039/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Novos campos:
+Nº da Licença
+Tipo de Licença (Licença, Outorga, etc)
+Órgão Expedidor (CETESB, Bombeiro, etc)
+Nº do Protocolo
+Data de Protocolo
+Data de Reação Protocolo (Nº de dias restantes antes de protocolar a licença)
+Histórico (automático) do que foi feito para cada licença
+Nível de Risco (Alto, Médio, Baixo)
+Arquivar Licença?
+Observação
+Arquivo ou Link do Documento: Link para a cópia digital da licença ou arquivo carregado. Deverá ser possível carregar "n" arquivos
+
+Observação: como previsto no item 31, a tabela de Gestão de Licenças será preenchida a partir da validação das recomendações da IA (potenciais licenças) ou diretamente na própria tabela de Gestão de Licenças.
+
+As tabelas de gestão devem ser separadas entre o que é de CONTROLE (ou seja, ações que o próprio cliente deve tomar) daquilo que é INFLUÊNCIA, ou seja, ações que os fornecedores do cliente devem tomar).
+
+CRITÉRIO DE ACEITE PROPOSTO
+Cadastrar, consultar e editar um exemplo contendo os campos e relacionamentos enumerados no detalhamento; conferir persistência, anexos múltiplos e regras explícitas de cálculo/obrigatoriedade.
+
+------------------------------------------------------------------------------
+LIC-49 — Criar a tabela Tipo de Licença x Responsável
+
+Origem: item 49; T039/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Na tabela Responsável x Tipo de Licença o responsável poderá ser 1 usuário, vários usuários ou um Grupo (com 1 ou mais pessoas)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Testar um usuário, múltiplos usuários e grupo; verificar atribuição direta e/ou por tipo/categoria conforme o item, consulta pessoal e destinatários de alerta. Testar usuário sem autorização.
+
+------------------------------------------------------------------------------
+LIC-50 — Implementar a nova atribuição de responsabilidade pelas licenças
+
+Origem: item 50; T040/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O sistema deve permitir atribuir responsabilidade de 2 formas:
+Diretamente na tabela licenças
+Por meio das tabelas Responsabilidade x Tipo de licença
+
+Em ambos os casos, a responsabilidade poderá ser para:
+1 usuário
+vários usuários ou
+para um grupo de usuários pré-definido
+
+Esse item é bastante importante para poder gerar alertas para todos os usuários responsáveis pelas licenças e não para um único usuário. Temos a possibilidade de enviar e-mail para “listas”, mas esse processo não permite individualizar os responsáveis (que serão alertados) por documento. Se parametrizamos que o alerta será enviado para a lista, todas os documentos licenciatórios receberão o mesmo tratamento, ou seja, as pessoas que estão na lista receberão alertas independentemente de qual é o documento licenciatório. Isso não é exatamente o que o cliente quer. Ele quer que haja diferentes responsáveis alertados para cada documento.
+
+Observe na imagem abaixo da tela do concorrente em que 1 mesma licença possui mais do que 1 responsável.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Testar um usuário, múltiplos usuários e grupo; verificar atribuição direta e/ou por tipo/categoria conforme o item, consulta pessoal e destinatários de alerta. Testar usuário sem autorização.
+
+------------------------------------------------------------------------------
+LIC-51 — Tornar a parametrização da política de e-mails para o módulo de licenças mais "friendly"
+
+Observação: isso poderia ser replicado para os demais módulos (medição e monitoramento, infraestrutura, controle e treinamento)
+
+Origem: item 51; T041/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A ideia é que o próprio usuário parametrize a política de e-mails, definindo para cada documento licenciatório quem deve ser alertado. Isso poderia estar linkado com os múltiplos responsáveis pela licença (mencionado no item acima).
+
+Hoje temos a possibilidade de enviar e-mail para “listas”, mas a parametrização desse processo não é "friendly" e não permite a individualização dos alertas por documento.
+
+A figura abaixo mostra um exemplo de como o concorrente faz a parametrização da política de e-mails a partir de uma seleção de múltiplos responsáveis. Não sei se a solução adotada pelo concorrente é a mais adequada. O fato é que a política de emails é parametrizada pelo próprio usuário. Creio que essa facilidade é que temos que ter no Green.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Configurar destinatários por registro/tipo e evento; disparar cenário de teste e confirmar entrega apenas aos responsáveis elegíveis, incluindo múltiplos usuários/grupos, conforme regra aprovada.
+
+------------------------------------------------------------------------------
+LIC-52 — Gerenciar licenças em protocolo
+
+Origem: item 52; T042/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse item é bem importante, pois ele traduz a forma como a gestão de um documento licenciatório acontece na prática.
+
+Atualmente temos no Green um campo denominado "Em Protocolo?". Nesse campo colocamos apenas "Sim" e "Não" para o sistema parar de enviar alertas.
+
+A gestão de protocolos é algo mais complexo. O que ocorre de fato: antes de uma licença vencer a pessoa protocola um conjunto de documentos para renovar a licença. Até que a nova licença seja concedida, mesmo com a validade vença, a licença continua válida. Nessa situação intermediária temos, portanto, 2 documentos para serem gerenciados: a licença (que está vencida) e o protocolo (que em princípio não tem validade). Desse modo, temos que gerenciar a licença em protocolo de forma específica até que a licença definitiva seja concedida.
+
+Como resolver esse problema? seguindo exatamente o passo a passo de uma renovação de licença, ou seja:
+1- Ao indicar que uma licença está em protocolo, a licença vencida deveria ser transferida para uma tabela de licenças arquivadas / vencidas
+2- O sistema deve criar um "espelho" da licença vencida na área de licenças válidas e indicar que ela está em protocolo
+3- Após revalidada a licença, ou seja, quando a nova licença é emitida o usuário deve desabilitar o protocolo. Nesse momento o sistema tem que solicitar que os dados da nova licença (validade, Nº, etc.) sejam carregados.
+4- No final do processo temos que ter a licença vencida na tabela de licenças vencidas e a licença nova na tabela de licenças ativas. Ambas sem a opção "Em Protocolo" desabilitada.
+
+Deve haver, portanto, uma tabela com todas as licenças ativas e uma tabela com todas as licenças vencidas / arquivadas.
+
+Independente do processo de protocolo, deve estar previsto na tabela de licenças ativas um botão para Arquivar Licenças. Ao ser acionado, o registro é encaminhado para a tabela de Licenças Arquivadas. Isso ocorre, pois existem casos em que a licença perde a validade e não entra na rotina de protocolo, conforme descrito acima.
+
+Licenças arquivadas (seja pelo processo de protocolo ou não) podem ser desarquivadas a qualquer momento.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar abertura de protocolo, arquivamento do anterior, criação do espelho, cadastramento da nova licença e encerramento; conferir ativos/arquivados e rastreabilidade. Testar arquivar e desarquivar sem protocolo.
+
+------------------------------------------------------------------------------
+LIC-53 — Monitorar Licenças:
+Protocolada
+Protocolada em Atraso
+
+Observação: Monitorar significa gerar estatísticas (dashboards), enviar alertas por e-mail, aparecer no schedule e nas notificações do usuário
+
+Origem: item 53; T043/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Hoje são monitoradas:
+licenças válidas
+licenças vencidas e
+licenças com data de reação vencida
+
+Passaríamos a ter:
+licença protocolada dentro da data prevista
+licença protocolada após o vencimento e
+licença com data de reação de protocolo vencido
+
+As situações existentes (licenças válidas, vencidas, etc.) e as novas situações (licenças protocoladas após o prazo, licenças com data de reação de protocolo vencido, etc.) deveriam fazer parte dos 4 tipos básicos de controles / gestão:
+Dashboards
+Alertas por e-mail
+Área de Notificações (pendências) (a ser criado)
+Agenda (próximas ações) (a ser criado)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+LIC-54 — Gerar automaticamente as informações da licença via IA a partir do upload do documento
+
+Origem: item 54; T043/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Extrair todos os dados da licença e preencher as informações da tabela de gestão de licenças a partir do upload de um arquivo (da mesma forma como foi aplicado no novo GED-E)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Carregar documento de teste com dados conhecidos, comparar campos extraídos com o original e aplicar o procedimento aprovado para valores ausentes, divergentes ou ilegíveis. Política de confirmação humana deve ser definida.
+
+------------------------------------------------------------------------------
+LIC-55 — Incluir o parâmetro "Validade Inexistente" para os casos em que o documento licenciatório não possua validade
+
+Origem: item 55; T043/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A fonte informa apenas o título. Campos, fluxo e parâmetros precisam ser definidos.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Cadastrar licença sem validade com o parâmetro e confirmar que não se exige vencimento fictício; política de alerta deve seguir a decisão aprovada.
+
+------------------------------------------------------------------------------
+LIC-56 — Colocar licença em validade "Recorrente".
+
+Origem: item 56; T044/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse item é muito importante também. Existem documentos em que a validade é cíclica e sempre tem que ser renovada.
+
+"Validade Recorrente" significa que não é necessário ficar renovando a data de validade a todo o momento.
+
+Observação: A validade recorrente é diferente da validade inexistente (especificada no item anterior). Validade inexistente é colocado quando não há validade. Validade recorrente define-se uma data de início, uma data de término e um período (ex: semanal, mensal, anual) e o sistema revalida o documento automaticamente. A validade de término pode ser "o próximo século" para situações em que o ciclo de renovação nunca deve parar. Veja a imagem abaixo adotada pelo concorrente:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Configurar início, término e periodicidade; conferir vencimentos dos ciclos e parada no limite, preservando diferença de validade inexistente.
+
+------------------------------------------------------------------------------
+LIC-57 — Criar um visual mais "clean" para a Tabela de Licenças
+
+Origem: item 57; T044/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O visual atual, com a linha inteira pintada de vermelho, torna a experiência não muito agradável. Temos que partir para ícones, "flags" ou coisas do gênero. Veja o exemplo do concorrente.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Revisar a tela com registros de diferentes situações, confirmar ícones/sinalizadores e legibilidade dos estados com os mesmos dados de origem.
+
+------------------------------------------------------------------------------
+LIC-58 — Criar o link "Minhas Licenças"
+
+Origem: item 58; T045/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Veja o item 5.1 acima
+
+CRITÉRIO DE ACEITE PROPOSTO
+Entrar com dois usuários com responsabilidades distintas e conferir que a visão pessoal e a consulta gerencial autorizada apresentam os conjuntos corretos.
+
+------------------------------------------------------------------------------
+LIC-59 — Criar o link "Minhas Condicionantes"
+
+Origem: item 59; T045/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Veja o item 5.1 acima
+
+CRITÉRIO DE ACEITE PROPOSTO
+Entrar com dois usuários com responsabilidades distintas e conferir que a visão pessoal e a consulta gerencial autorizada apresentam os conjuntos corretos.
+
+------------------------------------------------------------------------------
+LIC-60 — Criar uma Home para o Módulo de Licenças
+
+Origem: item 60; T045/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Alguns elementos essenciais na nova Home:
+Logo do Cliente
+Logo do Green
+Cards (com totalizações, estatísticas, pendências, avisos)
+Dashboard
+orientação para o usuário (schedule, notificações)
+foto do usuário (para aumentar a personalização do sistema. Essa foto deveria ser colocada junto ao nome do usuário como se fosse o Teams)
+navegabilidade entre tabelas
+navegabilidade a partir dos dashboards
+acessos rápidos
+
+Exemplo de Dashboards:
+por status
+por tipo (polícia federal, licença, outorga, AVCB, alvará funcionamento))
+por responsável
+por unidade
+por órgão (cetesb, corpo de bombeiros, semad, etc)
+
+Os dashboards devem ser apresentados em forma gráfica e em forma de tabelas
+
+Os Dashboard deverão ser gerados por unidade, por período e por responsável.
+
+O cabeçalho pode conter informações para acessos rápidos. Veja o exemplo da imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir a Home com dados de duas unidades/períodos/responsáveis; conferir todos os indicadores descritos, comparar gráfico/tabela e clicar em um card para abrir apenas os registros correspondentes.
+
+------------------------------------------------------------------------------
+LIC-61 — Visualizar pendências do usuário.
+
+Origem: item 61; T046/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Através do ícone de um sininho é possível visualizar, de modo rápido e resumido, todas as pendências (do usuário logado):
+
+
+
+A imagem abaixo apresenta o resultado da consulta ao clicar no sininho. Na realidade ao clicar no sininho aparece uma versão com informações resumidas das pendências:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Em algum outro link deve aparecer uma versão com informações mais completas, como na imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Com dois usuários, conferir resumo e lista completa de pendências do usuário logado e testar resolução/atualização sem expor itens não autorizados.
+
+------------------------------------------------------------------------------
+LIC-62 — Visualizar o que tem agendado para o usuário
+
+Origem: item 62; T046/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Poderia ser adotado, por exemplo, o ícone de uma agenda para visualizar, de modo rápido e resumido, todas as ações futuras (do usuário logado). Essa é apenas 1 ideia. O importante é que exista uma agenda de pendências viva para o usuário que está logado:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Criar evento futuro relacionado ao módulo e conferir data, responsável e acesso ao registro pela agenda pessoal/gerencial autorizada.
+
+------------------------------------------------------------------------------
+LIC-63 — Apenas como informação, o sistema do concorrente permite criar campos personalizados no módulo de licenças
+
+Origem: item 63; T047/R000
+Situação: DECISÃO PENDENTE (Implementar? não preenchido)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Não sei se o concorrente aplica isso em outros módulos. Segundo observei, isso também é aplicado ao módulo legal, mas de outro concorrente, não desse cujo exemplo segue abaixo.
+
+Na verdade o sistema cria novos campos para personalizar o módulo.
+
+Tenho dúvidas se o nosso sistema também deveria ter esse tipo de funcionalidade, embora isso certamente dê a ocliente versatilidade para customização do sistema.
+
+De qualquer forma, segue o modelo de formulário que permite fazer essa inclusão.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+LIC-64 — Implementar a Gestão de Taxa de Licenças
+
+Origem: item 64; T047/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A gestão de taxa deve ser um item associado ao documento licenciatório. 
+
+Para a gestão de taxa deve ser prevista a data de validade do tipo recorrente, ou seja, além da data de validade e reação normais, poderá ser programada a validade do tipo recorrente. Que não precisa ser atualizada constantemente. Poderá também ser programada a data de pagamento através de um schedule.
+
+1 documento licenciatório pode ter "n" taxas, como é o caso das condicionantes.
+
+A taxa pode ter:
+1 responsável
+"n" responsáveis
+Grupo responsável
+
+A cada taxa deverá ser possível anexar comprovantes de pagamento.
+
+Campos a serem previstos na planilha de taxas:
+
+Identificação da Taxa
+.  Código: Número para identificar o lançamento
+.  Descrição: O que está sendo pago (ex: Taxa de Resíduo, Taxa do IBAMA, etc)
+.  Tipo: Classificação do custo (ex: Taxa Operacional, Multa, etc)
+.  Fornecedor / Órgão: Quem recebe o dinheiro (ex: IBAMA, Prefeitura Municipal, CETESB)
+.  Risco: Alto, Médio, Baixo
+
+Planejamento e Prazos
+.  Data de Emissão: Quando a taxa foi gerada
+.  Data de Reação
+.  Data de Vencimento: Prazo limite para pagamento sem juros (essa data pode ser uma data automática em função da recorrência, uma data estabelecida num schedule (vários vencimentos), uma data digitada manualmente)
+.  Recorrência: Periodicidade (ex: Mensal, Anual, Única)
+.  Valor Previsto (R$): O valor original ou estimado da taxa
+
+Execução Financeira
+.  Data do Pagamento
+.  Forma de Pagamento: Como foi pago (ex: Débito Automático, PIX, Boleto, Cartão)
+.  Conta de Origem: De qual conta bancária saiu o recurso
+.  Juros / Multas (R$): Valor extra pago em caso de atraso
+.  Valor Total Pago (R$): Soma do Valor Previsto + Juros / Multas
+
+Controle e Auditoria
+.  Status: Situação atual da taxa (use uma lista suspensa com: Pendente, Agendado, Pago, Atrasado) com alerta automático relativo ao status
+.  Comprovante (Link / Anexo): Link para pasta na nuvem com o PDF do comprovante de pagamento ou possibilidade de anexar o arquivo
+.  Observações: Espaço livre para notas (ex: "Taxa renegociada com o gerente" ou "Vencimento caiu no feriado")
+.  Totalizador no topo da tabela para saber exatamente quanto já foi gasto no mês.
+
+A tabela de gestão de taxas poderá ainda ser acessada diretamente, sem ter que entrar em cada documento.
+
+A taxa pode ser criada sem estar associada a nenhum documento licenciatório, sendo cadastrada diretamente na tabela de gestão de taxas.
+
+As pendências (notificações) e os agendamentos de atividades do usuário que está logado deve contemplar os eventos do módulo de pagamento de taxas.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Cadastrar duas taxas para uma licença e uma taxa independente; registrar pagamento e comprovante; conferir status, agenda e total mensal conforme valores registrados.
+
+------------------------------------------------------------------------------
+LIC-65 — Gerar a tabela de Potenciais Licenças
+
+Origem: item 65; T047/R003
+Situação: DECISÃO PENDENTE (Implementar? não preenchido)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Vide item 31 sobre como gerar automaticamente a tabela de potenciais Licenças. Após a validação desses itens potenciais ele passaria a integrar a tabela de Gestão de Licenças mencionada no item 48.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Receber potencial por unidade e Controle/Influência; validar um item e conferir criação na gestão com vínculo legal; manter pendente outro item sem convertê-lo em gestão.
+
+------------------------------------------------------------------------------
+LIC-65.1 — Fluxo do estágio em que o processo DE GESTÃO se encontra tipo "Entrega do Mercado Livre" (como foi aplicado no caso do GED-E)
+
+Origem: item 65.1; T048/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse fluxo é bem interessante de ser aplicado em todos os módulos. As atividades de GESTÃO de todos os módulos, de alguma forma, funcionam como um processo. Seguem os workflows do módulo:
+
+. No módulo licença (processo normal) a pessoa:
+1- cadastra a licença
+2- define o responsável
+3- define a validade
+4- define o nível de risco (facultativo)
+5- carrega a evidência do atendimento
+
+. No módulo licença (processo em protocolo) a pessoa:
+1- abre um protocolo
+2- carrega a nova licença
+3- encerra o protocolo
+4- inativa a licença antiga
+
+. No módulo taxas a pessoa:
+1- cadastra a taxa
+2- define o responsável
+3- define a validade
+4- define o nível de risco (facultativo)
+5- paga a taxa
+6- carrega a evidência do pagamento da taxa
+
+CRITÉRIO DE ACEITE PROPOSTO
+Percorrer as etapas descritas com um registro de teste, conferir destaque do estágio atual e preservar etapas facultativas; validar transições e retornos após esclarecimento das pendências.
+
+------------------------------------------------------------------------------
+LIC-65.2 — Prever o link "Ajuda" / "Como Funciona" em todos os módulos para servir como um treinamento para o usuário.
+
+Origem: item 65.2; T048/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Nesse link poderíamos carregar o texto da ajuda e um vídeo mostrando como o sistema funciona
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir Ajuda/Como Funciona no módulo e conferir texto e vídeo configurado explicando o processo correspondente.
+
+
+VALIDAÇÃO DO PACOTE
+Este TXT deve ser revisado em conjunto com as dependências indicadas. A implementação
+exige acesso ao código e banco atuais, ausentes deste anexo. As condições de aceite
+são propostas de homologação funcional, não resultados de testes já executados.

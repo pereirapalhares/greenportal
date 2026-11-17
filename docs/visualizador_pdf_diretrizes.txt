@@ -1,0 +1,18 @@
+GREEN PORTAL - PADRÃO DO VISUALIZADOR DE PDF
+
+Todas as transações que exibem documentos PDF devem utilizar o componente visualizador-pdf.js e o endpoint visualizadopdf.php.
+
+O visualizador padrão:
+- abre o documento em uma modal dentro da aba atual;
+- utiliza PDF.js local, sem dependência de leitor instalado ou CDN;
+- exibe o código da lei no cabeçalho;
+- permite navegar entre páginas;
+- permite pesquisar texto no documento;
+- informa a quantidade de ocorrências encontradas;
+- destaca as ocorrências encontradas em amarelo;
+- oferece download do PDF original;
+- informa ao usuário quando o documento não puder ser exibido.
+
+O endpoint valida a sessão, a transação autorizada, a permissão de visualização e o código do documento. Quando o código possui sufixo alfabético, a última letra não é considerada no nome físico do PDF.
+
+Legislação e Requisitos Legais devem manter o mesmo comportamento visual e técnico.

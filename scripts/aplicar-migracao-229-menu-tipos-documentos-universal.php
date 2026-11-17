@@ -1,0 +1,6 @@
+<?php
+declare(strict_types=1);
+require_once dirname(__DIR__) . '/classes/GreenPortalDatabase.php';
+$env=GreenPortalDatabase::env();$p=GreenPortalDatabase::connect($env,$env['GUNIVERSAL_DB_DATABASE']??'guniversal_dbp','GUNIVERSAL');$parent=(int)$p->query("SELECT codmenu FROM menus WHERE codigo='MODULO_LEGAL' LIMIT 1")->fetchColumn();if(!$parent)throw new RuntimeException('Menu pai MODULO_LEGAL não encontrado no catálogo central.');
+$q=$p->prepare("INSERT INTO menus(codmenu,codmenu_pai,modulo,codigo,label,label_pt,label_en,label_es,url,nivel,ordem,icone,ativo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,1) ON DUPLICATE KEY UPDATE codmenu_pai=VALUES(codmenu_pai),modulo=VALUES(modulo),label=VALUES(label),label_pt=VALUES(label_pt),label_en=VALUES(label_en),label_es=VALUES(label_es),url=VALUES(url),nivel=VALUES(nivel),ordem=VALUES(ordem),ativo=1");$q->execute([125,$parent,'MANUTENCAO_LEGAL','TIPOS_DOCUMENTOS_LICENCAS','Tipos documentais de licenças','Tipos documentais de licenças','License document types','Tipos documentales de licencias','/principal/manutencaolegal_tiposdocumentos.php',2,4,'bi-tags']);
+echo json_encode(['ok'=>true,'migration'=>229,'codmenu'=>125,'pai'=>$parent],JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT).PHP_EOL;

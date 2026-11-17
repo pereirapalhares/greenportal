@@ -1,0 +1,40 @@
+GREEN PORTAL - DIRETRIZES DA TELA DE LOGIN
+
+1. OBJETIVO
+
+A tela de login e a unica porta de entrada funcional do Green Portal. O
+usuario deve informar empresa, usuario, senha e idioma antes de acessar o
+portal.
+
+2. LAYOUT
+
+O login deve ocupar toda a tela, sem barra de rolagem:
+
+- lado esquerdo: 30% da largura, formulario de acesso;
+- lado direito: 70% da largura, informacoes institucionais e marketing;
+- o lado direito deve apresentar o texto institucional definido para o
+  Green Portal;
+- devem ser utilizados os arquivos de imagem do diretorio imagens quando
+  aplicavel.
+
+3. IDIOMA E PERSONALIZACAO
+
+O idioma e escolhido na tela de login. O padrao e PT, com suporte a EN e ES.
+Textos, labels, mensagens e botoes devem possuir traducao.
+
+O perfil ADMINISTRADOR pode alterar os textos da tela em Setup/Login,
+incluindo marca, titulo, subtitulo, labels, botao e textos institucionais.
+A alteracao deve possuir salvar e preview.
+
+O tema de cores padrao da empresa, definido em Setup/Layout, tambem deve ser
+aplicado ao index.php antes da autenticacao. A tela principal pode aplicar
+uma preferencia individual do usuario apos o login.
+
+4. SEGURANCA
+
+O processamento do login deve ocorrer somente por credenciais/logar.php,
+aceitando apenas requisicao POST. A senha deve ser validada conforme a
+configuracao da empresa, sem permitir acesso a paginas internas sem sessao.
+
+A empresa apresentada no combo deve estar ativa. A sessao deve armazenar
+usuario, perfil, idioma e tenant selecionado.

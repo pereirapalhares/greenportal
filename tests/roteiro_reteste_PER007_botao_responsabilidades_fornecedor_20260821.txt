@@ -1,0 +1,76 @@
+ROTEIRO DE RETESTE VISUAL — PER-007
+Botão Responsabilidades — Gestão de Fornecedores
+Data: 21/08/2026
+
+OBJETIVO
+Validar a correção do acesso contextual à consulta e à manutenção de responsabilidades a partir da tela Gestão de Fornecedores. O botão anteriormente apresentava “Fornecedor inválido” porque a tela recebia o filtro contextual em JSON.
+
+ESCOPO
+Este reteste é focado no botão e na passagem do fornecedor selecionado. A inclusão, edição, exclusão lógica, permissões e mensagens do PER-007 original permanecem homologadas e não precisam ser repetidas, salvo se este reteste indicar regressão.
+
+AMBIENTE E USUÁRIO
+Sistema: GreenPortal — empresa Modelo
+Banco novo: gmodelo_dbp
+Menu: Homologação de Fornecedores > Gestão de Fornecedores
+Usuário autorizado: ueditor
+Senha: <senha de teste via variável de ambiente>
+
+DADOS DE TESTE
+Fornecedor sugerido: CODFORNECEDOR 6 — Rio Limpo Manaus, se ainda estiver ativo e visível.
+Alternativa: selecionar qualquer fornecedor ativo exibido na grade e anotar seu código e razão social.
+Não alterar registros legados durante este reteste.
+
+PRÉ-CONDIÇÕES
+1. Acessar o GreenPortal com o usuário ueditor.
+2. Confirmar que o perfil possui Visualizar e Manter para a transação HOMOLOGACAO_FORNECEDOR_FORNECEDOR.
+3. Confirmar que o menu Gestão de Fornecedores está acessível.
+4. Manter as permissões de Excel e PDF conforme estavam no roteiro PER-007 anterior.
+
+RT-001 — Abrir a consulta pelo botão contextual
+1. Abrir Homologação de Fornecedores > Gestão de Fornecedores.
+2. Pesquisar ou localizar o fornecedor de teste.
+3. Selecionar uma linha da grade.
+4. Clicar no botão “Responsabilidades” da linha selecionada.
+5. Confirmar que a tela abre sem erro HTTP 400 e sem a mensagem “Fornecedor inválido”.
+6. Confirmar o título “Responsabilidades do fornecedor”.
+7. Confirmar que o fornecedor exibido corresponde exatamente à linha selecionada.
+8. Confirmar que a grade de responsabilidades é carregada, mesmo quando estiver vazia.
+Resultado esperado: o código do fornecedor é transmitido corretamente pelo botão contextual.
+
+RT-002 — Abrir a manutenção a partir da consulta
+1. Na tela de responsabilidades aberta no RT-001, clicar em “Manter”.
+2. Confirmar que a tela de manutenção abre sem “Fornecedor inválido”.
+3. Confirmar que o fornecedor e seu código continuam sendo os mesmos do RT-001.
+4. Confirmar a presença dos botões de inclusão/edição conforme as permissões do usuário.
+Resultado esperado: a manutenção recebe o mesmo contexto do fornecedor sem perda do identificador.
+
+RT-003 — Validar acesso direto por compatibilidade
+1. Copiar o código do fornecedor selecionado.
+2. Abrir a consulta usando o parâmetro direto CODFORNECEDOR, conforme o padrão da aplicação.
+3. Confirmar que a consulta abre normalmente.
+4. Abrir a manutenção pelo fluxo disponível e confirmar que também funciona.
+Resultado esperado: o parâmetro direto continua funcionando, sem quebrar integrações ou favoritos existentes.
+
+RT-004 — Verificar ausência de regressão visual
+1. Voltar para Gestão de Fornecedores.
+2. Selecionar outro fornecedor ativo.
+3. Clicar novamente em “Responsabilidades”.
+4. Confirmar que o título, o fornecedor e os dados exibidos correspondem ao segundo registro.
+5. Voltar à grade e confirmar que paginação, filtros e seleção continuam operacionais.
+Resultado esperado: o botão não fica preso ao primeiro fornecedor selecionado.
+
+RT-005 — Evidências e resultado
+Registrar capturas de:
+- Gestão de Fornecedores com o fornecedor selecionado;
+- tela de consulta aberta pelo botão Responsabilidades;
+- tela de manutenção aberta a partir da consulta;
+- console/rede, se houver mensagem de erro.
+
+Classificação de cada caso: APROVADO, REPROVADO ou N/A.
+Para reprovação, registrar passo, mensagem exibida, URL/parâmetros recebidos, código do fornecedor e horário.
+
+CRITÉRIO DE APROVAÇÃO
+O PER-007 será considerado corrigido quando RT-001, RT-002 e RT-004 forem APROVADOS, sem “Fornecedor inválido”, com o fornecedor correto nas duas telas. RT-003 deve ser aprovado para confirmar compatibilidade.
+
+LIMPEZA
+Não excluir nem editar responsabilidades neste reteste. Se alguma alteração acidental ocorrer, restaurar o valor anterior e registrar a ocorrência.

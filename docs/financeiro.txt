@@ -1,0 +1,23 @@
+No greenportal, vamos ter que avaliar o custo que será aplicado pelo uso da IA
+Inicialmente tenho que saber o custo da IA que trata dos 5 pilares dos Requisitos legais
+Vamos calcular inicialmente para a Empresa GoodYear ele esta dividida nas empresas abaixo
+onde é mostrado a qtd de requisitos legais existentes
+Então, a pagina modulolegal_requisitoslegais.php tem a transação Analise da IA que analisa os 5 pilares(Licenças
+Medição e Monitoramento
+Treinamentos
+Infraestrutura
+Documentos)
+Quaro um calculo por lote com a qtd de analises conforme abaixo, trazendo os valores medios para as 3 ias mais abaixo
+
+
+Goodyear SBO		2346
+Goodyear Anchieta	1878
+Goodyear Epiacaba	2101
+Goodyear Americana	3039
+Goodyear Diadema	683
+Goodyear Gravatai	1957
+Goodyear São Paulo	1725
+
+OpenAI GPT-5 mini	R$ xxx,xx
+Google Gemini 3.1 Flash-Lite	R$ xxx,xx
+Anthropic Claude Haiku 4.5	R$ xxx,xx

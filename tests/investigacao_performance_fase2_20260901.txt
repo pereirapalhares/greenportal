@@ -1,0 +1,212 @@
+=========================================================================
+GREEN PORTAL - INVESTIGACAO APROFUNDADA DE PERFORMANCE (FASE 2)
+Data: 01/09/2026
+Escopo: gmodelo_dbp, glegislacao_dbp, guniversal_dbp
+Metodo: performance_schema.events_statements_summary_by_digest
+        (janela de coleta real: 26/08/2026 a 01/09/2026, ~6 dias)
+Contexto: continuacao do relatorio_performance_bancos_20260901.txt e do
+          script_correcoes_gmodelo_dbp_20260901.sql (ja aplicado e
+          reverificado nesta mesma data - OK, sem regressao).
+=========================================================================
+
+0. RESUMO
+-------------------------------------------------------------------------
+Os 3 itens em aberto do relatorio anterior foram investigados com
+evidencia de execucao real (nao apenas estrutura de tabela):
+
+  1. Select_full_join alto -> identificadas as queries especificas
+     responsaveis. Maior parte e overhead de framework/ORM, nao
+     tabelas de negocio. Duas queries de negocio genuinas encontradas
+     e corrigidas via indice (script fase 2).
+  2. assuntos/perguntas sem indice adicional -> INVESTIGADO E
+     RECLASSIFICADO. Sem evidencia de trafego real com filtro nessas
+     tabelas nos ultimos 6 dias. Prioridade rebaixada.
+  3. innodb_redo_log_capacity abaixo do alvo -> confirmado, e variavel
+     dinamica no MySQL 8.4.7 (nao exige restart), incluida no script.
+
+Script gerado: script_correcoes_fase2_20260901.sql (2 indices novos +
+1 SET PERSIST + limpeza opcional comentada).
+
+
+1. SELECT_FULL_JOIN / SEM USO DE INDICE - QUEM SAO OS CULPADOS
+-------------------------------------------------------------------------
+Consulta usada: soma de SUM_SELECT_FULL_JOIN + SUM_NO_INDEX_USED por
+digest, cruzando as 3 bases, ordenado do maior para o menor.
+
+1.1 RUIDO DE FRAMEWORK/ORM (nao e problema de indice de tabela)
+    - "SHOW TRIGGERS LIKE ?"                    2413 execucoes (gmodelo_dbp)
+    - "SELECT ... JSON_EXTRACT(HISTOGRAM...)"   2413 execucoes (gmodelo_dbp)
+    - "SHOW TRIGGERS LIKE ?"                     135 execucoes (glegislacao_dbp)
+    - "SELECT ... JSON_EXTRACT(HISTOGRAM...)"    135 execucoes (glegislacao_dbp)
+
+    Essas duas queries sempre aparecem juntas, no mesmo numero de
+    execucoes, e sao consultas de introspeccao de schema (checar
+    triggers e estatisticas de histograma de uma tabela) - tipico de
+    um ORM/framework fazendo "schema discovery" a cada request, e nao
+    trafego de negocio. 2413 execucoes em 6 dias e um volume alto para
+    esse tipo de chamada. Nao ha indice de tabela que resolva isso;
+    a correcao correta e no lado da aplicacao (cache de schema/
+    metadados do ORM, se o framework usado suportar). Registrado aqui
+    como achado, sem acao de banco associada.
+
+1.2 QUERY ADMINISTRATIVA RARA (nao e problema recorrente)
+    - 1 execucao, 1797 "select scans", 207.79s de tempo total, na base
+      gmodelo_dbp. E uma busca de "onde esse valor e referenciado" na
+      tabela `alertas`, varrendo varias colunas com LIKE '%valor%':
+
+        SELECT 'alertas' AS tabela, 'link' AS coluna, COUNT(*) AS qtd
+          FROM alertas WHERE link LIKE '%?%' OR link LIKE '%?%' ...
+          HAVING qtd>0
+        UNION ALL
+        SELECT 'alertas' AS tabela, 'link_status' AS coluna, COUNT(*)...
+        (continua em UNION ALL para varias colunas)
+
+    LIKE com curinga a esquerda ('%valor%') NAO pode usar indice
+    B-tree, independente de quantos indices existam - e uma limitacao
+    estrutural do tipo de busca, nao falta de indice. Como so rodou
+    1 vez nos ultimos 6 dias, nao caracteriza um problema recorrente
+    de performance; e provavelmente uma funcionalidade administrativa
+    de "verificar referencias antes de excluir/renomear". Nao incluida
+    no script - se esse tipo de busca passar a ser frequente, a
+    solucao correta seria um indice FULLTEXT ou uma tabela auxiliar de
+    referencias normalizadas, nao um indice comum.
+
+1.3 QUERIES DE NEGOCIO GENUINAS (corrigidas no script fase 2)
+
+    a) Contador "minhas ocorrencias pendentes" (nc_indicacao_ocorrencia)
+       290 execucoes / 100% sem uso de indice / 5.42s tempo total
+
+         SELECT COUNT(*) AS total FROM nc_indicacao_ocorrencia o
+          WHERE (o.CODUSUARIO_EMISSOR = ? OR o.CODUSUARIO_GESTOR = ?
+                 OR o.CODUSUARIO_RESPONSAVEL = ?
+                 OR EXISTS (SELECT 1 FROM nc_planodeacao p
+                             WHERE p.CODOCORRENCIA = o.CODOCORRENCIA
+                               AND p.CODUSUARIO = ?))
+            AND COALESCE(o.ETAPA, ?) != ?
+
+       Achado importante: a tabela nc_indicacao_ocorrencia JA TEM
+       indices individuais em CODUSUARIO_EMISSOR, CODUSUARIO_GESTOR e
+       CODUSUARIO_RESPONSAVEL - ou seja, isso NAO e um caso de "falta
+       de indice". O otimizador do MySQL nao consegue combinar esses
+       indices (via index_merge/union) porque a condicao esta
+       misturada com "OR EXISTS (subquery)" - isso desabilita o
+       index_merge e forca full scan. E uma limitacao de formato da
+       query, nao de estrutura de indice.
+
+       Acao tomada: adicionado indice composto
+       (CODOCORRENCIA, CODUSUARIO) em nc_planodeacao para acelerar o
+       ramo EXISTS da propria query (que MySQL sempre avalia linha a
+       linha nesse formato). Isso reduz o custo, mas nao elimina o
+       full scan da tabela principal.
+
+       Recomendacao adicional (fora do escopo de SQL, e mudanca de
+       codigo): reescrever a query separando em UNION de duas partes
+       - uma so com as 3 condicoes de igualdade (que usa os indices
+       existentes via index_merge) e outra so com o EXISTS - permite
+       ao MySQL usar os indices em ambas as metades.
+
+    b) Contadores de "situacao de legislacao por usuario"
+       (legislacaoxsituacao) - 2 variantes, 289 execucoes cada,
+       100% sem uso de indice
+
+         SELECT COUNT(*) AS total FROM legislacaoxsituacao
+          WHERE CODUSUARIO = ? AND COALESCE(atendido, ?) ...
+            AND data_de_vencimento_avaliacao BETWEEN CURDATE() AND ...
+         -- e uma segunda variante com DATE(data_de_vencimento_avaliacao) = CURDATE()
+
+       Achado: os 3 indices existentes nessa tabela comecam com
+       CODLEGISLACAO (nunca com CODUSUARIO), entao nao servem para uma
+       busca filtrando so por CODUSUARIO - regra do prefixo mais a
+       esquerda. Tabela pequena (926 linhas), mas e consultada com
+       frequencia (badge de pendencias, provavelmente carregado a
+       cada login/dashboard).
+
+       Acao tomada: adicionado indice composto (CODUSUARIO, atendido).
+
+
+2. ASSUNTOS / PERGUNTAS - REAVALIACAO
+-------------------------------------------------------------------------
+O relatorio de 01/09 tinha marcado essas tabelas como "ALTO" apenas por
+criterio estrutural (poucas linhas, so chave primaria, sem indice
+secundario). Nesta investigacao, cruzei com o tempo real de execucao
+via performance_schema e NAO ha nenhuma query de negocio com filtro
+(WHERE) contra assuntos ou perguntas nos ultimos 6 dias - apenas:
+  - introspeccao de schema (SHOW CREATE TABLE / SHOW FIELDS)
+  - 5 execucoes de "SELECT SQL_NO_CACHE * FROM assuntos/perguntas" sem
+    filtro, que correspondem as minhas proprias consultas de
+    diagnostico durante a analise anterior (nao trafego de usuario)
+
+Alem disso, existe uma view vw_assuntos_grid, que e provavelmente o
+que a grade da aplicacao usa de fato - mas tambem sem trafego de
+consulta filtrada registrado no periodo.
+
+Conclusao: rebaixo a prioridade deste item. Com 20.585 linhas
+(assuntos) e 10.332 linhas (perguntas), um full scan ocasional nao e
+caro (tabelas desse tamanho cabem facilmente em buffer pool e um scan
+completo custa poucos milissegundos). Nao incluido no script - sem
+evidencia de dor real, adicionar indice as cegas so custa espaco e
+overhead de escrita sem beneficio comprovado. Recomendo apenas manter
+em observacao; se aparecer um filtro especifico usado pela grade (por
+exemplo, busca por texto ou por categoria), aviso e desenho o indice
+certo com base na query real.
+
+
+3. INNODB_REDO_LOG_CAPACITY
+-------------------------------------------------------------------------
+Valor atual confirmado: 104.857.600 bytes (100 MB).
+Alvo recomendado (relatorio anterior): 256-512MB.
+
+Confirmado que innodb_redo_log_capacity e uma variavel DINAMICA a
+partir do MySQL 8.0.30 (este servidor roda 8.4.7) - pode ser alterada
+em runtime com SET PERSIST, sem necessidade de reiniciar o servico, e
+o valor persiste em mysqld-auto.cnf para sobreviver a um restart
+futuro tambem.
+
+Nao foi possivel verificar espaco livre em disco via SQL (isso exige
+acesso ao sistema operacional, fora do escopo de uma sessao MySQL).
+Antes de rodar a PARTE 3 do script, confirme manualmente que ha pelo
+menos ~1 GB livre em e:\wamp\bin\mysql\mysql8.4.7\data\ como margem de
+seguranca durante o redimensionamento.
+
+
+4. ACHADO ADICIONAL: INDICES DUPLICADOS EM nc_planodeacao
+-------------------------------------------------------------------------
+Durante a checagem de indices existentes, encontrei 2 pares de indices
+redundantes (mesma coluna, indices diferentes) em nc_planodeacao:
+  - ICODOCORRENCIA (CODOCORRENCIA) e inc_planodeacao (CODOCORRENCIA)
+  - ICODCAUSA (CODCAUSA) e inc_planodeacao3 (CODCAUSA)
+
+Nao afeta performance de leitura (o otimizador so usa um dos dois),
+mas cada indice extra adiciona overhead em todo INSERT/UPDATE/DELETE
+na tabela e ocupa espaco em disco desnecessariamente. Incluido no
+script como limpeza OPCIONAL (comentada por padrao) - e seguro remover
+um de cada par, mas deixei a decisao com voce por nao ser urgente.
+
+
+5. RESUMO DAS ACOES DO SCRIPT FASE 2
+-------------------------------------------------------------------------
+  - ADD INDEX ix_planodeacao_ocorrencia_usuario em nc_planodeacao
+    (CODOCORRENCIA, CODUSUARIO)
+  - ADD INDEX ix_lxsituacao_usuario_atendido em legislacaoxsituacao
+    (CODUSUARIO, atendido)
+  - SET PERSIST innodb_redo_log_capacity = 512MB (ou 256MB alternativo)
+  - [opcional, comentado] limpeza de 2 indices duplicados em
+    nc_planodeacao
+
+Todas as tabelas alteradas sao pequenas (a maior tem ~10.500 linhas,
+~2,5 MB) - execucao deve ser praticamente instantanea, sem bloqueio
+perceptivel.
+
+
+6. ITENS QUE PERMANECEM FORA DO ESCOPO DE SQL (mudanca de codigo)
+-------------------------------------------------------------------------
+  - Reescrever a query de "ocorrencias pendentes" separando o OR com
+    EXISTS em um UNION, para aproveitar os indices ja existentes em
+    nc_indicacao_ocorrencia.
+  - Investigar por que o ORM/framework faz SHOW TRIGGERS + consulta de
+    HISTOGRAM ~2413 vezes em 6 dias - se houver opcao de cache de
+    metadados de schema no framework usado, habilitar reduziria uma
+    quantidade significativa de round-trips ao banco.
+  - Gate de revisao para novas tabelas (recomendacao ja feita no
+    relatorio de 01/09, continua valendo).
+=========================================================================

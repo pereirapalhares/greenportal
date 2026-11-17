@@ -1,0 +1,41 @@
+/* Portaria › Documentação de Fornecedor, de Funcionário e Treinamentos: cor da linha pela situação do documento (SITUACAO_COR da view).
+   Migração 350 (decisão do usuário de 24/10/2026): mesma regra única de cores do Painel — vermelho (reprovado, vencido, pendente com o
+   fornecedor, fornecedor bloqueado), amarelo (pendente com a empresa, vence nos dias de reação), verde (aprovado), cinza (não se aplica). */
+:is(.portaria-documentacao-fornecedor-grid-fragment, .portaria-documentacao-funcionario-grid-fragment, .portaria-documentacao-treinamento-grid-fragment) {
+    --pdf-vencido: #d64545; --pdf-a-vencer: #d9a514; --pdf-aprovado: #2f9e5b;
+    --pdf-pendente-fornecedor: #d64545; --pdf-pendente-empresa: #d9a514; --pdf-nao-aplica: #8a94a0; --pdf-bloqueado: #9b1c1c;
+}
+:is(.portaria-documentacao-fornecedor-grid-fragment, .portaria-documentacao-funcionario-grid-fragment, .portaria-documentacao-treinamento-grid-fragment) tr[data-pdf-cor] > td { background-color: color-mix(in srgb, var(--pdf-cor) 13%, transparent) !important; }
+:is(.portaria-documentacao-fornecedor-grid-fragment, .portaria-documentacao-funcionario-grid-fragment, .portaria-documentacao-treinamento-grid-fragment) tr[data-pdf-cor] > td:first-child { box-shadow: inset 4px 0 0 var(--pdf-cor); }
+:is(.portaria-documentacao-fornecedor-grid-fragment, .portaria-documentacao-funcionario-grid-fragment, .portaria-documentacao-treinamento-grid-fragment) tr[data-pdf-cor] .grid-input { background-color: transparent !important; }
+:is(.portaria-documentacao-fornecedor-grid-fragment, .portaria-documentacao-funcionario-grid-fragment, .portaria-documentacao-treinamento-grid-fragment) tr[data-pdf-cor="vencido"], :is(.portaria-documentacao-fornecedor-grid-fragment, .portaria-documentacao-funcionario-grid-fragment, .portaria-documentacao-treinamento-grid-fragment) tr[data-pdf-cor="reprovado"] { --pdf-cor: var(--pdf-vencido); }
+:is(.portaria-documentacao-fornecedor-grid-fragment, .portaria-documentacao-funcionario-grid-fragment, .portaria-documentacao-treinamento-grid-fragment) tr[data-pdf-cor="a-vencer"] { --pdf-cor: var(--pdf-a-vencer); }
+:is(.portaria-documentacao-fornecedor-grid-fragment, .portaria-documentacao-funcionario-grid-fragment, .portaria-documentacao-treinamento-grid-fragment) tr[data-pdf-cor="aprovado"] { --pdf-cor: var(--pdf-aprovado); }
+:is(.portaria-documentacao-fornecedor-grid-fragment, .portaria-documentacao-funcionario-grid-fragment, .portaria-documentacao-treinamento-grid-fragment) tr[data-pdf-cor="pendente-fornecedor"] { --pdf-cor: var(--pdf-pendente-fornecedor); }
+:is(.portaria-documentacao-fornecedor-grid-fragment, .portaria-documentacao-funcionario-grid-fragment, .portaria-documentacao-treinamento-grid-fragment) tr[data-pdf-cor="pendente-empresa"] { --pdf-cor: var(--pdf-pendente-empresa); }
+:is(.portaria-documentacao-fornecedor-grid-fragment, .portaria-documentacao-funcionario-grid-fragment, .portaria-documentacao-treinamento-grid-fragment) tr[data-pdf-cor="nao-aplica"] { --pdf-cor: var(--pdf-nao-aplica); }
+:is(.portaria-documentacao-fornecedor-grid-fragment, .portaria-documentacao-funcionario-grid-fragment, .portaria-documentacao-treinamento-grid-fragment) tr[data-pdf-cor="fornecedor-bloqueado"] { --pdf-cor: var(--pdf-bloqueado); }
+:is(.portaria-documentacao-fornecedor-grid-fragment, .portaria-documentacao-funcionario-grid-fragment, .portaria-documentacao-treinamento-grid-fragment) tr[data-pdf-cor="sem-situacao"] > td { background-color: transparent !important; box-shadow: none; }
+
+/* Ícone da cor (coluna Situação e filtro) */
+.pdf-legenda-cor { width: 11px; height: 11px; border-radius: 50%; display: inline-block; flex: 0 0 auto; border: 1px solid rgba(0, 0, 0, .18); }
+.pdf-cor-vencido, .pdf-cor-reprovado { background: #d64545; } .pdf-cor-a-vencer { background: #d9a514; } .pdf-cor-aprovado { background: #2f9e5b; }
+.pdf-cor-pendente-fornecedor { background: #d64545; } .pdf-cor-pendente-empresa { background: #d9a514; }
+.pdf-cor-fornecedor-bloqueado { background: #9b1c1c; box-shadow: inset 0 0 0 2px #fff; }
+.pdf-cor-nao-aplica { background: #8a94a0; } .pdf-cor-sem-situacao { background: transparent; border-style: dashed; }
+
+/* Coluna Situação */
+.pdf-situacao { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; padding: 0 4px; }
+
+/* Filtro de situação (combobox), à esquerda da busca geral */
+.pdf-filtro-situacao { position: relative; margin-left: auto; flex: 0 0 auto; }
+.pdf-filtro-situacao + .crud-search { margin-left: 0 !important; }
+.pdf-filtro-botao { display: flex; align-items: center; gap: 6px; width: 230px; text-align: left; cursor: pointer; }
+.pdf-filtro-texto { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pdf-filtro-lista { position: absolute; top: calc(100% + 2px); left: 0; z-index: 1060; min-width: 100%; margin: 0; padding: 4px; list-style: none;
+    background: var(--surface, var(--bs-body-bg, #fff)); color: inherit; border: 1px solid var(--border, rgba(0, 0, 0, .15)); border-radius: 6px; box-shadow: 0 6px 18px rgba(0, 0, 0, .15); }
+.pdf-filtro-lista li { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 4px; cursor: pointer; white-space: nowrap; }
+.pdf-filtro-lista li:hover, .pdf-filtro-lista li:focus { background: rgba(127, 127, 127, .14); outline: none; }
+.pdf-filtro-lista li[aria-selected="true"] { font-weight: 600; }
+.pdf-filtro-todas { width: 11px; text-align: center; font-size: 11px; }
+@media (max-width: 900px) { .pdf-filtro-situacao { flex: 1 1 100%; } .pdf-filtro-botao { width: 100%; } }

@@ -1,0 +1,646 @@
+﻿ESPECIFICAÇÃO FUNCIONAL — GREEN 4.0
+Versão: 1.0 — elaboração em 12/11/2026
+Fonte: Passo a passo mudança no Green4.0 — Revisão G — 13/08/2026.doc.
+Situação: especificação para revisão funcional; não representa validação do software existente.
+
+COMO INTERPRETAR
+- IDs dos requisitos preservam a numeração da fonte. Txxx/Rxxx identifica tabela/linha,
+  contando a partir de zero na ordem do documento, para rastreabilidade sem paginação variável.
+- "Sim" indica solicitação de implementação na fonte, não comprova implementação.
+- Campo "Implementar?" vazio significa decisão pendente. Requisito dependente de outro
+  item marcado Sim é identificado, mas a inconsistência da marcação é preservada.
+- Detalhamento da fonte é reproduzido em cada requisito para conservar campos, exemplos,
+  condições, exceções e fluxos. Exemplos não constituem listas fechadas de domínio.
+- Critérios de aceite e regras consolidadas são operacionalizações propostas para revisão.
+  Decisões ausentes não foram convertidas em regras definitivas.
+- Referências a capturas de concorrentes são referências visuais do DOC original; imagens
+  não são reproduzidas em TXT. Não foram inferidas regras a partir de elementos só visuais.
+- Não há definição de banco físico, linguagem, endpoints ou cronograma nesta versão.
+
+
+03 — Módulo Legal
+
+OBJETIVO
+Especificar as mudanças deste tema preservando o escopo e as ressalvas da Revisão G.
+
+REGRAS CONSOLIDADAS
+Manter opção Não Avaliado como padrão dos novos requisitos e gerar pendência pela falta de análise.
+Responsabilidades: categorias definidas pelo cliente, classificadas pela IA, associadas
+a usuários/grupos; também permitir atribuição direta por requisito.
+Potenciais: cinco conjuntos (Licenças, MM, Controle, Treinamento, Infraestrutura),
+validação humana, separação por unidade e Controle/Influência, vínculo à lei de origem.
+Sugestão de atendimento: usar dados de gestão + padrão de desempenho; sem gestão
+associada, usar o padrão como base de sugestão. Usuário pode aceitar, editar ou substituir.
+Alterar Controle/Influência/Conhecimento por cliente mediante justificativa, autor e data,
+sem alterar indiscriminadamente a classificação dos demais clientes.
+Inativação é lógica, com histórico, motivo, usuário e data; não excluir a lei do banco.
+Replicações de evidência e data de avaliação devem permitir selecionar o conjunto alvo.
+
+PENDÊNCIAS ESPECÍFICAS
+- Definir fórmulas de conformidade e distinção entre status legal, prazo e análise.
+- Definir precedência e atualização das responsabilidades de múltiplas categorias.
+- Definir revisão de sugestões da IA quando padrão, lei ou gestão forem alterados.
+- Definir critérios de similaridade e quais campos/evidências podem ser replicados.
+- Especificar template e conteúdo do Relatório de Atendimento Legal e integração LaTeX.
+- Itens 35 e 42 pendentes: seleção de colunas e registro de leitura do RCL.
+- Definir a permissão para validar por categoria/unidade e para alterar a área da lei.
+- Definir se categoria automática da IA também exige validação antes da atribuição.
+
+REGRAS TRANSVERSAIS E DEPENDÊNCIAS
+Consultar 01_Mudancas_Gerais.txt para Home, permissões por grupo, personalização,
+notificações, agenda, delegação, usuários ativos, idiomas, logs e ajuda.
+As consultas pessoais e gerenciais devem respeitar a permissão de acesso e o âmbito
+da empresa/unidade. Ser responsável não substitui o permissionamento do item 7.
+Cards, gráficos e tabelas devem representar o mesmo conjunto de dados e filtros.
+Datas, estados, eventos de alerta e fórmulas dos indicadores precisam de definição
+única antes da implementação; divergências pendentes estão listadas neste arquivo.
+
+
+REQUISITOS FUNCIONAIS RASTREÁVEIS
+
+------------------------------------------------------------------------------
+LEG-22 — Implementar uma nova Home e melhorar a experiência de navegabilidade
+
+Origem: item 22; T016/R001, T018/R000, T019/R000, T020/R000, T021/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Criar uma nova Home com uma interface mais amigável com o usuário.
+
+Alguns elementos essenciais na nova Home:
+Logo do Cliente
+Logo do Green
+Cards (com totalizações, estatísticas, pendências, avisos)
+Dashboard
+orientação para o usuário (schedule, notificações)
+foto do usuário (para aumentar a personalização do sistema. Essa foto deveria ser colocada junto ao nome do usuário como se fosse o Teams)
+navegabilidade entre tabelas
+navegabilidade a partir dos dashboards
+acessos rápidos
+
+Os dashboards devem ser apresentados em forma gráfica e em forma de tabelas
+
+Os Dashboards deverão ser gerados por unidade, por período e por responsável.
+
+O cabeçalho pode conter informações para acessos rápidos. Veja o exemplo da imagem abaixo:
+
+
+
+Vide na imagem abaixo elementos da tela inicial do concorrente.
+
+Continuação: Outros elementos que poderiam estar contidos na Home do Módulo Legal
+Requisitos
+Atendidos
+Não Avaliados
+Não Atendidos / Em Análise
+Taxa de Conformidade
+
+Atualização Mensal (esses dados são provenientes da RCL)
+Requisitos Inseridos
+Requisitos Revogados
+Requisitos Alterados
+
+Conformidade Legal
+Em dia
+Próximo do Vencimento
+Vencida
+Não Avaliada / Em Análise
+
+Avisos (Card)
+
+Alertas Enviados (Card)
+
+Dashboard
+
+Gerar as estatísticas:
+por unidade
+por período
+por responsável
+por nível de atendimento do requisito (atendido, em adequação, etc)
+por origem (Estadual, Municipal, Internacional, Corporativa, Federal, etc)
+por tipo (controle, influência, conhecimento)
+etc.
+
+Continuação: Outros elementos que poderiam estar contidos na Home do Módulo Legal
+Vide mais 1 exemplo do concorrente.
+
+Continuação: Elementos que poderia conter a Home do Módulo Legal
+Vide mais 1 exemplo do concorrente.
+
+Continuação: Elementos que poderia conter a Home do Módulo Legal
+Apresentar as estatísticas por gráfico e por tabela:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir a Home com dados de duas unidades/períodos/responsáveis; conferir todos os indicadores descritos, comparar gráfico/tabela e clicar em um card para abrir apenas os registros correspondentes.
+
+------------------------------------------------------------------------------
+LEG-23 — Amarrar os requisitos legais ao questionário com perguntas respondido pelo cliente
+
+Observação: Item mencionado na Ação Nº 20 (acima)
+
+Origem: item 23; T021/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A amarração dos requisitos legais poderá ser feito através do questionário, mas deverá ser possível atribuir a um cliente uma lei específica sem que ela esteja amarrada ao questionário.
+
+Isso é um ponto fundamental para permitir a escalabilidade do Green. Sem isso estamos de mãos atadas para aumentar a quantidade de clientes
+
+CRITÉRIO DE ACEITE PROPOSTO
+Responder um questionário de teste e conferir as leis selecionadas; atribuir lei específica fora do questionário sem bloqueio.
+
+------------------------------------------------------------------------------
+LEG-24 — Criar mecanismos para migrar informações de outros sistemas para o Green
+
+Observação: Item mencionado na Ação Nº 21 (acima)
+
+Origem: item 24; T021/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Isso é um ponto fundamental para permitir a escalabilidade do Green. Sem isso estamos de mãos atadas para aumentar a quantidade de clientes
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+LEG-25 — Incluir a opção "não avaliado" para não deixar a situação de atendimento em branco.
+
+Origem: item 25; T021/R004
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Essa opção "não avaliado" deveria ser default para as leis novas inseridas no banco. Hoje temos a situação de atendimento "sim", "não", "parcial".
+
+Observação: A falta de análise da lei também deve ser um item de  pendência
+
+CRITÉRIO DE ACEITE PROPOSTO
+Inserir requisito novo sem avaliação e verificar Não Avaliado e pendência, sem classificação automática como atendido.
+
+------------------------------------------------------------------------------
+LEG-26 — Criar uma tabela com assuntos / temas (categoria)
+
+Origem: item 26; T022/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Vide tabela criada pelo Tomás para a Crown
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+LEG-27 — Permitir atribuir responsável pelos assuntos / temas (categoria) criados pelos usuários
+
+Origem: item 27; T022/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Vide tabela criada pelo Tomás para a Crown
+
+Na tabela Responsável x Categoria o responsável poderá ser 1 usuário, vários usuários ou um Grupo (com 1 ou mais pessoas)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Testar um usuário, múltiplos usuários e grupo; verificar atribuição direta e/ou por tipo/categoria conforme o item, consulta pessoal e destinatários de alerta. Testar usuário sem autorização.
+
+------------------------------------------------------------------------------
+LEG-28 — Implementar a nova atribuição de responsabilidade pelas leis.
+
+Origem: item 28; T022/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Vide tabela criada pelo Tomás para a Crown
+
+Passaríamos a ter a opção de atribuir automaticamente a responsabilidade por cada requisito legal em função dos assuntos / temas (categoria) estabelecidos pelo usuário.
+
+Ao estabelecer os assuntos / temas e amarrar cada assunto / tema com responsável(is) / grupos de responsáveis, o sistema atribuiria, automaticamente, a cada uma das leis o(s) responsável(is) / grupos de responsáveis correspondente.
+
+Deverá ser mantida a opção de atribuição manual do responsável / grupo de responsável pela lei, independentemente da amarração automática tema / assunto x responsável.
+
+O sistema deve, portanto, permitir a atribuição de responsabilidade de 2 formas:
+Diretamente no requisito legal
+Por meio das tabelas Responsabilidade x Categoria.
+
+Em ambos os casos, a responsabilidade poderá ser para 1 usuário, vários usuários ou para um grupo de usuários pré-definido.
+
+Observação: A atribuição de categorias é aquela gerada pelo Tomás através de IA. O cliente define as categorias, a IA atribui categorias às leis e a responsabilidade é associada a cada categoria
+
+A imagem abaixo mostra um exemplo desse recurso adotado pelo concorrente:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Associar categoria a usuários/grupo e conferir atribuição das leis; testar também atribuição direta. Precedência será validada após decisão funcional.
+
+------------------------------------------------------------------------------
+LEG-29 — Incluir um campo na tabela de requisitos legais denominado "Risco". Esse campo risco estará associado ao padrão de desempenho do requisito legal.
+
+Origem: item 29; T024/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Os riscos poderiam ser:
+Alto
+Médio
+Baixo
+
+Esse risco estaria associado ao padrão de desempenho do requisito legal, ou seja, em caso de descumprimento do padrão de desempenho do requisito legal, qual seria o tamanho do problema que o cliente teria. Esse item risco deverá fazer parte dos dashboards, ou seja, deverá ser possível visualizar as estatísticas com a lente do risco. Ex: leis não atendidas com risco alto, médio e baixo, etc.
+
+Observação: além do módulo legal, o campo risco deverá ser previsto nos seguintes módulos:
+Licenças
+Medição e Monitoramento
+Treinamento
+Infraestrutura
+Homologação (nesse caso associado ao critério a ser atendido)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Registrar casos Alto, Médio e Baixo e conferir filtro/estatística de risco vinculados à entidade correta, sem contar registros fora da seleção.
+
+------------------------------------------------------------------------------
+LEG-30 — Aplicar a mesma evidência de atendimento para a mesma lei de diferentes unidades corporativas
+
+Origem: item 30; T024/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Criar uma opção de multiplicar (replicar) o atendimento de um requisito legal para uma mesma lei pertencente à unidades diferentes.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Selecionar a mesma lei em duas unidades autorizadas, replicar a evidência e conferir o resultado nas duas sem afetar unidades não selecionadas.
+
+------------------------------------------------------------------------------
+LEG-30.1 — Criar o link "Minhas Leis"
+
+Origem: item 30.1; T024/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Veja o item 5.1 acima
+
+CRITÉRIO DE ACEITE PROPOSTO
+Entrar com dois usuários com responsabilidades distintas e conferir que a visão pessoal e a consulta gerencial autorizada apresentam os conjuntos corretos.
+
+------------------------------------------------------------------------------
+LEG-31 — Gerar (via IA) sugestão de evidência para as leis
+
+Origem: item 31; T025/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Creio que essa seja a mudança mais complexa de todas. No entanto, esse item é bem importante para o cliente, pois com a redução do nº de funcionários nas empresas, cada vez mais é necessário automatizar a gestão dos requisitos legais para os clientes. Além disso, os sistemas dos concorrentes já fazem isso. Desse modo, teremos que encarar essa mudança.
+
+O requisito legal deveria trazer (via IA) uma sugestão de situação de atendimento para ser aceita pelo usuário. Essa sugestão teria que ser validada pelo usuário antes de ser efetivada, ou seja, o usuário teria que ter a opção de:
+aceitar a situação como está, ou seja, como foi sugerido pelo sistema
+complementar a sugestão
+acrescentar algo completamente diferente
+
+Para operacionalizar esse processo de sugestão do atendimento do requisito legal, o sistema deveria fazer 3 coisas:
+
+1- Automatizar o preenchimento das 5 tabelas de gestão (licenças, controle, Infraestrutura, treinamento e MM) via IA a partir da leitura do padrão de desempenho. Seriam, portanto, geradas 5 tabelas:
+Potenciais licenças
+Potenciais controles
+Potenciais infraestruturas
+Potenciais treinamentos
+Potenciais medições e monitoramentos (MM)
+
+Observação: A geração das informações dessas 5 tabelas potenciais será feita por IA e está sendo desenvolvida pelo Tomás. A IA deverá separar o que é CONTROLE daquilo que é INFLUÊNCIA. As leis de CONTROLE geram ações para o próprio cliente. As leis de INFLUÊNCIA geram ações para os fornecedores do cliente.
+
+O conteúdo de cada uma dessas 5 tabelas teria que ser validado pelo usuário.
+
+Uma vez validados os itens de cada uma dessas 5 tabelas, as informações validadas seriam transferidas para as tabelas de gestão correspondente, ou seja:
+licenças
+controles
+infraestruturas
+treinamentos
+medições e monitoramentos
+
+As tabelas de gestão devem ser separadas entre o que é de CONTROLE (ou seja, ações que o próprio cliente deve tomar) daquilo que é INFLUÊNCIA, ou seja, ações que os fornecedores do cliente devem tomar).
+
+Por se tratar de informações "vivas", ou seja, que são atualizadas continuamente, o sistema teria que separar o que já foi validado daquilo que ainda não foi validado. Desse modo, se num determinado mês a IA identificou 2 ou 3 novas licenças a partir da análise dos padrões de desempenho das novas leis que foram inseridas no banco de dados, a tabela de potenciais licenças deverá permitir filtrar apenas essas novas informações de modo a evitar uma re-análise de todos as as informações da tabela de potenciais licenças. O mesmo deve valer para todas as demais tabelas potencais (controle, Infraestrutura, treinamento e MM).
+
+Da mesma forma, uma lei eliminada do banco (seja por decisão do cliente (inativação de leis), seja por que a lei foi retirada do banco (por revogação), o sistema teria que fazer a reanálise das tabelas de gestão de licenças, medições e monitoramentos, treinamentos, controle e infraestrutura e sinalizar isso nessas tabelas para que o cliente decida se vai manter ou deixar de controlar as respectivas licenças, medições e monitoramentos, treinamentos, controle e infraestrutura. O sistema tem que ter esse nível de capricho para garantir uma correta e adequada gestão sobre os documentos licenciatórios, medições e monitoramentos, treinamentos, controle e infraestrutura.
+
+É importante que a análise e aplicação dos recursos mencionados acima (além de considerar o que é CONTROLE daquilo que é INFLUÊNCIA) sejam separados por unidade, ou seja, a tabela de potencial licenças, controles, etc. deverão ser separados por unidade assim como as tabelas de gestão de licenças, controles, etc.
+
+Observação Importante: O sistema deveria definir automaticamente o responsável pela validação das potenciais licenças, controles, etc. a partir de uma tabela Tipo x Responsável. (Tipo de Licença, Tipo de Controle, Tipo de Infraestrutura, Tipo de Treinamento, Tipo de Medição e Monitoramento). Obviamente, as tabelas de licenças, controle, infraestrutura, treinamento, medição e monitoramento deverão ter, cada uma delas, um campo que defina o "Tipo" correspondente. Essas tabelas Tipo x Responsável devem aparecer nos respectivos módulos.
+
+Observação Importante: os itens de cada uma das tabelas de gestão (ex: licenças, controles, etc.) deverão ser automaticamente relacionados aos requisitos legais correspondentes. Desse modo, se uma lei fala de licença ambiental de operação e essa licença ambiental foi validada pelo usuário ela (a licença ambiental de operação) deveria aparecer relacionado à essa lei. O mesmo vale para todos os demais itens da outras tabelas de gestão.
+
+Observação Importante: deve ser previsto um relacionamento manual entre a lei e cada item da tabela de Gestão de Licença, Medição e Monitoramento, Treinamento, Infraestrutura e Controle (para os casos em que as licenças, medições e monitoramentos, treinamentos, infraestruturas e controles sejam cadastrados manualmente sem a aplicação da IA)
+
+2- Transformar as tabelas de gestão (licenças, controles, etc.) no texto da situação quanto ao atendimento. Ao fazer a gestão das licenças, controles, etc., ou seja, completar todos os dados especificados nessas tabelas de gestão (ex: validade, protocolo, etc.) e "olhando" o texto do padrão de desempenho a IA deveria gerar o texto da situação quanto ao atendimento. Esse texto teria que ser validado pelo responsável pelo requisito legal (pessoa ou grupo de pessoas). Após análise o texto poderia:
+Ser adotados sem restrição
+Adotados parcialmente (ou seja, eliminando alguns itens sugeridos) ou
+Não adotado integralmente. Nesse caso o usuário deveria preencher o texto livremente
+
+3- Caso o requisito legal não possua tabelas de gestão associado, a sugestão de situação quanto ao atendimento deveria ser preenchido com base exclusivamente no texto do padrão de desempenho (transformando o padão num texto que apresente, de forma “ideal”, o texto da situação quanto ao atendimento). Uma vez gerado o texto pela IA com base no texto do padrão, esse texto poderia:
+Ser adotado sem restrição
+Adotado parcialmente (ou seja, com edição) ou
+Não adotado integralmente. Nesse caso o usuário deveria preencher o texto livremente
+
+
+
+
+
+
+
+
+
+
+
+
+Abaixo a imagem de um concorrente sugerindo a evidência de atendimento de um requisito legal para ser validado.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Gerar potenciais dos cinco pilares; validar um e confirmar registro na gestão e vínculo legal; manter outro pendente. Inativar a lei e verificar sinalização para decisão do cliente. Testar aceitar, editar e substituir a sugestão de atendimento.
+
+------------------------------------------------------------------------------
+LEG-32 — Aplicar o atendimento da mesma evidência para leis parecidas (grupos de leis).
+
+Origem: item 32; T027/R000, T029/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O sistema deveria ser suficientemente inteligente a ponto de avaliar se a resposta dada para um requisito também é válida para outros requisitos. Esses requisitos poderiam ser:
+Iguais (ex: mesmos requisitos (mesmos padrões) que aparecem em diferentes unidades) ou
+Semelhantes (requisitos diferentes, mas com padrões iguais ou muito parecidos que resulte na mesma situação quanto ao atendimento)
+Essa avaliação poderia ser feita via IA.
+
+A ideia é avaliar uma única vez requisitos iguais ou parecidos sem duplicidade de ação. O usuário não perderia tempo controlando várias vezes o mesmo requisito presente em mais de uma norma. A edição unificada de vários requisitos ao mesmo tempo, otimizaria o trabalho de preenchimento da situação quanto ao atendimento. Também permitiria exibir e controlar requisitos legais de várias unidades da empresa simultaneamente.
+
+Esse processo poderia estar associado ao item 31 acima.
+
+Um recurso que poderia ser adotado para aprimorar (refinar) esse processo é a criação de grupos de leis similares (creio que através de IA) (vide item 33 abaixo). A partir desse agrupamento, replicar a evidência de atendimento para leis similares pertencentes a um mesmo grupo.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+A imagem abaixo mostra como o concorrente apresenta a sugestão de replicação do atendimento para vários requisitos legais. Não sei se a nossa solução seria apresentada dessa forma, mas mostra que o concorrente possui uma solução para isso.
+
+Continuação: Continuação
+Outro concorrente possui o mesmo recurso, ou seja, permite associar uma mesma situação quanto ao atendimento para a vários requisitos legais. Para diferentes leis existe 1 mesma ação. Veja imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+LEG-33 — Criar Grupos de Leis
+
+Origem: item 33; T030/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Agregar conjunto de leis em torno das mesmas palavras-chave. Essas palavras-chave deveriam ser geradas por IA a partir da "leitura" do padrão de desempenho.
+
+Esse recurso seria usado para as "Buscas Semânticas".
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+LEG-34 — Compartilhar documentos com leis do grupo de leis similares
+
+Origem: item 34; T030/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Creio que esse item seja um desdobramento natural dos itens 31 e 32. Abaixo a imagem da tela do concorrente para mostrar que essa solução está sendo aplicada por outras empresas.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+LEG-35 — Permitir selecionar os campos que seriam visualizados na tabela de requisitos legais
+
+Origem: item 35; T031/R000
+Situação: DECISÃO PENDENTE (Implementar? não preenchido)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O sistema do concorrente permite escolher quais colunas pretende-se visualizar na tabela de leis. Veja imagem abaixo. Tenho dúvidas se deveríamos aplicar isso no Green
+
+CRITÉRIO DE ACEITE PROPOSTO
+Revisar a tela com registros de diferentes situações, confirmar ícones/sinalizadores e legibilidade dos estados com os mesmos dados de origem.
+
+------------------------------------------------------------------------------
+LEG-36 — Gerar Histórico automático das mudanças feitas na situação quanto ao atendimento
+
+Origem: item 36; T032/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O concorrente possui esse recurso e esse é um recurso importante. É uma espécie de log das mudanças do campo situação quanto ao atendimento. Abaixo a imagem para mostrar como o concorrente aplica esse item. Creio que a aplicação de logs para todas as ações do sistema (vide item 16) é uma maneira de implementar essa funcionalidade.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Alterar um registro autorizado e consultar o histórico para identificar operação, registro, usuário e data; conferir acesso e retenção conforme política definida.
+
+------------------------------------------------------------------------------
+LEG-37 — Visualizar as leis conforme permissionamento de cada usuário
+
+Origem: item 37; T032/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse item corresponde ao "Minhas Leis" (vide item 30.1) acrescido das permissões do usuário previsto no item 07
+
+CRITÉRIO DE ACEITE PROPOSTO
+Revisar a tela com registros de diferentes situações, confirmar ícones/sinalizadores e legibilidade dos estados com os mesmos dados de origem.
+
+------------------------------------------------------------------------------
+LEG-38 — Criar Campo "Razão para Inclusão"
+
+Origem: item 38; T032/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse campo será preenchido pela Camila para indicar para cada lei o motivo pelo qual a lei foi inserida no Banco de Dados. A intenção desse campo é justificar a inclusão de um requisito legal no banco de dados. É um campo tipo texto associado a cada requisito legal.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+LEG-39 — Permitir editar se a lei é de Controle, Influência, Conhecimento sem mexer nos demais elementos do requisito legal.
+
+Origem: item 39; T033/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Isso é muito importante para dar independência ao cliente. Atualmente, se a Camila atribui a uma lei o "poder" controle, influência ou conhecimento, esse poder passa a valer para todas as empresas que tem aquela lei. Só a Camila pode mudar isso. Creio que deveríamos manter isso, mas com uma diferença: mediante justificativa prévia (que tem que ficar registrada obrigatoriamente pelo usuário autorizado) o cliente passa a poder mudar a lei de controle para influência, de controle para conhecimento, de influência para controle, de influência para conhecimento, de conhecimento para controle e de conhecimento para influência. É importante que fique registrado o nome do usuário que fez a mudança e a data em que isso ocorreu.
+
+Observação: esse item terá um impacto nas tabelas de gestão de licenças, medições e monitoramentos, treinamentos, etc, mencionado no item 31 acima.
+
+O concorrente oferece essa opção e isso torna o banco de dados menos engessado. Veja a imagem da tela do software concorrente:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Alterar classificação de uma lei para um cliente, exigir justificativa e registrar autor/data; verificar que a alteração não modifica a classificação de outro cliente.
+
+------------------------------------------------------------------------------
+LEG-40 — Permitir que o sistema replique a data da próxima avaliação do requisito legal para as outras unidades numa única tela.
+
+Origem: item 40; T034/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Nós temos um recurso para aplicar a data de validade da avaliação legal de modo geral. O que muda aqui é a possibilidade de aplicar essa data de validade considerando outros parâmetros, como por exemplo, unidades, responsável pelo requisito legal, grupos de leis, etc, ou seja, aplicar a data de avaliação com base em outros atributos do requisito legal.
+
+Veja na imagem abaixo a solução adotada pelo concorrente.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+LEG-41 — Validar Requisito Legal no Banco de Dados
+
+Origem: item 41; T035/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse item é muito importante, pois permite que o usuário reduza, por decisão própria, o tamanho do banco de requisitos legais.
+
+Validar significa dar ao cliente a possibilidade de retirar uma lei do banco ou mudar a área para a qual ela foi designada mediante uma justificativa do usuário. Esse recurso é muito importante ser implementado, pois concede ao cliente liberdade de escolha sobre o que ele quer ou não fazer gestão.
+
+Uma vez "inativada" a lei ela não deve ser deletada do Banco, mas direcionada para uma tabela de leis "Inativadas" (mais ou menos como ocorre com fornecedores inativos no módulo de homologação).
+
+Observação: esse item terá um impacto nas tabelas de gestão de licenças, medições e monitoramentos, treinamentos, etc, mencionado no item 31 acima.
+
+A validação é feita por uma pessoa com perfil específico ou pelo responsável pelo requisito legal. Essa pessoa pode ter perfil para fazer a validação de um requisito legal para uma ou mais unidades. A autoridade para validar requisitos legais poderá ser atribuída de forma diferenciada por categoria (vide categorias de requisitos legais no itens 26, 27 e 28).
+
+Todas as mudanças na validação de leis devem ficar registrada num histórico, com o nome de quem inativou o requisito legal, o motivo da inativação e a data em que isso ocorreu. Veja a imagem abaixo da solução adotada pelo concorrente para fazer inativações de requisitos legais.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Inativar requisito com justificativa; encontrá-lo entre inativados com autor/data/motivo, preservando histórico e sinalizando itens de gestão associados.
+
+------------------------------------------------------------------------------
+LEG-42 — Criar um registro que o RCL foi lido pelo usuário.
+
+Origem: item 42; T036/R000
+Situação: DECISÃO PENDENTE (Implementar? não preenchido)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O concorrente possui esse registro. Não sei se devemos aplicar isso ao Green.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+LEG-43 — Implantar questionário de leis
+
+Origem: item 43; T036/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A partir do preenchimento desse questionário seriam identificados os requisitos legais para cada cliente.
+
+Observação: Essa mudança é muito importante e foi descrita no item 2- Itens para Aumento da Escalabilidade do Green (vide item 20)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+LEG-44 — Gerar o padrão de atendimento dos requisitos legais via IA
+
+Origem: item 44; T036/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Observação: Essa mudança é muito importante e foi descrita no item 2- Itens para Aumento da Escalabilidade do Green (vide item 19)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Carregar documento de teste com dados conhecidos, comparar campos extraídos com o original e aplicar o procedimento aprovado para valores ausentes, divergentes ou ilegíveis. Política de confirmação humana deve ser definida.
+
+------------------------------------------------------------------------------
+LEG-45 — Automatizar a geração do Relatório de Atendimento Legal
+
+Origem: item 45; T036/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse item é bem importante e deverá ser integrado ao software latex. É um assunto que poderia ser resolvido pelo Tomás.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+LEG-46 — Deixar a tabela de requisitos legais com um visual mais agradável
+
+Origem: item 46; T036/R004, T037/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Veja a aplicação de ícones na coluna Status de Conformidade do concorrente.
+
+Continuação: Continuação
+Mais 1 exemplo da tela do concorrente
+
+CRITÉRIO DE ACEITE PROPOSTO
+Revisar a tela com registros de diferentes situações, confirmar ícones/sinalizadores e legibilidade dos estados com os mesmos dados de origem.
+
+------------------------------------------------------------------------------
+LEG-47 — Criar o Link Meus Requisitos Legais
+
+Origem: item 47; T037/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse link deverá mostrar apenas os requisitos legais do usuário que está logado.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Entrar com dois usuários com responsabilidades distintas e conferir que a visão pessoal e a consulta gerencial autorizada apresentam os conjuntos corretos.
+
+------------------------------------------------------------------------------
+LEG-47.1 — Fluxo do estágio em que o processo DE GESTÃO se encontra tipo "Entrega do Mercado Livre" (como foi aplicado no caso do GED-E)
+
+Origem: item 47.1; T038/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse fluxo é bem interessante de ser aplicado em todos os módulos. As atividades de GESTÃO de todos os módulos, de alguma forma, funcionam como um processo. Segue o workflow do módulo:
+
+. No módulo legal a pessoa:
+1- recebe a lei
+2- valida a lei (decide se ela vai ser mantida no banco ou retirada do banco)
+3- define o responsável pelo requisito legal
+4- analisa a padrão de desempenho
+5- define o atendimento da lei
+6- define as condicionantes (facultativo)
+7- define o atendimento das condicionantes (caso seja preenchido o atendimento das condicionantes)
+8- abre um plano de ação (caso a lei não esteja sendo atendida ou esteja parcialmente atendida) (facultativo)
+9- encerra o plano de ação (caso o plano de ação tenha sido aberto)
+10- define a data da próxima avaliação
+
+CRITÉRIO DE ACEITE PROPOSTO
+Percorrer as etapas descritas com um registro de teste, conferir destaque do estágio atual e preservar etapas facultativas; validar transições e retornos após esclarecimento das pendências.
+
+------------------------------------------------------------------------------
+LEG-47.2 — Prever o link "Ajuda" / "Como Funciona" em todos os módulos para servir como um treinamento para o usuário.
+
+Origem: item 47.2; T038/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Nesse link poderíamos carregar o texto da ajuda e um vídeo mostrando como o sistema funciona
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir Ajuda/Como Funciona no módulo e conferir texto e vídeo configurado explicando o processo correspondente.
+
+
+VALIDAÇÃO DO PACOTE
+Este TXT deve ser revisado em conjunto com as dependências indicadas. A implementação
+exige acesso ao código e banco atuais, ausentes deste anexo. As condições de aceite
+são propostas de homologação funcional, não resultados de testes já executados.

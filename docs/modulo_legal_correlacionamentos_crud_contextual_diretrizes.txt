@@ -1,0 +1,62 @@
+Diretrizes - CRUD dos grids contextuais dos Correlacionamentos do Modulo Legal
+Atualizacao: 2026-08-19
+
+Escopo
+- Aplicavel aos Correlacionamentos Ambiental, Ocupacional e Social.
+- Os grids sao abertos pelos botoes especificos da transacao principal.
+- Os relacionamentos nao sao itens de menu independentes.
+
+Padrao funcional
+- Cada popup usa o componente ManutencaoLegalCadastroGrid.
+- O grid oferece salvar, novo, duplicar, excluir, recarregar, busca, filtros,
+  paginacao, selecao de colunas e exportacao Excel.
+- As operacoes respeitam as permissoes do perfil autenticado.
+- Os dados sao acessados pelas procedures CRUD padronizadas; a tela nao possui
+  SQL CRUD direto.
+
+Chave contextual
+- Todo popup recebe CODLEGISLACAO e CODUNIDADE da linha selecionada.
+- Essas chaves ficam ocultas, somente leitura e nao podem ser alteradas pelo
+  usuario.
+- Inclusao, alteracao e exclusao usam a chave composta do relacionamento:
+  codigo do relacionamento + CODLEGISLACAO + CODUNIDADE.
+- A consulta do popup aplica CODLEGISLACAO e CODUNIDADE simultaneamente com
+  AND. Nenhum registro de outra lei ou unidade pode ser exibido.
+- As chaves recebidas pelo popup sao normalizadas para o nome exato da view,
+  inclusive `codunidade` nas views de relacionamento, evitando falhas por
+  diferenca de caixa entre o botao e a coluna do banco.
+
+Campos editaveis
+- O codigo da relacao e selecionado por combo quando existe uma fonte de chave
+  estrangeira configurada.
+- As descricoes sao exibidas em portugues e permanecem somente leitura.
+- Combos sao carregados pela fonte autorizada, filtrados quando necessario e
+  ordenados alfabeticamente pela descricao.
+- As chaves contextuais continuam sendo preenchidas automaticamente na
+  inclusao e preservadas nas alteracoes.
+
+Relacionamentos cobertos
+- Ambiental: Aspectos, Atividades, Impactos, Licencas e Documentos.
+- Ocupacional: Perigos, Atividades, Riscos, Licencas e Documentos.
+- Social: Aspectos sociais, Impactos sociais e Documentos.
+
+Banco e auditoria
+- A migracao database/079_crud_correlacionamentos.sql habilita as permissoes
+  de incluir, editar, excluir e exportar para o perfil ADMINISTRADOR nos tres
+  menus principais.
+- A migracao foi aplicada em gmodelo_dbp e registrada como
+  MODULO_LEGAL_CORRELACIONAMENTOS_CRUD_079, status CONCLUIDA.
+- A implementacao central esta em classes/ManutencaoLegalCadastroGrid.php.
+
+Validacao
+- Todos os 17 arquivos PHP das transacoes e grids contextuais passaram no
+  php -l.
+- As permissoes administrativas dos tres menus foram confirmadas no banco.
+- A consulta contextual foi validada com as duas chaves da relacao.
+- A validacao comparou as quantidades dos grids principais com as views
+  contextuais: 98 relacoes ambientais, 97 ocupacionais e 12 sociais, sem
+  divergencias.
+- O CRUD foi testado nos 13 popups: 5 ambientais, 5 ocupacionais e 3 sociais.
+  Inclusao, consulta filtrada, troca da chave de relacionamento e exclusao
+  foram aprovadas em todos os casos. Os testes foram executados em transacao
+  com ROLLBACK, sem alterar os dados permanentes.

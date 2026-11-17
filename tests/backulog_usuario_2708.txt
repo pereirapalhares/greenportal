@@ -1,0 +1,44 @@
+1: tela de entrada: Ajustar ao tamanho da tela do usuário (fui tentar entrar e não aparecia o botão de login. Precisei dar um zoom menos para ver o botão
+2: na tela de dashboard home, falta link para as pastas informadas
+3; pasta requisitos legais: a janela pop up da situação precisa ficar maior
+4: código do requisito  da primeira coluna deixar somente como indicador numerico (do numero de requisitos) , caso precisemos fazer paginação para visualização de dadps. FOI RETIRADA A NUMERAÇÃO, MAS ACHO QUE DEVERIA SER MANTIDA PARA EFEITOS DE LOCALIAÇÃO DO USUÁRIO (PÁGINA E ITEM)
+5: Ter um botão para clicar mais discreto em cada linha, com a indicação 'baixar Integra da norma' - Pasta Requisitos legais
+6: BUG: toda vez que se aplica um filtro na pasta requisitos legais, desconfigura toda a tabela.
+7. Botão exportar para excell não baixa arquivo 
+8. Não achei como editar as condicionantes da Licença.
+9. substituir as colunas Meio Ambiente / SSO/ Qualidade / Responsabilidade Social por um campo de pesquisa livre que associe automaticamente essas normas
+10. No check list da pasta Legislação, na LIC0099 (está como revogada, pois não consegui inserir uma não revogada tipo LIC0088 na base da empresa Modelo CA (Filtro de empresaxleis não funciona)) não aparecem: código da legislação, pergunta associada: deveria aparecer: Nome da empresa/unidade, pergunta, resposta, atendimento . CÓDIGO DA PERGUNTA NÃO PRECISA ESTAR VISÓVEL PARA O USUÁRIO. NÃO ATENDIDO VEM COM CARACTERES ESTRANHOS N??o Atendido
+11. Não achei o histórico, onde ficarão armazenadas as informações de alteração/usuário. Nas pastas situação / licenças. FIZ A EXCLUSÃO DE UMA DAS LINHAS DA SITUAÇÃO E NÃO HOUVE NO HISTÓRICO (MESMO COLOCANDO O CÓDIGO DA LEGISLAÇAO), O APONTAMENTO DESTA ALTERAÇÃO
+
+Ajustes Green 25/08/2026
+1. Pasta Licenças pelo Link: Não é possível editar as datas de vencimento / reação e protocolo na pasta licenças, e nem protocolado no prazo, sem link para arquivos. Esta pasta é só de consulta sem edição?
+2. Ao editar responsável para outra pessoa, licença some da pasta. Deve ser assim mesmo? (pasta licenças da Home). Verifiquei que a alteração de resposável foi efetivada na pasta Licenças da lateral
+3. só é possível editar as datas (reação, vencimento etc) na pasta Licenças na Lateral,porém só escolhendo datas de uma lista dropdown. Ainda não é possível alterar data de protocolo. Tudo 000. Não é possível tb editar a coluna 'protocolado em'.
+4. Não sei onde colocar e preencher a lista de distribuição. É necessária esta coluna no novo sistema?
+5. Link para integra não funciona na pasta \Licenças, coluna arquivo
+6. Ao solicitar o excell aparece no sistema de alerta o download. Organizar para que o mais recente fique em cima
+7. ao abrir o excell da pastaok
+8. ao clicar em Responsabilidades, ainda temos quando o responsável são todos os usuários ativos erro de grafia (usu??rios)
+9. ao fazer o download da pasta requisitos legais, gera erro (excell não pôde abrir o arquivo reparado ou removendo o conteúdo ilegivel). Organizar planilha na ordem de colunas dao sistema. Nesta planilha não deveria vir o padrão de desempenho para o usuário (viria somente para nós administradores\) (excluir essa coluna do excell, e manter no sistema).
+10. Ainda existem as janelinas fantasmas (fechar abas, licenças etc)
+11. quero colocar a LIC0088 na base o Modelo CA, mas não consigo cadastrar a norma na pasta Legislação (Manutenção Legal). Abre a linha, mas não permite edição
+12. A LIC0115A não trouxe o check list cadastrado
+13. Há necessidade de ter uma pasta com o Histórico da manutenção legal de cada empresa (antiga pasta Revisões requisitos legais). Não achei isso neste novo sistema.
+14. Baixei o excell da pasta situação quanto ao cumprimento, porém ela veio em branco, com aviso de problemas
+15. Não achei onde cadastrar os planos de ação (Pasta Licenças / Condicionantes e Requisitos Legais)
+16. Alertas novos da pasta dashboard. Acusa 2, porém ao abrir não tem nada. 
+17. ao clicar em próximas tarefas, ele leva a que tipo de ação? Uma planilha com 4 normas, mas sem indicação do que fazer...se é data , revisão da situação... Nesta tela não consigo editar nada... Necessária informação do que é necessário fazer e um link para pasta para edição e resolução da tarefa. Qual o critério para estar nas tarefas?
+18. Correlacionamento ambiental: pasta não traz o que vinha antes (Impactos, aspectos e atividades ambientais). Esse correlacionamneto será automático, gerado por IA? Não achei em nenhuma lei aspectos, impactos ou atividades correlacionadas. Icones destes itens devem ser diferentes: tipo ferramentas (para ativivddes), folhinhas (para aspecto) e fumacinha/resíduos  para impactos. algo que não se confunda com os simbolos das outras páginas. Para o correlacionamento ocupacional achei ok os botões. pode manter asim.. Não veio nenhum correlacionamento em nenhuma norma.
+19. existem 901 normas linkadas em requisitos legais empresa CA e 843 no correlacionamento ambiental. Esses numeros devem ser iguais
+20. faltam pastas Revisões do LPRO e LAIS.
+21. ao clicar dentro da pasta LAIA, no botão requisitos legais, vem uma popup cujo link para integra da norma está com BUG
+22. não achei a pasta onde estão os objetivos e metas
+23. o botão inventário deveria estar no LAIA?
+24. os aspectos, impactos, perigos, riscos, aspectos sociais e impactos sociais não são universais para estarem no menu Manutenção Legal. Eles são particulares de cada empresa. Melhor mudar para a pasta Manutenção Legal (inclusive faltam as pastas Aspectos Sociais e Impactos sociais)
+25. no dashboard em  Pendências acusa 7 mas só tem 4.
+26. Pasta requisitos legais,  Não aparece mais o código nosso (LIC, AG, etc) e o nome da unidade, mesmo fazendo ajuste no botão Colunas e clicando no botão SALVAR para aparecer. Isso difuculta a análise de outros itens
+27. ainda não aparece a contagem de linhas de requisitos para facilitar a paginação. Neste caso é importante informar quantos requisitos estão sendo mostrados em cada página
+28. todas as acentuações estão com problemas nos cabeçalhos e os Não de atendimento estão ainda como n??o
+29. Pasta Licenças: não há possibilidade de incluir os arquivos de licenças e nem de consultar (download) pela coluna. Haveria possibilidade de fazer isso sem apoio do botão da aba superior? 
+30. verificar nome de todos os excell baixados para ficarem Licenças / data/usuário ou Requisitos legais / data / usuário?
+31. ao incluir uma nova norma na pasta Legislação da Manutenção legal: a. não é possível incluir assuntos, b: seleção de tipo não vem em ordem alfabética, 

@@ -1,0 +1,287 @@
+===============================================================================
+GREEN PORTAL - RELATORIO DE ANALISE DE PERFORMANCE DE BANCOS DE DADOS
+Bancos analisados: gmodelo_dbp, glegislacao_dbp, guniversal_dbp
+Servidor: MySQL 8.4.7 Community Server / phpMyAdmin 5.2.3
+Data da analise: 01/09/2026
+Relatorio anterior de referencia: relatorio_performance_bancos_20260819.md (19/08/2026)
+Metodo: consultas diretas ao information_schema, performance_schema.global_variables
+        e performance_schema.global_status via phpMyAdmin
+===============================================================================
+
+-------------------------------------------------------------------------------
+0. VISAO GERAL DOS BANCOS (E COMPARATIVO COM 19/08/2026)
+-------------------------------------------------------------------------------
+
+Banco            | Tabelas | Nao-InnoDB | Colacao ruim | Dados   | Indices | Linhas
+------------------|---------|------------|---------------|---------|---------|--------
+gmodelo_dbp       | 262     | 10         | 16            | 19.1 MB | 15.5 MB | 79.505
+glegislacao_dbp   | 18      | 0          | 0             | 91.5 MB | 19.8 MB | 204.942
+guniversal_dbp    | 7       | 0          | 0             | 0.2 MB  | 0.1 MB  | 978
+
+Comparativo com o relatorio de 19/08/2026:
+
+  - gmodelo_dbp cresceu de 81 para 262 tabelas (+181) em 13 dias. Este e um
+    crescimento real de escopo de aplicacao (novos modulos: EPIs,
+    Infraestrutura, ControleAdmin, Alertas, Artefatos de Replicacao, entre
+    outros), nao acumulo de tabelas temporarias - apenas 3 tabelas
+    "zz_backup_*" (backups manuais pontuais) foram encontradas no total.
+
+  - guniversal_dbp cresceu de 3 para 7 tabelas (novo modulo de Servicos e
+    Ajuda de Transacoes), permanecendo 100% saudavel.
+
+  - glegislacao_dbp manteve as mesmas 18 tabelas, mas cresceu em volume de
+    dados (90.5 -> 91.5 MB) e principalmente em indices (13.8 -> 19.8 MB),
+    o que e coerente com a correcao de indices ausentes relatada no item
+    "MELHORIAS CONFIRMADAS" abaixo.
+
+  - Dos 3 bancos, gmodelo_dbp e o unico com pendencias ativas. Confirma-se
+    que os problemas continuam localizados e nao sistemicos.
+
+===============================================================================
+1. MELHORIAS CONFIRMADAS DESDE O RELATORIO DE 19/08/2026
+-------------------------------------------------------------------------------
+
+E importante registrar que varias recomendacoes do relatorio anterior foram
+efetivamente implementadas:
+
+1.1 slow_query_log ativado e limiar reduzido
+
+  Antes (19/08): slow_query_log = OFF, long_query_time = 10s
+  Agora (01/09): slow_query_log = ON,  long_query_time = 2s
+
+  Esta era a recomendacao 4 (ALTO) do relatorio anterior, aplicada
+  exatamente no valor sugerido (1-2s). Com o servidor no ar ha 5 dias e
+  17 horas (Uptime = 493.866s), ja foram registradas 43 consultas lentas
+  (Slow_queries = 43) - ver secao 2.1 para o que fazer com esse dado.
+
+1.2 innodb_redo_log_capacity aumentado
+
+  Antes (19/08): equivalente a innodb_log_file_size = 20 MB
+  Agora (01/09): innodb_redo_log_capacity = 100 MB
+
+  Aumento de 5x, na direcao certa (recomendacao 6/MEDIO do relatorio
+  anterior sugeria 256-512 MB). Ainda esta abaixo do sugerido, mas o ajuste
+  ja demonstra atencao ao ponto levantado - ver secao 3.1.
+
+1.3 glegislacao_dbp: as 3 tabelas sem nenhum indice foram corrigidas
+
+  legislacaoxpalavraschave, legislacaopaixlegislacaofilha e unidades
+  (item 1.1 do relatorio anterior) agora possuem PRIMARY KEY e indices
+  secundarios sobre as colunas de relacionamento:
+
+    legislacaoxpalavraschave:        PRIMARY (codlegislacaoxpalavrachave)
+                                      + ix_lxpc_legislacao (codlegislacao)
+                                      + ix_lxpc_palavrachave (codpalavrachave)
+    legislacaopaixlegislacaofilha:   PRIMARY (codlegislacaopai_filha)
+                                      + ix_lplf_pai (CODLEGISLACAO_PAI)
+                                      + ix_lplf_filha (CODLEGISLACAO_FILHA)
+    unidades:                        PRIMARY (codunidade_legislacao)
+                                      + ix_unidades_codigo (CODUNIDADE)
+
+  legislacaoxpalavraschave era a maior preocupacao do relatorio anterior
+  (36.656 linhas, candidata a busca por palavra-chave) - problema resolvido
+  integralmente.
+
+1.4 glegislacao_dbp: indice de legislacaoxalteracao confirmado presente
+
+  O relatorio anterior (item 2.2) suspeitava de estatisticas desatualizadas
+  em legislacaoxalteracao, pois index_length aparecia como 0.00 MB apesar de
+  o indice existir. Hoje essa mesma tabela (27.588 linhas) reporta
+  index_length = 1.52 MB, valor coerente com a existencia do indice
+  ix_lxa_legislacao_data. A suspeita se confirmou: era uma questao de
+  estatisticas, nao ausencia real de indice, e o quadro ja se normalizou.
+
+  Os 6 problemas de MyISAM e as 9 tabelas com colacao latin1_swedish_ci
+  de gmodelo_dbp relatados em 19/08 tambem NAO aparecem mais na lista atual
+  de pendencias com os MESMOS nomes de tabela - ou seja, as tabelas
+  originalmente identificadas foram corrigidas. Entretanto, como mostra a
+  secao 2 abaixo, o mesmo padrao de problema reapareceu em tabelas novas.
+
+===============================================================================
+2. CRITICO
+===============================================================================
+
+2.1 Evidencia real de queries sem uso de indice (dado novo, nao existia em
+    19/08 porque o slow log estava desligado)
+
+  Desde que o servidor subiu (5,7 dias atras):
+
+    Questions (total de consultas)........... 914.212
+    Slow_queries (> 2s)....................... 43
+    Select_full_join (JOIN sem indice)........ 166.341
+    Select_scan (leitura completa da 1a tabela) 558.995
+    Created_tmp_disk_tables................... 12  (de 411.374 tmp tables)
+
+  Select_full_join = 166.341 e o numero mais importante desta secao: e a
+  contagem de joins executados no periodo que NAO puderam usar nenhum
+  indice, forcando MySQL a varrer a tabela inteira para cada linha do lado
+  externo do join. Isso e consistente com - e provavelmente explicado por -
+  os itens 2.2 e 2.3 abaixo (tabelas novas sem indice e tabelas legadas com
+  apenas PRIMARY KEY). Corrigir os indices listados nessas secoes deve
+  reduzir Select_full_join de forma mensuravel; recomenda-se reconferir este
+  contador (SHOW GLOBAL STATUS LIKE 'Select_full_join') depois de aplicar as
+  correcoes, como validacao objetiva de que a mudanca funcionou.
+
+  Sugestao adicional: como log_output esta configurado como FILE
+  (slow_query_log_file em e:\wamp\bin\mysql\mysql8.4.7\data\...), o
+  conteudo do slow log so pode ser lido diretamente no arquivo, no servidor.
+  Trocar log_output para TABLE (ou "FILE,TABLE") permite consultar
+  mysql.slow_log via SQL/phpMyAdmin, o que facilita muito a analise
+  continua sem precisar de acesso ao sistema de arquivos do servidor.
+
+-------------------------------------------------------------------------------
+2.2 gmodelo_dbp: o padrao "sem indice + MyISAM + colacao latin1" reapareceu
+    em um modulo novo (8 tabelas sem NENHUM indice, 10 em MyISAM,
+    16 com colacao latin1_swedish_ci)
+
+  Diferente do relatorio anterior, as tabelas problematicas de hoje NAO sao
+  as mesmas de 19/08 (aquelas foram corrigidas - ver secao 1). O problema e
+  outro: um modulo inteiro, aparentemente novo (EPIs, Infraestrutura,
+  ControleAdmin), foi implementado repetindo exatamente o mesmo padrao ja
+  sinalizado no relatorio anterior. Isso sugere que a causa raiz nao foi
+  tratada no nivel de processo/padrao de desenvolvimento, apenas corrigida
+  pontualmente nas tabelas que ja existiam.
+
+  Tabelas sem NENHUM indice (nem PRIMARY KEY) - 8 tabelas, todas em
+  gmodelo_dbp:
+
+    infraestruturaxunidades          27 linhas   MyISAM, latin1
+    episxunidades                    26 linhas   MyISAM, latin1
+    atividadesxinfraestrutura        16 linhas   MyISAM, latin1
+    atividadesxepis                  11 linhas   MyISAM, latin1
+    atividadesxcontroleadmin          7 linhas   MyISAM, latin1
+    controleadminxunidades            3 linhas   MyISAM, latin1
+    objetivosmetasxperigos          103 linhas   InnoDB, utf8mb4
+    objetivosmetasxriscos             0 linhas   InnoDB, utf8mb4
+
+  Tabelas em MyISAM (10 no total; as 6 primeiras acima ja contam aqui):
+    epis, infraestrutura, controleadmin e
+    levantamentoocupacionalxrevisoes tambem estao em MyISAM, mas ao menos
+    possuem PRIMARY KEY.
+
+  Tabelas com colacao latin1_swedish_ci (16 no total): as 10 tabelas do
+  novo modulo acima, mais legislacaoxaspecto (933 linhas),
+  legislacaoxatividade (16 linhas), legislacaoxrisco (11 linhas),
+  objetivosmetasxperigos, objetivosmetasxriscos e as 2 tabelas de backup
+  zz_backup_153_legislacaoxatividade / zz_backup_153_legislacaoxrisco.
+
+  Sugestao (igual a do relatorio anterior, agora aplicada a este novo
+  conjunto de tabelas):
+    1. Adicionar PRIMARY KEY as 8 tabelas sem indice, priorizando
+       infraestruturaxunidades e episxunidades pelo volume relativo e por
+       serem tabelas de relacionamento N:N (sem PK, nada impede linhas
+       duplicadas).
+    2. ALTER TABLE ... ENGINE=InnoDB nas 10 tabelas MyISAM.
+    3. ALTER TABLE ... CONVERT TO CHARACTER SET utf8mb4 COLLATE
+       utf8mb4_0900_ai_ci nas 16 tabelas com colacao divergente.
+    4. Recomendacao de processo: incluir uma checagem simples (script ou
+       revisao de PR) que rejeite CREATE TABLE sem PRIMARY KEY, sem
+       ENGINE=InnoDB explicito ou sem COLLATE utf8mb4_0900_ai_ci antes do
+       merge, para que este padrao pare de se repetir a cada novo modulo.
+
+===============================================================================
+3. ALTO
+===============================================================================
+
+3.1 innodb_redo_log_capacity ainda abaixo do recomendado
+
+  Valor atual: 100 MB (subiu de ~20 MB, ver secao 1.2). O relatorio anterior
+  sugeria 256-512 MB. Nao ha indicio concreto de problema de I/O hoje (o
+  volume de dados dos 3 bancos ainda e pequeno, ~111 MB no total), mas como
+  o ajuste ja esta em andamento, sugere-se completar o aumento para pelo
+  menos 256 MB antes de cargas de escrita mais intensas (migracoes,
+  importacoes em lote).
+
+-------------------------------------------------------------------------------
+3.2 glegislacao_dbp: assuntos e perguntas seguem com apenas a chave primaria
+
+    assuntos    20.585 linhas - unico indice: PRIMARY (CODASSUNTO)
+    perguntas   10.332 linhas - unico indice: PRIMARY (CODPERGUNTA)
+
+  Situacao inalterada desde 19/08 (item 2.3 do relatorio anterior). Segue
+  a mesma recomendacao: validar com EXPLAIN os filtros efetivamente usados
+  pelas telas de Assuntos e Perguntas (busca por nome/texto, por exemplo)
+  antes de decidir por novos indices - possivel candidato a explicar parte
+  dos 166.341 full joins da secao 2.1.
+
+===============================================================================
+4. MEDIO
+===============================================================================
+
+4.1 innodb_buffer_pool_size no valor padrao (256 MB) - ainda adequado
+
+  Os 3 bancos somam ~111 MB de dados + indices (crescimento de ~95 MB para
+  ~111 MB desde 19/08). O buffer pool de 256 MB comporta tudo em memoria
+  com folga. Innodb_buffer_pool_pages_free = 1.780 de um total de 16.384
+  paginas (~11% livre) - uso moderado, sem sinal de pressao. Nenhuma acao
+  necessaria agora; reavaliar quando glegislacao_dbp (o maior banco)
+  continuar crescendo.
+
+-------------------------------------------------------------------------------
+4.2 tmp_table_size / max_heap_table_size em 16 MB - confirmado que NAO e
+    gargalo hoje
+
+  Diferente de 19/08 (quando isso era apenas uma preocupacao teorica), agora
+  ha dado real: Created_tmp_disk_tables = 12 contra Created_tmp_tables =
+  411.374 (0,003%). Ou seja, praticamente nenhuma tabela temporaria precisou
+  ir para disco. Nao ha necessidade de aumentar este valor no momento;
+  manter em monitoramento.
+
+===============================================================================
+5. OBSERVACOES / PONTOS POSITIVOS
+-------------------------------------------------------------------------------
+
+  - As 4 recomendacoes de maior prioridade do relatorio de 19/08 (indices
+    ausentes em glegislacao_dbp, e ativacao/ajuste do slow_query_log) foram
+    implementadas - ver secao 1.
+
+  - innodb_file_per_table = ON e innodb_flush_log_at_trx_commit = 1
+    permanecem corretos (durabilidade total ACID, adequada a um sistema de
+    compliance legal).
+
+  - guniversal_dbp continua exemplar: cresceu de 3 para 7 tabelas mantendo
+    100% InnoDB e colacao correta em todas elas.
+
+  - glegislacao_dbp, o maior banco em volume, esta com a situacao de
+    indices totalmente regularizada.
+
+  - table_open_cache (4.000), max_connections (151) e max_allowed_packet
+    (64 MB) permanecem em valores razoaveis.
+
+===============================================================================
+6. PROXIMOS PASSOS SUGERIDOS (EM ORDEM DE PRIORIDADE)
+-------------------------------------------------------------------------------
+
+  1. [CRITICO] Adicionar PRIMARY KEY as 8 tabelas de gmodelo_dbp sem
+     nenhum indice (item 2.2), priorizando infraestruturaxunidades e
+     episxunidades.
+
+  2. [CRITICO] Converter as 10 tabelas MyISAM do novo modulo
+     EPIs/Infraestrutura/ControleAdmin para InnoDB, e as 16 tabelas com
+     colacao latin1_swedish_ci para utf8mb4_0900_ai_ci (item 2.2), testando
+     em homologacao antes por causa do risco de duplicidades ocultas
+     (mesmo cuidado ja documentado no relatorio anterior).
+
+  3. [CRITICO/PROCESSO] Definir uma checagem de padrao (revisao de PR ou
+     script automatizado) que impeca a criacao de novas tabelas sem
+     PRIMARY KEY, sem ENGINE=InnoDB e sem COLLATE utf8mb4_0900_ai_ci, ja
+     que o mesmo problema corrigido em 19/08 reapareceu em um modulo novo.
+
+  4. [ALTO] Investigar a origem dos 166.341 Select_full_join (item 2.1),
+     comecando pelas tabelas do item 2.2 e pelas tabelas assuntos/perguntas
+     (item 3.2); reconferir o contador apos as correcoes para validar
+     impacto.
+
+  5. [ALTO] Trocar log_output para incluir TABLE, permitindo consultar
+     mysql.slow_log via SQL sem depender de acesso ao arquivo no servidor
+     (item 2.1).
+
+  6. [MEDIO] Completar o aumento de innodb_redo_log_capacity para pelo
+     menos 256 MB antes de cargas de escrita mais intensas (item 3.1).
+
+  7. [BAIXO] Continuar monitorando buffer pool e tabelas temporarias em
+     disco; nenhuma acao necessaria hoje (itens 4.1 e 4.2).
+
+===============================================================================
+FIM DO RELATORIO
+===============================================================================

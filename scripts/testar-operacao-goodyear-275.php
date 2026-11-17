@@ -1,0 +1,7 @@
+<?php
+declare(strict_types=1);
+require_once dirname(__DIR__) . '/classes/GreenPortalDatabase.php';
+$env=GreenPortalDatabase::env();$db=GreenPortalDatabase::connect($env,'ggdamericana_dbp','GPT');
+$db->beginTransaction();$insert=$db->prepare('INSERT INTO documentos (CODIGO,TITULO,ARQUIVO) VALUES (?,?,?)');$insert->execute(['POS_HOMOLOGACAO_275','Teste controlado','teste-pos-homologacao-275.txt']);$id=(int)$db->lastInsertId();$update=$db->prepare('UPDATE documentos SET TITULO=? WHERE CODDOCUMENTO=?');$update->execute(['Teste controlado editado',$id]);$row=$db->prepare('SELECT CODDOCUMENTO,TITULO,ARQUIVO FROM documentos WHERE CODDOCUMENTO=?');$row->execute([$id]);$dbCheck=$row->fetch(PDO::FETCH_ASSOC);$db->rollBack();
+$ged='E:\\projetoGreen\\GED\\green_gd_americana\\licencas\\1';$file=$ged.'\\_teste_pos_homologacao_275.txt';$gedOk=false;$downloadHash=null;if(is_dir($ged)){file_put_contents($file,"teste controlado Goodyear 275\n");$gedOk=is_file($file)&&file_get_contents($file)==="teste controlado Goodyear 275\n";$downloadHash=$gedOk?hash_file('sha256',$file):null;@unlink($file);}
+echo json_encode(['ok'=>$dbCheck!==false&&$gedOk&&!is_file($file),'banco'=>['incluido'=>true,'editado'=>$dbCheck,'rollback'=>true],'ged'=>['caminho'=>$ged,'upload_controlado'=>$gedOk,'download_sha256'=>$downloadHash,'arquivo_temporario_removido'=>!is_file($file)]],JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT).PHP_EOL;exit($dbCheck!==false&&$gedOk&&!is_file($file)?0:1);

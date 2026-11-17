@@ -1,0 +1,42 @@
+GREEN PORTAL - MANUTENCAO LEGAL / X PODER
+
+Esta transacao segue o padrao unico documentado em
+`docs/manutencao_legal_matrizes_diretrizes.txt`.
+
+1. TRANSACAO
+
+A transacao utiliza `/principal/manutencaolegal_legislacaoxpoder.php` e o
+item de menu `LEGISLACAO_X_PODER`, abaixo de Manutencao Legal.
+
+2. MIGRACAO
+
+A tabela `green_modelo.legislacaoxpoder` foi migrada para
+`gmodelo_dbp.legislacaoxpoder` pelo script
+`database/040_migrar_legislacaoxpoder.sql`. Os campos CODLEGISLACAO, poder e
+codunidade são mantidos conforme o legado, com conversão textual para utf8mb4_0900_ai_ci. A migração sincroniza o destino com os registros distintos da origem e a transação utiliza as views locais sobre `gmodelo_dbp.legislacaoxpoder`.
+codunidade foram preservados, com conversao de latin1 para utf8mb4. Foram
+mantidos os valores Controle, Conhecimento e Influência.
+
+3. FORMATO MATRICIAL
+
+Cada linha representa uma legislacao e a primeira coluna mostra o CODIGO da
+lei. Cada coluna seguinte representa uma unidade e mostra DSCUNIDADE no
+cabecalho. O cruzamento entre legislacao e unidade e um combobox PODER com
+Controle, Conhecimento e Influência.
+
+4. CRUD
+
+A alteracao de uma celula remove a relacao anterior e cria a nova relacao
+com o poder selecionado. Ao limpar a celula, a relacao e removida. Todas as
+operacoes usam as procedures CRUD genericas, respeitam o perfil e solicitam
+confirmacao.
+
+5. GRID
+
+O grid utiliza 25 linhas por pagina, busca server-side por CODIGO, colunas
+redimensionaveis e persistentes por usuario, modal de carregamento, rolagem
+interna e permissoes por perfil.
+
+Filtros contextuais: abaixo dos botões ficam Empresa, Mês/Ano de atualização e Correlacionados?. O período é obtido de legislacao.data_atualizacao e Sim representa somente leis relacionadas em legislacaoxempresa. A contagem da paginação respeita os filtros.
+Quando Correlacionados for Não, o grid deve exibir todas as leis de legislacao, com ou sem registro em legislacaoxpoder; as células sem relação ficam vazias.
+O grid deve manter cabeçalho e filtros fixos, com rolagem vertical e horizontal restrita ao contêiner da tabela quando houver excesso de linhas ou unidades.

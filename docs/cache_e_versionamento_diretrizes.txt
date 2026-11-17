@@ -1,0 +1,34 @@
+GREEN PORTAL - DIRETRIZES DE CACHE E VERSIONAMENTO
+
+1. Objetivo
+
+O portal deve sempre executar a última versão implementada de PHP, HTML, JavaScript e CSS. Não é permitido que uma tela autenticada reutilize conteúdo antigo do navegador.
+
+2. PHP e HTML
+
+As páginas autenticadas devem enviar:
+
+Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+Pragma: no-cache
+Expires: 0
+
+Essa regra vale para o main.php e para os grids carregados em iframe, incluindo os novos cadastros da Manutenção Legal.
+
+3. JavaScript e CSS
+
+Todo arquivo JavaScript ou CSS incluído em uma tela deve possuir versão explícita na URL, por exemplo `main.css?v=8`. Sempre que o arquivo for alterado, a versão deve ser incrementada na mesma entrega.
+
+A versão deve ser aplicada tanto aos arquivos compartilhados quanto aos arquivos específicos de cada transação. Isso evita que o navegador execute uma implementação anterior.
+
+Os arquivos estáticos também possuem a política Apache definida em
+`assets/.htaccess`, com `Cache-Control: no-store`, `Pragma: no-cache` e
+`Expires: 0` para CSS, JavaScript, fontes, ícones e imagens utilizadas pelo
+portal e pelos iframes.
+
+4. Diagnóstico
+
+Quando o navegador apresentar ERR_CACHE_READ_FAILURE, deve-se renovar a versão do asset e validar se a resposta HTTP retorna 200. Eventos contentScript.js, emc.ctf.addonInited ou semelhantes podem ser originados por extensões do navegador e não fazem parte do Green Portal.
+
+5. Validação
+
+Após qualquer alteração visual ou JavaScript, validar a URL versionada no navegador, executar Ctrl+F5 e confirmar que a requisição não está usando uma versão antiga no DevTools.

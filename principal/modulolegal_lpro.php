@@ -1,0 +1,70 @@
+<?php
+declare(strict_types=1);
+
+require_once dirname(__DIR__) . '/classes/ManutencaoLegalCadastroGrid.php';
+require_once dirname(__DIR__) . '/classes/IdiomaService.php';
+// Textos de Administração › Textos e idiomas (cadastro automático ao abrir como ADMINISTRADOR).
+$tt = static fn(string $chave, array $padrao): string => htmlspecialchars(IdiomaService::t($chave, $padrao), ENT_QUOTES, 'UTF-8');
+
+$contextFields = 'CODPERIGO,CODRISCO,CODATIVIDADE,CODUNIDADE';
+$extras = '<button class="btn btn-sm btn-outline-secondary grid-crud-button" type="button" data-context-child data-context-id="lpro-requisitos" data-context-url="/principal/modulolegalpro_requisitoslegais.php" data-context-fields="' . $contextFields . '" data-context-title="' . $tt('modulolegal_lpro.botao.requisitos', ['pt' => 'Requisitos legais', 'en' => 'Legal requirements', 'es' => 'Requisitos legales']) . '" disabled title="' . $tt('modulolegal_lpro.botao.requisitos', ['pt' => 'Requisitos legais', 'en' => 'Legal requirements', 'es' => 'Requisitos legales']) . '" aria-label="' . $tt('modulolegal_lpro.botao.requisitos', ['pt' => 'Requisitos legais', 'en' => 'Legal requirements', 'es' => 'Requisitos legales']) . '"><i class="bi bi-journal-check"></i></button>'
+    . '<button class="btn btn-sm btn-outline-secondary grid-crud-button" type="button" data-context-child data-context-id="lpro-controles" data-context-url="/principal/modulolegalpro_controlesdocumentos.php" data-context-fields="' . $contextFields . '" data-context-title="' . $tt('modulolegal_lpro.botao.controles', ['pt' => 'Controles e documentos', 'en' => 'Controls and documents', 'es' => 'Controles y documentos']) . '" disabled title="' . $tt('modulolegal_lpro.botao.controles', ['pt' => 'Controles e documentos', 'en' => 'Controls and documents', 'es' => 'Controles y documentos']) . '" aria-label="' . $tt('modulolegal_lpro.botao.controles', ['pt' => 'Controles e documentos', 'en' => 'Controls and documents', 'es' => 'Controles y documentos']) . '"><i class="bi bi-file-earmark-text"></i></button>'
+    . '<button class="btn btn-sm btn-outline-secondary grid-crud-button" type="button" data-context-child data-context-id="lpro-objetivos" data-context-url="/principal/modulolegalpro_objetivosmetas.php" data-context-fields="' . $contextFields . '" data-context-title="' . $tt('modulolegal_lpro.botao.objetivos', ['pt' => 'Objetivos e metas', 'en' => 'Objectives and targets', 'es' => 'Objetivos y metas']) . '" disabled title="' . $tt('modulolegal_lpro.botao.objetivos', ['pt' => 'Objetivos e metas', 'en' => 'Objectives and targets', 'es' => 'Objetivos y metas']) . '" aria-label="' . $tt('modulolegal_lpro.botao.objetivos', ['pt' => 'Objetivos e metas', 'en' => 'Objectives and targets', 'es' => 'Objetivos y metas']) . '"><i class="bi bi-bullseye"></i></button>'
+    . '<button class="btn btn-sm btn-outline-secondary grid-crud-button" type="button" data-context-child data-context-id="lpro-infraestrutura" data-context-url="/principal/modulolegalpro_infraestrutura.php" data-context-fields="' . $contextFields . '" data-context-title="' . $tt('modulolegal_lpro.botao.infraestrutura', ['pt' => 'Infraestrutura', 'en' => 'Infrastructure', 'es' => 'Infraestructura']) . '" disabled title="' . $tt('modulolegal_lpro.botao.infraestrutura', ['pt' => 'Infraestrutura', 'en' => 'Infrastructure', 'es' => 'Infraestructura']) . '" aria-label="' . $tt('modulolegal_lpro.botao.infraestrutura', ['pt' => 'Infraestrutura', 'en' => 'Infrastructure', 'es' => 'Infraestructura']) . '"><i class="bi bi-building"></i></button>'
+    . '<button class="btn btn-sm btn-outline-secondary grid-crud-button" type="button" data-context-child data-context-id="lpro-controles-adm" data-context-url="/principal/modulolegalpro_controlesadministrativos.php" data-context-fields="' . $contextFields . '" data-context-title="' . $tt('modulolegal_lpro.botao.controles_adm', ['pt' => 'Controles administrativos', 'en' => 'Administrative controls', 'es' => 'Controles administrativos']) . '" disabled title="' . $tt('modulolegal_lpro.botao.controles_adm', ['pt' => 'Controles administrativos', 'en' => 'Administrative controls', 'es' => 'Controles administrativos']) . '" aria-label="' . $tt('modulolegal_lpro.botao.controles_adm', ['pt' => 'Controles administrativos', 'en' => 'Administrative controls', 'es' => 'Controles administrativos']) . '"><i class="bi bi-sliders"></i></button>'
+    . '<button class="btn btn-sm btn-outline-secondary grid-crud-button" type="button" data-context-child data-context-id="lpro-epis" data-context-url="/principal/modulolegalpro_epis.php" data-context-fields="' . $contextFields . '" data-context-title="' . $tt('modulolegal_lpro.botao.epis', ['pt' => 'EPIs', 'en' => 'PPE', 'es' => 'EPP']) . '" disabled title="' . $tt('modulolegal_lpro.botao.epis', ['pt' => 'EPIs', 'en' => 'PPE', 'es' => 'EPP']) . '" aria-label="' . $tt('modulolegal_lpro.botao.epis', ['pt' => 'EPIs', 'en' => 'PPE', 'es' => 'EPP']) . '"><i class="bi bi-person-badge"></i></button>';
+
+$order = ['linha','CODUNIDADE','CODAREA','CODATIVIDADE','detalhamento','CODPERIGO','TIPO_DE_ATIVIDADE','SITUACAO','ABRANGENCIA','NATUREZA_DO_PERIGO','CODRISCO','SEVERIDADE','OCORRENCIA','DETECCAO','TOTAL','TOLERANCIA','ELIMINAR_RISCO','ANALISAR_SUBST_RISCO','DISPOSICAO_ATENUANTE','APLICAVEL_MEDIDAS_ENG','POSSUI_MEDIDAS_ENG','APLICAVEL_MEDIDAS_ADM','POSSUI_MEDIDAS_ADM','APLICAVEL_ADOCAO_EPIS','ADOTAR_EPIS','NECESSIDADE_NOVOS_CONTROLES','FILTROB','FILTROC','FILTROD'];
+$search = ['#select_filter','#select_filter','#select_filter','#select_filter','#text_filter','#text_filter','#select_filter','#select_filter','#select_filter','#select_filter','#text_filter','#text_filter','#select_filter','#select_filter','#select_filter','#text_filter','#select_filter','#select_filter','#select_filter','#text_filter','#select_filter','#select_filter','#select_filter','#select_filter','#select_filter','#select_filter','#select_filter','#text_filter','#select_filter'];
+$labels = ['', 'Unidade...', 'Área', 'Fonte/Atividade/Equipamento', 'Detalhamento', 'Perigo Ocupacional', 'Tipo Atividade', 'Situação', 'Abrangência', 'Natureza Perigo', 'Risco Ocupacional', 'Severidade', 'Ocorrência', 'Detecção', 'Total', 'Tolerância', 'Necessário Eliminar Risco?', 'Necessário Substituir Risco?', 'Disposição ou Atenuante', 'Aplicável Medidas de Engenharia?', 'Possui Medidas de Engenharia?', 'Aplicável Medidas Administrativas?', 'Possui Medidas Administrativas?', 'Aplicável Adoção de EPIs?', 'Adota EPIs?', 'Há Necessidade de Novos Controles?', 'Perigos Substanciais', 'Atendimento Legislação', 'Visão Partes Interessadas'];
+$widths = [30,160,300,300,300,250,250,100,100,100,180,80,80,80,80,80,80,80,250,120,120,120,120,120,120,120,100,100,100];
+$sort = ['str','strc','strc','strc','str','strc','strc','strc','strc','strc','strc','str','str','str','str','str','strc','strc','strc','strc','strc','strc','strc','strc','strc','str','strc','strc','strc'];
+$types = ['cntr','coro','coro','coro','txt','coro','coro','coro','coro','coro','coro','edn','edn','edn','ro','ro','coro','coro','txt','coro','coro','coro','coro','coro','coro','ro','coro','coro','coro'];
+$labelsEn = ['', 'Unit...', 'Area', 'Source/Activity/Equipment', 'Details', 'Occupational hazard', 'Activity type', 'Situation', 'Scope', 'Hazard nature', 'Occupational risk', 'Severity', 'Occurrence', 'Detection', 'Total', 'Tolerance', 'Must eliminate risk?', 'Must substitute risk?', 'Disposition or mitigation', 'Engineering measures applicable?', 'Has engineering measures?', 'Administrative measures applicable?', 'Has administrative measures?', 'PPE applicable?', 'Uses PPE?', 'New controls needed?', 'Substantial hazards', 'Legal compliance', 'Stakeholder view'];
+$labelsEs = ['', 'Unidad...', 'Área', 'Fuente/Actividad/Equipo', 'Detalle', 'Peligro ocupacional', 'Tipo de actividad', 'Situación', 'Alcance', 'Naturaleza del peligro', 'Riesgo ocupacional', 'Severidad', 'Ocurrencia', 'Detección', 'Total', 'Tolerancia', '¿Es necesario eliminar el riesgo?', '¿Es necesario sustituir el riesgo?', 'Disposición o atenuante', '¿Aplican medidas de ingeniería?', '¿Tiene medidas de ingeniería?', '¿Aplican medidas administrativas?', '¿Tiene medidas administrativas?', '¿Aplica la adopción de EPP?', '¿Adopta EPP?', '¿Se necesitan nuevos controles?', 'Peligros sustanciales', 'Cumplimiento legal', 'Visión de las partes interesadas'];
+$label = static function (int $i) use ($labels, $labelsEn, $labelsEs): array { return ['pt' => $labels[$i] ?? '', 'en' => $labelsEn[$i] ?? '', 'es' => $labelsEs[$i] ?? '']; };
+// Opções das listas: o valor gravado não muda; só o texto exibido segue o idioma.
+$select = static function (array $values): array { $result = []; foreach ($values as $value => $text) $result[(string)$value] = is_array($text) ? $text : (string)$text; return $result; };
+
+$fields = [];
+foreach ($order as $i => $field) {
+    $type = $types[$i] ?? 'txt';
+    $fields[$field] = ['label' => $label($i), 'filter' => (($search[$i] ?? '') === '#select_filter' ? 'select' : (($search[$i] ?? '') === '#text_filter' ? 'text' : 'none')), 'width' => $widths[$i] ?? 180];
+    if ($field === 'linha') { $fields[$field]['hidden'] = true; $fields[$field]['readonly'] = true; $fields[$field]['filter'] = 'none'; }
+    if ($type === 'ro') $fields[$field]['readonly'] = true;
+    if ($field === 'detalhamento' || $field === 'DISPOSICAO_ATENUANTE') $fields[$field]['type'] = 'textarea';
+}
+$fields['CODUNIDADE'] += ['lazy_foreign' => false];
+$fields['CODAREA'] += ['lazy_foreign' => false];
+$fields['CODATIVIDADE'] += ['lazy_foreign' => false];
+$fields['CODPERIGO'] += ['lazy_foreign' => false];
+$fields['CODRISCO'] += ['lazy_foreign' => false];
+$fields['CODUNIDADE']['foreign'] = ['view' => 'vw_unidades_grid', 'value' => 'CODUNIDADE', 'label' => 'DSCUNIDADE', 'filters' => ['usado_em_manutencao_legal' => 'Sim'], 'description' => 'DSCUNIDADE'];
+$fields['CODAREA']['foreign'] = ['view' => 'vw_areas_grid', 'value' => 'CODAREA', 'label' => 'DSCAREA', 'description' => 'DSCAREA'];
+$fields['CODATIVIDADE']['foreign'] = ['view' => 'vw_atividades_grid', 'value' => 'CODATIVIDADE', 'label' => 'DSCATIVIDADE', 'description' => 'DSCATIVIDADE'];
+$fields['CODPERIGO']['foreign'] = ['view' => 'vw_perigos_grid', 'value' => 'CODPERIGO', 'label' => 'DSCPERIGO', 'description' => 'DSCPERIGO'];
+$fields['CODRISCO']['foreign'] = ['view' => 'vw_riscos_grid', 'value' => 'CODRISCO', 'label' => 'DSCRISCO', 'description' => 'DSCRISCO'];
+$fields['TIPO_DE_ATIVIDADE']['options'] = $select(['D' => ['pt'=>'Direta','en'=>'Direct','es'=>'Directa'], 'I' => ['pt'=>'Indireta','en'=>'Indirect','es'=>'Indirecta'], 'DI' => ['pt'=>'Direta e indireta','en'=>'Direct and indirect','es'=>'Directa e indirecta'], 'V' => ['pt'=>'Visitantes','en'=>'Visitors','es'=>'Visitantes'], 'DV' => ['pt'=>'Direta, indireta e visitantes','en'=>'Direct, indirect and visitors','es'=>'Directa, indirecta y visitantes'], 'DA' => ['pt'=>'Descarga atmosférica','en'=>'Lightning strike','es'=>'Descarga atmosférica'], 'IT' => ['pt'=>'Indireta (terceiros)','en'=>'Indirect (third parties)','es'=>'Indirecta (terceros)']]);
+$fields['SITUACAO']['options'] = $select(['R' => ['pt'=>'Rotineira','en'=>'Routine','es'=>'Rutinaria'], 'NR' => ['pt'=>'Não rotineira','en'=>'Non-routine','es'=>'No rutinaria'], 'E' => ['pt'=>'Emergencial','en'=>'Emergency','es'=>'Emergencia']]);
+$fields['ABRANGENCIA']['options'] = $select(['I' => ['pt'=>'Interno','en'=>'Internal','es'=>'Interno'], 'V' => ['pt'=>'Vizinhança','en'=>'Neighborhood','es'=>'Vecindad'], 'IV' => ['pt'=>'Interno e vizinhança','en'=>'Internal and neighborhood','es'=>'Interno y vecindad']]);
+$fields['NATUREZA_DO_PERIGO']['options'] = $select(['F' => ['pt'=>'Físicos','en'=>'Physical','es'=>'Físicos'], 'Q' => ['pt'=>'Químicos','en'=>'Chemical','es'=>'Químicos'], 'B' => ['pt'=>'Biológicos','en'=>'Biological','es'=>'Biológicos'], 'ER' => ['pt'=>'Ergonômicos','en'=>'Ergonomic','es'=>'Ergonómicos'], 'A' => ['pt'=>'Acidentes','en'=>'Accidents','es'=>'Accidentes'], 'EL' => ['pt'=>'Elétricos','en'=>'Electrical','es'=>'Eléctricos'], 'SE' => ['pt'=>'Situações de emergência','en'=>'Emergency situations','es'=>'Situaciones de emergencia']]);
+foreach (['ELIMINAR_RISCO','ANALISAR_SUBST_RISCO','APLICAVEL_MEDIDAS_ENG','POSSUI_MEDIDAS_ENG','APLICAVEL_MEDIDAS_ADM','POSSUI_MEDIDAS_ADM','APLICAVEL_ADOCAO_EPIS','ADOTAR_EPIS','NECESSIDADE_NOVOS_CONTROLES'] as $field) $fields[$field]['options'] = $select(['Sim' => ['pt'=>'Sim','en'=>'Yes','es'=>'Sí'], 'Não' => ['pt'=>'Não','en'=>'No','es'=>'No']]);
+$fields['FILTROB']['options'] = ['' => '', 'X' => 'X'];
+$fields['FILTROC']['options'] = ['' => '', 'X' => 'X'];
+$fields['FILTROD']['options'] = ['' => '', 'X' => 'X'];
+$fields['CODLPRO'] = ['label' => ['pt' => 'Código técnico', 'en' => 'Technical code', 'es' => 'Código técnico'], 'hidden' => true, 'readonly' => true, 'filter' => 'none'];
+
+ManutencaoLegalCadastroGrid::render([
+    'menu' => 'LPRO', 'title' => ['pt' => 'LPRO', 'en' => 'LPRO', 'es' => 'LPRO'],
+    'transaction' => 'modulolegal_lpro', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT',
+    'fragment_class' => 'modulo-lpro-grid-fragment', 'table' => 'lpro', 'view' => 'vw_lpro_grid', 'primary' => 'CODLPRO', 'primary_auto' => true,
+    'legacy_order' => $order, 'legacy_search' => $search, 'legacy_labels' => $labels, 'legacy_widths' => $widths, 'legacy_sort' => $sort, 'legacy_types' => $types, 'legacy_fixed' => true,
+    'extras' => $extras, 'fields' => $fields,
+]);
+
+// Barra de botões em grupos (Operações | Correlacionamentos | Avaliação), com dica nativa.
+require_once dirname(__DIR__) . '/components/toolbar_grupos.php';
+greenPortalToolbarGrupos('.modulo-lpro-grid-fragment', [
+    'correlacionamentos' => ['[data-context-id="lpro-requisitos"]', '[data-context-id="lpro-controles"]', '[data-context-id="lpro-infraestrutura"]', '[data-context-id="lpro-controles-adm"]', '[data-context-id="lpro-epis"]'],
+    'avaliacao' => ['[data-context-id="lpro-objetivos"]', '[data-context-id^="questionario-"]'],
+]);

@@ -1,0 +1,15 @@
+GREEN PORTAL - DIRETRIZES DE FORMULARIOS
+
+Formularios devem seguir o mesmo padrao visual dos grids, com botoes,
+mensagens, modais e suporte a PT, EN e ES.
+
+O modulo Seguranca/Formulario deve permitir configurar por perfil e
+transacao quais campos ficam visiveis, obrigatorios, editaveis e qual tipo
+de controle sera usado.
+
+Tipos de campo devem incluir texto, numero, checkbox, data, email e lista de
+selecao. Listas podem ser fixas ou carregadas do banco pela tabela
+formulario_lista.
+
+Acoes de salvar, preview, gerar PDF e demais operacoes devem respeitar as
+permissoes do perfil.

@@ -1,0 +1,75 @@
+GREEN PORTAL - DIRETRIZES DOS CADASTROS DA MANUTENÇÃO LEGAL
+
+1. Transações
+
+Os cadastros abaixo ficam subordinados ao menu Manutenção Legal:
+
+- Tipos: glegislacao_dbp.tipos, manutencaolegal_tipos.php;
+- Âmbitos: glegislacao_dbp.ambitos, manutencaolegal_ambitos.php;
+- Aspectos: gmodelo_dbp.aspectos, manutencaolegal_aspectos.php;
+- Impactos: gmodelo_dbp.impactos, manutencaolegal_impactos.php;
+- Perigos: gmodelo_dbp.perigos, manutencaolegal_perigos.php;
+- Riscos: gmodelo_dbp.riscos, manutencaolegal_riscos.php;
+- Assuntos: glegislacao_dbp.assuntos, manutencaolegal_assuntos.php.
+
+Os nomes de arquivo são mantidos em minúsculas para seguir o padrão das URLs do portal. A grafia apresentada no menu é a correta: Aspectos e Riscos.
+
+2. Migração e acentuação
+
+O script database/043_manutencao_legal_cadastros.sql cria os destinos com utf8mb4_0900_ai_ci e converte explicitamente os textos vindos do legado latin1. A carga é reexecutável: os dados do destino são sincronizados antes da inserção.
+
+As chaves legadas CODASPECTO, CODIMPACTO e CODASSUNTO são preservadas. As tabelas legadas perigos e riscos não declaravam uma chave primária; como CODPERIGO e CODRISCO são únicos no legado, eles são promovidos a chave primária no destino para permitir o CRUD genérico.
+
+3. Padrão dos grids
+
+Todos os sete arquivos usam classes/ManutencaoLegalCadastroGrid.php. A classe concentra autenticação, conexão com o banco correto, autorização por transação, CRUD por procedures universais, paginação de 25 registros, busca geral, filtros de coluna, modal de carregamento, confirmação de exclusão e preferências de colunas por usuário.
+
+O campo de código é somente leitura e fica oculto por padrão, mas pode ser exibido pelo botão Colunas. O usuário pode ordenar e redimensionar as colunas; essas escolhas são persistidas no banco da empresa.
+
+Descrições extensas usam textarea editável dentro da linha. Todas as operações seguem a política de mensagens amigáveis e devem preservar PT, EN e ES.
+
+O ciclo de validação executado em 17/08/2026 confirmou, para os sete cadastros, inclusão, busca geral, filtro, alteração e exclusão por meio das procedures universais. Foram utilizados códigos temporários, removidos ao final do teste, sem alteração permanente dos dados migrados.
+
+As ações do grid seguem a ordem Salvar, Novo, Duplicar, Excluir, Recarregar, Exportar Excel e Colunas. Salvar e excluir usam confirmação modal; a exportação é enviada ao processamento em segundo plano e respeita os filtros e a busca ativos.
+
+4. Banco e manutenção
+
+Tipos, Âmbitos e Assuntos são mantidos no banco especializado glegislacao_dbp. Aspectos, Impactos, Perigos e Riscos pertencem ao banco da empresa modelo gmodelo_dbp, pois são cadastros replicáveis para novas empresas.
+
+Os Assuntos são migrados exclusivamente de green_legislacao.assuntos para glegislacao_dbp.assuntos pelo script database/044_mover_assuntos_para_legislacao.sql. A tabela e a view de Assuntos foram removidas de gmodelo_dbp; todas as consultas da legislação e o grid de Assuntos usam glegislacao_dbp.
+
+Ao replicar uma empresa, as tabelas, views e demais artefatos devem ser incluídos no catálogo de replicação conforme as diretrizes de criação de empresas.
+Chaves estrangeiras
+
+Colunas que armazenam chaves estrangeiras devem exibir a descrição da entidade
+relacionada, e não somente o código técnico. Quando editáveis, devem usar um
+combo carregado por procedure a partir da view de referência, contendo somente
+registros ativos e ordenados alfabeticamente pela descrição. O valor enviado ao
+salvamento continua sendo o código da chave estrangeira.
+
+Para unidades, a referência oficial é `vw_unidades_grid`, usando
+`CODUNIDADE` como valor e `DSCUNIDADE` como descrição. No modelo atual,
+`usado_em_manutencao_legal='Sim'` representa a lista ativa para esses combos.
+O comportamento é centralizado em `ManutencaoLegalCadastroGrid.php`.
+
+O mesmo mecanismo reconhece as referências legadas de área, atividade, perigo,
+risco, aspecto, impacto, parte interessada, aspecto social e impacto social.
+Cada campo pode sobrescrever a configuração automática usando `foreign` com
+`view`, `value`, `label`, `filters` e `description`.
+
+Grids de tabelas correlacionadas
+
+Em grids de relacionamento, como `legislacaoxaspecto`, a nova linha deve
+mostrar imediatamente um combo na coluna da entidade a associar. O usuario
+seleciona a entidade e salva a relacao.
+
+Em uma linha existente, a coluna de relacionamento deve exibir a descricao em
+modo somente leitura. Ao selecionar a linha, a celula entra em edicao e abre o
+combo, permitindo escolher outra entidade. As demais colunas permanecem
+somente leitura.
+
+`CODLEGISLACAO` e `CODUNIDADE` sao chaves contextuais ocultas e protegidas.
+Inclusao, alteracao e exclusao devem preservar a chave composta da relacao,
+combinando o codigo da entidade, `CODLEGISLACAO` e `CODUNIDADE`. A lista do
+combo deve ser carregada pela fonte oficial da chave estrangeira, ordenada
+alfabeticamente e sem permitir associacoes duplicadas.

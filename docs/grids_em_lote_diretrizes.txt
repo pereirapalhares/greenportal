@@ -1,0 +1,179 @@
+GREEN PORTAL - DIRETRIZES DE GRIDS EM LOTE
+
+1. PADRAO
+
+Todos os grids em lote devem possuir titulo/contexto, busca geral, busca por
+coluna, botoes de operacao, colunas configuraveis e modal de carregamento.
+O grid deve aparecer somente apos o carregamento concluido.
+
+2. PAGINACAO E FILTROS
+
+A pagina deve carregar 25 registros. O total deve ser exibido no rodape e
+os filtros devem consultar o banco, nao apenas os registros ja carregados.
+A busca deve aguardar a pausa de digitacao antes de consultar.
+
+3. COLUNAS
+
+O usuario pode ordenar, redimensionar e ocultar colunas. Essas preferencias
+devem ser persistidas por usuario e transacao. A chave primaria deve ficar
+oculta por padrao.
+
+4. OPERACOES
+
+Novo, editar, duplicar, salvar e excluir devem atuar na linha do grid.
+Excluir somente habilita apos selecionar uma linha. Salvar somente habilita
+apos incluir ou alterar um registro.
+
+Todas as operacoes CRUD devem solicitar confirmacao quando aplicavel e
+apresentar mensagens simples, traduzidas e nao tecnicas.
+
+5. PERMISSOES
+
+Cada grid deve validar a permissao do perfil para visualizar, incluir,
+editar, excluir e exportar. Botoes sem permissao devem permanecer
+desabilitados e apresentar tooltip:
+
+PT: Perfil sem permissao de acesso!
+EN: Profile does not have access permission!
+ES: El perfil no tiene permiso de acceso!
+
+6. ROLAGEM INTERNA
+
+A rolagem vertical e horizontal deve existir somente no contenedor do grid,
+identificado por menu-grid-scroll. A tabela pode ultrapassar a largura da
+area de trabalho e deve utilizar largura minima suficiente para exibir todas
+as colunas. Assim, o usuario consegue acessar os campos que ficam fora da
+tela, inclusive os campos do lado direito.
+
+O cabecalho, os botoes, a busca, a paginacao e o rodape do grid devem
+permanecer acessiveis. O cabecalho deve permanecer fixo e sempre visivel
+durante a rolagem vertical. Na rolagem horizontal, cabecalho, filtros e
+linhas devem deslocar-se em conjunto. A pagina principal, o menu e a area
+de trabalho nao devem criar uma segunda barra de rolagem; a rolagem deve ser
+controlada internamente pelo proprio grid.
+
+7. LISTAS DE SELECAO E DATAS
+
+Quando uma coluna representar uma chave estrangeira ou um dominio cadastrado,
+o filtro por coluna deve ser um combobox carregado com todos os valores da
+tabela de referencia. O valor enviado ao filtro deve ser o codigo persistido
+no banco, enquanto o usuario visualiza a descricao correspondente.
+
+Campos de data e hora devem ser apresentados conforme o idioma da sessao:
+PT e ES usam DD/MM/YYYY HH:MM; EN usa MM/DD/YYYY HH:MM. A persistencia no
+banco deve continuar usando o formato datetime padrao, independentemente do
+idioma da tela.
+
+8. CAMPOS DE TEXTO EXTENSO
+
+Campos extensos podem ser somente leitura no grid e possuir um icone de
+edicao. A alteracao deve ocorrer em modal com textarea e confirmacao ou
+cancelamento. O valor somente pode ser aplicado ao grid apos a confirmacao.
+9. ESTADOS VISUAIS DAS LINHAS
+
+Linhas novas devem ser exibidas em verde-claro (#E8F5E9), linhas alteradas
+antes da confirmacao em amarelo-claro (#FFF8E1), linhas selecionadas em
+azul-claro (#E3F2FD) e linhas com erro em vermelho-claro (#FDECEC). Deve
+existir tambem um indicador visual lateral, para que a informacao nao dependa
+somente da percepcao das cores.
+
+Depois da confirmacao bem-sucedida, a linha deve retornar ao estado normal.
+
+10. RELACIONAMENTOS UM PARA MUITOS
+
+Quando uma entidade do grid possuir relacionamento 1:N, os registros
+relacionados devem ser apresentados em uma coluna de resumo, separados por
+ponto e virgula. A coluna nao deve permitir edicao direta dos textos
+relacionados.
+
+Um icone de edicao deve abrir uma modal com a lista de relacionados e nao
+relacionados, permitindo marcar e desmarcar itens. A confirmacao deve
+sincronizar a tabela de relacionamento, incluindo os novos vinculos e
+removendo os desmarcados. O grid deve ser atualizado sem recarregar toda a
+pagina.
+
+11. PADRAO DA BARRA DE ACOES E EXPORTACAO
+
+Todos os grids devem apresentar os botoes na ordem: Salvar, Novo,
+Duplicar, Excluir, Recarregar, Exportar Excel e Colunas. Botoes que
+dependem de selecao devem iniciar desabilitados e apresentar uma orientacao
+ao usuario no idioma ativo.
+
+Uma exportacao em andamento deve desabilitar novas solicitacoes para a
+mesma transacao e usuario. Solicitacoes nos estados SOLICITADA ou
+PROCESSANDO devem possuir limite de 30 minutos; depois desse prazo devem
+ser encerradas como erro/expirada, liberando uma nova tentativa.
+
+12. PAGINACAO SEM RECARREGAMENTO
+
+A troca de pagina e a aplicacao de filtros devem consultar o servidor por
+AJAX e substituir somente as linhas do grid. A aba e os demais controles nao
+devem ser recarregados. Durante a consulta, o modal padrao de carregamento
+deve permanecer visivel e ser fechado somente depois que as linhas e o total
+de registros forem atualizados.
+
+13. SEGURANCA / USUARIOS
+
+O grid da transacao Seguranca / Usuarios deve utilizar
+principal/seguranca_usuarios.php, a view vw_usuarios_grid e as procedures
+universais de selecao e contagem. A consulta inicial e cada consulta de
+pagina devem retornar no maximo 25 usuarios. A contagem do rodape deve ser
+obtida no banco e considerar a busca geral e todos os filtros ativos.
+
+A busca geral e os filtros por coluna nao podem ser aplicados somente no
+navegador sobre as linhas ja carregadas. O arquivo
+assets/js/setup-users.js deve cuidar apenas das acoes especificas da tela,
+como preferencias de colunas, inclusao e selecao de linhas. A filtragem e a
+paginacao ficam sob responsabilidade do componente compartilhado
+assets/js/grid-pagination.js.
+
+As colunas codperfil e codgrupo sao relacionamentos. Tanto a edicao da linha
+quanto o filtro da coluna devem utilizar comboboxes. Os comboboxes devem ser
+montados com todos os perfis e grupos ativos disponibilizados pelos templates
+da tela, e nao somente com os valores encontrados na pagina corrente. O valor
+enviado ao banco e o codigo da chave estrangeira; o usuario visualiza a
+descricao correspondente.
+
+O salvamento e a exclusao de usuarios devem ocorrer por AJAX depois da
+confirmacao, sem recarregar a aba. A inclusao ou alteracao deve manter a linha
+na tela e a exclusao deve remover somente a linha confirmada. Campos de perfil
+ou grupo sem valor devem ser enviados como NULL. O botao Salvar inicia
+desabilitado e somente e habilitado apos inclusao ou alteracao; Excluir inicia
+desabilitado e somente e habilitado apos a selecao de uma linha.
+
+14. VALIDACAO DE PERFORMANCE
+
+Antes de criar uma consulta especializada, deve ser verificado o plano da
+view do grid, a quantidade de registros e os indices dos relacionamentos. A
+vw_usuarios_grid deve manter os relacionamentos indexados por codperfil e
+codgrupo. A busca textual com coringa no inicio pode exigir leitura dos
+registros e deve ser aceita enquanto o volume nao justificar busca FULLTEXT.
+
+CONTROLE DE PAGINAÇÃO E FILTROS
+- Todos os grids devem carregar inicialmente no máximo 25 registros.
+- A busca geral e os filtros por coluna devem ser executados no banco de dados, preservando o filtro ativo durante a paginação.
+- O total exibido no rodapé deve ser o total resultante dos filtros atuais, e não o total sem filtro.
+- Ao alterar a busca geral ou qualquer filtro de coluna, a página deve retornar automaticamente para a página 1.
+- A paginação deve utilizar AJAX, substituir somente o tbody do grid e atualizar a URL sem recarregar a aba inteira.
+- Enquanto uma requisição de paginação ou filtro estiver em andamento, os botões de paginação devem permanecer desabilitados para impedir requisições concorrentes.
+- Uma nova busca deve invalidar a contagem anterior; respostas antigas ou abortadas não podem sobrescrever o total atual.
+- Páginas sem registros devem ser tratadas pelo grid sem deixar a tela em branco e devem apresentar uma mensagem amigável ao usuário.
+- O componente compartilhado assets/js/grid-pagination.js é responsável por esse comportamento e deve ser usado por todos os grids.
+
+15. ROLAGEM DO GRID
+
+- A área com barra de rolagem vertical deve envolver somente o corpo das linhas.
+- O cabeçalho das colunas deve permanecer fixo durante a rolagem vertical.
+- A linha de filtros das colunas, quando existir, deve permanecer fixa junto ao cabeçalho.
+- A rolagem horizontal deve permanecer na área do grid e deslocar cabeçalho, filtros e linhas em conjunto.
+- O comportamento deve ser aplicado pelo CSS comum da aplicação, sem regras específicas
+  repetidas em cada transação.
+
+16. ORDENACAO DE LISTAS
+
+- Toda lista exibida em combobox deve ser apresentada em ordem alfabética pela
+  descrição visível ao usuário.
+- A opção vazia, Todos ou Selecione permanece no início quando existir.
+- A ordenação deve usar o texto traduzido do idioma ativo, ignorando diferenças
+  de maiúsculas, minúsculas e acentuação.
+- A ordenação da lista não deve alterar o valor técnico enviado ao banco.

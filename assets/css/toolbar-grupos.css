@@ -1,0 +1,27 @@
+/* GreenSolutions — barra de botões em grupos rotulados (componente reutilizável). */
+.menu-grid-toolbar .crud-actions.tb-grupos { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 6px 0; }
+.tb-grupos .tb-grupo { display: flex; flex-direction: column; gap: 3px; padding: 0 12px; border-left: 1px solid var(--gp-border, #dce9e3); }
+.tb-grupos > .tb-grupo:first-of-type { padding-left: 0; border-left: 0; }
+.tb-grupos .tb-grupo[hidden] { display: none; }
+.tb-grupos .tb-grupo-rotulo { color: var(--gp-muted, #7f938a); font-size: 9.5px; font-weight: 700; letter-spacing: .06em; line-height: 1; text-transform: uppercase; white-space: nowrap; }
+.tb-grupos .tb-grupo-botoes { display: flex; align-items: center; gap: 5px; }
+.menu-grid-toolbar .tb-grupos .tb-grupo-botoes > button { width: 30px; min-width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0; }
+.menu-grid-toolbar .tb-grupos .tb-grupo-botoes > button i { margin: 0 !important; font-size: 14px; line-height: 1; }
+.menu-grid-toolbar .tb-grupos .tb-grupo-botoes > button:hover,
+.menu-grid-toolbar .tb-grupos .tb-grupo-botoes > button:focus { transform: translateY(-1px); }
+.menu-grid-toolbar .tb-grupos > .grid-pagination { align-self: flex-end; display: inline-flex; align-items: center; gap: 5px; height: 30px; margin-left: 0; padding-left: 12px; border-left: 1px solid var(--gp-border, #dce9e3); }
+
+/* Distribuição: a linha de cima tem os grupos e a busca; a paginação vem logo
+   depois dos grupos (ou na linha de baixo, se faltar espaço). Os grupos nunca se
+   partem ao meio. */
+.menu-grid-toolbar:has(> .crud-actions.tb-grupos) { flex-wrap: nowrap; align-items: flex-end; gap: 16px; }
+.setup-fragment .menu-grid-toolbar .crud-actions.tb-grupos { flex: 1 1 0; min-width: 0; row-gap: 8px; }
+.tb-grupos .tb-grupo { flex: 0 0 auto; }
+.tb-grupos .tb-grupo-botoes { flex-wrap: nowrap; }
+.tb-grupos .tb-grupo-botoes > [data-disabled-tooltip-wrapper] { display: inline-flex; }
+.menu-grid-toolbar .tb-grupos > .grid-pagination { border-left: 0; padding-left: 0; margin-left: 14px; }
+.menu-grid-toolbar:has(> .crud-actions.tb-grupos) > .crud-search { flex: 0 0 240px; margin-left: auto; }
+@media (max-width: 640px) {
+    .menu-grid-toolbar:has(> .crud-actions.tb-grupos) { flex-wrap: wrap; }
+    .menu-grid-toolbar:has(> .crud-actions.tb-grupos) > .crud-search { flex: 1 1 100%; }
+}

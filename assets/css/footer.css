@@ -1,0 +1,9 @@
+.footer-status-area, .footer-company, .footer-context { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.footer-status-area { color: #668077; }
+.footer-status-area i { color: #3ba179; font-size: 12px; }
+.footer-status-area.footer-status-warning { color: #a87842; }
+.footer-status-area.footer-status-warning i { color: #d49b55; }
+.footer-status-area.footer-status-working i { animation: footer-spin 1s linear infinite; }
+.footer-context { justify-content: center; color: #81958c; font-size: 10px; }
+.footer-company { justify-content: flex-end; }
+@keyframes footer-spin { to { transform: rotate(360deg); } }

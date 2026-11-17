@@ -1,0 +1,98 @@
+ANÁLISE DO BANCO hpr_configuracoes - TRANSAÇÕES LEGADAS
+========================================================
+
+Objetivo
+--------
+O banco hpr_configuracoes é a fonte de metadados das transações do ambiente
+legado. Ele deve ser usado para documentar e compreender uma transação quando
+o nome da transação for informado explicitamente.
+
+Regra de consulta
+-----------------
+O banco hpr_configuracoes não deve ser analisado automaticamente ou como uma
+varredura geral. A análise somente deve ser realizada quando o usuário ordenar
+e informar o nome da transação.
+
+Tabelas principais
+------------------
+
+configuracoes_transacoes
+  Define a transação principal: código, descrição, tabela, layout, chave,
+  botões, query, query para Excel, filtros, banco padrão, formulário, eventos,
+  relacionamentos, abas auxiliares e scripts de carregamento/atualização.
+
+configuracoes_grids
+  Define cada campo exibido no grid: campo, rótulo, largura, ordem, tipo,
+  ordenação, proteção, obrigatoriedade, alinhamento, filtros, valores padrão,
+  máscara, regra e tradução.
+
+configuracoes_tabulacoes
+  Define as abas ou transações relacionadas, incluindo título, URL, ordem,
+  aba ativa e grupo de permissão.
+
+configuracoes_relacionados
+  Define comandos e transações relacionadas à transação principal.
+
+configuracoes_excel, configuracoes_relatorios e configuracoes_graficos
+  Definem exportações, relatórios e gráficos associados.
+
+configuracoes_idioma
+  Define textos por evento nos idiomas português, inglês e espanhol.
+
+configuracoes_atualizacoes, configuracoes_normalizarfiltro,
+configuracoes_filtroquerys, configuracoes_coroquerys e
+configuracoes_grupoxfiltro
+  Complementam o comportamento de atualização, filtros, consultas compostas,
+  normalização e regras de acesso.
+
+Transações LAIA analisadas
+--------------------------
+
+274 - mlLAIA
+  Tabela principal: LAIA.
+  Chave de registro: CODLAIA.
+  A configuração monta a chave contextual da linha usando:
+
+    CODASPECTO_CODIMPACTO_CODATIVIDADE_CODUNIDADE
+
+  Essa chave é usada para abrir as transações relacionadas.
+
+275 - mlLAIAXLegislacao
+  Tabela/view: vlaiaxlegislacao.
+  Filtra por CODUNIDADE e por CODASPECTO, CODIMPACTO ou CODATIVIDADE.
+  Exibe legislação e o acesso ao texto da lei.
+
+277 - LAIAXDocumentos
+  Tabela principal: documentos.
+  Relaciona documentos com unidade, aspecto, impacto e atividade.
+  Filtra por unidade e por aspecto, impacto ou atividade.
+  Exibe código, título, arquivo, aspecto, impacto e atividade.
+
+278 - LAIAXObjetivosMetas
+  Tabela principal: OBJETIVOSMETAS.
+  Relaciona objetivos com aspectos.
+  Filtra obrigatoriamente por CODASPECTO e CODUNIDADE.
+  Exibe código, item da política, objetivo, meta, indicador, líder e tipo
+  estratégico/tático.
+
+Abas relacionadas do LAIA
+-------------------------
+
+As abas da transação 274 são definidas em configuracoes_tabulacoes:
+
+  - Requisitos Legais Aplicáveis -> mlLAIAXLegislacao;
+  - Controles Existentes -> LAIAXDocumentos;
+  - Objetivos e Metas -> LAIAXObjetivosMetas;
+  - Inventário -> mlLaiaIventario.
+
+Conclusão
+---------
+As transações legadas são orientadas por metadados. O nome da transação aponta
+para a configuração em configuracoes_transacoes; os campos e sua apresentação
+vêm de configuracoes_grids; as relações entre grids e abas vêm de
+configuracoes_tabulacoes e configuracoes_relacionados; as regras de consulta
+vêm de cquery/cqueryexcel e dos filtros contextuais.
+
+Qualquer futura análise deve preservar a configuração encontrada no banco e
+deve ser iniciada somente após o usuário informar explicitamente o nome da
+transação.

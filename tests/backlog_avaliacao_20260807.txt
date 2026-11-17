@@ -1,0 +1,76 @@
+AVALIACAO DO BACKLOG DO USUARIO - ITENS 26 A 31
+Data da avaliacao: 27/08/2026
+Escopo: analise estatica do codigo atual, sem execucao de navegador.
+
+26. Codigo da norma e nome da unidade nao aparecem no grid de Requisitos Legais
+Status: PENDENTE / COMPORTAMENTO INCONSISTENTE
+Evidencias:
+- O grid possui as colunas CODIGO e UNIDADE.
+- O arquivo classes/ModuloLegalRequisitosGrid.php define CODIGO e UNIDADE como colunas visiveis.
+- O mesmo arquivo e assets/js/modulo-legal-requisitos.js mantem CODUNIDADE e outras chaves tecnicas ocultas por regra fixa.
+- A ordem e visibilidade sao salvas por usuario em preferencias_grid, mas a regra tecnica pode sobrescrever a preferencia para colunas de chave.
+Acao necessaria:
+- Garantir que CODIGO e UNIDADE sejam sempre exibidas por padrao e possam ser restauradas pelo modal Colunas.
+- Manter ocultas somente as chaves tecnicas reais, sem ocultar o codigo funcional da norma nem o nome da unidade.
+- Validar a persistencia apos salvar, recarregar, filtrar e mudar de pagina.
+
+27. Contagem de linhas para facilitar a paginacao
+Status: IMPLEMENTADO NO CODIGO; VALIDAR NA INTERFACE
+Evidencias:
+- classes/ModuloLegalRequisitosGrid.php possui o endpoint POST count_rows usando sp_crud_count.
+- O grid inclui assets/js/grid-pagination.js.
+- O script apresenta total de registros e pagina atual e recalcula a contagem apos filtros e busca.
+Acao necessaria:
+- Confirmar no ambiente que o texto aparece no rodape do grid como total de registros e pagina atual.
+- Caso continue ausente, investigar erro da requisicao count_rows ou retorno sem total_registros.
+
+28. Acentuacao dos cabecalhos e texto de atendimento aparece como n??o
+Status: PENDENTE
+Evidencias:
+- Existem textos com mojibake no JavaScript, como NÃ£o, PadrÃ£o e ConfirmaÃ§Ã£o.
+- O grid usa UTF-8 em parte do PHP, mas os textos ainda chegam ou sao renderizados com codificacao incorreta.
+Acao necessaria:
+- Padronizar todos os arquivos envolvidos para UTF-8 sem BOM e revisar respostas JSON, cabecalhos e labels.
+- Garantir que Sim/Nao e demais opcoes sejam exibidos com acentuacao correta em pt-BR.
+- Criar validacao que rejeite sequencias Ã, Â, ?? e similares na interface.
+
+29. Inclusao e download de arquivos na coluna de Licencas
+Status: PENDENTE / PARCIAL
+Evidencias:
+- Em principal/manutencaolegal_licencas.php, ARQUIVOS esta configurado como readonly.
+- A funcionalidade existente abre gestao_arquivos.php por botao superior data-license-arquivos.
+- Nao foi identificado editor de arquivo ou acao de download diretamente na celula ARQUIVOS.
+Acao necessaria:
+- Renderizar a coluna ARQUIVOS com indicador e links/botoes por linha.
+- Permitir incluir novos arquivos e consultar/baixar os existentes pelo contexto da licenca, preservando permissoes.
+- Manter o botao superior como alternativa, sem torna-lo obrigatorio.
+
+30. Nome padronizado dos arquivos Excel exportados
+Status: PENDENTE
+Evidencias:
+- classes/ExportacaoGridWorker.php gera o nome no formato base_tecnico_ID_data_hora.xlsx.
+- Existem tipos descritivos na configuracao, como Requisitos legais e Cadastro de licencas, mas eles nao sao usados no nome fisico do arquivo.
+- O alerta informa o tipo, porem o link aponta para o nome tecnico.
+Acao necessaria:
+- Gerar nomes no formato solicitado, por exemplo Requisitos_legais_YYYYMMDD_HHmmss_usuario.xlsx e Licencas_YYYYMMDD_HHmmss_usuario.xlsx.
+- Sanitizar nome do usuario e texto da transacao para evitar caracteres invalidos.
+- Preservar extensao XLSX e atualizar alerta/link com o mesmo nome.
+
+31. Inclusao de assuntos e ordenacao alfabetica do tipo ao cadastrar norma
+Status: PARCIAL: ASSUNTOS IMPLEMENTADOS; TIPOS NAO ORDENADOS
+Evidencias sobre assuntos:
+- principal/manutencaolegal_legislacao.php possui endpoints load_assuntos e save_assuntos.
+- O popup manutencaolegal_legislacao_assuntos.php permite marcar assuntos e grava em legislacaoxassunto.
+- A interface possui busca e confirmacao, portanto a funcionalidade existe no codigo atual.
+Evidencias sobre tipos:
+- principal/manutencaolegal_legislacao.php carrega $tipos e monta $tipoOptions sem usort/ordenacao alfabetica.
+- assets/js/legislacao-grid.js consome as opcoes recebidas, mas nao corrige a ordem da lista.
+Acao necessaria:
+- Testar o popup de assuntos com uma norma nova e confirmar persistencia apos recarregar.
+- Ordenar $tipos por DSCTIPO com comparacao locale-aware antes de montar $tipoOptions.
+- Revalidar a ordenacao no combobox de inclusao e nos filtros do grid.
+
+RESUMO
+- Resolvido/estruturalmente implementado: contagem de linhas (27) e associacao de assuntos (parte do 31).
+- Pendente: exibicao/restauracao de codigo e unidade (26), acentuacao (28), arquivos por coluna (29), nome dos Excels (30) e ordenacao dos tipos (31).
+- Proximo passo recomendado: corrigir os itens 26, 28, 29, 30 e a ordenacao do item 31; depois executar testes sem navegador e homologacao visual.

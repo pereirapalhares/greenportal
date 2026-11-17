@@ -1,0 +1,4 @@
+<?php
+$e=[];foreach(file(__DIR__.'/../.env',FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES)?:[] as $l){$l=trim($l);if($l===''||$l[0]==='#'||!str_contains($l,'='))continue;[$k,$v]=explode('=',$l,2);$e[trim($k)]=trim(trim($v),'"\'');}
+$result=[];foreach(['gmodelo_dbp','gmodelo2_dbp'] as $db){$p=new PDO('mysql:host='.$e['GPT_DB_HOST'].';port='.$e['GPT_DB_PORT'].';dbname='.$db.';charset=utf8mb4',$e['GPT_DB_USERNAME'],$e['GPT_DB_PASSWORD'],[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);$result[$db]=[];foreach(['vw_modulolegal_requisitos_grid','vw_licencas_grid','vw_licencas_condicionantes_grid'] as $view){try{$result[$db][$view]=(int)$p->query('SELECT COUNT(*) FROM `'.$view.'`')->fetchColumn();}catch(Throwable $x){$result[$db][$view]='ERRO: '.$x->getMessage();}}}
+echo json_encode($result,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE).PHP_EOL;

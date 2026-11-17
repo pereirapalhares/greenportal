@@ -1,0 +1,155 @@
+/* Camada visual compartilhada do Módulo Legal/Gestão Ambiental.
+ * As regras são escopadas para não alterar componentes de outros módulos.
+ */
+.cadastro-legal-fragment,
+.modulo-legal-requisitos-fragment,
+.legal-popup,
+.legal-context-filters {
+    color: var(--gp-text);
+    font-family: var(--gp-font-body);
+}
+
+/* Popups legados ainda podem declarar Arial em um bloco inline; o token
+ * global permanece soberano para as telas do Módulo Legal. */
+html.gp-pagina body {
+    font-family: var(--gp-font-body) !important;
+    font-size: var(--gp-font-size) !important;
+}
+
+.cadastro-legal-fragment .crud-toolbar,
+.modulo-legal-requisitos-fragment .crud-toolbar {
+    gap: 10px;
+    padding: 10px 0 12px;
+    border-bottom: 1px solid var(--gp-border);
+}
+
+.cadastro-legal-fragment .crud-actions,
+.modulo-legal-requisitos-fragment .crud-actions {
+    gap: 5px;
+}
+
+.cadastro-legal-fragment .menu-grid-scroll,
+.modulo-legal-requisitos-fragment .menu-grid-scroll {
+    overflow: auto;
+    border: 1px solid var(--gp-border);
+    border-radius: var(--gp-radius-md);
+    background: var(--gp-surface);
+    box-shadow: var(--gp-shadow-sm);
+}
+
+.cadastro-legal-fragment .menu-batch-grid,
+.modulo-legal-requisitos-fragment .menu-batch-grid {
+    margin-bottom: 0;
+    background: var(--gp-surface);
+}
+
+.cadastro-legal-fragment .menu-batch-grid th,
+.modulo-legal-requisitos-fragment .menu-batch-grid th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 8px 9px;
+    color: var(--gp-primary-dark);
+    background: var(--gp-primary-soft);
+    border-color: var(--gp-border);
+    font-family: var(--gp-font-heading);
+    font-size: var(--gp-font-size-sm);
+    font-weight: 700;
+}
+
+.cadastro-legal-fragment .menu-batch-grid td,
+.modulo-legal-requisitos-fragment .menu-batch-grid td {
+    padding: 6px 9px;
+    border-color: var(--gp-border);
+    vertical-align: middle;
+}
+
+.cadastro-legal-fragment .menu-batch-grid tbody tr:hover td,
+.modulo-legal-requisitos-fragment .menu-batch-grid tbody tr:hover td {
+    background: var(--gp-primary-soft);
+}
+
+.cadastro-legal-fragment .grid-input,
+.modulo-legal-requisitos-fragment .grid-input,
+.legal-context-filters .form-control,
+.legal-context-filters .form-select {
+    min-height: 30px;
+    color: var(--gp-text);
+    border-color: var(--gp-border);
+    background: var(--gp-surface);
+    font-family: var(--gp-font-body);
+}
+
+.cadastro-legal-fragment .grid-input:focus,
+.modulo-legal-requisitos-fragment .grid-input:focus,
+.legal-context-filters .form-control:focus,
+.legal-context-filters .form-select:focus {
+    border-color: var(--gp-primary);
+    box-shadow: 0 0 0 3px var(--gp-focus-ring);
+}
+
+.legal-context-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid var(--gp-border);
+    border-radius: var(--gp-radius-md);
+    background: var(--gp-surface);
+    box-shadow: var(--gp-shadow-sm);
+}
+
+.legal-context-field {
+    min-width: 190px;
+    flex: 1 1 190px;
+}
+
+.legal-context-field label {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--gp-primary-dark);
+    font-size: var(--gp-font-size-sm);
+    font-weight: 700;
+}
+
+.requisitos-toolbar-grupos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.req-grupo {
+    padding: 5px;
+    border: 1px solid var(--gp-border);
+    border-radius: var(--gp-radius-sm);
+    background: color-mix(in srgb, var(--gp-primary-soft) 46%, var(--gp-surface));
+}
+
+.req-grupo-rotulo {
+    display: block;
+    margin: 0 3px 4px;
+    color: var(--gp-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.req-grupo-botoes { display: flex; gap: 4px; }
+.grid-pagination { color: var(--gp-muted); }
+.cadastro-legal-fragment .alert,
+.modulo-legal-requisitos-fragment .alert { margin-top: 8px; }
+
+.legal-popup .card,
+.legal-popup .table-responsive,
+.legal-popup .border { border-color: var(--gp-border) !important; box-shadow: var(--gp-shadow-sm); }
+.legal-popup .table { margin-bottom: 0; background: var(--gp-surface); }
+.legal-popup .table thead th { color: var(--gp-primary-dark); background: var(--gp-primary-soft); }
+.legal-popup .muted,
+.legal-popup .text-muted { color: var(--gp-muted) !important; }
+
+@media (max-width: 900px) {
+    .requisitos-toolbar-grupos { width: 100%; }
+    .crud-search { width: 100%; }
+}

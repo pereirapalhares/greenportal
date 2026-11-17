@@ -1,0 +1,362 @@
+ROTEIRO DE HOMOLOGAÇÃO VISUAL — PER-005
+Manutenção completa de responsabilidades
+GreenPortal | Empresa Modelo | Banco gmodelo_dbp
+Data prevista: 21/08/2026
+
+===============================================================================
+1. OBJETIVO
+===============================================================================
+
+Validar a manutenção completa de responsabilidades nos módulos LICENÇAS e
+REQUISITOS LEGAIS, utilizando um perfil autorizado para incluir, visualizar,
+editar e excluir logicamente responsabilidades.
+
+O teste deverá confirmar:
+
+- inclusão de novos vínculos;
+- edição de vínculos existentes;
+- exclusão lógica, sem remoção física;
+- preservação do histórico;
+- mensagens coerentes de sucesso e erro;
+- ausência de mensagens SQL ou técnicas;
+- isolamento dos registros que não fazem parte do teste;
+- comportamento equivalente nos dois módulos.
+
+===============================================================================
+2. CONTAS UTILIZADAS
+===============================================================================
+
+Preparação, conferência e limpeza:
+
+- Usuário: admin
+- Perfil: ADMINISTRADOR
+Senha: <senha de teste via variável de ambiente>
+
+
+Execução dos testes funcionais:
+
+- Usuário: ueditor
+- Perfil: GESTOR
+Senha: <senha de teste via variável de ambiente>
+Não registrar senhas reais neste relatório. Caso a senha do ambiente de testes
+tenha sido alterada, utilizar a credencial vigente fornecida pelo responsável
+do ambiente.
+
+===============================================================================
+3. CONFIGURAÇÃO DAS PERMISSÕES
+===============================================================================
+
+Login como admin.
+
+Acessar:
+
+Segurança > Permissões > Perfil GESTOR.
+
+Configurar e salvar as permissões abaixo antes de iniciar os testes:
+
+LICENCAS — código 74:
+
+- Incluir: 1
+- Visualizar: 1
+- Editar: 1
+- Excluir: 1
+
+REQUISITOS_LEGAIS — código 306:
+
+- Incluir: 1
+- Visualizar: 1
+- Editar: 1
+- Excluir: 1
+
+Exportar Excel e Gerar PDF devem ser mantidos no estado anterior ao teste.
+
+Importante: salvar a linha de LICENCAS antes de alterar o filtro da transação
+para REQUISITOS_LEGAIS. Confirmar visualmente ou pelo DOM que cada linha foi
+gravada antes de mudar o filtro.
+
+===============================================================================
+4. DADOS DE TESTE
+===============================================================================
+
+Usar registros de teste controlados e identificáveis pela data de execução.
+
+LICENÇAS:
+
+- CODLICENCA: 1
+- Descrição esperada: Licença CETESB Nº 79/823.555
+- Criar um novo vínculo com vigência iniciada na data do teste.
+- Usar o tipo de responsabilidade "Responsável pelo acesso", se disponível.
+- Usar destino Usuário.
+- Usuário inicial: Administrador Modelo.
+- Prioridade inicial: 5.
+- Principal: não marcado.
+
+REQUISITOS LEGAIS:
+
+- CODSITUACAO: 39
+- Descrição esperada: situação iniciada por "As atividades da Crown são
+  licenciadas pela CETESB".
+- Criar um novo vínculo com vigência iniciada na data do teste.
+- Usar o tipo de responsabilidade "Requisito legal", se disponível.
+- Usar destino Usuário.
+- Usuário inicial: Administrador Modelo.
+- Prioridade inicial: 5.
+- Principal: não marcado.
+
+Se já existir um vínculo equivalente ativo, não reutilizar silenciosamente.
+Criar outro vínculo com combinação válida ou registrar o identificador do
+vínculo criado para que a limpeza seja feita somente sobre os dados do teste.
+
+===============================================================================
+5. PREPARAÇÃO DA SESSÃO
+===============================================================================
+
+1. Encerrar qualquer sessão aberta.
+2. Fazer login como ueditor.
+3. Confirmar que o perfil possui acesso às transações LICENÇAS e
+   REQUISITOS_LEGAIS.
+4. Não alterar dados fora dos registros de teste.
+5. Registrar capturas de tela ou evidências do estado inicial, incluindo:
+   - permissões ativas;
+   - quantidade de vínculos ativos;
+   - registros que serão usados na inclusão e edição.
+
+===============================================================================
+6. PER-005-A — LICENÇAS
+===============================================================================
+
+-----------------------------
+6.1 Consulta inicial
+-----------------------------
+
+1. Acessar o módulo Licenças.
+2. Abrir a Licença 1.
+3. Abrir a seção ou popup Responsabilidades.
+4. Conferir se os vínculos existentes são exibidos.
+5. Anotar a quantidade de registros ativos e históricos antes da inclusão.
+
+Resultado esperado:
+
+- consulta aberta sem mensagem de bloqueio;
+- licença correta identificada;
+- registros existentes preservados.
+
+-----------------------------
+6.2 Inclusão de responsabilidade
+-----------------------------
+
+1. Na consulta da Licença 1, clicar em Manter responsabilidades.
+2. Confirmar que a tela de manutenção abre.
+3. Clicar em Adicionar.
+4. Preencher a nova linha:
+   - Finalidade: Responsável pelo acesso;
+   - Destino: Usuário;
+   - Responsável: Administrador Modelo;
+   - Prioridade: 5;
+   - Principal: desmarcado;
+   - Válido de: data do teste;
+   - Válido até: deixar vazio, salvo orientação diferente.
+5. Clicar em Salvar.
+6. Confirmar a mensagem apresentada.
+7. Reabrir a consulta da licença.
+
+Resultado esperado:
+
+- nova linha criada uma única vez;
+- mensagem única de sucesso, como "Responsabilidades salvas com sucesso.";
+- nenhuma mensagem de falta de permissão;
+- nenhum erro SQL ou técnico;
+- novo vínculo listado como ATIVA;
+- quantidade de registros ativos aumentada em um.
+
+-----------------------------
+6.3 Edição de responsabilidade
+-----------------------------
+
+1. Voltar para Manter responsabilidades.
+2. Localizar exclusivamente o vínculo criado no item 6.2.
+3. Alterar a Prioridade de 5 para 9.
+4. Marcar Principal, se o cenário permitir essa alteração sem conflito.
+5. Clicar em Salvar.
+6. Confirmar a mensagem apresentada.
+7. Fechar e reabrir a tela de manutenção.
+8. Conferir os valores alterados.
+
+Resultado esperado:
+
+- mensagem única de sucesso;
+- prioridade 9 persistida;
+- campo Principal persistido conforme alteração;
+- nenhum novo vínculo criado durante a edição;
+- nenhum outro vínculo alterado;
+- nenhum aviso de permissão ou erro técnico.
+
+Se o sistema impedir a alteração de Principal por regra de negócio, registrar
+a mensagem funcional exibida e confirmar que a prioridade foi persistida.
+
+-----------------------------
+6.4 Exclusão lógica
+-----------------------------
+
+1. Na tela de manutenção, localizar o vínculo criado no item 6.2.
+2. Clicar na lixeira dessa linha.
+3. Confirmar que a linha desaparece da lista ativa antes do salvamento.
+4. Clicar em Salvar.
+5. Confirmar a mensagem apresentada.
+6. Reabrir a consulta da Licença 1.
+7. Consultar também os registros históricos.
+
+Resultado esperado:
+
+- mensagem única e coerente de conclusão;
+- não exibir simultaneamente sucesso e falta de permissão;
+- vínculo removido da lista ATIVA;
+- vínculo preservado como HISTORICA;
+- nenhum registro físico excluído;
+- vínculos preexistentes permanecem inalterados.
+
+===============================================================================
+7. PER-005-B — REQUISITOS LEGAIS
+===============================================================================
+
+-----------------------------
+7.1 Consulta inicial
+-----------------------------
+
+1. Acessar Requisitos Legais.
+2. Localizar o requisito relacionado à Situação 39.
+3. Abrir a Situação 39.
+4. Abrir Responsabilidades.
+5. Anotar a quantidade de vínculos ativos e históricos antes da inclusão.
+
+Resultado esperado:
+
+- situação correta identificada;
+- consulta de responsabilidades aberta;
+- registros existentes preservados;
+- nenhuma mensagem de bloqueio.
+
+-----------------------------
+7.2 Inclusão de responsabilidade
+-----------------------------
+
+1. Na tela da Situação 39, acessar Manter responsabilidades.
+2. Clicar em Adicionar.
+3. Preencher a nova linha:
+   - Finalidade: Requisito legal;
+   - Destino: Usuário;
+   - Responsável: Administrador Modelo;
+   - Prioridade: 5;
+   - Principal: desmarcado;
+   - Válido de: data do teste;
+   - Válido até: deixar vazio.
+4. Clicar em Salvar.
+5. Confirmar a mensagem.
+6. Reabrir a consulta da Situação 39.
+
+Resultado esperado:
+
+- nova responsabilidade criada uma única vez;
+- mensagem única de sucesso;
+- vínculo listado como ATIVA;
+- quantidade de registros ativos aumentada em um;
+- nenhum erro técnico ou SQL.
+
+-----------------------------
+7.3 Edição de responsabilidade
+-----------------------------
+
+1. Abrir Manter responsabilidades novamente.
+2. Localizar o vínculo criado no item 7.2.
+3. Alterar a Prioridade de 5 para 9.
+4. Marcar Principal, se permitido pela regra de negócio.
+5. Clicar em Salvar.
+6. Fechar e reabrir a tela.
+7. Conferir se os valores permanecem alterados.
+
+Resultado esperado:
+
+- mensagem única de sucesso;
+- prioridade 9 persistida;
+- nenhuma duplicação de vínculo;
+- nenhum outro vínculo ou situação alterado;
+- nenhuma mensagem de permissão insuficiente.
+
+-----------------------------
+7.4 Exclusão lógica
+-----------------------------
+
+1. Localizar o vínculo criado no item 7.2.
+2. Clicar na lixeira.
+3. Confirmar o desaparecimento visual da linha ativa.
+4. Clicar em Salvar.
+5. Confirmar a mensagem.
+6. Reabrir a consulta da Situação 39.
+7. Conferir os registros históricos.
+
+Resultado esperado:
+
+- mensagem única e coerente;
+- vínculo ausente da lista ATIVA;
+- vínculo preservado como HISTORICA;
+- nenhum registro excluído fisicamente;
+- demais vínculos e situações inalterados.
+
+===============================================================================
+8. VALIDAÇÃO DAS MENSAGENS
+===============================================================================
+
+Para cada inclusão, edição e exclusão, registrar exatamente o texto exibido.
+
+Mensagens esperadas para operações autorizadas:
+
+- inclusão/edição: mensagem única de responsabilidades salvas com sucesso;
+- exclusão: mensagem única de operação concluída ou responsabilidade removida.
+
+Não aceitar:
+
+- mensagem de sucesso acompanhada de aviso de falta de permissão;
+- exposição de SQL, stack trace, nomes de tabelas ou procedimentos;
+- mensagem de falha quando a operação realmente foi concluída;
+- ausência de mensagem após uma operação concluída.
+
+===============================================================================
+9. LIMPEZA OBRIGATÓRIA
+===============================================================================
+
+1. Encerrar a sessão de ueditor.
+2. Fazer login como admin.
+3. Confirmar que os vínculos criados para o teste estão HISTORICOS.
+4. Não remover fisicamente os vínculos históricos.
+5. Restaurar as permissões do perfil GESTOR ao estado anterior ao teste.
+6. Confirmar que Exportar Excel e Gerar PDF não foram alterados.
+7. Fazer logout do admin.
+8. Fazer login como ueditor.
+9. Confirmar que o acesso final corresponde às permissões restauradas.
+10. Registrar qualquer dado de teste que permaneça ativo para correção manual.
+
+===============================================================================
+10. CRITÉRIOS DE ACEITE
+===============================================================================
+
+PER-005 será considerado aprovado quando, nos dois módulos:
+
+- inclusão funcionar para o perfil autorizado;
+- edição funcionar e persistir os valores alterados;
+- exclusão lógica funcionar sem apagar o histórico;
+- mensagens forem únicas, corretas e compreensíveis;
+- nenhum erro SQL ou técnico for exibido;
+- nenhum registro fora do escopo do teste for alterado;
+- limpeza e restauração das permissões forem concluídas.
+
+Resultado final do teste: ______________________________
+
+Responsável pela execução: _____________________________
+
+Data/hora de início: ____________________________________
+
+Data/hora de término: __________________________________
+
+Evidências anexadas: ___________________________________
+
+Pendências: ____________________________________________

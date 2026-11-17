@@ -1,0 +1,50 @@
+GESTAO DE SOLICITACOES DE MIGRACAO - IMPLEMENTACAO 275
+======================================================
+
+Fluxo implementado na tela administracao_migracao_empresas.php:
+
+1. O administrador informa empresa, bancos de origem, banco de destino,
+   caminho base do GED e observacoes.
+2. A solicitacao e criada com status EM_CONSTRUCAO.
+3. O botao Iniciar migracao muda o status para EM_EXECUCAO.
+4. O Task Scheduler executa scripts/migracao-worker.bat a cada minuto.
+5. O worker reivindica uma solicitacao por vez e executa seis etapas:
+   VALIDAR_CONFIGURACAO, BACKUP_DESTINO, MIGRAR_SEGURANCA,
+   MIGRAR_MODULO_LEGAL, MAPEAR_GED e VALIDAR_RESULTADO.
+6. Falhas registram a etapa, mensagem e detalhes, mudando a solicitacao para
+   ERRO. Todas as etapas concluidas mudam o status para FINALIZADO_COM_SUCESSO.
+7. O log e gravado no banco e em storage/logs/migracao/migracao_<id>.log.
+   O link Ver log abre administracao_migracao_log.php em popup.
+
+Banco e seguranca:
+- tabelas: migracao_solicitacoes, migracao_etapas, migracao_logs;
+- view: vw_migracao_solicitacoes;
+- procedures: sp_migracao_solicitacao_criar, sp_migracao_solicitacao_iniciar,
+  sp_migracao_solicitacoes_listar, sp_migracao_solicitacoes_count,
+  sp_migracao_solicitacao_obter, sp_migracao_worker_reivindicar,
+  sp_migracao_etapa_iniciar, sp_migracao_etapa_concluir,
+  sp_migracao_etapa_erro, sp_migracao_finalizar e sp_migracao_logs.
+- a tela usa procedures para criar, iniciar, listar e ler logs; a listagem de
+  empresas usa a view central vw_empresa_migracao_grid.
+
+Task Scheduler:
+- script de instalacao: scripts/instalar-task-migracao-275.ps1;
+- pasta da tarefa: \\GreenPortal\\;
+- tarefa: \\GreenPortal\\GreenPortal-Migracao-Worker;
+- execucao: SYSTEM, a cada minuto;
+- o registro da tarefa exige PowerShell executado como Administrador.
+
+Executor de dados:
+O worker possui validacao generica de conexoes, backup e GED. Os executores
+de dados devem ser registrados por par origem/destino antes de uma migracao
+real. O par Goodyear ja esta reconhecido como pacote homologado e nao e
+reaplicado automaticamente quando as auditorias 267-273 ja existem.
+Pares novos sem executor especifico terminam em ERRO, preservando o backup e
+o log, sem executar uma migracao generica insegura.
+
+Teste controlado:
+- solicitacao 1 criada e iniciada;
+- seis etapas concluidas;
+- backup gerado em runtime/backups/solicitacao_1/ggdamericana_dbp.sql;
+- log gerado em storage/logs/migracao/migracao_1.log;
+- status final FINALIZADO_COM_SUCESSO.

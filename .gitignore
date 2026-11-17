@@ -1,0 +1,45 @@
+# ---- segredos (nunca vão para o GitHub) ----
+.env
+.env.*
+!.env.example
+# tem a senha do root do MySQL: o script fica só no servidor
+backup_bancos.bat
+
+# ---- dados, cópias e arquivos gerados ----
+/backups/
+/exports/
+/runtime/
+/storage/
+/diagnostico-*.json
+/sinc-simulacao*.json
+/principal/diagnostico_*_temporario.php
+# cópias antigas de arquivos e saídas de levantamentos
+/principal/backup/
+/scripts/saida/
+# cópias de tabelas com dados (dumps antes de migrações)
+/database/backups/
+
+# ---- dependências (reinstalar com "composer install" e "npm install") ----
+/vendor/
+/node_modules/
+/.composer/
+
+# ---- ferramentas grandes (OCR, poppler): instalar à parte no servidor ----
+/tools/
+
+# ---- testes: evidências, prints, resultados e sessões ----
+/tests/evidencia*
+/tests/resultado-*
+/tests/validacao_*.json
+/tests/*.png
+/tests/*.jpg
+/tests/*.log
+/tests/php-sessions/
+/tests/tmp-xlsx-inspect/
+
+# ---- sistema / editores ----
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/

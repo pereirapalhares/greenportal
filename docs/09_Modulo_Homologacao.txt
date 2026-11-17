@@ -1,0 +1,753 @@
+﻿ESPECIFICAÇÃO FUNCIONAL — GREEN 4.0
+Versão: 1.0 — elaboração em 12/11/2026
+Fonte: Passo a passo mudança no Green4.0 — Revisão G — 13/08/2026.doc.
+Situação: especificação para revisão funcional; não representa validação do software existente.
+
+COMO INTERPRETAR
+- IDs dos requisitos preservam a numeração da fonte. Txxx/Rxxx identifica tabela/linha,
+  contando a partir de zero na ordem do documento, para rastreabilidade sem paginação variável.
+- "Sim" indica solicitação de implementação na fonte, não comprova implementação.
+- Campo "Implementar?" vazio significa decisão pendente. Requisito dependente de outro
+  item marcado Sim é identificado, mas a inconsistência da marcação é preservada.
+- Detalhamento da fonte é reproduzido em cada requisito para conservar campos, exemplos,
+  condições, exceções e fluxos. Exemplos não constituem listas fechadas de domínio.
+- Critérios de aceite e regras consolidadas são operacionalizações propostas para revisão.
+  Decisões ausentes não foram convertidas em regras definitivas.
+- Referências a capturas de concorrentes são referências visuais do DOC original; imagens
+  não são reproduzidas em TXT. Não foram inferidas regras a partir de elementos só visuais.
+- Não há definição de banco físico, linguagem, endpoints ou cronograma nesta versão.
+
+
+09 — Módulo Homologação
+
+OBJETIVO
+Especificar as mudanças deste tema preservando o escopo e as ressalvas da Revisão G.
+
+MODELO E INTEGRAÇÕES
+Fornecedor pode possuir n tipos; corrigir a interface que restringe a relação a um tipo.
+Responsáveis diretos e Tipo de Empresa/Fornecedor x Responsável podem ser usuários/grupos.
+Item 130: apenas itens de influência já validados aparecem na Homologação, condicionado
+à contratação da atualização legal. Licenças/MM/Controles/Infraestrutura vinculam-se
+a n tipos de fornecedores; Treinamento vincula-se a n tipos de funcionários.
+IA: extração documental, validação por templates e reconhecimento de indícios de adulteração.
+Mensagens devem ser contextualizadas por documento da empresa ou do funcionário;
+na rejeição pela IA, iniciar conversa com a razão. Critérios de rejeição são pendentes.
+Aprovação consolidada por pessoa/grupo evita abrir fornecedor por fornecedor.
+Portaria passa a ser entrada interna do módulo; RNC de fornecedor depende de contratação.
+Relatório legal de fornecedores deve usar template e integração indicada com LaTeX.
+
+PENDÊNCIAS ESPECÍFICAS
+- Itens 149, 150, 151 e 153 pendentes: veículos, equipamentos, questionário de integração e ranking.
+- Item 29 relaciona risco ao critério; item 139 ao fornecedor: confirmar dois níveis ou agregação.
+- Definir precedência quando fornecedor possui vários tipos/responsáveis.
+- Definir templates, limiares, revisão e autoridade para rejeição documental pela IA.
+- Reconhecimento de adulteração não deve ser especificado como prova infalível de fraude.
+- Confirmar eliminação de Nível Criticidade/Avaliação e do Cronograma de Auditoria,
+  apresentados com linguagem de sugestão nas tabelas de revisão.
+- Definir validade/reação de contratos e agrupamento da documentação na Portaria.
+- Confirmar se Tipo de Empresa e Tipo de Fornecedor representam o mesmo cadastro.
+
+REGRAS TRANSVERSAIS E DEPENDÊNCIAS
+Consultar 01_Mudancas_Gerais.txt para Home, permissões por grupo, personalização,
+notificações, agenda, delegação, usuários ativos, idiomas, logs e ajuda.
+As consultas pessoais e gerenciais devem respeitar a permissão de acesso e o âmbito
+da empresa/unidade. Ser responsável não substitui o permissionamento do item 7.
+Cards, gráficos e tabelas devem representar o mesmo conjunto de dados e filtros.
+Datas, estados, eventos de alerta e fórmulas dos indicadores precisam de definição
+única antes da implementação; divergências pendentes estão listadas neste arquivo.
+
+CONTEXTO DO DOCUMENTO ORIGINAL
+
+Origem P0209: A estrutura do módulo de homologação precisa de poucas alterações. O principal ponto é aproximá-lo do módulo legal em relação à:
+
+Origem P0211: 1- Criação das novas Home:
+
+Origem P0212: Cards com grandes números
+
+Origem P0213: Dashboard (tipo anel, tipo gráfico, tipo tabela) sintetizando o progresso de indicadores de um período
+
+Origem P0215: 2- Orientação do módulo para os usuários, com foco nas tarefas realizadas, não realizadas e por realizar:
+
+Origem P0216: O que tem pendente para o usuário que está logado
+
+Origem P0217: Quais as próximas tarefas a serem realizadas (na forma de um schedule) para o usuário que está logado
+
+Origem P0219: 3- Deixar a navegação friendly (fluida):
+
+Origem P0220: A navegação no sistema tem que ocorrer clicando nos elementos da Home, ou seja, partir dos cliques nos elementos dessa Home para acessar outras informações. O acesso a mais informações deve ocorrer a partir dos cliques nos elementos dessas telas que estão sendo acessadas.
+
+Origem P0222: 4- Definir 2 novas formas de definir responsáveis:
+
+Origem P0223: Diretamente no cadastro do fornecedor
+
+Origem P0224: Por meio da tabela Responsável x Tipo de fornecedor
+
+Origem P0225: Para ambos os casos, a responsabilidade poderá ser para 1 usuário, para vários usuários ou para um Grupo (com 1 ou mais pessoas)
+
+Origem P0227: 5- Criar o link "Meus fornecedores" e "Meus funcionários"
+
+Origem P0229: 6- Implantar da IA para 3 diferentes situações:
+
+Origem P0230: fazer o preenchimento automático de dados de documentos que foram carregados (recurso para usado no módulo de GED-E) (tanto documentos da empresa como de funcionários da empresa)
+
+Origem P0231: fazer a validação de documentos segundo templates pré-carregados (tanto documentos da empresa como de funcionários da empresa)
+
+Origem P0232: fazer o reconhecimento de adulteração de documentos (tanto documentos da empresa como de funcionários da empresa)
+
+Origem P0234: 7- Gerar LOG de tudo o que é feito no sistema.
+
+Origem P0236: 8- Delegação de responsabilidade para todo tipo de responsabilidade atribuída.
+
+Origem P0238: Atualmente o módulo tem a seguinte estrutura:
+
+Origem P0242: Aproveitando que vamos mexer no módulo, seguem itens que deveriam ser revistos por estarem com algum problema. A tabela abaixo mostra o que deveria ser feito em cada um dos links:
+
+Origem P0247: A seguir segue a descrição das coisas novas (muitas delas já descritas anteriormente):
+
+
+REQUISITOS FUNCIONAIS RASTREÁVEIS
+
+------------------------------------------------------------------------------
+HOM-129 — Implementar uma nova Home para melhorar a experiência de navegabilidade e tornar a interface com o usuário mais amigável
+
+Origem: item 129; T074/R001, T075/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Alguns elementos essenciais na nova Home:
+Logo do Cliente
+Logo do Green
+Cards (com totalizações, estatísticas, pendências, avisos)
+Dashboard
+orientação para o usuário (schedule, notificações)
+foto do usuário (para aumentar a personalização do sistema. Essa foto deveria ser colocada junto ao nome do usuário como se fosse o Teams)
+navegabilidade entre tabelas
+navegabilidade a partir dos dashboards
+acessos rápidos
+
+Exemplo de Dashboards:
+
+Empresas
+Total de Fornecedores Existentes
+Total de Fornecedores Conformes
+Taxa de Conformidade Empresas
+Total de Fornecedores com Plano de Ação em Andamento
+Total de Funcionários Existentes
+Total de Funcionários Conformes
+Taxa de Conformidade Funcionários
+
+Atualização Mensal
+Total de Fornecedores Novos
+Total de Funcionários Novos
+
+Avisos (Card)
+
+Continuação: Implementar uma nova Home para melhorar a experiência de navegabilidade e tornar a interface com o usuário mais amigável
+
+(Continuação)
+Alertas Enviados (Card)
+
+Dashboard
+
+Gerar as estatísticas:
+por unidade
+por período
+por responsável
+etc.
+
+Os dashboards devem ser apresentados em forma gráfica e em forma de tabelas
+
+Os Dashboard deverão ser gerados por unidade, por período e por responsável.
+
+O cabeçalho pode conter informações para acessos rápidos. Veja o exemplo da imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir a Home com dados de duas unidades/períodos/responsáveis; conferir todos os indicadores descritos, comparar gráfico/tabela e clicar em um card para abrir apenas os registros correspondentes.
+
+------------------------------------------------------------------------------
+HOM-130 — Linkar o módulo legal com o módulo de homologação através das leis tipo "influência"
+
+Origem: item 130; T075/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A ideia aqui é a seguinte:
+
+A IA irá gerar a relação de POTENCIAIS (vide item 31 acima):
+Licenças
+Medições e Monitoramentos
+Treinamentos
+Controles
+Infraestrutura
+
+Uma vez validado pelo usuário o conteúdo das tabelas POTENCIAIS e transformado em tabelas de GESTÃO, caso os itens dessas tabelas de GESTÃO sejam do tipo "influência" (ou seja, associadas com leis do tipo "influência" (vide item 31 acima)) elas apareceriam no módulo de homologação. Evidentemente, essa informação só pode aparecer no módulo de homologação caso o serviço de atualização de requisitos legais tenha sido contratado.
+
+Para cada um dos dados dessa listagem (ou seja, das tabelas de GESTÃO geradas a partir das leis tipo "influência"), deveria ser possível associá-lo com os Tipos de Fornecedores (Tabelas de Gestão de Licença, Medição e Monitoramento, Controles e Infraestrutura) e com os Tipos de Funcionários dos Fornecedores (Tabela de Gestão de Treinamento). Esse relacionamento ocorreria amarrando o item da tabela de GESTÃO correspondente com o(s) Tipo(s) (de empresa e de funcionário de empresa) do módulo de homologação. Cada item das tabelas de GESTÃO poderia ser associado com "n" Tipos (de empresa e de funcionário de empresa).
+
+CRITÉRIO DE ACEITE PROPOSTO
+Validar item de influência, vinculá-lo a múltiplos tipos de fornecedores e conferir exposição na Homologação; testar treinamento por tipo de funcionário e condição de contratação da atualização legal.
+
+------------------------------------------------------------------------------
+HOM-131 — Automatizar a geração do Relatório de Atendimento Legal dos requisitos legais dos fornecedores
+
+Origem: item 131; T075/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse item deverá ser integrado ao software latex. É um assunto que poderia ser resolvido pelo Tomás.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+HOM-132 — Criar a tabela Tipo de Empresa x Responsável
+
+Origem: item 132; T075/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Na tabela Responsável x Tipo de Empresa o responsável poderá ser 1 usuário, vários usuários ou um Grupo (com 1 ou mais pessoas)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Testar um usuário, múltiplos usuários e grupo; verificar atribuição direta e/ou por tipo/categoria conforme o item, consulta pessoal e destinatários de alerta. Testar usuário sem autorização.
+
+------------------------------------------------------------------------------
+HOM-133 — Implantar da IA para fazer o preenchimento automático de dados de documentos que foram carregados (recurso para usado no módulo de GED-E) (tanto documentos da empresa como de funcionários da empresa)
+
+Origem: item 133; T075/R004
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A fonte informa apenas o título. Campos, fluxo e parâmetros precisam ser definidos.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Carregar documento de teste com dados conhecidos, comparar campos extraídos com o original e aplicar o procedimento aprovado para valores ausentes, divergentes ou ilegíveis. Política de confirmação humana deve ser definida.
+
+------------------------------------------------------------------------------
+HOM-134 — Implantar da IA para fazer a validação de documentos segundo templates pré-carregados (tanto documentos da empresa como de funcionários da empresa)
+
+Origem: item 134; T075/R005
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A fonte informa apenas o título. Campos, fluxo e parâmetros precisam ser definidos.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+HOM-135 — Implantar da IA para fazer o reconhecimento de adulteração de documentos (tanto documentos da empresa como de funcionários da empresa)
+
+Origem: item 135; T075/R006
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A fonte informa apenas o título. Campos, fluxo e parâmetros precisam ser definidos.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Submeter amostras conhecidas e conferir indicação de suspeita e justificativa conforme política aprovada; não tratar a saída como comprovação infalível de adulteração.
+
+------------------------------------------------------------------------------
+HOM-136 — Criar o Link Meus Fornecedores
+
+Origem: item 136; T075/R007
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Veja o item 5.1 acima
+
+CRITÉRIO DE ACEITE PROPOSTO
+Entrar com dois usuários com responsabilidades distintas e conferir que a visão pessoal e a consulta gerencial autorizada apresentam os conjuntos corretos.
+
+------------------------------------------------------------------------------
+HOM-137 — Criar o Link Meus Funcionários dos fornecedores
+
+Origem: item 137; T075/R008
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Veja o item 5.1 acima
+
+CRITÉRIO DE ACEITE PROPOSTO
+Entrar com dois usuários com responsabilidades distintas e conferir que a visão pessoal e a consulta gerencial autorizada apresentam os conjuntos corretos.
+
+------------------------------------------------------------------------------
+HOM-138 — Implementar a nova atribuição de responsabilidade pelos Fornecedores
+
+Origem: item 138; T075/R009
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Passaríamos a ter a opção de atribuir automaticamente a responsabilidade por cada Fornecedor em função do Tipo de Fornecedor.
+
+Ao amarrar o Tipo de Fornecedor com os responsável(is) / grupos de responsáveis, o sistema atribuiria, automaticamente, a cada uma das empresas (fornecedores) cadastradas o(s) responsável(is) / grupos de responsáveis correspondente.
+
+Deverá ser mantida a opção de atribuir manualmente o responsável / grupo de responsável pela empresa (fornecedor), independentemente da amarração automática Tipo de Fornecedor x Responsável.
+
+O sistema deve permitir, portanto, atribuir responsabilidade de 2 formas:
+Diretamente na tabela de gestão de Fornecedores
+Por meio das tabelas Responsabilidade x Tipo de Fornecedor
+
+Em ambos os casos, a responsabilidade poderá ser para:
+1 usuário
+vários usuários ou
+para um grupo de usuários pré-definido
+
+Esse item é bastante importante para poder gerar alertas para todos os usuários responsáveis pelos Fornecedores e não para um único usuário.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Testar um usuário, múltiplos usuários e grupo; verificar atribuição direta e/ou por tipo/categoria conforme o item, consulta pessoal e destinatários de alerta. Testar usuário sem autorização.
+
+------------------------------------------------------------------------------
+HOM-139 — Incluir um campo na tabela de Gestão de Fornecedores denominada "Risco".
+
+Origem: item 139; T075/R010
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Os riscos poderiam ser:
+Alto
+Médio
+Baixo
+
+Esse risco estaria associado à empresa (Fornecedor), ou seja, em caso de descumprimento de requisitos legais associados ao processo de Homologação, qual seria o tamanho do problema que o cliente teria. Esse item risco deverá fazer parte dos dashboards, ou seja, deverá ser possível visualizar as estatísticas com a lente do risco. Ex: Fornecedores (empresas) em desacordo com a legislação com risco alto, médio e baixo, etc.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Registrar casos Alto, Médio e Baixo e conferir filtro/estatística de risco vinculados à entidade correta, sem contar registros fora da seleção.
+
+------------------------------------------------------------------------------
+HOM-140 — Política de e-mails
+
+Origem: item 140; T075/R011
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Creio que a Política de e-mails do módulo de homologação esteja OK. O único ponto aqui é que como o responsável pode ser mais de 1 pessoa, o sistema tem que disparar os e-mails considerando essa situação (veja item 138 acima).
+
+Atualmente a parametrização da política de e-mails do módulo de Homologação ocorre via link "Política de Envio de E-mails". Podemos manter dessa forma. Apenas lembrando que a política de e-mails dos outros módulos (legal, licenças, etc.) poderá ser alterada em função do que foi proposto nos itens 3, 51, 78, 94, 109, 124 acima.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Configurar destinatários por registro/tipo e evento; disparar cenário de teste e confirmar entrega apenas aos responsáveis elegíveis, incluindo múltiplos usuários/grupos, conforme regra aprovada.
+
+------------------------------------------------------------------------------
+HOM-141 — Gerar Histórico automático das mudanças feitas na tabela de Gestão de Fornecedores e Funcionários de Fornecedores
+
+Origem: item 141; T075/R012
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Gerar um log das mudanças feita nos registros de Homologação. Creio que a aplicação de logs para todas as ações do sistema (vide item 16) é uma maneira de implementar essa funcionalidade.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Alterar um registro autorizado e consultar o histórico para identificar operação, registro, usuário e data; conferir acesso e retenção conforme política definida.
+
+------------------------------------------------------------------------------
+HOM-142 — Criar um visual mais "clean" para as Tabelas do módulo de Homologação
+
+Origem: item 142; T075/R013
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O visual atual torna a experiência pouco agradável. Temos que partir para ícones, "flags" ou coisas do gênero.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Alterar um registro autorizado e consultar o histórico para identificar operação, registro, usuário e data; conferir acesso e retenção conforme política definida.
+
+------------------------------------------------------------------------------
+HOM-143 — Visualizar pendências do usuário.
+
+Origem: item 143; T076/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Através do ícone de um sininho é possível visualizar, de modo rápido e resumido, todas as pendências (do usuário logado):
+
+
+
+A imagem abaixo apresenta o resultado da consulta ao clicar no sininho. Na realidade ao clicar no sininho aparece uma versão com informações resumidas das pendências (o exemplo da figura abaixo é do módulo de licenças. Algo parecido terá que ser aplicado para o módulo de Homologação):
+
+
+
+
+
+
+
+
+
+
+
+
+
+Em algum outro link deve aparecer uma versão com informações mais completas, como na imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Com dois usuários, conferir resumo e lista completa de pendências do usuário logado e testar resolução/atualização sem expor itens não autorizados.
+
+------------------------------------------------------------------------------
+HOM-144 — Visualizar o que tem agendado para o usuário
+
+Origem: item 144; T076/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Poderia ser adotado, por exemplo, o ícone de uma agenda para visualizar, de modo rápido e resumido, todas as ações futuras (do usuário logado). Essa é apenas 1 ideia. O importante é que exista uma agenda de pendências viva para o usuário que está logado para o módulo de Homologação:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Criar evento futuro relacionado ao módulo e conferir data, responsável e acesso ao registro pela agenda pessoal/gerencial autorizada.
+
+------------------------------------------------------------------------------
+HOM-145 — Integrar o módulo Portaria ao módulo de Homologação
+
+Origem: item 145; T076/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Hoje os 2 links estão separados. Creio que o módulo de Portaria deveria aparecer como uma opção de entrada dentro do módulo de Homologação.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Alterar um registro autorizado e consultar o histórico para identificar operação, registro, usuário e data; conferir acesso e retenção conforme política definida.
+
+------------------------------------------------------------------------------
+HOM-146 — Aprimorar a troca de mensagens com fornecedor para falar sobre documentos da empresa de modo a deixá-la mais Friendly (vide campos "Observação da Empresa" e "Observação do Fornecedor" da aba "Documentos" do link: Gestão de Fornecedores)
+
+Origem: item 146; T076/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Uma ideia seria utilizar uma espécie de "chat".
+
+Observação: No caso de documento da empresa ser rejeitado pela IA, o chat deveria ser iniciado automaticamente com as informações sobre a razão para a rejeição.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Registrar mensagens no documento da empresa e conferir contexto; após rejeição pela IA, verificar mensagem inicial com razão da rejeição.
+
+------------------------------------------------------------------------------
+HOM-147 — Implantar a troca de mensagens com fornecedor para falar sobre documentos dos funcionários da empresa
+
+Origem: item 147; T076/R004
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Uma ideia seria utilizar uma espécie de "chat".
+
+Observação: No caso de documento de funcionário da empresa ser rejeitado pela IA, o chat deveria ser iniciado automaticamente com as informações sobre a razão para a rejeição.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Registrar mensagens no documento do funcionário e conferir contexto; após rejeição pela IA, verificar mensagem inicial com razão da rejeição.
+
+------------------------------------------------------------------------------
+HOM-148 — Linkar o módulo de homologação com módulo RNC
+
+Origem: item 148; T076/R005
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Caso seja aberto um Plano de Ação, o usuário poderia ter a opção de abrir, diretamente no módulo de homologação, uma RNC tipo Fornecedor (Nova Ocorrência do Fornecedor)
+
+Observação: Essa possibilidade deveria ocorrer no caso do cliente ter contratado o módulo de Gestão de Não Conformidades
+
+CRITÉRIO DE ACEITE PROPOSTO
+A partir de plano de ação de fornecedor, abrir ocorrência de fornecedor vinculada quando RNC contratado; conferir comportamento do recurso sem contratação.
+
+------------------------------------------------------------------------------
+HOM-149 — Cadastrar Tipo de Veículo
+
+Origem: item 149; T076/R006
+Situação: DECISÃO PENDENTE (Implementar? não preenchido)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Criar tipos de veículos e controlar a documentação dos veículos.
+
+O sistema poderia ser capaz de separar os documentos para homologação dos documentos para prestação do serviço.
+
+Observação: o sistema do concorrente faz isso. Ele diferencia a documentação de homologação da documentação necessária para a prestação de serviço, ou seja, outros documentos necessários para o fornecedor entrar dentro da empresa no momento da prestação de serviço, como por exemplo, documentos do veículo do fornecedor (check list preenchido de um caminhão, licenciamento do veículo, etc.). Veja a imagem abaixo
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+HOM-150 — Cadastrar Tipo de Equipamento
+
+Origem: item 150; T077/R000
+Situação: DECISÃO PENDENTE (Implementar? não preenchido)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Criar tipos de equipamentos e controlar a documentação dos equipamentos.
+
+O sistema poderia ser capaz de separar os documentos para homologação dos documentos para prestação do serviço.
+
+Observação: o sistema do concorrente faz isso. Ele diferencia a documentação de homologação da documentação necessária para a prestação de serviço, ou seja, outros documentos necessários para o fornecedor entrar dentro da empresa no momento da prestação de serviço, como por exemplo, documentos de equipamentos do fornecedor (ex: laudo de isolamento de ferramentas, etc.). Veja a imagem abaixo
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+HOM-151 — Fazer a integração de funcionários dentro da plataforma, com aplicação de questionário e liberação do funcionário para entrar na empresa
+
+Origem: item 151; T077/R002
+Situação: DECISÃO PENDENTE (Implementar? não preenchido)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A ideia é cadastrar perguntas para serem respondidas (poderia ser multipla escolha). A cada uma das perguntas poderiam ser atribuídos pesos diferentes. As perguntas desse questionário poderiam ser grupadas por blocos (ex: perguntas relacionadas ao meio ambiente, perguntas relacionadas à segurança ocupacional, etc.). Os resultados da aplicação desses questionários poderiam gerar um resultado se o funcionário foi ou não aprovado na integração.
+
+Observação: o sistema do concorrente faz exatamente isso.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+HOM-152 — Atrelar a aprovação dos documentos a pessoas ou grupos de pessoas.
+
+Origem: item 152; T078/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Poderíamos ter uma tabela resumo com todos os documentos de empresas e de funcionários de empresa por usuário. A aprovação dos documentos poderia ocorrer nessa tabela resumo sem a necessidade de entrar em fornecedor por fornecedor. É uma forma rápida de acessar as informações que interessam sem precisar entrar nos meandros do sistema. Creio que hoje já temos algo nesse sentido na Home do Green. Não sei se essa tabela de consolidação de documentos da empresa e de funcionários da empresa está funcionando, ou seja, se ela lista apenas aquilo que é do usuário que está logado.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Atribuir aprovação a pessoa/grupo e verificar que a tabela consolidada mostra seus documentos e permite decidir sem abrir cada fornecedor.
+
+------------------------------------------------------------------------------
+HOM-153 — Rankear Fornecedores
+
+Origem: item 153; T078/R001
+Situação: DECISÃO PENDENTE (Implementar? não preenchido)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O sistema do concorrente possui um recurso para rankear os fornecedores segundo critérios estabelecidos. Desse modo, é possível, por exemplo, saber se o fornecedor é "A", "B", "C" ou "D".
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+HOM-154 — Fluxo do estágio em que o processo DE GESTÃO se encontra tipo "Entrega do Mercado Livre" (como foi aplicado no caso do GED-E)
+
+Origem: item 154; T078/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse fluxo é bem interessante de ser aplicado em todos os módulos. As atividades de GESTÃO de todos os módulos, de alguma forma, funcionam como um processo. Seguem os workflows do módulo:
+
+. No módulo homologação (empresa) a pessoa:
+1- cadastra a empresa
+2- define o responsável pela empresa
+3- define o nível de risco (facultativo)
+4- define critérios para a empresa (Tipo de Empresa) (associa um grupo homogêneo de critérios a ser atendido)
+5- define a validade dos documentos da empresa
+6- carrega as evidências
+7- aprova os documentos carregados
+8- define a necessidade de auditoria
+9- realiza a auditoria
+10- carrega as evidências da auditoria
+11- define a data da próxima auditoria
+12- abre um plano de ação (facultativo)
+13- encerra o plano de ação (caso o plano de ação tenha sido aberto)
+
+. No módulo homologação (funcionários da empresa) a pessoa:
+1- cadastra o funcionário da empresa
+2- define critérios para o funcionário da empresa (Tipo de função a ser exercida na Empresa) (associa um grupo homogêneo de critérios a ser atendido)
+3- define a data da integração
+4- define o responsável pela documentação do funcionário da empresa
+5- define a validade dos documentos do funcionário da empresa
+6- carrega as evidências dos documentos do funcionário da empresa
+7- aprova os documentos carregados (atendimento aos critérios)
+8- define o responsável pelo treinamento do funcionário da empresa
+informa se o treinamento foi realizado
+9- define a validade dos treinamentos do funcionário da empresa
+10- carrega as evidências dos treinamentos do funcionário da empresa
+
+CRITÉRIO DE ACEITE PROPOSTO
+Percorrer as etapas descritas com um registro de teste, conferir destaque do estágio atual e preservar etapas facultativas; validar transições e retornos após esclarecimento das pendências.
+
+------------------------------------------------------------------------------
+HOM-155 — Prever o link "Ajuda" / "Como Funciona" em todos os módulos para servir como um treinamento para o usuário.
+
+Origem: item 155; T078/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Nesse link poderíamos carregar o texto da ajuda e um vídeo mostrando como o sistema funciona
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir Ajuda/Como Funciona no módulo e conferir texto e vídeo configurado explicando o processo correspondente.
+
+
+CORREÇÕES DE MENUS, FORMULÁRIOS E DEFEITOS RELATADOS
+A sequência e as colunas de localização da fonte são preservadas abaixo. Células
+vazias herdam o contexto da árvore da linha anterior. OK significa sem alteração
+específica solicitada nesta revisão; não significa teste realizado. Perguntas e
+expressões como talvez/creio continuam pendentes, mesmo neste catálogo.
+
+HOM-COR-001 | Origem T072/R001
+Localização na fonte: Homologação Fornecedores
+Pedido/observação:
+Apenas mudar o nome do módulo de "Homologação Fornecedores" para "Homologação de Fornecedores"
+
+HOM-COR-002 | Origem T072/R002
+Localização na fonte: Cadastro de Critérios de Funcionários
+Pedido/observação:
+Todas as informações relativas ao funcionário devem vir depois das informações relativas à empresa, pois primeiro cadastramos dados da empresa para depois cadastrar dados do funcionário da empresa. Desse modo, alterar a ordem / seqüência de preenchimento das informações
+
+HOM-COR-003 | Origem T072/R003
+Localização na fonte: Critérios dos Funcionários
+Pedido/observação:
+OK
+
+HOM-COR-004 | Origem T072/R004
+Localização na fonte: Tipos de Treinamentos
+Pedido/observação:
+OK
+
+HOM-COR-005 | Origem T072/R005
+Localização na fonte: Tipos de Funcionários
+Pedido/observação:
+OK
+
+HOM-COR-006 | Origem T072/R006
+Localização na fonte: Cadastro de Fornecedor
+Pedido/observação:
+OK
+
+HOM-COR-007 | Origem T072/R007
+Localização na fonte: Critérios dos Fornecedores
+Pedido/observação:
+Eliminar a coluna "Criteria". Creio que essa coluna seja um efeito colateral da versão multi-idioma que criamos para a Crown
+
+HOM-COR-008 | Origem T072/R008
+Localização na fonte: Tipos de Fornecedores
+Pedido/observação:
+Talvez isso ainda mude, mas o título "Correlacionados/N�vel de exig�ncia" está com caracteres estranhos
+
+HOM-COR-009 | Origem T072/R009
+Localização na fonte: Dados Básicos
+Pedido/observação:
+O campo "Tipo de Fornecedor" não faz muito sentido nessa tabela, pois a relação entre o fornecedor e o tipo é de 1 para "n". O campo só permite 1 para 1.
+
+HOM-COR-010 | Origem T072/R010
+Localização na fonte: Nível Criticidade
+Pedido/observação:
+Esse link pode ser eliminado. Foi feito para a Huntsman, mas nunca foi utilizado
+
+HOM-COR-011 | Origem T072/R011
+Localização na fonte: Avaliação
+Pedido/observação:
+Esse link pode ser eliminado. Foi feito para a Huntsman, mas nunca foi utilizado
+
+HOM-COR-012 | Origem T072/R012
+Localização na fonte: Gestão de Fornecedores
+Pedido/observação:
+O campo "Tipo de Fornecedor" não faz muito sentido nessa tabela, pois a relação entre o fornecedor e o tipo é de 1 para "n". O campo só permite 1 para 1.
+
+O campo "Cronograma" da aba "Auditoria de Homologação" não está funcionando. Creio que essa coluna possa ser eliminada.
+
+Os campos "Observação da Empresa" e "Observação do Fornecedor" da aba "Documentos" deveria ser mais Friendly. Talvez aplicar uma espécie de "chat".
+
+A tabela de Gestão de Fornecedores deveria prever a Validade de Contratos e Dias de Reação para Contratos.
+
+HOM-COR-013 | Origem T072/R013
+Localização na fonte: Gestão de Funcionários
+Pedido/observação:
+Implantar o chat para conversar com o fornecedor em caso de critério de funcionário não atendido. Atualmente não existe um recurso para troca de mensagem relativa ao atendimento de "critério de funcionário"
+
+HOM-COR-014 | Origem T072/R014
+Localização na fonte: Gestão de Fornecedores desativados
+Pedido/observação:
+Mudar o nome de "Gestão de Fornecedores desativados" para "Gestão de Fornecedores Desativados" (com "D" maiúsculo)
+
+HOM-COR-015 | Origem T073/R001
+Localização na fonte: Relatórios Gerenciais Homologação
+Pedido/observação:
+OK
+
+HOM-COR-016 | Origem T073/R002
+Localização na fonte: Dashboard
+Pedido/observação:
+Creio que as informações desse item estará na Home
+
+HOM-COR-017 | Origem T073/R003
+Localização na fonte: Gerenciamento de Integração
+Pedido/observação:
+OK
+
+HOM-COR-018 | Origem T073/R004
+Localização na fonte: Gerenciamento de Documentos Exigidos Funcionários
+Pedido/observação:
+OK
+
+HOM-COR-019 | Origem T073/R005
+Localização na fonte: Gerenciamento de Treinamento
+Pedido/observação:
+OK
+
+HOM-COR-020 | Origem T073/R006
+Localização na fonte: Gerenciamento de Auditoria
+Pedido/observação:
+OK
+
+HOM-COR-021 | Origem T073/R007
+Localização na fonte: Gerenciamento de Documentos Exigidos Fornecedor
+Pedido/observação:
+OK
+
+HOM-COR-022 | Origem T073/R008
+Localização na fonte: Gerenciamento de Plano de Ação
+Pedido/observação:
+OK
+
+HOM-COR-023 | Origem T073/R009
+Localização na fonte: Gerenciamento de Produtos Químicos
+Pedido/observação:
+OK
+
+HOM-COR-024 | Origem T073/R010
+Localização na fonte: Gerenciamento de Equipamentos
+Pedido/observação:
+OK
+
+HOM-COR-025 | Origem T073/R011
+Localização na fonte: Relatorio unificado de funcionarios
+Pedido/observação:
+Mudar o nome de "Relatorio unificado de funcionarios" para "Relatório Unificado de Funcionários" (Relatório com acento, Unificado com "U" maiúsculo, Funcionário com acento e "F" maiúsculo)
+
+HOM-COR-026 | Origem T073/R012
+Localização na fonte: Histórico de alterações de documentos
+Pedido/observação:
+OK
+
+HOM-COR-027 | Origem T073/R013
+Localização na fonte: Estatísticas
+Pedido/observação:
+Mudar o nome de "Estatística" para "Estratificação dos Dados do Fornecedor"
+
+HOM-COR-028 | Origem T073/R014
+Localização na fonte: Portaria
+Pedido/observação:
+(sem alteração específica descrita)
+
+HOM-COR-029 | Origem T073/R015
+Localização na fonte: Documentação de fornecedor
+Pedido/observação:
+Mudar o nome de "Documentação de fornecedor" para "Documentação de Fornecedor" (Fornecedor com "F" maiúsculo)
+
+Poderia ser melhor consolidadas as informações. A repetição de linhas para um mesmo fornecedor não é a melhor forma de apresentar as informações.
+
+HOM-COR-030 | Origem T073/R016
+Localização na fonte: Documentação de funcionario
+Pedido/observação:
+Mudar o nome de "Documentação de funcionario" para "Documentação de Funcionário" (Funcionário com "F" maiúsculo e acento)
+
+No campo "Atende ao Critério?" ao invés de aparecer "Não Aplicável" aparece "NAP"
+
+Poderia ser melhor consolidadas as informações. A repetição de linhas para um mesmo funcionário não é a melhor forma de apresentar as informações.
+
+ACEITE DAS CORREÇÕES
+Conferir cada substituição textual na tela/aba/formulário indicado, sem trocar nomes
+de campos físicos por inferência. Nos defeitos, reproduzir o erro, corrigir e testar
+consulta/gravação/avanço com registro válido e perfil autorizado. Registrar perguntas
+pendentes antes de alterar regras. Testar especialmente os itens específicos da Crown.
+
+
+VALIDAÇÃO DO PACOTE
+Este TXT deve ser revisado em conjunto com as dependências indicadas. A implementação
+exige acesso ao código e banco atuais, ausentes deste anexo. As condições de aceite
+são propostas de homologação funcional, não resultados de testes já executados.

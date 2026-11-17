@@ -1,0 +1,47 @@
+{
+  "data": "2026-09-30",
+  "transacao": "modulolegal_requisitoslegais.php",
+  "browser": "Firefox 157.0",
+  "contexto": { "tenant": "Modelo", "CODLEGISLACAO": 8, "CODUNIDADE": 1, "requisito": "LB0001" },
+  "resultado_visual": {
+    "tela_principal_menu": "APROVADO",
+    "carregamento_sem_overlay": "APROVADO",
+    "selecao_requisito": "APROVADO",
+    "botoes_contextuais": "APROVADO",
+    "padrao": "APROVADO",
+    "pdf": "APROVADO",
+    "colunas": "APROVADO",
+    "ajuda": "APROVADO",
+    "fechamento_e_iframes": "APROVADO"
+  },
+  "botoes_contextuais": [
+    "Treinamentos", "Infraestrutura", "Homologação de Fornecedores", "Situação",
+    "Licenças", "Controles", "Medição e Monitoramento", "Checklist", "Alterações"
+  ],
+  "crud_revalidado_nesta_execucao": {
+    "Treinamentos": "APROVADO",
+    "Infraestrutura": "APROVADO"
+  },
+  "crud_com_evidencia_anterior": {
+    "Situação": "APROVADO",
+    "Licenças": "APROVADO",
+    "Controles": "APROVADO",
+    "Medição e Monitoramento": "APROVADO",
+    "Homologação de Fornecedores": "APROVADO",
+    "Checklist": "APROVADO"
+  },
+  "somente_leitura": {
+    "Alterações": "APROVADO",
+    "Padrão": "APROVADO",
+    "submenus_LAIA_LPRO_LAIS": "APROVADO_CONFORME_REGRA_ATUAL"
+  },
+  "isolamento": "APROVADO_EM_EVIDENCIAS_ANTERIORES",
+  "pendencia_operacional": "Reabrir uma sessão limpa do GeckoDriver para repetir os CRUDs já aprovados anteriormente nesta rodada; a sessão atual ficou órfã e o encerramento dos PIDs foi bloqueado pelo sistema.",
+  "evidencias": [
+    "docs/cobertura_botoes_requisitos_legais_20260924.md",
+    "tests/resultado-cobertura-crud-modulo-legal-20260924.json",
+    "tests/resultado-pendencias-requisitos-firefox-20260930.json",
+    "tests/resultado-visual-firefox-grids-contextuais-20260930.json"
+  ],
+  "status": "APROVADO_VISUAL_COM_REVALIDACAO_CRUD_RESTANTE"
+}

@@ -1,0 +1,58 @@
+GREEN PORTAL - GESTAO DE MIGRACAO DE EMPRESAS - MIGRACAO 266
+
+Objetivo
+--------
+Cadastrar no catalogo central as empresas existentes em green_seguranca.empresas e manter o mapeamento controlado entre bancos legados, bancos de seguranca e bancos novos do Green Portal.
+
+Origem utilizada
+----------------
+Base: green_seguranca
+Tabela: empresas
+Chave preservada: CODEMPRESA
+Campos cadastrais copiados: descricao, endereco, bairro, cidade, cep, email, cnpj, contatos, telefones, observacoes, GED, ips, multempresa, logotipo e bloqueada.
+
+Destino
+-------
+Base central: guniversal_dbp
+Cadastro: empresa
+Configuracao: empresa_migracao_config
+Consulta da tela: vw_empresa_migracao_grid
+
+Regra de nomes
+--------------
+O banco novo e derivado do banco legado removendo o prefixo green_, eliminando separadores e aplicando o prefixo g e o sufixo _dbp.
+Exemplos:
+green_atlas -> gatlas_dbp
+green_gd_americana -> ggdamericana_dbp
+
+O banco novo de cada empresa e unico e segue o padrao g<empresa>_dbp. Ele
+contem tambem as tabelas de seguranca (usuarios, grupos, perfis e permissoes).
+Nao deve ser criado um banco novo separado com sufixo _seguranca_dbp. Os
+nomes sao derivados internamente do cadastro legado; nao sao recebidos de
+formulario ou URL.
+
+Controle operacional
+--------------------
+A migracao 266 cria a tabela de configuracao, instala o menu ADMINISTRACAO_EMPRESAS_MIGRACAO e sincroniza o cadastro. A tela e restrita ao perfil ADMINISTRADOR, possui CSRF, filtros, paginacao e nao permite escolher livremente bancos.
+
+Reexecucao
+----------
+O processo e idempotente. A empresa e localizada por codigo legado ou banco ja conhecido; a configuracao usa chave unica por empresa e por codigo legado. Reexecucoes atualizam dados cadastrais sem criar duplicidades.
+
+Auditoria
+---------
+Cada execucao concluida atualiza o registro GREEN_EMPRESAS_CENTRAL_266 em gmodelo_dbp.registros_migracao, com origem, destino, versao, status, quantidade e detalhes.
+
+Resultado inicial validado em 2026-10-14
+----------------------------------------
+44 registros legados com banco cadastrado foram processados.
+15 empresas foram criadas na primeira execucao e 29 foram atualizadas.
+Em reexecucao: 44 atualizadas, sem novas duplicidades.
+45 empresas existem no catalogo central; 44 possuem configuracao de migracao.
+O menu ADMINISTRACAO_EMPRESAS_MIGRACAO existe e a auditoria esta CONCLUIDA.
+
+Proximos passos
+---------------
+1. Validar cada banco novo e executar o provisionamento/migracao estrutural de cada tenant.
+2. Definir, por empresa, quando sincronismo_ativo pode ser habilitado.
+3. Integrar o processo GreenPortal-Sincronismo FO a esta configuracao, sem permitir nomes de bancos informados pelo usuario.

@@ -1,0 +1,508 @@
+ANALISE DOS TEMPLATES HTML POR TIPO DE NAO CONFORMIDADE
+Projeto Green Portal
+Data: 21/08/2026
+===============================================================================
+
+1. OBJETIVO
+===============================================================================
+
+O gerador de PDF das nao conformidades deve evoluir para templates HTML
+especificos por tipo de nao conformidade. O primeiro template a ser definido
+sera `naoconformidade_empresapdftemplate.php`, responsavel pelo PDF do tipo
+"Da Empresa".
+
+O template nao sera a tela de cadastro. Ele sera uma camada de apresentacao do
+relatorio, recebendo os dados ja consultados e organizando as informacoes que o
+cliente precisa consultar. O template deve manter a compatibilidade com o
+fluxo existente de criacao, consulta, analise, causa raiz, plano de acao e
+verificacao da eficacia, mas sem alterar regras ou dados.
+
+2. FLUXO IDENTIFICADO A PARTIR DE nc_formulario.php
+===============================================================================
+
+O arquivo E:\\wamp\\www\\formulario\\nc_formulario.php funciona como
+orquestrador da tela. Ele:
+
+- recebe CODOCORRENCIA, ETAPA, Tipo e CODAUDITORIA;
+- identifica o tipo pela tabela nc_indicacao_ocorrencia ou pelo parametro Tipo;
+- abre uma interface DHTMLX com quatro abas;
+- carrega nc_indicacao_ocorrencia.php para a aba Ocorrencia;
+- carrega nc_parecer_ocorrencia.php para Avaliacao da Ocorrencia;
+- carrega nc_analise_ocorrencia.php para Analise da Causa Raiz;
+- carrega nc_verificacao_da_eficacia.php para Verificacao da Eficacia;
+- envia os dados para nc_s.php por meio do dataProcessor;
+- altera a etapa e os botoes conforme o estado da ocorrencia e o perfil do
+  usuario.
+
+Portanto, o template HTML do tipo nao deve substituir isoladamente apenas a
+aba Ocorrencia. Ele deve ser tratado como o layout especifico do conjunto da
+ocorrencia, mantendo as demais etapas compartilhadas quando nao houver regra
+especifica para o tipo.
+
+3. TIPOS LEGADOS IDENTIFICADOS
+===============================================================================
+
+Em nc_indicacao_ocorrencia.php, o parametro Tipo e normalizado assim:
+
+- E ou 3: tipo Empresa, que sera documentado como "Da Empresa";
+- C ou 2: tipo Cliente;
+- F ou 1: tipo Fornecedor.
+
+O codigo persistido em CODTIPONAOCONFORMIDADE e a referencia definitiva para
+o template. O texto exibido ao usuario vem de
+nc_tipo_de_naoconformidade.DSCTIPONAOCONFORMIDADE e os campos aplicaveis sao
+relacionados por nc_tipo_de_naoconformidadexcampos.
+
+A implementacao futura nao deve depender apenas do texto do tipo, pois os
+textos podem ser alterados por configuracao ou sofrer variacao de acentuacao.
+
+4. COMPORTAMENTO ATUAL DOS CAMPOS
+===============================================================================
+
+nc_indicacao_ocorrencia.php monta XML DHTMLX dinamicamente. Primeiro consulta
+os campos habilitados para o CODTIPONAOCONFORMIDADE e depois inclui os campos
+com getcampo(). Os campos comuns ou encontrados no legado incluem:
+
+- identificacao, descricao e providencia;
+- unidade, area e setor;
+- classificacao/tipo da ocorrencia;
+- data da ocorrencia;
+- lista de distribuicao;
+- gestor e responsavel;
+- produto, cliente, fornecedor e unidade do cliente;
+- numero e tipo de documento;
+- quantidade envolvida, quantidade devolvida e tamanho do lote;
+- tipo de tampa e tamanho da lata;
+- tipo de reclamacao;
+- parada de linha;
+- retencao de produto e devolucao de material;
+- impacto em seguranca de alimentos;
+- procedencia e improcedencia;
+- tipo de acao, origem da acao e sistema de gestao;
+- possibilidade e risco.
+
+Nem todos esses campos pertencem a todos os tipos. A tabela de relacionamento
+nc_tipo_de_naoconformidadexcampos continua sendo a fonte da obrigatoriedade e
+da disponibilidade dos campos, enquanto o template define agrupamento,
+ordem, largura, destaque e comportamento visual.
+
+5. PROPOSTA DE ARQUITETURA DOS TEMPLATES
+===============================================================================
+
+Cada tipo deve possuir um template identificavel pelo codigo, por exemplo:
+
+templates/nao_conformidades/3_da_empresa.html
+templates/nao_conformidades/2_do_cliente.html
+templates/nao_conformidades/1_do_fornecedor.html
+
+O nome fisico pode ser ajustado ao padrao final do projeto, mas deve existir um
+registro central de templates com:
+
+- codigo do tipo;
+- nome do tipo;
+- arquivo do template;
+- versao do template;
+- ativo/inativo;
+- data da ultima alteracao.
+
+O PHP deve carregar o template por CODTIPONAOCONFORMIDADE e fornecer dados
+separados da apresentacao. O HTML nao deve montar SQL, consultar banco ou
+alterar etapa diretamente.
+
+6. ESTRUTURA VISUAL RECOMENDADA PARA "DA EMPRESA"
+===============================================================================
+
+O template Da Empresa deve ser dividido nas seguintes areas:
+
+6.1 Cabecalho da ocorrencia
+
+- titulo "Nao Conformidade - Da Empresa";
+- Numero/Ano;
+- etapa atual;
+- situacao;
+- unidade;
+- data da ocorrencia;
+- emissor e gestor.
+
+6.2 Identificacao e classificacao
+
+- area;
+- setor, quando aplicavel;
+- classificacao/tipo da ocorrencia;
+- sistema de gestao;
+- origem da ocorrencia;
+- tipo de acao;
+- possibilidade e risco.
+
+6.3 Descricao da ocorrencia
+
+- identificacao;
+- descricao detalhada;
+- providencia imediata;
+- anexos/evidencias.
+
+6.4 Responsabilidades e prazos
+
+- responsavel;
+- lista de distribuicao;
+- prazo de analise;
+- data de conclusao prevista.
+
+6.5 Causa e plano de acao
+
+- tabela de causas;
+- subtabela de planos de acao vinculados a cada causa;
+- status, prioridade, responsavel, periodo e observacoes do plano.
+
+6.6 Avaliacoes
+
+- analise da providencia;
+- analise da causa;
+- verificacao da eficacia;
+- recusas e justificativas, quando existentes.
+
+O template deve ocultar blocos que nao se aplicam ao tipo ou que nao estejam
+habilitados para ele. Campos sem valor podem ser exibidos como pendentes em
+modo de consulta, mas nao devem ocupar espaco excessivo no modo de criacao.
+
+7. REGRAS DE INTERACAO E ETAPAS
+===============================================================================
+
+O layout deve respeitar as permissoes atuais:
+
+- Em criacao: campos iniciais editaveis e envio para o fluxo;
+- Em analise da causa raiz: causas e planos disponiveis conforme permissao;
+- Plano de Acao: edicao restrita ao responsavel ou administrador;
+- Com o Gestor: parecer e aprovacao do gestor;
+- Avaliacao da Eficacia: verificacao da eficacia e encerramento;
+- Consulta: todos os campos somente leitura e sem botoes de alteracao.
+
+A regra de permissao deve permanecer no backend. O HTML pode esconder ou
+desabilitar controles para melhorar a experiencia, mas nao pode ser a unica
+barreira de seguranca.
+
+8. CAMPOS, DADOS E BACKEND
+===============================================================================
+
+O template deve receber um modelo de dados normalizado, preferencialmente:
+
+- occurrence: dados de nc_indicacao_ocorrencia;
+- type: codigo e descricao do tipo;
+- fields: campos habilitados para o tipo;
+- causes: causas da ocorrencia;
+- action_plans: planos agrupados por causa;
+- permissions: capacidades do usuario na etapa atual;
+- attachments: evidencias e anexos;
+- workflow: etapa, situacao e transicoes permitidas.
+
+O salvamento continuara centralizado em um endpoint seguro, preferencialmente
+com PDO e parametros, substituindo gradualmente a montagem de SQL por
+concatenacao existente em nc_s.php. O endpoint deve validar:
+
+- tenant/banco ativo;
+- sessao e permissao;
+- CODTIPONAOCONFORMIDADE permitido;
+- campos habilitados para o tipo;
+- etapa e transicao permitidas;
+- vinculo entre causas, planos e CODOCORRENCIA.
+
+9. O QUE DEVE SER EVITADO
+===============================================================================
+
+- duplicar regras de negocio em cada HTML;
+- fazer consultas SQL diretamente no template;
+- usar o texto "Da Empresa" para decidir o tipo;
+- deixar campos ocultos serem aceitos sem validacao no backend;
+- misturar dados, HTML e regras de workflow no mesmo arquivo;
+- perder campos legados que ja possuem dados armazenados;
+- remover as quatro etapas sem uma decisao funcional explicita;
+- manter problemas de codificacao como "AÃ§ao" e "NÃ£o".
+
+10. ENTENDIMENTO PARA A IMPLEMENTACAO DO PRIMEIRO TEMPLATE
+===============================================================================
+
+O primeiro passo sera criar o template do tipo codigo 3, correspondente ao
+tipo legado E e denominado "Da Empresa". Ele deve utilizar os campos
+habilitados para o codigo 3, organizar a aba de ocorrencia em secoes claras e
+reutilizar os componentes de causa, plano, avaliacao e eficacia.
+
+Antes da implementacao definitiva, deve ser levantado no tenant Modelo:
+
+- o valor exato de DSCTIPONAOCONFORMIDADE para o codigo 3;
+- a lista de CODCAMPO relacionada ao codigo 3;
+- quais campos sao obrigatorios no uso real;
+- quais campos possuem dados historicos;
+- quais regras especificas diferenciam "Da Empresa" dos tipos Cliente e
+  Fornecedor.
+
+Resultado esperado: um template HTML profissional, responsivo e legivel,
+com os campos do tipo Da Empresa organizados por contexto, preservando o
+workflow legado e preparando a criacao dos templates Cliente e Fornecedor.
+
+===============================================================================
+11. ESCOPO CORRETO DO TEMPLATE DE PDF DA EMPRESA
+===============================================================================
+
+O arquivo `naoconformidade_empresapdftemplate.php` deve receber uma estrutura
+de dados pronta e produzir somente o HTML do relatorio. A estrutura minima do
+PDF do tipo Da Empresa deve conter:
+
+11.1 Identificacao do documento
+
+- titulo "Nao Conformidade - Da Empresa";
+- CODOCORRENCIA;
+- Numero/Ano;
+- data de geracao;
+- unidade;
+- etapa e situacao atual.
+
+11.2 Dados de abertura
+
+- data da ocorrencia;
+- emitente;
+- gestor;
+- responsavel;
+- area e setor, quando aplicaveis;
+- classificacao/tipo da ocorrencia;
+- sumario ou identificacao;
+- descricao completa da ocorrencia;
+- providencia imediata;
+- arquivo ou evidencias associadas.
+
+11.3 Classificacao e avaliacao de risco
+
+- tipo de nao conformidade;
+- codigo da classificacao, quando existir;
+- tipo de acao;
+- origem da acao/ocorrencia;
+- sistema de gestao;
+- possibilidade;
+- risco;
+- analise da providencia;
+- analise da abrangencia, quando existir.
+
+11.4 Prazos e distribuicao
+
+- lista de distribuicao;
+- prazo de analise;
+- usuario responsavel pelo prazo;
+- data de conclusao prevista;
+- informacao de encerramento do plano.
+
+11.5 Causas
+
+As causas devem ser exibidas em tabela, com uma linha por causa:
+
+- codigo da causa;
+- tipo da causa;
+- descricao da causa.
+
+11.6 Planos de acao por causa
+
+Cada causa deve possuir uma subtabela imediatamente abaixo da sua linha, com
+os planos vinculados pelo CODCAUSA. A subtabela deve mostrar:
+
+- codigo do plano;
+- acao;
+- responsavel;
+- status;
+- prioridade;
+- data inicial;
+- data final;
+- recursos;
+- observacoes;
+- motivo de reprogramacao, quando existir.
+
+11.7 Avaliacao da causa e eficacia
+
+- analise da causa;
+- verificacao da eficacia;
+- recusa do gestor e justificativa, quando houver;
+- datas ou informacoes de conclusao existentes.
+
+11.8 Historico
+
+Quando houver registros, o PDF deve mostrar o historico dos planos de acao,
+com codigo do historico, codigo do plano, acao, prioridade, periodo, status,
+tipo de atualizacao e data da atualizacao.
+
+12. CAMPOS QUE NAO DEVEM SER FORCADOS NO PDF DA EMPRESA
+===============================================================================
+
+Os campos abaixo pertencem principalmente aos cenarios Cliente ou Fornecedor
+e somente devem aparecer no PDF Da Empresa se houver valor e se estiverem
+habilitados para o tipo 3:
+
+- cliente e unidade do cliente;
+- fornecedor;
+- produto/rotulo;
+- quantidade envolvida e devolvida;
+- tamanho do lote;
+- tamanho da lata;
+- tipo de tampa;
+- tipo de reclamacao;
+- procedencia;
+- improcedencia;
+- retencao de produto;
+- devolucao de material;
+- impacto em seguranca de alimentos;
+- parada de linha.
+
+Assim, o template deve usar uma regra de exibicao condicional. Nao se deve
+criar uma secao vazia para dados que nao pertencem ao tipo Da Empresa.
+
+13. RELACAO COM O GERADOR ATUAL
+===============================================================================
+
+O arquivo atual `principal/naoconformidade_ocorrenciapdf.php` consulta os
+dados e monta o PDF manualmente. A nova arquitetura deve separar as etapas:
+
+1. validar sessao, permissao e CODOCORRENCIA;
+2. consultar ocorrencia, causas, planos e historico;
+3. identificar CODTIPONAOCONFORMIDADE;
+4. carregar o template correspondente;
+5. fornecer os dados ao template;
+6. converter o HTML produzido para PDF;
+7. entregar o PDF ao visualizador existente.
+
+Foi observado que nao ha, nos arquivos analisados, uma biblioteca HTML/PDF
+como Dompdf, mPDF ou TCPDF ja integrada ao projeto. Portanto, antes da troca
+do gerador manual pelo template HTML, deve ser definida a tecnologia de
+conversao. O template pode ser criado primeiro e validado como HTML, mas a
+entrega PDF dependera dessa camada de conversao.
+
+14. DECISAO DE IMPLEMENTACAO DO PRIMEIRO TEMPLATE
+===============================================================================
+
+O primeiro template sera exclusivo para o tipo 3/Empresa e nao devera conter
+regras especificas dos tipos Cliente ou Fornecedor. O endpoint continuara
+responsavel por carregar os dados e o template sera responsavel por:
+
+- layout profissional;
+- textos e rotulos;
+- secoes e tabelas;
+- exibicao condicional de campos;
+- agrupamento causa/plano;
+- cabecalho, rodape e identidade visual.
+
+Essa separacao permitira criar posteriormente:
+
+- `naoconformidade_clientepdftemplate.php`;
+- `naoconformidade_fornecedorpdftemplate.php`;
+
+sem duplicar a consulta, as validacoes de acesso ou as regras de vinculacao
+entre ocorrencia, causas e planos.
+
+===============================================================================
+15. CORRECAO DO SIGNIFICADO DE TIPO E CLASSIFICACAO
+===============================================================================
+
+Foi confirmado na view `vlistadeocorrenciasnc` que os campos possuem estes
+significados:
+
+- `DSCTIPONAOCONFORMIDADE`: tipo da nao conformidade, como Da Empresa,
+  Cliente ou Fornecedor;
+- `DSCTIPOOCORRENCIA`: classificacao da ocorrencia, como Maior ou outras
+  classificacoes cadastradas.
+
+O grid e o PDF estavam rotulando esses dois campos de forma invertida. Os
+rotulos foram corrigidos para:
+
+- Tipo -> DSCTIPONAOCONFORMIDADE;
+- Classificacao -> DSCTIPOOCORRENCIA.
+
+Os aliases da view permanecem inalterados; foi corrigida somente a camada de
+apresentacao, incluindo os rotulos do grid e do PDF.
+
+===============================================================================
+16. TEMPLATE HTML CRIADO PARA O PDF DA EMPRESA - 21/08/2026
+===============================================================================
+
+Foi criado o arquivo:
+
+- principal/naoconformidade_empresapdftemplate.php
+
+O arquivo possui a funcao renderNaoConformidadeEmpresaPdfTemplate(), recebe os
+dados por array e nao executa consultas ao banco. O HTML produzido possui:
+
+- cabecalho Green Portal;
+- identificacao da ocorrencia;
+- tipo e classificacao com os aliases corrigidos;
+- descricao e evidencias;
+- prazos e avaliacoes;
+- tabela de causas;
+- subtabela de planos de acao abaixo de cada causa;
+- historico dos planos;
+- estilos para impressao em A4 e conversao posterior para PDF.
+
+O template ainda nao substitui o gerador manual de PDF em
+principal/naoconformidade_ocorrenciapdf.php. A integracao HTML foi preparada
+em modo de impressao do navegador, enquanto a camada definitiva de conversao
+HTML para PDF nao for definida.
+
+O arquivo foi validado sem erros de sintaxe.
+
+===============================================================================
+17. TEMPLATES HTML DE CLIENTE E FORNECEDOR - 21/08/2026
+===============================================================================
+
+Foi criada uma base compartilhada:
+
+- principal/naoconformidade_pdftemplate_base.php
+
+E foram criados os templates especificos:
+
+- principal/naoconformidade_clientepdftemplate.php;
+- principal/naoconformidade_fornecedorpdftemplate.php.
+
+Os dois templates reutilizam o layout comum de identificacao, classificacao,
+descricao, avaliacao, causas, planos e historico. Cada um acrescenta seus
+campos especificos.
+
+Cliente inclui cliente, unidade do cliente, produto/rotulo, quantidades, lote,
+tipo de reclamacao, procedencia, improcedencia e devolucao de material.
+
+Fornecedor inclui fornecedor, produto/rotulo, quantidades, lote, tamanho da
+lata, tipo de tampa, tipo de reclamacao, seguranca de alimentos, retencao,
+devolucao e parada de linha.
+
+Os templates recebem os dados por array e nao acessam o banco. A camada de
+consulta devera fornecer os valores descritivos dos campos relacionados, e nao
+somente seus codigos, para que o PDF seja compreensivel ao cliente.
+
+Os tres novos arquivos foram validados sem erros de sintaxe.
+
+===============================================================================
+18. ABERTURA DO TEMPLATE PELO BOTAO PDF - 21/08/2026
+===============================================================================
+
+O botao de PDF da lista geral passou a abrir uma nova janela com o template
+HTML correspondente ao tipo da ocorrencia:
+
+- codigo 1: template Do Fornecedor;
+- codigo 2: template Do Cliente;
+- demais tipos, incluindo o codigo 3: template Da Empresa.
+
+O endpoint naoconformidade_ocorrenciapdf.php consulta os dados principais,
+complementa os campos especificos diretamente da nc_indicacao_ocorrencia,
+carrega causas, planos e historico, monta o HTML e converte o resultado em PDF
+com Dompdf. O PDF e entregue inline ao visualizador PDF.js existente.
+
+O modo formato=html continua disponivel para inspeção direta do template e
+impressao pelo navegador. A rota normal do botao utiliza agora a conversao
+HTML para PDF.
+
+Foi instalado o pacote dompdf/dompdf na versao 3.1.6, com composer.json,
+composer.lock e dependencias em vendor/.
+
+Arquivos ajustados:
+
+- principal/naoconformidade_ocorrenciapdf.php;
+- assets/js/visualizador-pdf.js.
+
+Os arquivos PHP envolvidos foram validados sem erros de sintaxe. A conversao
+foi validada com um teste de renderizacao que confirmou a assinatura PDF.
+
+===============================================================================
+FIM DA ANALISE
+===============================================================================

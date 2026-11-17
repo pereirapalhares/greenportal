@@ -1,0 +1,149 @@
+ContentAI EngViewer - Como a Ajuda funciona
+Versão: Etapa 3.3 concluída (guias até "Aprovar um documento interno (PVA)").
+Idiomas: português (Brasil), inglês (EUA) e espanhol (América Latina). O texto segue o idioma escolhido pela pessoa.
+
+1. Visão geral
+A Ajuda tem duas partes que trabalham juntas:
+
+Parte	Para que serve	Onde fica
+Painel de Ajuda	Explica a tela atual e lista os guias passo a passo daquela tela	Lateral direita, aberto pelo botão ?
+Modo guiado	Acompanha a pessoa numa tarefa do começo ao fim, um passo de cada vez	Cartão no canto inferior direito da tela
+Além disso:
+
+a Central de guias reúne todos os guias por assunto;
+o Portal do Fornecedor tem o seu próprio botão Ajuda, com os guias que interessam ao fornecedor.
+2. Como abrir a Ajuda
+Clique no botão ? no topo da tela, ou aperte F1 (ou ? fora de um campo de texto).
+O painel abre à direita e pode ficar aberto enquanto você trabalha (não bloqueia a tela).
+Para fechar, clique no X do painel ou aperte Esc.
+No celular, o painel ocupa a tela inteira.
+
+3. O que aparece no painel
+O painel muda conforme a tela em que você está. De cima para baixo:
+
+3.1 Guias passo a passo (sempre no topo)
+Guias desta tela: os guias ligados à tela atual, com título, número de passos e quem participa.
+Cada guia tem dois botões:
+Começar (ou Continuar, se já estiver em andamento): inicia o modo guiado e fecha o painel;
+Ver os passos: mostra a lista completa para ler, sem iniciar.
+Ver todos os guias: abre a Central de guias.
+3.2 Sobre esta tela (quando a tela tem texto próprio)
+Seção	Conteúdo
+O que é esta tela	Uma frase simples sobre a finalidade da tela
+O que você pode fazer aqui	Ações principais; algumas têm o link mostrar como, que destaca o lugar na tela
+Antes de começar	O que precisa existir antes
+O que acontece depois	Próximos passos e avisos que a pessoa vai receber
+Nesta tela agora	Informação viva da tela (ex.: número do transmittal e situação)
+Dúvidas comuns	Perguntas e respostas que abrem ao clicar
+Palavras desta tela	Glossário dos termos técnicos (revisão, versão, check-out, vaga reservada...)
+Telas com texto próprio hoje: Início, Documentos, Detalhe do documento, Pesquisa e Minhas preferências.
+As telas novas (Transmittals, Revisão, Minhas tarefas, Processos, Fornecedores) mostram os guias e as linhas
+"Nesta tela agora".
+
+3.3 Mostrar ajuda como (perfil de leitura)
+No topo do painel há a lista Mostrar ajuda como: Geral, Engenheiro/revisor, Fornecedor, Operador/campo,
+Controlador de documentos, Gerente/coordenador e Administrador. A escolha fica salva nas preferências da pessoa.
+Quando o perfil não tem texto próprio, aparece o texto "Geral". Hoje a tela Documentos tem texto específico para
+o Controlador de documentos.
+
+3.4 Rodapé do painel
+Esta ajuda foi útil? com polegar para cima ou para baixo.
+Passo a passo no manual: aparece desativado (o manual on-line será montado a partir destes mesmos textos).
+Perguntar ao assistente: aparece desativado (depende da aprovação da política de IA da MODEC).
+Lembrete do atalho F1 ou ?.
+4. Central de guias
+Abre pelo botão Ver todos os guias do painel, ou pelo botão Ajuda no Portal do Fornecedor.
+Mostra todos os guias separados por assunto, cada um com resumo, "Antes de começar", os passos por parte e o
+botão Começar. No portal aparecem só os assuntos Fornecedores e Transmittals.
+
+5. Modo guiado (cartão no canto da tela)
+5.1 O que o cartão mostra
+Título do guia e uma barra de progresso.
+Parte X de Y: nome da pessoa e papel (ex.: "Parte 2 de 4: Fernanda Rocha - Engenheira - revisora (C)").
+Passo N de M com uma única ação, citando o nome do botão ou campo em negrito, exatamente como aparece na tela.
+Você deve ver (quadro verde): o resultado esperado, para a pessoa saber que deu certo.
+Botões de apoio:
+Mostre-me: destaca na tela o botão ou campo do passo;
+Ir para a tela: abre a tela do passo;
+Voltar e Próximo (no último passo, Concluir).
+Botões do topo: minimizar (o cartão vira uma pílula com o nome do guia e "passo 5/35") e X para fechar o guia.
+5.2 "Mostre-me"
+Desenha um anel azul pulsando em volta do item por 4 segundos, por cima de tudo (inclusive de janelas
+abertas), acompanhando a rolagem.
+Se o item não está na tela atual, o guia abre sozinho a tela do passo e tenta de novo.
+Se mesmo assim não encontrar (por exemplo, um campo que só existe com a janela do passo anterior aberta),
+aparece uma mensagem dentro do próprio cartão: use "Ir para a tela" ou confira o passo anterior.
+5.3 Quando a parte é de outra pessoa
+O cartão avisa: "Esta parte é feita por Fernanda Rocha. Agora você está como Carlos Lima."
+Na POC (modo demonstração ligado), aparece o botão Entrar como Fernanda Rocha. Um clique troca de usuário,
+sem digitar senha, e o guia continua no mesmo passo.
+Com o modo demonstração desligado, o cartão explica como sair e entrar com o usuário certo.
+Enquanto você estiver como outra pessoa, os botões "Mostre-me" e "Ir para a tela" ficam ocultos, para não
+agir com o usuário errado.
+5.4 O cartão não atrapalha
+Fica clicável mesmo com uma janela aberta (ex.: "Novo transmittal"), sem fechar a janela.
+As mensagens do sistema aparecem embaixo, no centro, para não ficarem atrás do cartão.
+O guia em andamento fica guardado no navegador: continua no mesmo passo depois de trocar de usuário,
+recarregar a página ou fechar e abrir o painel.
+6. Guias disponíveis
+Assunto	Guia	Quem participa	Passos
+Documentos	Criar ou importar documentos	Carlos Lima (controlador)	8
+Documentos	Criar nova revisão de um documento	Carlos Lima	6
+Transmittals	Enviar documentos ao fornecedor (transmittal General)	Carlos Lima → Ricardo Mendes (Fornecedor X)	17
+Transmittals	Criar uma matriz de distribuição	Carlos Lima	10
+Revisão técnica	Revisão técnica completa	Carlos → Fernanda (C) → João (LR) → Maria (AP)	34
+Processos de aprovação	Aprovar um documento interno (PVA)	Carlos → Fernanda (Preparar) → João (Verificar) → Maria (Aprovar)	31
+Fornecedores	Fornecedor: entregar um documento pelo portal	Ricardo Mendes	5
+Fornecedores	Aceitar ou devolver a entrega do fornecedor	Carlos Lima	5
+Fornecedores	Liberar ao fornecedor o resultado da revisão	Carlos Lima → Ricardo Mendes	7
+Dados de exemplo usados nos guias: projeto MOD-FPSO-01, documento de fornecedor ELE-DES-0004 (revisão e envio
+General), documento interno MEC-MC-0001 (PVA), matrizes Revisão técnica por disciplina, Envio ao
+fornecedor X e PVA padrão do projeto, contrato FORNECEDOR-X · CT-4500.
+
+7. Onde cada guia aparece primeiro
+Tela	Guias desta tela
+Início	Criar ou importar documentos; Revisão técnica completa
+Documentos	Criar ou importar; Nova revisão; PVA
+Detalhe do documento	Nova revisão; PVA
+Transmittals	General ao fornecedor; Matriz de distribuição; Revisão técnica completa
+Detalhe do transmittal	General ao fornecedor; Revisão técnica completa
+Revisão (área de trabalho)	Revisão técnica completa; Liberar ao fornecedor
+Minhas tarefas	Revisão técnica completa; PVA
+Processos / Detalhe do processo	PVA
+Fornecedores	Entregar pelo portal; Aceitar ou devolver; Liberar ao fornecedor
+Portal do Fornecedor (botão Ajuda)	Todos os guias dos assuntos Fornecedores e Transmittals
+8. Regras de escrita dos guias (padrão para as próximas etapas)
+Uma ação por passo. "Clique em X" e "Na janela, clique em Y" são dois passos.
+Quem faz sempre explícito (parte por pessoa).
+Onde: menu e tela ("No menu à esquerda, clique em Transmittals").
+Nome exato do botão ou campo, em negrito, como aparece na tela.
+Você deve ver: o resultado esperado sempre que algo muda na tela.
+Todo passo clicável tem Mostre-me; o primeiro passo de cada parte tem Ir para a tela.
+Linguagem simples, sem siglas sem explicação.
+Os mesmos textos nos três idiomas.
+As instruções dadas no chat seguem o mesmo formato.
+9. Para quem mantém o sistema (parte técnica)
+Item	Onde fica
+Textos "Sobre esta tela" por tela, perfil e idioma	frontend/help/content.ts
+Guias passo a passo	frontend/help/guides/ (documents.ts, suppliers.ts, transmittals.ts, review.ts, processes.ts)
+Pessoas dos guias (login, nome, papel)	frontend/help/guides/types.ts
+Lista e ordem dos guias e assuntos	frontend/help/guides/index.ts
+Estado do painel, tela atual, "Mostre-me" (anel)	frontend/help/HelpProvider.tsx
+Estado do modo guiado e "Entrar como"	frontend/help/GuideProvider.tsx
+Painel, cartão, lista e central	frontend/components/help/ (HelpPanel, GuideCard, GuideList, GuideCenterDialog, GuideText)
+Textos fixos da ajuda	frontend/i18n/messages/*.guide.ts e chaves help.*
+Estilo do anel	classe .help-ring em frontend/appTheme.css
+Como um passo encontra o botão: cada botão ou campo citado tem o atributo data-help="nome" na tela
+(ex.: tx-new, rv-finish-comment, pc-approve). O passo do guia aponta para esse nome em target. Para criar
+um guia novo: marcar os botões com data-help, escrever o guia com r(pt, en, es) em cada texto, informar go
+(tela) no primeiro passo de cada parte e registrar o guia em index.ts.
+
+Como a tela informa a Ajuda: cada tela chama useHelpScreen('nome-da-tela', linhas). O nome escolhe o texto
+"Sobre esta tela" e os guias da tela; as linhas viram "Nesta tela agora".
+
+10. Limites atuais
+Manual on-line e assistente de IA ainda desativados (dependem de etapa futura e da política de IA).
+As telas novas ainda não têm o bloco "Sobre esta tela", só os guias.
+O "Entrar como" funciona só no modo demonstração da POC; em produção, cada pessoa entra com a própria conta.
+Os documentos de exemplo não têm arquivo. Guias que precisam de PDF começam criando um documento com arquivo.
+Quando um guia é repetido, os números gerados mudam (ex.: RT-0002, PVA-0003). O guia mostra "um número como".

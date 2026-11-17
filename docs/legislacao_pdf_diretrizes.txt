@@ -1,0 +1,13 @@
+GREEN PORTAL - VISUALIZAÇÃO DO PDF DA LEGISLAÇÃO
+
+Na transação manutencaolegal_legislacao.php, a coluna CODIGO possui um botão com o ícone PDF. Ao acioná-lo, o documento é aberto em uma modal dentro da própria aba, sem abrir uma nova janela.
+
+O arquivo é localizado em E:\projetoGreen\GED\legislacao\<CODIGO>.pdf. O endpoint legislacao_pdf.php valida a sessão, a permissão de visualização da transação, o formato do código e o caminho real do arquivo antes de transmitir o PDF inline.
+
+Quando o código da lei possuir um sufixo alfabético, como LB0010A, a última letra não será considerada na localização do arquivo. Nesse caso, o portal buscará E:\projetoGreen\GED\legislacao\LB0010.pdf. Códigos terminados em número são utilizados integralmente.
+
+O código aceita somente letras, números, hífen e sublinhado. Não são aceitos caminhos, barras ou sequências de diretórios. O arquivo é enviado com Content-Disposition inline e os headers de cache desabilitados.
+
+Quando o PDF não existir, o usuário recebe uma mensagem simples informando que o documento não foi encontrado.
+
+Para não depender de um leitor de PDF instalado no computador, o portal utiliza PDF.js para renderizar o documento dentro da modal. A modal permite navegar entre páginas e baixar o arquivo original. Se o PDF.js ou a renderização não estiverem disponíveis, o usuário recebe uma orientação para utilizar o botão de download.

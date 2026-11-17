@@ -1,0 +1,56 @@
+GREENSOLUTIONS 4.0.1 - HOME POR USUARIO E PENDÊNCIAS DOS CINCO PILARES
+
+1. Organização da Home
+
+A Home passou a apresentar as visões independentes em iframes:
+
+- Agenda (Minhas ações): home_agenda.php
+- Minhas Pendências: home_pendencias.php
+- Alertas: home_alertas.php
+- Dashboard pessoal: dashboard.php?home_usuario=1
+- Dashboard geral (Gestor): dashboard_admin.php?home_gestor=1
+
+Cada aba possui uma transação própria e não compartilha processamento de grid,
+filtros ou estado de formulário com as demais abas.
+
+2. Pendências por pilar
+
+As pendências são sempre filtradas no tenant e pelo usuário autenticado. O
+usuário pode receber uma atribuição direta ou ser membro de um grupo atribuído.
+O nome da transação aberta no popup é preservado conforme a diretriz do projeto:
+
+- Licenças: manutencaolegal_licencas.php
+- Medição e Monitoramento: medicaoemonitoramento_mm_monitoramento.php
+- Treinamentos: modulolegal_treinamentos.php
+- Infraestrutura: modulolegal_InfraEstrutura.php
+- Controles: modulolegal_controle.php
+
+O popup envia minhas_pendencias=1 e um filtro pelo registro selecionado. A
+transação aplica novamente o escopo do usuário no servidor; portanto, o filtro
+recebido pelo navegador não substitui a regra de isolamento.
+
+3. Views de responsabilidade
+
+A migração 210 criou ou atualizou, nos bancos gatlas_dbp, gmodelo_dbp e
+gmodelo2_dbp:
+
+- vw_minhas_licencas_grid
+- vw_minhas_monitoramentos_grid
+- vw_minhas_treinamentos_grid
+- vw_minhas_infraestrutura_grid
+- vw_meus_controles_grid
+
+As licenças consideram somente a versão ATIVA. As demais visões consideram
+atribuições ativas, dentro da vigência, para usuário ou grupo.
+
+4. Segurança e idempotência
+
+Cada PHP continua validando sessão, tenant e permissão da própria transação.
+A migração é idempotente, usa CREATE OR REPLACE VIEW e registra a execução em
+registros_migracao com o código GREEN_HOME_PENDENCIAS_210.
+
+5. Regra de manutenção
+
+Novos pilares devem receber uma view de pendências com CODUSUARIO efetivo,
+uma transação PHP própria e um link na Home. Não devem ser usados nomes de
+banco, usuário ou empresa recebidos livremente pelo navegador.

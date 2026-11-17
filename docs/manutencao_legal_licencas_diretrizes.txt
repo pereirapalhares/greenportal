@@ -1,0 +1,42 @@
+Módulo Legal / Licenças
+
+Transação: manutencaolegal_licencas.php
+Menu: Módulo Legal / Licenças
+Banco das licenças: gmodelo_dbp
+Tabela principal: gmodelo_dbp.li_licencas
+View: gmodelo_dbp.vw_licencas_grid
+
+O grid foi baseado na consulta legada de licenças. A view apresenta a licença,
+unidade, responsável, datas formatadas conforme o idioma, protocolo, status,
+observação, classificação, frequência e os dias calculados para validade,
+reação e protocolo.
+
+A ordem inicial apresenta Unidade antes da descrição da Licença. O responsável
+é selecionado por combobox com os usuários da empresa, exceto o usuário admin.
+Campos de data possuem ícone Bootstrap de calendário para abertura do seletor
+de data.
+
+As tabelas auxiliares de unidades e usuários permanecem no banco da empresa
+Modelo (gmodelo_dbp) e são acessadas pela view no mesmo banco.
+Campos calculados e campos de descrição são somente leitura. O código da
+licença permanece oculto por padrão como chave técnica, e o cadastro utiliza
+CODLICENCA como chave primária, com geração automática para novos registros.
+
+O grid utiliza os padrões gerais: 25 registros por página, busca geral, busca
+por coluna, ordenação, ajuste e persistência de colunas, CRUD com confirmação,
+permissões por perfil, exportação Excel e carregamento com popup.
+
+Os campos de data são exibidos sem quebra de linha e possuem um ícone Bootstrap
+compacto antes do valor. O ícone abre o seletor de data do navegador e permite
+alterar a data, mesmo quando o valor calculado originalmente é somente leitura.
+O responsável é exibido em combobox, com os usuários da empresa em ordem
+alfabética e sem o usuário admin.
+
+O menu LICENCAS e suas permissões foram cadastrados no banco Modelo. A
+transação utiliza exclusivamente `gmodelo_dbp`, e a exportação utiliza a view
+`gmodelo_dbp.vw_licencas_grid`, mantendo o processamento assíncrono.
+
+A view foi criada ou atualizada pelo script
+`database/070_licencas_gmodelo_dbp.sql`, utilizando as tabelas `li_licencas`,
+`unidades` e `usuarios` do próprio `gmodelo_dbp`. Não deve haver dependência da
+view ou das tabelas do banco legado `gmodelo_db`.

@@ -1,0 +1,263 @@
+{
+    "target_tables": 263,
+    "exact": [
+        "green_atlas.areas",
+        "green_atlas.aspectos",
+        "green_atlas.atividades",
+        "green_atlas.atividadesxcontroleadmin",
+        "green_atlas.atividadesxepis",
+        "green_atlas.atividadesxinfraestrutura",
+        "green_atlas.controleadmin",
+        "green_atlas.controleadminxunidades",
+        "green_atlas.destinos",
+        "green_atlas.documentos",
+        "green_atlas.documentosxatividades",
+        "green_atlas.documentosxpalavraschave",
+        "green_atlas.documentosxperigos",
+        "green_atlas.documentosxriscos",
+        "green_atlas.documentosxunidades",
+        "green_atlas.epis",
+        "green_atlas.episxunidades",
+        "green_atlas.ev_eventos",
+        "green_atlas.fo_avaliacao",
+        "green_atlas.fo_certificados",
+        "green_atlas.fo_classificacao",
+        "green_atlas.fo_contatos",
+        "green_atlas.fo_criterioavaliacao",
+        "green_atlas.fo_criteriofornecedores",
+        "green_atlas.fo_criteriofuncionarios",
+        "green_atlas.fo_equipamentos",
+        "green_atlas.fo_fornecedores",
+        "green_atlas.fo_fornecedoresxtipofornecedores",
+        "green_atlas.fo_fornecedorxcriterios",
+        "green_atlas.fo_fornecedorxcriterios_historico",
+        "green_atlas.fo_fornecedorxtipofornecedoresxcriteriofornecedores",
+        "green_atlas.fo_frequenciaavaliacao",
+        "green_atlas.fo_funcionarios",
+        "green_atlas.fo_funcionariosxcriterios",
+        "green_atlas.fo_funcionarioxtiposxcriterios",
+        "green_atlas.fo_funcionarioxtiposxtreinamentos",
+        "green_atlas.fo_lote",
+        "green_atlas.fo_pedidos",
+        "green_atlas.fo_planodeacao",
+        "green_atlas.fo_produtoquimico",
+        "green_atlas.fo_template",
+        "green_atlas.fo_tipofornecedores",
+        "green_atlas.fo_tipofornecedoresxcriteriofornecedores",
+        "green_atlas.fo_tipofuncionarios",
+        "green_atlas.fo_tipotreinamentos",
+        "green_atlas.impactos",
+        "green_atlas.infraestrutura",
+        "green_atlas.infraestruturaxunidades",
+        "green_atlas.laia",
+        "green_atlas.lais",
+        "green_atlas.lais_aspectossociais",
+        "green_atlas.lais_impactossociais",
+        "green_atlas.lais_legislacaoxaspectossociais",
+        "green_atlas.lais_legislacaoximpactossociais",
+        "green_atlas.lais_partes_interessadas",
+        "green_atlas.lais_revisao",
+        "green_atlas.legislacaoxaspecto",
+        "green_atlas.legislacaoxatividade",
+        "green_atlas.legislacaoxchecklist",
+        "green_atlas.legislacaoxdocumentos",
+        "green_atlas.legislacaoxempresa",
+        "green_atlas.legislacaoximpacto",
+        "green_atlas.legislacaoxlicencas",
+        "green_atlas.legislacaoxperigo",
+        "green_atlas.legislacaoxpoder",
+        "green_atlas.legislacaoxrisco",
+        "green_atlas.legislacaoxsituacao",
+        "green_atlas.levantamentoocupacionalxrevisoes",
+        "green_atlas.li_classificacao",
+        "green_atlas.li_condicionantes",
+        "green_atlas.li_frequencia",
+        "green_atlas.li_licencas",
+        "green_atlas.li_licencasxgrupos",
+        "green_atlas.li_planodeacao",
+        "green_atlas.li_status_protocolo",
+        "green_atlas.lpro",
+        "green_atlas.ml_infraestrutura",
+        "green_atlas.ml_infraestruturaxatributos",
+        "green_atlas.ml_infraestruturaxpalavraschave",
+        "green_atlas.ml_treinamenosxpalavraschave",
+        "green_atlas.mm_controle_calibracao",
+        "green_atlas.mm_empresa",
+        "green_atlas.mm_equipamento",
+        "green_atlas.mm_laudo",
+        "green_atlas.mm_medicao",
+        "green_atlas.mm_monitoramento",
+        "green_atlas.mm_planodeacao",
+        "green_atlas.mm_tipoitem",
+        "green_atlas.nc_categorias",
+        "green_atlas.nc_causas",
+        "green_atlas.nc_indicacao_ocorrencia",
+        "green_atlas.nc_listadistribuicao",
+        "green_atlas.nc_listadistribuicaoxcategoria",
+        "green_atlas.nc_listadistribuicaoxusuarios",
+        "green_atlas.nc_origemacao",
+        "green_atlas.nc_planodeacao",
+        "green_atlas.nc_planodeacao_historico",
+        "green_atlas.nc_setores",
+        "green_atlas.nc_siglagestao",
+        "green_atlas.nc_tipo_de_naoconformidade",
+        "green_atlas.nc_tipo_de_naoconformidadexcampos",
+        "green_atlas.nc_tipoacao",
+        "green_atlas.nc_tipoocorrencia",
+        "green_atlas.nc_tipos_causas",
+        "green_atlas.objetivosmetas",
+        "green_atlas.objetivosmetasxperigos",
+        "green_atlas.objetivosmetasxriscos",
+        "green_atlas.perigos",
+        "green_atlas.planodeacao",
+        "green_atlas.riscos",
+        "green_atlas.unidades"
+    ],
+    "compatible_missing_target_columns": {
+        "green_atlas.documentosxaspectos": [
+            "coddocumentoxaspecto"
+        ],
+        "green_atlas.documentosximpactos": [
+            "coddocumentoximpacto"
+        ],
+        "green_atlas.fo_equipamentosxpalavraschave": [
+            "codequipamentoxpalavrachave"
+        ],
+        "green_atlas.fo_fornecedorxtipoxcriterio": [
+            "codfornecedorxtipoxcriterio"
+        ],
+        "green_atlas.fo_fornecedorxusuario": [
+            "codfornecedorxusuario"
+        ],
+        "green_atlas.fo_funcionariosxfornecedores": [
+            "codfuncionarioxfornecedor"
+        ],
+        "green_atlas.fo_funcionariosxtipofuncionarios": [
+            "codfuncionarioxtipofuncionario"
+        ],
+        "green_atlas.fo_produtoquimicoxpalavraschave": [
+            "codprodutoquimicoxpalavrachave"
+        ],
+        "green_atlas.fo_tipofornecedoresxpalavraschave": [
+            "codtipofornecedorxpalavrachave"
+        ],
+        "green_atlas.fo_tipofuncionariosxcriteriofuncionarios": [
+            "codtipofuncionarioxcriteriofuncionario"
+        ],
+        "green_atlas.fo_tipofuncionariosxpalavraschave": [
+            "codtipofuncionarioxpalavrachave"
+        ],
+        "green_atlas.fo_tipofuncionariosxtipotreinamentos": [
+            "codtipofuncionarioxtipotreinamento"
+        ],
+        "green_atlas.lais_documentosxaspectos": [
+            "codlaisdocumentoxaspecto"
+        ],
+        "green_atlas.lais_documentosximpactos": [
+            "codlaisdocumentoximpacto"
+        ],
+        "green_atlas.li_licencasxpalavraschave": [
+            "codlicencaxpalavrachave"
+        ],
+        "green_atlas.mm_medicaoxlaudo": [
+            "codmedicaoxlaudo"
+        ],
+        "green_atlas.mm_medicaoxlegislacao": [
+            "codmedicaoxlegislacao"
+        ],
+        "green_atlas.mm_medicaoxpalavraschave": [
+            "codmedicaoxpalavrachave"
+        ],
+        "green_atlas.mm_monitoramentoxlegislacao": [
+            "codmonitoramentoxlegislacao"
+        ],
+        "green_atlas.objetivosmetasxaspectos": [
+            "codobjetivoxaspecto"
+        ],
+        "green_atlas.objetivosmetasxaspectossociais": [
+            "codobjetivoxaspectosocial"
+        ],
+        "green_atlas_seguranca.fo_fornecedorxusuario": [
+            "codfornecedorxusuario"
+        ]
+    },
+    "incompatible": {
+        "green_atlas.mm_controleequipamento": {
+            "source_extra": [
+                "nr_dias"
+            ],
+            "target_missing": [
+                "validade_fabricante",
+                "embalagem",
+                "qtd_estoque",
+                "unidade_medida_estoque",
+                "qtd_em_uso",
+                "unidade_medida_uso",
+                "qtd_total",
+                "unidade_medida_total"
+            ]
+        },
+        "green_atlas.nc_classificacao_fornecedor": {
+            "source_extra": [
+                "dscclassificacao_en"
+            ],
+            "target_missing": []
+        },
+        "green_atlas_seguranca.grupos": {
+            "source_extra": [
+                "dscgrupo"
+            ],
+            "target_missing": [
+                "nome",
+                "ativo"
+            ]
+        },
+        "green_atlas_seguranca.usuarios": {
+            "source_extra": [
+                "dtinclusao",
+                "usuario_superior",
+                "emails",
+                "ativado",
+                "logado",
+                "ultimoacesso",
+                "ultimologin",
+                "codfornecedor",
+                "usuario_licensa",
+                "nrcelular",
+                "codunidade",
+                "codusuario_criador",
+                "token",
+                "token_data_criacao",
+                "token_validade_minutos",
+                "userid_ad",
+                "tipo_auth",
+                "nome_ad",
+                "email_ad"
+            ],
+            "target_missing": [
+                "email",
+                "senha_usa_hash",
+                "codperfil",
+                "codgrupo",
+                "ativo",
+                "trocar_senha",
+                "criado_em",
+                "ultimo_acesso"
+            ]
+        }
+    },
+    "security_transform": [
+        "usuarios",
+        "grupos",
+        "usuariosxgrupos",
+        "usuariosxunidades",
+        "usuariosxempresas",
+        "gruposxmenus",
+        "menusxconfiguracoes",
+        "menusxfuncionalidades",
+        "uxg",
+        "controleimportacao",
+        "migracao_solicitacoes",
+        "politicaemails"
+    ]
+}

@@ -1,0 +1,2 @@
+<?php
+declare(strict_types=1);require_once dirname(__DIR__).'/classes/GreenPortalDatabase.php';require_once dirname(__DIR__).'/classes/AssistenteAplicacaoService.php';$e=GreenPortalDatabase::env();$p=GreenPortalDatabase::connect($e,'guniversal_dbp','GUNIVERSAL');echo json_encode(AssistenteAplicacaoService::chamarProcedure($p,'sp_migracao_configurar_bancos',[110,'green_goodyear_anchieta','green_goodyear_anchieta_seguranca','gganchieta_dbp','E:\\projetoGreen\\GED\\green_goodyear_anchieta']),JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT).PHP_EOL;

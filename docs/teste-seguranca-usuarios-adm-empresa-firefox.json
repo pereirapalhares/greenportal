@@ -1,0 +1,55 @@
+{
+  "checks": [
+    {
+      "name": "Tela carregada como ADM DA EMPRESA",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "ADMINISTRADOR não aparece na grade",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Grade possui registros",
+      "ok": true,
+      "detail": "25"
+    },
+    {
+      "name": "Paginação informa total",
+      "ok": true,
+      "detail": "1/7"
+    },
+    {
+      "name": "Paginação executada",
+      "ok": true,
+      "detail": "raquel.ferrari -> fernanda.tavares"
+    },
+    {
+      "name": "Atribuição de ADMINISTRADOR bloqueada",
+      "ok": true,
+      "detail": "{\"created\":[],\"message\":\"ADM_DA_EMPRESA_NAO_PODE_ATRIBUIR_ADMINISTRADOR\",\"ok\":false}"
+    },
+    {
+      "name": "Edição de usuário ADMINISTRADOR bloqueada",
+      "ok": true,
+      "detail": "{\"created\":[],\"message\":\"ADM_DA_EMPRESA_NAO_PODE_ALTERAR_ADMINISTRADOR\",\"ok\":false}"
+    },
+    {
+      "name": "Novo usuário possui Usuário superior",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Solicitação de exportação aceita",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Exportação concluída",
+      "ok": null,
+      "detail": "{}"
+    }
+  ],
+  "job": null
+}

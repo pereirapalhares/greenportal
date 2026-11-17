@@ -1,0 +1,3 @@
+/* Lupa "Pesquisar documentos" no cabeçalho do portal (abre a aba Pesquisa de documentos).
+   O visual vem de .header-icon-button (mesmo dos botões de alertas, assistente e guia). */
+.header-search-button .bi { font-size: 15px; }

@@ -1,0 +1,233 @@
+ANALISE DOS TEMPLATES PDF - PLANEJAMENTO E ASSISTENCIA TECNICA
+Projeto Green Portal
+Data: 21/08/2026
+===============================================================================
+
+1. ESCOPO
+===============================================================================
+
+Foram analisados os legados:
+
+- E:\\wamp\\www\\nc_planejamento;
+- E:\\wamp\\www\\nc_assistenciatecnica.
+
+Os dois modulos possuem o mesmo fluxo geral de nao conformidade: ocorrencia,
+avaliacao, analise da causa raiz, planos de acao e verificacao da eficacia.
+Eles devem reutilizar a base visual do PDF, mas precisam de templates proprios
+porque possuem identificacao, regras e campos especificos.
+
+2. CODIGOS DOS TIPOS
+===============================================================================
+
+O legado confirma os seguintes codigos persistidos:
+
+- CODTIPONAOCONFORMIDADE = 5: Planejamento;
+- CODTIPONAOCONFORMIDADE = 6: Assistencia Tecnica.
+
+O codigo deve ser usado para selecionar o template. O texto do tipo deve ser
+consultado da tabela nc_tipo_de_naoconformidade para exibicao, sem depender de
+comparacoes textuais sujeitas a acentuacao.
+
+3. CAMPOS COMUNS IDENTIFICADOS
+===============================================================================
+
+Os dois legados utilizam a estrutura comum da ocorrencia:
+
+- CODOCORRENCIA e NRANO;
+- unidade, area e gestor;
+- data da ocorrencia;
+- classificacao da ocorrencia;
+- sumario/identificacao;
+- descricao;
+- providencia;
+- tipo de acao;
+- origem da ocorrencia;
+- sistema de gestao;
+- emitente, gestor e responsavel;
+- possibilidade e risco;
+- etapa e situacao;
+- prazos;
+- analise da providencia;
+- analise da causa;
+- verificacao da eficacia;
+- recusa do gestor;
+- causas, planos de acao e historico.
+
+Os aliases de apresentacao devem continuar respeitando a correcao ja aplicada:
+
+- Tipo = DSCTIPONAOCONFORMIDADE;
+- Classificacao = DSCTIPOOCORRENCIA.
+
+4. TEMPLATE DE PLANEJAMENTO
+===============================================================================
+
+Arquivo planejado:
+
+- principal/naoconformidade_planejamentopdftemplate.php
+
+O legado fixa o tipo 5 e exibe o nome Planejamento. A estrutura do PDF deve
+conter:
+
+4.1 Identificacao
+
+- titulo "Nao Conformidade - Planejamento";
+- numero/ano, codigo, unidade, area, etapa e situacao;
+- emitente, gestor, responsavel e lista de distribuicao;
+- data da ocorrencia.
+
+4.2 Dados do planejamento
+
+- tipo e classificacao;
+- sumario da ocorrencia;
+- descricao detalhada;
+- providencia;
+- tipo de acao;
+- origem da ocorrencia;
+- sistema de gestao;
+- possibilidade e risco;
+- data de conclusao prevista;
+- prazo de analise.
+
+4.3 Fluxo e analises
+
+- indicacao de envio ao gestor;
+- responsavel pelo plano;
+- analise da providencia;
+- observacoes complementares/analise da causa;
+- verificacao da eficacia;
+- resultado da eficacia;
+- recusa e justificativa, se houver.
+
+4.4 Causas e planos
+
+- tabela de causas;
+- subtabela de planos abaixo de cada causa;
+- responsavel, acao, prioridade, status, periodo, recursos e observacoes;
+- historico das alteracoes dos planos.
+
+O legado de Planejamento possui fluxo especifico de envio ao gestor e depois
+envio aos responsaveis pelos planos. O PDF deve apresentar as informacoes do
+workflow, mas nao deve reproduzir botoes ou permitir alteracoes.
+
+5. TEMPLATE DE ASSISTENCIA TECNICA
+===============================================================================
+
+Arquivo planejado:
+
+- principal/naoconformidade_assistenciatecnicapdftemplate.php
+
+O legado fixa o tipo 6 e exibe o nome Assistencia Tecnica. Alem dos dados
+comuns, o PDF deve destacar:
+
+5.1 Contexto tecnico/comercial
+
+- cliente;
+- fornecedor, quando informado;
+- produto;
+- codigo ou identificacao do produto;
+- lote envolvido;
+- quantidade envolvida;
+- quantidade devolvida;
+- classificacao da ocorrencia;
+- descricao tecnica da ocorrencia;
+- providencia adotada.
+
+5.2 Analise da assistencia tecnica
+
+- origem da ocorrencia;
+- tipo de acao;
+- analise da providencia;
+- observacoes complementares;
+- possibilidade e risco;
+- anexos/evidencias tecnicas;
+- resultado da verificacao da eficacia.
+
+5.3 Causas e planos
+
+- tabela de causas;
+- subtabela de planos de acao por causa;
+- responsavel tecnico, acao, prazo, prioridade, status e observacoes;
+- historico dos planos.
+
+O legado de Assistencia Tecnica permite informar produto e cliente como texto
+livre e possui listas auxiliares de produtos e clientes cadastrados. Por isso,
+o PDF deve exibir o valor final gravado na ocorrencia, e nao apenas o codigo de
+uma lista auxiliar.
+
+6. CAMPO ESPECIFICO DE EFICACIA
+===============================================================================
+
+Nos dois legados existe o campo pass_pela_nanalise_eficacia, com as opcoes
+Sim/Nao. Esse campo deve aparecer na secao de workflow/eficacia quando houver
+valor, com o rotulo corrigido "Passa pela análise da eficácia?".
+
+7. DIFERENCAS OBSERVADAS ENTRE OS DOIS LEGADOS
+===============================================================================
+
+As telas de indicacao sao muito semelhantes. A principal diferenca encontrada
+foi o tipo fixo:
+
+- Planejamento usa 5;
+- Assistencia Tecnica usa 6.
+
+Os dois arquivos tambem possuem variacoes de codificacao e diferencas de
+fluxo no envio ao gestor/responsaveis. Essas regras pertencem ao workflow e
+nao devem ser copiadas para o template PDF.
+
+8. ARQUITETURA DOS NOVOS TEMPLATES
+===============================================================================
+
+Os dois templates devem reutilizar:
+
+- naoconformidade_pdftemplate_base.php;
+- o mesmo modelo de dados main, causes, plans e history;
+- o mesmo agrupamento de planos por CODCAUSA;
+- o mesmo conversor Dompdf.
+
+Cada template deve somente acrescentar suas secoes especificas e definir o
+titulo do tipo. O endpoint deve selecionar:
+
+- codigo 5 -> naoconformidade_planejamentopdftemplate.php;
+- codigo 6 -> naoconformidade_assistenciatecnicapdftemplate.php.
+
+9. INFORMACOES A VALIDAR ANTES DA IMPLEMENTACAO
+===============================================================================
+
+Antes de criar os arquivos, deve ser confirmado no tenant Modelo:
+
+- quais campos estao efetivamente relacionados aos tipos 5 e 6;
+- quais registros possuem dados de cliente, fornecedor, produto e lote;
+- quais campos precisam de JOIN para exibir descricoes em vez de codigos;
+- se o tipo 6 deve utilizar tambem dados de reclamacao/devolucao;
+- se pass_pela_nanalise_eficacia esta preenchido nos registros existentes.
+
+10. CONCLUSAO
+===============================================================================
+
+Planejamento e Assistencia Tecnica devem possuir templates separados, apoiados
+na mesma base visual e de dados. Planejamento deve enfatizar o fluxo de envio
+ao gestor e a execucao dos planos. Assistencia Tecnica deve enfatizar cliente,
+produto, lote, quantidades e evidencias tecnicas.
+
+===============================================================================
+11. IMPLEMENTACAO DOS TEMPLATES - 21/08/2026
+===============================================================================
+
+Foram criados:
+
+- principal/naoconformidade_planejamentopdftemplate.php;
+- principal/naoconformidade_assistenciatecnicapdftemplate.php.
+
+Os dois reutilizam naoconformidade_pdftemplate_base.php. O endpoint
+naoconformidade_ocorrenciapdf.php foi ajustado para selecionar:
+
+- codigo 5 -> Planejamento;
+- codigo 6 -> Assistencia Tecnica.
+
+Os templates foram integrados ao fluxo Dompdf e testados com dados simulados,
+confirmando a geração de PDF válida. Os arquivos PHP foram validados sem
+erros de sintaxe.
+
+===============================================================================
+FIM DA ANALISE
+===============================================================================

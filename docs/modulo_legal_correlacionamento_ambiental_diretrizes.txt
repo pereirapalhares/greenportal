@@ -1,0 +1,22 @@
+Módulo Legal — Correlacionamento Ambiental
+
+Origem analisada
+- E:/wamp/www/configuracoes/legislacaoxambiental.php.
+- E:/wamp/www/cadastros/legislacaoxambiental_c.php. O caminho configuracoes/cadastros informado não existe; este é o arquivo equivalente encontrado.
+
+Implementação
+- Transação: modulolegal_correlacionamnetoambiental.php.
+- Menu: CORRELACIONAMENTO_AMBIENTAL, filho de MODULO_LEGAL.
+- View: gmodelo_dbp.vw_modulolegal_correlacionamento_ambiental_grid.
+- O filtro principal mantém as legislações com MEIO_AMBIENTE='Sim', aceitando também 1/true/s para bases com tipagem legada diferente.
+- As chaves de correlação são CODLEGISLACAO e CODUNIDADE.
+- A tela mantém os dados de unidade, nível de controle, código, tipo, âmbito, assunto, artigos e indicadores ambientais do legado.
+- A view informa as quantidades de aspectos, atividades, impactos, licenças e documentos relacionados à própria legislação e unidade.
+- A abertura do texto da lei utiliza o ícone padronizado da aplicação, aplicado aos grids que possuem CODLEGISLACAO e CODIGO.
+
+Auditoria
+- Ordem, filtros e larguras do grid alinhados ao legado; CODLEGISLACAO e CODUNIDADE permanecem ocultos.
+- O script database/064_modulo_legal_correlacionamento_ambiental.sql registra a implantação em registros_migracao.
+- A correção alterou a configuração da transação principal e criou endpoints contextuais para os cinco relacionamentos. O script database/078_corrigir_correlacionamento_ambiental.sql registra a correção.
+- A correção 078 restaurou os cinco relacionamentos contextuais do legado: Aspectos, Atividades, Impactos, Licenças e Documentos.
+- Os documentos relacionados são contados por CODLEGISLACAO e CODUNIDADE, e não por todos os documentos da unidade.

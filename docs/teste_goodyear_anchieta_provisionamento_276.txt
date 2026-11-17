@@ -1,0 +1,37 @@
+CORRECAO E TESTE DE PROVISIONAMENTO - GOODYEAR ANCHIETA
+========================================================
+Data: 14/10/2026
+
+Problema identificado:
+O worker marcava ERRO quando o banco destino gganchieta_dbp nao existia.
+
+Correcao aplicada:
+- criada a etapa PROVISIONAR_DESTINO;
+- quando o destino nao existe, o worker cria o schema;
+- a estrutura e importada de gmodelo_dbp com mysqldump sem dados;
+- o backup do destino ocorre depois do provisionamento;
+- a etapa e registrada no banco e no arquivo de log.
+
+Parametros do teste:
+- empresa: Goodyear Anchieta (GOODYEAR_ANCHIETA)
+- origens: green_goodyear_anchieta e green_goodyear_anchieta_seguranca
+- GED: E:\projetoGreen\GED\green_goodyear_anchieta
+- destino: gganchieta_dbp
+
+Resultado da solicitacao #3:
+- destino criado automaticamente: aprovado;
+- estrutura baseada em gmodelo_dbp: aprovada;
+- backup: aprovado em runtime/backups/solicitacao_3/gganchieta_dbp.sql;
+- etapas executadas: 7/7;
+- status: FINALIZADO_COM_SUCESSO;
+- log: storage/logs/migracao/migracao_3.log;
+- teste visual Firefox: aprovado;
+- popup Ver log: aprovado;
+- evidencia: runtime/firefox-migracao-anchieta-sucesso.png.
+
+Observacao de escopo:
+Este teste validou o provisionamento, backup, controle de etapas, GED por
+referencia e logging. Os executores de carga de dados especificos da Goodyear
+Anchieta ainda devem ser vinculados antes de uma migracao produtiva de
+seguranca e Modulo Legal. O worker registra essa informacao nas etapas,
+evitando mover dados sem um pacote de origem/destino homologado.

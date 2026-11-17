@@ -1,0 +1,285 @@
+GREEN PORTAL 0.160.0
+GUIA DE INSTALACAO EM OUTRO SERVIDOR WAMP + MYSQL
+======================================================================
+
+Este roteiro instala o GreenPortal em Windows com WAMP e MySQL 8.x.
+Considera o ambiente multiempresa: guniversal_dbp, gmodelo_dbp e gatlas_dbp.
+
+IMPORTANTE
+----------
+- Execute primeiro em homologacao.
+- Nao copie o .env do servidor antigo sem revisar as credenciais.
+- Nao publique o MySQL na internet.
+- Use MySQL 8.x. A collation utf8mb4_0900_ai_ci nao e compativel com varias
+  versoes do MariaDB.
+- Valide contagens, login, permissoes, acentuacao e isolamento antes da
+  ativacao em producao.
+
+1. REQUISITOS DO SERVIDOR
+-------------------------
+
+Instalar:
+
+- Windows Server/Desktop suportado pelo WAMP.
+- WAMP com Apache 2.4, PHP 8.x e MySQL 8.x.
+- Composer 2.x.
+- Git, caso o projeto seja obtido por repositorio.
+- Node.js LTS e npm somente para testes Playwright.
+- Python 3.11+, Tesseract OCR e NSSM somente se o OCR for utilizado.
+
+Extensoes PHP necessarias ou recomendadas:
+
+- mysqli, PDO, pdo_mysql, mbstring, openssl, curl, fileinfo, intl, dom,
+  xml, zip, zlib e gd quando os modulos de imagem forem utilizados.
+
+No php.ini usado pelo Apache, habilitar as extensoes e reiniciar o Apache.
+Conferir:
+
+    php -v
+    php -m
+
+Configuracao recomendada no php.ini, conforme o volume de documentos:
+
+    memory_limit = 512M
+    upload_max_filesize = 50M
+    post_max_size = 60M
+    max_execution_time = 300
+    date.timezone = America/Sao_Paulo
+
+2. COPIAR O PROJETO
+-------------------
+
+Usar um caminho sem espacos, por exemplo:
+
+    E:\wamp\apps\greenportal
+
+Por Git:
+
+    cd E:\wamp\apps
+    git clone <URL_DO_REPOSITORIO> greenportal
+    cd E:\wamp\apps\greenportal
+
+Conferir a existencia de index.php, credenciais, principal, classes, assets,
+database, composer.json, composer.lock e package.json.
+
+Nao apagar runtime, exports, imagens ou o armazenamento de documentos ao
+transferir uma instalacao existente.
+
+3. INSTALAR DEPENDENCIAS PHP
+----------------------------
+
+    cd E:\wamp\apps\greenportal
+    composer validate
+    composer install --no-dev --prefer-dist --optimize-autoloader
+
+O composer.json possui o Dompdf. Gerar o diretorio vendor no novo servidor.
+
+Validar a sintaxe:
+
+    php -l index.php
+    php -l classes\GreenPortalDatabase.php
+    php -l credenciais\logar.php
+
+4. DEPENDENCIAS OPCIONAIS DE TESTE
+----------------------------------
+
+Somente para testes automatizados:
+
+    npm ci
+    .\scripts\instalar-playwright.ps1 -InstalarNavegador
+
+Node.js e Playwright nao sao necessarios para o funcionamento normal.
+
+5. CRIAR OS BANCOS MYSQL
+------------------------
+
+Ajustar o caminho do executavel conforme a versao WAMP:
+
+    $mysql = 'C:\wamp64\bin\mysql\mysql8.0.XX\bin\mysql.exe'
+
+Criar os bancos com a collation oficial:
+
+    & $mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS guniversal_dbp CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci"
+    & $mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS gmodelo_dbp CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci"
+    & $mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS gatlas_dbp CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci"
+
+Se necessario, acrescentar -P 3306 ou a porta configurada.
+
+6. RESTAURAR OS BANCOS
+----------------------
+
+Para transferir um servidor existente, gerar dumps completos na origem:
+
+    mysqldump -u USUARIO -p --routines --triggers --events --single-transaction --default-character-set=utf8mb4 guniversal_dbp > guniversal_dbp.sql
+    mysqldump -u USUARIO -p --routines --triggers --events --single-transaction --default-character-set=utf8mb4 gmodelo_dbp > gmodelo_dbp.sql
+    mysqldump -u USUARIO -p --routines --triggers --events --single-transaction --default-character-set=utf8mb4 gatlas_dbp > gatlas_dbp.sql
+
+Copiar os arquivos de modo seguro e importar:
+
+    & $mysql -u root -p guniversal_dbp < .\guniversal_dbp.sql
+    & $mysql -u root -p gmodelo_dbp < .\gmodelo_dbp.sql
+    & $mysql -u root -p gatlas_dbp < .\gatlas_dbp.sql
+
+Em instalacao nova, executar os scripts da pasta database na ordem numerica,
+com backup antes de cada bloco de migracao. Nao executar migracoes de legado
+sem revisar a origem.
+
+Conferir charset e collation:
+
+    SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME
+    FROM information_schema.SCHEMATA
+    WHERE SCHEMA_NAME IN ('guniversal_dbp','gmodelo_dbp','gatlas_dbp');
+
+7. CRIAR USUARIO MYSQL DA APLICACAO
+-----------------------------------
+
+Nao usar root no .env:
+
+    CREATE USER 'greenportal_app'@'localhost' IDENTIFIED BY 'SENHA_FORTE';
+    GRANT SELECT, INSERT, UPDATE, DELETE, EXECUTE, SHOW VIEW ON guniversal_dbp.* TO 'greenportal_app'@'localhost';
+    GRANT SELECT, INSERT, UPDATE, DELETE, EXECUTE, SHOW VIEW ON gmodelo_dbp.* TO 'greenportal_app'@'localhost';
+    GRANT SELECT, INSERT, UPDATE, DELETE, EXECUTE, SHOW VIEW ON gatlas_dbp.* TO 'greenportal_app'@'localhost';
+    FLUSH PRIVILEGES;
+
+Conceder ALTER, CREATE, INDEX, REFERENCES e TRIGGER somente durante manutencao
+estrutural e retirar depois.
+
+8. CONFIGURAR O .ENV
+--------------------
+
+Criar .env na raiz. Nao versionar esse arquivo e nao compartilhar senhas.
+Modelo minimo:
+
+    APP_NAME=GreenPortal
+    APP_ENV=production
+    APP_DEBUG=0
+    APP_TIMEZONE=America/Sao_Paulo
+    GREEN_PORTAL_CENTRAL_DATABASE=guniversal_dbp
+
+    GUNIVERSAL_DB_HOST=127.0.0.1
+    GUNIVERSAL_DB_PORT=3306
+    GUNIVERSAL_DB_DATABASE=guniversal_dbp
+    GUNIVERSAL_DB_USERNAME=greenportal_app
+    GUNIVERSAL_DB_PASSWORD=SENHA_FORTE
+    GUNIVERSAL_DB_CHARSET=utf8mb4
+
+    GPT_DB_HOST=127.0.0.1
+    GPT_DB_PORT=3306
+    GPT_DB_DATABASE=gmodelo_dbp
+    GPT_DB_USERNAME=greenportal_app
+    GPT_DB_PASSWORD=SENHA_FORTE
+    GPT_DB_CHARSET=utf8mb4
+
+    GGED_STORAGE_LOCAL_ROOT=E:/wamp/apps/greenportal/storage
+
+Manter as demais chaves existentes quando os modulos correspondentes forem
+usados, como OCR, legislacao e bancos legados. LEGADO_MODELO e
+LEGADO_SEGURANCA sao principalmente para scripts de migracao.
+
+9. DIRETORIOS E PERMISSOES
+--------------------------
+
+    New-Item -ItemType Directory -Force E:\wamp\apps\greenportal\storage
+    New-Item -ItemType Directory -Force E:\wamp\apps\greenportal\runtime
+    New-Item -ItemType Directory -Force E:\wamp\apps\greenportal\exports
+
+Dar ao usuario do Apache leitura do projeto e escrita somente em storage,
+runtime e exports. Proteger .env, backups, database e scripts contra escrita
+pelo usuario web.
+
+10. CONFIGURAR APACHE/WAMP
+--------------------------
+
+Ativar mod_rewrite e permitir .htaccess. Exemplo de VirtualHost:
+
+    <VirtualHost *:80>
+        ServerName greenportal.local
+        DocumentRoot "E:/wamp/apps/greenportal"
+        <Directory "E:/wamp/apps/greenportal">
+            AllowOverride All
+            Require all granted
+        </Directory>
+        ErrorLog "logs/greenportal-error.log"
+        CustomLog "logs/greenportal-access.log" common
+    </VirtualHost>
+
+No hosts do Windows:
+
+    127.0.0.1 greenportal.local
+
+Reiniciar Apache e testar http://greenportal.local/. Em producao, usar HTTPS,
+restringir o Directory e nao expor o phpMyAdmin.
+
+11. CADASTRAR E ATIVAR O TENANT
+-------------------------------
+
+Durante a restauracao, manter a empresa inativa:
+
+    SELECT codigo,nome,banco_dados,status FROM empresa WHERE codigo='ATLAS';
+
+O resultado deve apontar ATLAS para gatlas_dbp. Ativar somente apos as
+validacoes. O login nunca deve receber livremente o nome do banco.
+
+12. VALIDAR O PORTAL
+--------------------
+
+Executar no projeto:
+
+    php scripts\status-atlas.php
+    php scripts\validar-atlas.php
+    php scripts\testar-atlas-homologacao.php
+
+No navegador, validar login, sessao, tenant Atlas, perfil ADMINISTRADOR,
+menus, permissoes, acentuacao, upload, exportacao e PDF quando aplicavel.
+Testar pelo menos um usuario de cada perfil migrado; nunca validar somente
+com admin. Confirmar que Atlas nao consulta dados de Modelo ou de outro
+tenant.
+
+13. OCR OPCIONAL
+----------------
+
+O OCR e separado do Apache. Instalar Python 3.11+, Tesseract com por, eng e
+spa e executar em services\ocr_service:
+
+    py -3.11 -m venv .venv
+    .\.venv\Scripts\python.exe -m pip install --upgrade pip
+    .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+
+No .env:
+
+    OCR_SERVICE_URL=http://127.0.0.1:8091
+    OCR_SERVICE_TOKEN=TOKEN_INTERNO_FORTE
+    OCR_MAX_BYTES=20971520
+
+Iniciar start_ocr_service.ps1 ou instalar com NSSM. O servico deve escutar
+somente em 127.0.0.1, nunca em 0.0.0.0.
+
+14. BACKUP E PRODUCAO
+--------------------
+
+Antes de publicar:
+
+- fazer backup dos bancos e testar uma restauracao;
+- configurar backup diario e copia fora do servidor;
+- monitorar logs Apache, PHP e MySQL;
+- manter APP_DEBUG=0;
+- trocar senhas legadas e a senha de homologacao do admin;
+- ativar ATLAS somente depois da homologacao.
+
+15. PROBLEMAS FREQUENTES
+------------------------
+
+Erro 500: consultar logs, confirmar PHP/extensoes, composer install e .env.
+
+Erro MySQL: conferir host, porta, grants, usuario, senha e nome dos bancos.
+
+Erro utf8mb4_0900_ai_ci: confirmar MySQL 8.x; nao substituir por latin1.
+
+Login sem empresas: conferir guniversal_dbp.empresa, status=ATIVA,
+banco_dados existente e a procedure sp_crud_select.
+
+Acentuacao incorreta: confirmar SET NAMES utf8mb4 e comparar amostras com o
+backup latin1. Nao converter novamente texto que ja esteja correto.
+
+FIM DO GUIA
+======================================================================

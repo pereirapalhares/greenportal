@@ -1,0 +1,55 @@
+Ao entrar no Sistema (Home) tenho que ver:
+1- Cards com grandes números
+2- Dashboard (tipo anel, tipo gráfico, tipo tabela) sintetizando o progresso de indicadores de um período
+3- O que tem pendente para o usuário que está logado
+4- Quais as próximas tarefas a serem realizadas (na forma de um schedule) para o usuário que está logado
+
+Navegação Friendly (fuida): a navegação no sistema tem que ocorrer clicando nos elementos dessa Home, ou seja, partir dos cliques nos elementos dessa Home para acessar outras informações. O acesso a mais informações deve ocorrer a partir dos cliques nos elementos dessas telas que estão sendo acessadas.
+
+O módulo legal continua sendo o pivô de todo o processo de gestão legal. Esse módulo deve estar linkado aos módulos:
+•	De licenças
+•	Medição e monitoramento
+•	Treinamento
+•	Infraestrutura
+•	Controle
+•	Homologação
+
+A novidade aqui é linkar o módulo legal com o módulo de homologação através das leis tipo "influência" (vide item 130 abaixo)
+
+Cada uma das tabelas (Licenças, Medição e monitoramento, Treinamento, Infraestrutura, Controle) deve continuar tendo "vida própria", ou seja, sendo acessada de modo independente (como módulos)  como já ocorre hoje
+
+A partir da análise do padrão de desempenho de cada requisito legal, a IA deve gerar uma relação de POTENCIAIS Licenças, Medição e monitoramento, Treinamento, Infraestrutura, Controle. Essa relação de POTENCIAIS Licenças, Medição e monitoramento, Treinamento, Infraestrutura, Controle deve ser validada. Uma vez validada, as tabelas onde são feitas a GESTÃO de Licenças, Medição e monitoramento, Treinamento, Infraestrutura, Controle são preenchidas, ou seja, as informações validadas são transferidas para as tabelas de gestão correspondentes. Nessa tabela de GESTÃO são atribuídos responsáveis por cada Licença, Medição e monitoramento, Treinamento, Infraestrutura, Controle.
+
+As tabelas de gestão devem ser separadas entre o que é de CONTROLE (ou seja, ações que o próprio cliente deve tomar) daquilo que é INFLUÊNCIA, ou seja, ações que os fornecedores do cliente devem tomar).
+
+Uma vez que o sistema conhece a lei que deu origem às POTENCIAIS Licenças, Medições e monitoramentos, Treinamentos, Infraestruturas, Controles, uma vez validada a informação, o sistema deve ser capaz de relacionar automaticamente o requisito legal com a(s) Licença(s), Medição(ões) e monitoramento(s), Treinamento(s), Infraestrutura(s), Controle(s) correspondentes.
+
+O conteúdo das tabelas de GESTÃO (Licenças, Medição e monitoramento, Treinamento, Infraestrutura, Controle) poderá ser gerado tanto a partir da validação das POTENCIAIS Licenças, Medições e monitoramentos, Treinamentos, Infraestruturas, Controles como através de um cadastrado manual nas próprias tabelas de GESTÃO. Nesse último caso, o sistema tem que prever um relacionamento manual entre a lei e o item (Licença, Medição e monitoramento, Treinamento, Infraestrutura, Controle) cadastrado manualmente.
+
+Os responsáveis pelas Licenças, Medição e monitoramento, Treinamento, Infraestrutura, Controle devem ser cadastrados de 2 formas:
+•	Diretamente na tabela correspondente de GESTÃO
+•	Por meio da tabela Responsável x Tipo
+
+Para ambos os casos, a responsabilidade poderá ser para 1 usuário, para vários usuários ou para um Grupo (com 1 ou mais pessoas)
+
+Para operacionalizar o item acima, todos os módulos (Licença, Medição e monitoramento, Treinamento, Infraestrutura, Controle) deverão ter uma tabela Responsável x Tipo:
+•	Responsável x Tipo de Licença
+•	Responsável x Tipo de Medição e Monitoramento
+•	Responsável x Tipo de Treinamento
+•	Responsável x Tipo de Infraestrutura
+•	Responsável x Tipo de Controle
+
+Todos os módulos (Licença, Medição e monitoramento, Treinamento, Infraestrutura, Controle) deverão ter a tela "Minhas alguma coisa":
+•	Minhas Licença
+•	Minhas Medição e monitoramento
+•	Meus Treinamento
+•	Minhas Infraestrutura
+•	Meus Controle
+
+Particularmente em relação à tabela de Requisitos Legais, deveremos ter uma tabela Responsável x Categoria. Essa Categoria será definida pelo Cliente. A IA irá analisar os padrões de desempenho dos requisitos legais e atribuir uma ou mais categoria(s) a cada requisito legal. Na tabela Responsável x Categoria o responsável poderá ser 1 usuário, vários usuários ou um Grupo (com 1 ou mais pessoas)
+
+O sistema deverá ter LOG de tudo o que é feito no sistema. A contratação desses LOGs ficará a critério do cliente, que pagará pela quantidade de LOGs contratados e armazenados. Uma vez gerados, os LOGs ficarão disponíveis ao usuário para download por um período estabelecido ou enviado automaticamente para o e-mail de um usuário pré-definido.
+
+O sistema deverá permitir a delegação de responsabilidade para todo tipo de responsabilidade atribuída. Como o sistema é orientado para o usuário (responsável), se o usuário sai da empresa quebra-se a coluna vertebral do sistema. Essa delegação tem que ser, portanto, facilitada. Caso contrário, corre-se o risco do software não servir para nada caso pessoas antigas permaneçam como responsáveis por ações dentro do software. Temos que pensar como garantir que apenas usuários ativos, ou seja, que estejam trabalhando na empresa, permaneçam ativos no Green.
+ 
+

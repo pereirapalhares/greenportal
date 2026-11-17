@@ -1,0 +1,89 @@
+﻿ESPECIFICAÇÃO FUNCIONAL — GREEN 4.0
+Versão: 1.0 — elaboração em 12/11/2026
+Fonte: Passo a passo mudança no Green4.0 — Revisão G — 13/08/2026.doc.
+Situação: especificação para revisão funcional; não representa validação do software existente.
+
+COMO INTERPRETAR
+- IDs dos requisitos preservam a numeração da fonte. Txxx/Rxxx identifica tabela/linha,
+  contando a partir de zero na ordem do documento, para rastreabilidade sem paginação variável.
+- "Sim" indica solicitação de implementação na fonte, não comprova implementação.
+- Campo "Implementar?" vazio significa decisão pendente. Requisito dependente de outro
+  item marcado Sim é identificado, mas a inconsistência da marcação é preservada.
+- Detalhamento da fonte é reproduzido em cada requisito para conservar campos, exemplos,
+  condições, exceções e fluxos. Exemplos não constituem listas fechadas de domínio.
+- Critérios de aceite e regras consolidadas são operacionalizações propostas para revisão.
+  Decisões ausentes não foram convertidas em regras definitivas.
+- Referências a capturas de concorrentes são referências visuais do DOC original; imagens
+  não são reproduzidas em TXT. Não foram inferidas regras a partir de elementos só visuais.
+- Não há definição de banco físico, linguagem, endpoints ou cronograma nesta versão.
+
+
+02 — Itens para Aumento da Escalabilidade do Green
+
+OBJETIVO
+Especificar as mudanças deste tema preservando o escopo e as ressalvas da Revisão G.
+
+OBJETIVO E ORDEM DE DEPENDÊNCIA
+Escalabilidade na fonte significa reduzir o trabalho manual para atender mais clientes.
+Não há metas documentadas de simultaneidade, volume de dados ou tempo de resposta.
+Questionário -> seleção de requisitos do cliente -> padrão de desempenho por IA ->
+integração dos cinco pilares -> atendimento e relatórios.
+Migração de concorrentes envolve Legal, Licenças e Homologação, embora a coluna Módulo
+do item 21 cite apenas Legal/Licenças. Preservar esse escopo do detalhamento.
+Duplicidades: item 19 relacionado ao 44; item 20 aos 23/43; item 21 ao 24.
+
+PENDÊNCIAS ESPECÍFICAS
+- Item 19 fala em padrão de desempenho, item 44 em padrão de atendimento: confirmar
+  se são artefatos distintos; não unificar silenciosamente os conceitos.
+- Definir perguntas, opções, regras de aplicabilidade e efeito de mudança nas respostas.
+- Definir formatos e dados disponíveis nos concorrentes, mapeamento e reconciliação.
+- Item 21 não marcado Sim; item 24 marcado Sim solicita migração. Resolver abrangência.
+- Migração sem custo é intenção comercial da fonte, não estimativa técnica.
+- Portal/planos/white label estão no item 2, especificado no arquivo 01.
+
+
+REQUISITOS FUNCIONAIS RASTREÁVEIS
+
+------------------------------------------------------------------------------
+ESC-19 — Gerar o padrão de desempenho através de IA
+
+Origem: item 19; T015/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A fonte informa apenas o título. Campos, fluxo e parâmetros precisam ser definidos.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Executar o comportamento descrito no item com dados de teste representativos e conferir as condições, campos e exceções enumerados. Antes da homologação, definir os parâmetros apontados como pendentes; exemplos da fonte não fecham o domínio.
+
+------------------------------------------------------------------------------
+ESC-20 — Amarrar os requisitos legais ao questionário com perguntas respondido pelo cliente
+
+Origem: item 20; T015/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A amarração dos requisitos legais poderá ser feito através do questionário, mas deverá ser possível atribuir a um cliente uma lei específica sem que ela esteja amarrada ao questionário.
+
+Isso é um ponto fundamental para permitir a escalabilidade do Green. Sem isso estamos de mãos atadas para aumentar a quantidade de clientes
+
+CRITÉRIO DE ACEITE PROPOSTO
+Responder um questionário de teste e conferir as leis selecionadas; atribuir depois uma lei específica sem vínculo ao questionário e confirmar sua permanência.
+
+------------------------------------------------------------------------------
+ESC-21 — Prever como migrar informações dos módulos legal, de licenças e de homologação de softwares concorrentes para o Green.
+
+Origem: item 21; T015/R003
+Situação: DECISÃO PENDENTE (Implementar? não preenchido)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Não sei se isso seria uma solução caso a caso ou se poderíamos prever recursos internos no sistema para essas migrações. O fato é que teremos que oferecer ao cliente essa migração sem custo para eliminar a barreira de entrada para a aquisição do Green.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Alterar um registro autorizado e consultar o histórico para identificar operação, registro, usuário e data; conferir acesso e retenção conforme política definida.
+
+
+VALIDAÇÃO DO PACOTE
+Este TXT deve ser revisado em conjunto com as dependências indicadas. A implementação
+exige acesso ao código e banco atuais, ausentes deste anexo. As condições de aceite
+são propostas de homologação funcional, não resultados de testes já executados.

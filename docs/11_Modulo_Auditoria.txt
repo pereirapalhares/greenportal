@@ -1,0 +1,376 @@
+﻿ESPECIFICAÇÃO FUNCIONAL — GREEN 4.0
+Versão: 1.0 — elaboração em 12/11/2026
+Fonte: Passo a passo mudança no Green4.0 — Revisão G — 13/08/2026.doc.
+Situação: especificação para revisão funcional; não representa validação do software existente.
+
+COMO INTERPRETAR
+- IDs dos requisitos preservam a numeração da fonte. Txxx/Rxxx identifica tabela/linha,
+  contando a partir de zero na ordem do documento, para rastreabilidade sem paginação variável.
+- "Sim" indica solicitação de implementação na fonte, não comprova implementação.
+- Campo "Implementar?" vazio significa decisão pendente. Requisito dependente de outro
+  item marcado Sim é identificado, mas a inconsistência da marcação é preservada.
+- Detalhamento da fonte é reproduzido em cada requisito para conservar campos, exemplos,
+  condições, exceções e fluxos. Exemplos não constituem listas fechadas de domínio.
+- Critérios de aceite e regras consolidadas são operacionalizações propostas para revisão.
+  Decisões ausentes não foram convertidas em regras definitivas.
+- Referências a capturas de concorrentes são referências visuais do DOC original; imagens
+  não são reproduzidas em TXT. Não foram inferidas regras a partir de elementos só visuais.
+- Não há definição de banco físico, linguagem, endpoints ou cronograma nesta versão.
+
+
+11 — Módulo Auditoria
+
+OBJETIVO
+Especificar as mudanças deste tema preservando o escopo e as ressalvas da Revisão G.
+
+ESCOPO CONSOLIDADO
+Home por status das auditorias e de suas RNCs, visão pessoal, histórico, extração de
+evidências por IA, notificações, agenda, ajuda e integração com RNC/Homologação.
+Introdução do módulo também solicita carregar normas/procedimentos, gerar perguntas
+por IA, respondê-las no módulo e produzir Relatório de Auditoria por template.
+Estados existentes citados: Em Planejamento, Em Avaliação, Em Execução, Encerradas,
+Canceladas e Recusadas. Corrigir abas defeituosas antes de homologar esses percursos.
+
+PENDÊNCIAS ESPECÍFICAS
+- Item 174 descreve tratamento de ocorrência semelhante ao de RNC; resumo 18.4 inclui
+  planejamento, aprovação, execução e follow-up. Definir dois fluxos relacionados,
+  sem substituir o ciclo de auditoria pelo ciclo de uma única ocorrência.
+- Confirmar obrigatoriedade do LaTeX, templates, questionários e critérios de conclusão.
+- Definir revisão das perguntas geradas por IA e vínculo com trechos da norma/procedimento.
+- Definir permissão e contratação nas auditorias de fornecedor e RNCs associadas.
+- Número 169 não aparece no documento. Não foi criado requisito para preencher a lacuna.
+
+REGRAS TRANSVERSAIS E DEPENDÊNCIAS
+Consultar 01_Mudancas_Gerais.txt para Home, permissões por grupo, personalização,
+notificações, agenda, delegação, usuários ativos, idiomas, logs e ajuda.
+As consultas pessoais e gerenciais devem respeitar a permissão de acesso e o âmbito
+da empresa/unidade. Ser responsável não substitui o permissionamento do item 7.
+Cards, gráficos e tabelas devem representar o mesmo conjunto de dados e filtros.
+Datas, estados, eventos de alerta e fórmulas dos indicadores precisam de definição
+única antes da implementação; divergências pendentes estão listadas neste arquivo.
+
+CONTEXTO DO DOCUMENTO ORIGINAL
+
+Origem P0290: A alteração do módulo de Auditoria é mínima. Na verdade se resume a compatibilizar com a nova roupagem do Green (orientação para o usuário, nova Home, construção de dashboards, etc.) e a corrigir erros de grafia de alguns links e campos.
+
+Origem P0292: Por outro lado, a ideia é automatizar esse módulo com a aplicação da IA. Carregar normas e procedimentos, pedir para a IA fazer perguntas para esses documentos, responder essas perguntas no próprio módulo e gerar automaticamente o Relatório de Auditoria a partir de um template (creio que utilizando o software látex). Todo esse processo teria que ser desenvolvido junto com o Tomás.
+
+Origem P0294: As tabelas abaixo apresentam as correções de grafia. Essa grafia deveria ser revisada para que o novo módulo tenha os cabeçalhos, títulos das tabelas, etc. sem erros ortográficos. Isso poderia ser executado pelo Tomás na medida em que ele gera as novas tabelas através do setup.
+
+Origem P0299: As mudanças para compatibilizar o Green com a nova roupagem segue abaixo:
+
+
+REQUISITOS FUNCIONAIS RASTREÁVEIS
+
+------------------------------------------------------------------------------
+AUD-166 — Implementar uma nova Home para melhorar a experiência de navegabilidade e tornar a interface com o usuário mais amigável
+
+Origem: item 166; T098/R001, T099/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Alguns elementos essenciais na nova Home:
+Logo do Cliente
+Logo do Green
+Cards (com totalizações, estatísticas, pendências, avisos)
+Dashboard
+orientação para o usuário (schedule, notificações)
+foto do usuário (para aumentar a personalização do sistema. Essa foto deveria ser colocada junto ao nome do usuário como se fosse o Teams)
+navegabilidade entre tabelas
+navegabilidade a partir dos dashboards
+acessos rápidos
+
+Exemplo de Dashboards:
+
+Auditorias
+Total de Auditorias em Planejamento
+Total de Auditorias em Avaliação
+Total de Auditorias em Execução
+Total de Auditorias Encerradas
+Total de Auditorias Canceladas
+Total de Auditorias Recusadas
+Total de RNC de Auditorias em Criação
+Total de RNC de Auditorias com o Gestor
+Total de RNC de Auditorias Recusado pelo Gestor
+Total de RNC de Auditorias em Análise da Causa Raiz
+Total de RNC de Auditorias com Plano de Ação Finalizado
+Total de RNC de Auditorias em Avaliação da Eficácia
+Total de RNC de Auditorias Recusado pela Avaliação da Eficácia
+Total de RNC de Auditorias com Avaliação da Eficácia Finalizada
+
+Atualização Mensal
+Total de Auditorias Novas
+
+Avisos (Card)
+
+Continuação: Implementar uma nova Home para melhorar a experiência de navegabilidade e tornar a interface com o usuário mais amigável
+
+(Continuação)
+Alertas Enviados (Card)
+
+Dashboard
+
+Gerar as estatísticas:
+por unidade
+por período
+por responsável
+etc.
+
+Os dashboards devem ser apresentados em forma gráfica e em forma de tabelas
+
+Os Dashboard deverão ser gerados por unidade, por período e por responsável.
+
+O cabeçalho pode conter informações para acessos rápidos. Veja o exemplo da imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir a Home com dados de duas unidades/períodos/responsáveis; conferir todos os indicadores descritos, comparar gráfico/tabela e clicar em um card para abrir apenas os registros correspondentes.
+
+------------------------------------------------------------------------------
+AUD-167 — Criar o Link Minhas Auditorias
+
+Origem: item 167; T099/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Veja o item 5.1 acima
+
+Talvez esse item já esteja implementado no módulo
+
+CRITÉRIO DE ACEITE PROPOSTO
+Entrar com dois usuários com responsabilidades distintas e conferir que a visão pessoal e a consulta gerencial autorizada apresentam os conjuntos corretos.
+
+------------------------------------------------------------------------------
+AUD-168 — Gerar Histórico automático das mudanças feitas na tabela de Gestão de Auditoria
+
+Origem: item 168; T099/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Gerar um log das mudanças feita nos registros da tabela de Auditoria. Creio que a aplicação de logs para todas as ações do sistema (vide item 16) é uma maneira de implementar essa funcionalidade.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Alterar um registro autorizado e consultar o histórico para identificar operação, registro, usuário e data; conferir acesso e retenção conforme política definida.
+
+------------------------------------------------------------------------------
+AUD-170 — Gerar automaticamente as informações das Auditorias via IA a partir do upload do documento
+
+Origem: item 170; T100/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Extrair dados de documentos carregados que servirão de evidência da Auditoria (da mesma forma como foi aplicado no novo GED-E)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Carregar documento de teste com dados conhecidos, comparar campos extraídos com o original e aplicar o procedimento aprovado para valores ausentes, divergentes ou ilegíveis. Política de confirmação humana deve ser definida.
+
+------------------------------------------------------------------------------
+AUD-171 — Criar um visual mais "clean" para a Tabela de Gestão de Auditoria
+
+Origem: item 171; T100/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O visual atual torna a experiência pouco agradável. Temos que partir para ícones, "flags"ou coisas do gênero.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Revisar a tela com registros de diferentes situações, confirmar ícones/sinalizadores e legibilidade dos estados com os mesmos dados de origem.
+
+------------------------------------------------------------------------------
+AUD-172 — Visualizar pendências do usuário.
+
+Origem: item 172; T100/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Através do ícone de um sininho é possível visualizar, de modo rápido e resumido, todas as pendências (do usuário logado):
+
+
+
+A imagem abaixo apresenta o resultado da consulta ao clicar no sininho. Na realidade ao clicar no sininho aparece uma versão com informações resumidas das pendências (o exemplo da figura abaixo é do módulo de licenças. Algo parecido terá que ser aplicado para o módulo de Auditoria):
+
+
+
+
+
+
+
+
+
+
+Em algum outro link deve aparecer uma versão com informações mais completas, como na imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Com dois usuários, conferir resumo e lista completa de pendências do usuário logado e testar resolução/atualização sem expor itens não autorizados.
+
+------------------------------------------------------------------------------
+AUD-173 — Visualizar o que tem agendado para o usuário
+
+Origem: item 173; T100/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Poderia ser adotado, por exemplo, o ícone de uma agenda para visualizar, de modo rápido e resumido, todas as ações futuras (do usuário logado). Essa é apenas 1 ideia. O importante é que exista uma agenda de pendências viva para o usuário que está logado para o módulo de Auditoria:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Criar evento futuro relacionado ao módulo e conferir data, responsável e acesso ao registro pela agenda pessoal/gerencial autorizada.
+
+------------------------------------------------------------------------------
+AUD-174 — Fluxo do estágio em que o processo se encontra tipo "Entrega do Mercado Livre" (como foi aplicado no caso do GED-E)
+
+Origem: item 174; T101/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse fluxo é bem interessante de ser aplicado em todos os módulos. As atividades de todos os módulos, de alguma forma, funcionam como um processo. Seguem o workflow do módulo:
+
+. No módulo Auditoria a pessoa:
+1- cadastra a ocorrência
+2- define o gestor responsável pela ocorrência
+3- classifica a ocorrência
+4- define a ação imediata da ocorrência
+5- avalia abrangência da ocorrência
+6- define o responsável pela análise da causa raiz
+7- analisa a causa raiz da ocorrência
+8- define o plano de ação corretiva
+9- finaliza o plano de ação corretiva
+10- avalia a eficácia da ação corretiva
+11- encerra a Auditoria
+
+CRITÉRIO DE ACEITE PROPOSTO
+Percorrer as etapas descritas com um registro de teste, conferir destaque do estágio atual e preservar etapas facultativas; validar transições e retornos após esclarecimento das pendências.
+
+------------------------------------------------------------------------------
+AUD-175 — Prever o link "Ajuda" / "Como Funciona" em todos os módulos para servir como um treinamento para o usuário.
+
+Origem: item 175; T101/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Nesse link poderíamos carregar o texto da ajuda e um vídeo mostrando como o sistema funciona
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir Ajuda/Como Funciona no módulo e conferir texto e vídeo configurado explicando o processo correspondente.
+
+------------------------------------------------------------------------------
+AUD-176 — Linkar módulo de auditoria com módulo RNC
+
+Origem: item 176; T101/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Creio que essa relação já exista no Green atual. De qualquer forma, temos que ter a possibilidade de linkar os módulos
+
+CRITÉRIO DE ACEITE PROPOSTO
+Relacionar ocorrência/RNC à auditoria e confirmar navegação e identificação da origem sem perder estados próprios de cada processo.
+
+------------------------------------------------------------------------------
+AUD-177 — Linkar módulo de homologação com o módulo de auditoria
+
+Origem: item 177; T101/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+A ligação ocorre quando o cliente do módulo de homologação optar por fazer uma auditoria em fornecedor
+
+CRITÉRIO DE ACEITE PROPOSTO
+Solicitar auditoria do fornecedor na Homologação e conferir vínculo com fornecedor e acesso pelo módulo Auditoria.
+
+
+CORREÇÕES DE MENUS, FORMULÁRIOS E DEFEITOS RELATADOS
+A sequência e as colunas de localização da fonte são preservadas abaixo. Células
+vazias herdam o contexto da árvore da linha anterior. OK significa sem alteração
+específica solicitada nesta revisão; não significa teste realizado. Perguntas e
+expressões como talvez/creio continuam pendentes, mesmo neste catálogo.
+
+AUD-COR-001 | Origem T097/R000
+Localização na fonte: Auditorias
+Pedido/observação:
+(sem alteração específica descrita)
+
+AUD-COR-002 | Origem T097/R001
+Localização na fonte: Em Planejamento
+Pedido/observação:
+OK
+
+AUD-COR-003 | Origem T097/R002
+Localização na fonte: Em Avaliação
+Pedido/observação:
+Aba Avaliação:
+A aba está com pau. Não foi possível avaliar seu conteúdo
+
+Aba Workflow:
+Mudar o texto no cabeçalho da Tabela de "Ocorrencia" para "Ocorrência"
+
+Mudar o texto no cabeçalho da Tabela de "Usuario" para "Usuário"
+
+AUD-COR-004 | Origem T097/R003
+Localização na fonte: Em Execução
+Pedido/observação:
+Aba Execução:
+A aba está com pau. Não foi possível avaliar seu conteúdo
+
+Aba Avaliação:
+A aba está com pau. Não foi possível avaliar seu conteúdo
+
+Aba Workflow:
+Mudar o texto no cabeçalho da Tabela de "Ocorrencia" para "Ocorrência"
+
+Mudar o texto no cabeçalho da Tabela de "Usuario" para "Usuário"
+
+AUD-COR-005 | Origem T097/R004
+Localização na fonte: Encerradas
+Pedido/observação:
+Aba Execução:
+A aba está com pau. Não foi possível avaliar seu conteúdo
+
+Aba Avaliação:
+A aba está com pau. Não foi possível avaliar seu conteúdo
+
+Aba Workflow:
+Mudar o texto no cabeçalho da Tabela de "Ocorrencia" para "Ocorrência"
+
+Mudar o texto no cabeçalho da Tabela de "Usuario" para "Usuário"
+
+Aba Não Conformidade:
+Mudar o texto no cabeçalho da Tabela de "Providencia" para "Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da Providencia" para "Análise da Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Plano de ação encerrado?" para "Plano de Ação Encerrado?"
+
+AUD-COR-006 | Origem T097/R005
+Localização na fonte: Canceladas
+Pedido/observação:
+Aba Execução:
+A aba está com pau. Não foi possível avaliar seu conteúdo
+
+Aba Avaliação:
+A aba está com pau. Não foi possível avaliar seu conteúdo
+
+Aba Workflow:
+Mudar o texto no cabeçalho da Tabela de "Ocorrencia" para "Ocorrência"
+
+Mudar o texto no cabeçalho da Tabela de "Usuario" para "Usuário"
+
+AUD-COR-007 | Origem T097/R006
+Localização na fonte: Recusadas
+Pedido/observação:
+Aba Avaliação:
+A aba está com pau. Não foi possível avaliar seu conteúdo
+
+Aba Workflow:
+Mudar o texto no cabeçalho da Tabela de "Ocorrencia" para "Ocorrência"
+
+Mudar o texto no cabeçalho da Tabela de "Usuario" para "Usuário"
+
+ACEITE DAS CORREÇÕES
+Conferir cada substituição textual na tela/aba/formulário indicado, sem trocar nomes
+de campos físicos por inferência. Nos defeitos, reproduzir o erro, corrigir e testar
+consulta/gravação/avanço com registro válido e perfil autorizado. Registrar perguntas
+pendentes antes de alterar regras. Testar especialmente os itens específicos da Crown.
+
+
+VALIDAÇÃO DO PACOTE
+Este TXT deve ser revisado em conjunto com as dependências indicadas. A implementação
+exige acesso ao código e banco atuais, ausentes deste anexo. As condições de aceite
+são propostas de homologação funcional, não resultados de testes já executados.

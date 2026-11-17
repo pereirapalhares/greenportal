@@ -1,0 +1,49 @@
+CONTROLE DE ORFAOS E REPROCESSAMENTO DE MIGRACOES
+
+1. Tabela de auditoria
+
+Cada banco destino possui a tabela migracao_registros_orfaos, com:
+- codorfao: chave primaria;
+- dados: VARCHAR(5000) contendo JSON do registro, origem, destino, solicitacao, tabela e motivo;
+- encontrado_em: data e hora da identificacao.
+
+Registros repetidos com o mesmo JSON nao sao inseridos novamente. Registros maiores que 5.000 bytes sao compactados em base64 dentro do JSON, mantendo a estrutura valida.
+
+2. Tratamento
+
+Registros com lei inexistente, licenca inexistente ou referencia estrangeira sem pai sao armazenados na auditoria e nao sao enviados ao destino. A migracao continua e o relatorio informa as quantidades.
+
+3. Reprocessamento
+
+A procedure sp_migracao_solicitacao_reprocessar permite reiniciar solicitacoes em ERRO. Ela limpa as etapas pendentes, registra o evento e retorna a solicitacao para EM_EXECUCAO.
+
+4. Worker
+
+Falhas de executaveis externos agora registram o codigo de retorno e o stderr tecnico. O caminho GED e normalizado para o padrao E:\projetoGreen\GED\green_<empresa>.
+
+5. Consulta administrativa
+
+O popup administracao_migracao_log.php apresenta os ultimos registros orfaos do banco destino junto com os logs da solicitacao.
+
+Atualizacoes operacionais:
+- o relatorio JSON da migracao agora informa `orfaos_total` e a politica `registrar_e_nao_enviar`;
+- relacionamentos conhecidos sem FK declarada tambem sao auditados, incluindo infraestrutura/unidade, monitoramento, LPRO e documentos LAIS;
+- o popup possui busca textual, filtro por tabela, filtro por motivo e paginacao;
+- o popup possui filtros por periodo e exportacao CSV dos registros filtrados;
+- o caminho GED informado com `Green_` e persistido tambem em `path_ged_normalizado`, sem mover arquivos;
+- o importador da estrutura usa o mesmo diagnostico de stderr e codigo de retorno dos demais comandos externos;
+- relacionamentos conhecidos agora sao validados contra as chaves existentes no legado antes da insercao; leis inexistentes, licencas ausentes e esses vinculos nao participam da carga;
+- o relatorio separa `orfaos_ignorados_antes_da_carga` de `orfaos_detectados_apos_a_carga` e evita duplicidade na contagem.
+- a validacao pre-carga somente e aplicada quando a tabela pai existe em pelo menos uma origem;
+- a etapa `AUDITAR_ORFAOS` fica registrada separadamente no worker;
+- `scripts/simular-migracao.php` executa um dry-run sem criar banco, backup ou carga, gerando relatorio JSON para validacao previa.
+
+Prompts de IA:
+- `gmodelo_dbp` e a fonte oficial dos prompts;
+- `scripts/replicar-prompts-ia.php --target=*` replica prompts e configuracoes para todos os bancos novos cadastrados;
+- o worker de migracao executa a replicacao para o banco destino antes da carga do Modulo Legal;
+- a replicacao usa procedures no banco alvo e preserva os prompts em PT, EN e ES, versao e status ativo.
+- a replicacao e uma etapa formal `REPLICAR_PROMPTS_IA` para novas solicitacoes;
+- cada banco alvo registra `REPLICACAO_PROMPTS_IA` em `registros_migracao`;
+- bancos cadastrados mas inexistentes sao classificados como `BANCO_NAO_EXISTE`, sem tentativa de criacao nessa rotina;
+- bancos existentes sem `ia_prompts` sao classificados como `SEM_ESTRUTURA_IA`.

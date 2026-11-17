@@ -1,0 +1,843 @@
+GREEN PORTAL - ANALISE PRELIMINAR DA MIGRACAO
+MODULO GESTAO DE NAO CONFORMIDADES
+
+Data da analise: 21/08/2026
+Origem: banco green_modelo
+Destino previsto: banco gmodelo_dbp
+Escopo: tabelas cujo nome inicia exatamente com nc_
+
+===============================================================================
+1. ESCOPO IDENTIFICADO
+===============================================================================
+
+Foram encontradas 25 tabelas com o prefixo nc_ no banco green_modelo.
+
+As tabelas nearmiss_nc_ nao fazem parte deste escopo, pois seus nomes nao
+iniciam com nc_. Elas deverao ser tratadas em uma migracao separada, caso
+necessario.
+
+Tabelas identificadas:
+
+- nc_categorias
+- nc_causas
+- nc_classificacao_fornecedor
+- nc_clientes
+- nc_indicacao_ocorrencia
+- nc_listadistribuicao
+- nc_listadistribuicaoxcategoria
+- nc_listadistribuicaoxusuarios
+- nc_origemacao
+- nc_planodeacao
+- nc_planodeacao_historico
+- nc_produtos
+- nc_setores
+- nc_siglagestao
+- nc_tamanho_da_lata
+- nc_tipo_de_naoconformidade
+- nc_tipo_de_naoconformidadexcampos
+- nc_tipo_de_reclamacao
+- nc_tipo_de_tampa
+- nc_tipoacao
+- nc_tipodedocumento
+- nc_tipoocorrencia
+- nc_tiporeclamacao
+- nc_tipos_causas
+- nc_unidadesdocliente
+
+===============================================================================
+2. VOLUMETRIA ENCONTRADA
+===============================================================================
+
+Principais volumes:
+
+- nc_indicacao_ocorrencia: 3.620 registros
+- nc_causas: 4.695 registros
+- nc_planodeacao: 10.028 registros
+- nc_planodeacao_historico: 0 registros
+- nc_tipo_de_naoconformidadexcampos: 116 registros
+- nc_tiporeclamacao: 81 registros
+- nc_tipo_de_reclamacao: 81 registros
+- nc_unidadesdocliente: 43 registros
+- nc_produtos: 54 registros
+- nc_clientes: 18 registros
+- nc_listadistribuicaoxusuarios: 18 registros
+
+Outras tabelas possuem poucos registros ou estao vazias. As tabelas vazias nao
+devem ser descartadas automaticamente, pois fazem parte do modelo funcional e
+podem receber dados posteriormente.
+
+===============================================================================
+3. MODELO FUNCIONAL ENTENDIDO
+===============================================================================
+
+O nucleo do modulo e formado pelo fluxo:
+
+  Ocorrencia
+      |
+      +-- Causas
+              |
+              +-- Planos de acao
+                      |
+                      +-- Historico do plano
+
+Tabela principal da ocorrencia:
+
+- nc_indicacao_ocorrencia
+
+Ela concentra identificacao, descricao, providencias, datas, etapa, situacao,
+usuarios envolvidos, unidade, tipo de ocorrencia, origem, produto, cliente,
+fornecedor, tipo de nao conformidade e dados especificos de reclamacoes.
+
+Relacionamentos principais inferidos pelos campos:
+
+- nc_causas.CODOCORRENCIA -> nc_indicacao_ocorrencia.CODOCORRENCIA
+- nc_planodeacao.CODCAUSA -> nc_causas.CODCAUSA
+- nc_planodeacao.CODOCORRENCIA -> nc_indicacao_ocorrencia.CODOCORRENCIA
+- nc_planodeacao_historico.CODPLANOACAO -> nc_planodeacao.CODPLANOACAO
+- nc_listadistribuicaoxcategoria.CODLISTA -> nc_listadistribuicao.CODLISTA
+- nc_listadistribuicaoxcategoria.CODCATEGORIA -> nc_categorias.CODCATEGORIA
+- nc_listadistribuicaoxusuarios.CODLISTA -> nc_listadistribuicao.CODLISTA
+- nc_listadistribuicaoxusuarios.CODUSUARIO -> cadastro de usuarios
+- nc_tipo_de_naoconformidadexcampos.CODTIPONAOCONFORMIDADE ->
+  nc_tipo_de_naoconformidade.CODTIPONAOCONFORMIDADE
+
+===============================================================================
+4. DEPENDENCIAS EXTERNAS
+===============================================================================
+
+As tabelas nc_ tambem dependem de cadastros que nao possuem o prefixo nc_,
+incluindo:
+
+- unidades;
+- areas;
+- usuarios;
+- fornecedores;
+- documentos;
+- produtos e clientes, conforme o contexto da ocorrencia.
+
+As views legadas tambem referenciam o banco green_modelo_seguranca para obter
+nomes de usuarios e referenciam tabelas de fornecedores e demais cadastros.
+
+Portanto, a migracao das tabelas nc_ precisa considerar a compatibilidade com
+esses cadastros no tenant gmodelo_dbp. Copiar somente as tabelas nc_ nao sera
+suficiente para restaurar todas as consultas e telas.
+
+===============================================================================
+5. VIEWS, FUNCOES E PROCEDURES LEGADAS
+===============================================================================
+
+Foram encontradas views relacionadas ao modulo, entre elas:
+
+- view_nc_indicacao_ocorrencia_clientes
+- view_nc_planodeacao_dashboard
+- view_nc_planodeacao_dashboard_temp
+- view_nc_porarea_dashboard
+- view_nc_poretapa_dashboard
+- view_nc_porgestao_dashboard
+- view_nc_pororigemdaocorrencia_dashboard
+- view_nc_portipodeacao_dashboard
+- view_nc_portipodeocorrencia_dashboard
+- vw_nc_pendencias_por_usuario
+- vlistadeocorrenciasnc
+
+Tambem existem rotinas de negocio:
+
+- getQtdDias_nc_planodeacao
+- getStatusPlanoAcaoNC
+- getNCPendentes
+
+Essas rotinas calculam prazo, encerramento/status dos planos de acao e
+pendencias por usuario. Elas nao podem ser copiadas sem revisao, pois algumas
+referencias ainda apontam para green_modelo e green_modelo_seguranca.
+
+===============================================================================
+6. RISCOS E INCONSISTENCIAS ENCONTRADOS
+===============================================================================
+
+6.1 Engines diferentes
+
+Parte das tabelas usa InnoDB e parte usa MyISAM. O destino deve ser padronizado
+em InnoDB para permitir transacoes, integridade referencial e recuperacao mais
+segura.
+
+6.2 Codificacao antiga
+
+As tabelas estao em latin1_swedish_ci. A migracao devera converter os dados e
+estruturas para utf8mb4, preservando acentos e evitando problemas de texto.
+
+6.3 Ausencia de chaves estrangeiras formais
+
+Nao foram encontradas foreign keys formais entre as tabelas nc_. Os vinculos
+existem principalmente por convencao de nomes de colunas. A criacao de foreign
+keys no destino deve ocorrer somente depois da validacao dos dados.
+
+6.4 Registros orfaos
+
+Na verificacao preliminar foram encontrados:
+
+- 10 planos de acao com CODCAUSA sem causa correspondente;
+- 5 planos de acao com CODOCORRENCIA sem ocorrencia correspondente;
+- nenhum caso orfao encontrado no historico de planos em relacao ao plano.
+
+Esses registros precisam ser classificados antes da criacao de constraints:
+preservar, corrigir, encaminhar para tabela de rejeitados ou excluir somente
+com autorizacao explicita.
+
+6.5 Tabelas aparentemente duplicadas
+
+Existem duas tabelas de tipos de reclamacao:
+
+- nc_tipo_de_reclamacao, com chave codtipodereclamacao;
+- nc_tiporeclamacao, com chave codtiporeclamacao.
+
+As duas possuem 81 registros equivalentes. A tabela oficial do novo modulo
+devera ser definida antes da criacao das views e telas.
+
+6.6 Nomes e campos legados
+
+Ha nomes inconsistentes, abreviacoes e possiveis erros historicos, como
+PRAZO_ANALIZE, data_de_reposta_do_fornecedor e
+pass_pela_nanalise_eficacia. Nesta primeira fase, os nomes devem ser
+preservados para manter compatibilidade; uma eventual normalizacao deve ser
+feita com aliases e documentacao.
+
+===============================================================================
+7. SITUACAO ATUAL DO PROJETO
+===============================================================================
+
+O banco gmodelo_dbp ainda nao possui tabelas nc_.
+
+O projeto Green Portal ja possui:
+
+- procedures CRUD genericas;
+- padrao de migracoes SQL numeradas;
+- padrao de views para grids;
+- padrao de menus, permissoes e preferencias;
+- padrao de conversao para utf8mb4/InnoDB em outros modulos.
+
+Entretanto, nao foi localizada uma implementacao ativa completa do modulo de
+Gestao de Nao Conformidades no projeto atual. Tambem nao foi localizada uma
+migracao SQL pronta para as tabelas nc_.
+
+===============================================================================
+8. ESTRATEGIA RECOMENDADA
+===============================================================================
+
+Fase 1 - Inventario e estrutura
+
+- criar a migracao estrutural das 25 tabelas;
+- preservar chaves primarias, auto_increment e nomes de campos;
+- converter tabelas para InnoDB e utf8mb4;
+- registrar a migracao em registros_migracao.
+
+Fase 2 - Qualidade e carga de dados
+
+- migrar dados usando INSERT controlado;
+- validar acentuacao e datas;
+- gerar relatorio de orfaos;
+- decidir o tratamento dos 15 orfaos identificados;
+- confirmar a tabela oficial de tipos de reclamacao.
+
+Fase 3 - Integridade e consultas
+
+- criar indices para os campos de relacionamento;
+- criar foreign keys somente apos a limpeza;
+- adaptar views para gmodelo_dbp;
+- revisar dependencias de usuarios, unidades, areas e fornecedores;
+- migrar ou reescrever as tres rotinas de negocio.
+
+Fase 4 - Aplicacao
+
+- identificar as transacoes legadas do modulo;
+- criar menus e permissoes;
+- criar a tela principal de ocorrencias;
+- criar telas contextuais de causas e planos de acao;
+- criar consulta de pendencias e dashboards, se fizerem parte do escopo.
+
+Fase 5 - Testes
+
+- validar contagem origem/destino;
+- validar amostras de ocorrencias, causas e planos;
+- testar INSERT, UPDATE e DELETE controlados no tenant Modelo;
+- testar filtros, usuarios, etapas e pendencias;
+- comparar resultados das views legadas e migradas.
+
+===============================================================================
+9. CONCLUSAO
+===============================================================================
+
+A migracao nao deve ser tratada como uma simples copia de tabelas. O modulo
+possui uma cadeia operacional de ocorrencias, causas, planos e historico,
+alem de regras de negocio implementadas em views, funcoes e procedures.
+
+O primeiro passo recomendado e preparar uma migracao estrutural e um relatorio
+de qualidade dos dados, sem criar ainda as foreign keys definitivas. Depois da
+validacao dos orfaos e da decisao sobre as tabelas duplicadas, sera possivel
+fazer a carga segura no gmodelo_dbp e iniciar a implementacao das telas.
+
+As alteracoes de execucao estao registradas nas secoes 10, 11 e 12 deste
+documento.
+
+===============================================================================
+10. EXECUCAO DA FASE 1 - 21/08/2026
+===============================================================================
+
+A fase estrutural e de carga foi executada pelo script:
+
+- database/105_migrar_modulo_gestao_nao_conformidades.sql
+
+Resultado:
+
+- 25 tabelas criadas no banco gmodelo_dbp;
+- 25 tabelas convertidas para InnoDB;
+- tabelas convertidas para utf8mb4_0900_ai_ci;
+- dados carregados preservando as chaves primarias;
+- contagens de registros da origem e do destino conferidas e iguais;
+- migracao registrada como MODULO_NC_105 em registros_migracao;
+- quantidade registrada para as tres tabelas principais: 18.343 registros;
+- registros orfaos foram preservados para analise posterior;
+- nenhuma foreign key definitiva foi criada;
+- nenhuma view, funcao ou procedure legada foi migrada nesta fase.
+
+Durante a execucao, a tabela nc_indicacao_ocorrencia excedeu o limite de
+tamanho de linha ao converter VARCHARs longos para utf8mb4. Para concluir a
+migracao, os campos textuais longos foram convertidos para MEDIUMTEXT no
+destino, preservando o conteudo e evitando truncamento. A mesma adequacao foi
+aplicada aos campos longos de nc_planodeacao e
+nc_planodeacao_historico.
+
+Os 15 registros orfaos identificados na analise continuam preservados:
+
+- 10 planos com CODCAUSA sem causa correspondente;
+- 5 planos com CODOCORRENCIA sem ocorrencia correspondente.
+
+Proxima fase recomendada: validar os dados orfaos e as dependencias externas,
+depois migrar/adaptar as views, funcoes e procedures antes de criar as telas e
+as foreign keys definitivas.
+
+===============================================================================
+11. EXECUCAO DA FASE 2 - ADAPTACAO DE VIEWS E ROTINAS - 21/08/2026
+===============================================================================
+
+Foi executado o script:
+
+- database/106_adaptar_views_rotinas_modulo_nc.sql
+
+Resultado:
+
+- 11 views legadas recriadas no schema gmodelo_dbp;
+- 2 funcoes migradas: getQtdDias_nc_planodeacao e getStatusPlanoAcaoNC;
+- 1 procedure migrada: getNCPendentes;
+- referencias de green_modelo substituidas por gmodelo_dbp;
+- referencias de usuarios legados mapeadas para gmodelo_dbp.usuarios;
+- views testadas com consultas reais no banco de destino;
+- migracao registrada como MODULO_NC_106 em registros_migracao.
+
+Consultas de validacao executadas com sucesso:
+
+- vlistadeocorrenciasnc: 3.620 registros;
+- vw_nc_pendencias_por_usuario: 631 registros;
+- view_nc_indicacao_ocorrencia_clientes: 5 registros;
+- view_nc_planodeacao_dashboard: 585 registros;
+- view_nc_porarea_dashboard: 1.794 registros.
+
+Observacao funcional: a procedure legada getNCPendentes preserva uma regra
+existente que pode retornar ocorrencias sem filtrar todos os ramos por usuario.
+Ela devera ser revisada durante a implementacao das telas e dos testes de
+permissao, sem alterar seu comportamento nesta fase de compatibilidade.
+
+Foreign keys e telas continuam pendentes. O proximo passo recomendado e fazer
+a validacao dos relacionamentos e dos registros orfaos no destino, definir o
+tratamento da duplicidade entre nc_tipo_de_reclamacao e nc_tiporeclamacao e
+somente depois criar as constraints definitivas.
+
+===============================================================================
+12. EXECUCAO DA FASE 3 - INTEGRIDADE E DUPLICIDADE - 21/08/2026
+===============================================================================
+
+Foi executado o script:
+
+- database/107_integridade_modulo_nc.sql
+
+Resultado:
+
+- 7 indices de apoio criados ou confirmados;
+- 7 foreign keys criadas nas relacoes sem registros orfaos;
+- view_nc_indicacao_ocorrencia_clientes ajustada para usar
+  nc_tiporeclamacao;
+- tabela duplicada gmodelo_dbp.nc_tipo_de_reclamacao descartada;
+- tabela de origem green_modelo.nc_tipo_de_reclamacao preservada;
+- dados das tabelas do modulo nao foram excluidos ou alterados;
+- migracao registrada como MODULO_NC_107 em gmodelo_dbp.registros_migracao.
+
+Foreign keys criadas:
+
+- nc_causas.CODOCORRENCIA -> nc_indicacao_ocorrencia.CODOCORRENCIA;
+- nc_indicacao_ocorrencia.CODTIPONAOCONFORMIDADE ->
+  nc_tipo_de_naoconformidade.CODTIPONAOCONFORMIDADE;
+- nc_tipo_de_naoconformidadexcampos.CODTIPONAOCONFORMIDADE ->
+  nc_tipo_de_naoconformidade.CODTIPONAOCONFORMIDADE;
+- relacionamentos de listas com categorias e listas de usuarios;
+- nc_planodeacao_historico.CODPLANOACAO -> nc_planodeacao.CODPLANOACAO.
+
+As relacoes com orfaos permanecem sem foreign key, conforme autorizado:
+
+- 10 planos com CODCAUSA sem causa correspondente;
+- 5 planos com CODOCORRENCIA sem ocorrencia correspondente;
+- 178 causas com tipo de causa inexistente;
+- ocorrencias com referencias legadas inexistentes em tipos, origem e sigla;
+- 2 relacionamentos de lista com usuario sem usuario correspondente.
+
+Os orfaos foram mantidos para nao eliminar historico nem alterar dados do
+tenant. A revisao da procedure getNCPendentes e a construcao das telas seguem
+como proximas atividades.
+
+===============================================================================
+13. EXECUCAO DA FASE 4 - CORRECAO DE getNCPendentes - 21/08/2026
+===============================================================================
+
+Foi executado o script:
+
+- database/108_corrigir_getNCPendentes.sql
+
+Alteracoes realizadas:
+
+- textos de etapa corrigidos para UTF-8, incluindo Plano de Ação e Avaliação
+  da Eficacia;
+- ramo final que retornava Plano de Ação sem filtro de usuario removido;
+- subconsultas convertidas para EXISTS e NOT EXISTS;
+- juncoes principais convertidas para INNER JOIN explicito com aliases;
+- procedure mantida somente com os seis ramos de pendencia vinculados ao
+  usuario informado;
+- migracao registrada como MODULO_NC_108.
+
+Validacao realizada:
+
+- usuario inexistente 888888: nenhum registro retornado;
+- usuario 27: registros retornados nas etapas Avaliação da Eficacia e Plano
+  de Ação, sempre relacionados ao usuario;
+- usuario 291: registros retornados nas etapas Avaliação da Eficacia, Com o
+  Gestor e Plano de Ação, sempre relacionados ao usuario;
+- a definicao da procedure nao possui mais literais corrompidos nem ramo
+  amplo sem referencia ao parametro in_codusurio.
+
+===============================================================================
+14. CONSOLIDACAO DO TRABALHO EXECUTADO
+===============================================================================
+
+O trabalho realizado ate o momento ficou organizado nas seguintes etapas:
+
+1. Analise do escopo: identificadas as 25 tabelas iniciadas por nc_ no banco
+   green_modelo, seus volumes, dependencias, views, funcoes e procedures.
+
+2. Migracao estrutural e de dados: executado o script
+   database/105_migrar_modulo_gestao_nao_conformidades.sql, criando e
+   carregando as tabelas no gmodelo_dbp. As contagens de origem e destino
+   foram conferidas e os 15 orfaos principais foram preservados.
+
+3. Adaptacao de objetos legados: executado o script
+   database/106_adaptar_views_rotinas_modulo_nc.sql, migrando 11 views, 2
+   funcoes e 1 procedure para o destino. As referencias de schema foram
+   ajustadas e os usuarios legados foram mapeados para gmodelo_dbp.usuarios.
+
+4. Integridade e duplicidade: executado o script
+   database/107_integridade_modulo_nc.sql, criando 7 indices e 7 foreign
+   keys em relacoes sem orfaos. A tabela duplicada
+   gmodelo_dbp.nc_tipo_de_reclamacao foi descartada, enquanto a tabela
+   green_modelo.nc_tipo_de_reclamacao foi mantida conforme decisao registrada.
+
+5. Correcao da procedure: executado o script
+   database/108_corrigir_getNCPendentes.sql, corrigindo UTF-8, filtros de
+   usuario, juncoes e subconsultas. A procedure foi validada com usuarios
+   existentes e inexistentes.
+
+Registros de controle gravados em gmodelo_dbp.registros_migracao:
+
+- MODULO_NC_105: migracao de 25 tabelas e 18.343 registros principais;
+- MODULO_NC_106: 11 views, 2 funcoes e 1 procedure;
+- MODULO_NC_107: 7 indices, 7 foreign keys e tratamento da duplicidade;
+- MODULO_NC_108: correcao e validacao de getNCPendentes.
+
+Situacao atual:
+
+- estrutura e dados do modulo migrados para gmodelo_dbp;
+- objetos legados adaptados para o novo banco;
+- integridade parcial aplicada sem eliminar registros orfaos;
+- tabela duplicada definida pelo usuario tratada;
+- procedure de pendencias corrigida e testada;
+- nenhuma tabela de origem foi excluida;
+- nenhuma tela do modulo foi criada ou adaptada ainda.
+
+Pendencias para a proxima fase:
+
+- revisar a regra funcional da procedure getNCPendentes com os responsaveis
+  do modulo;
+- definir o tratamento futuro dos registros orfaos, sem apagar historico;
+- executar testes controlados de INSERT, UPDATE e DELETE nas tabelas NC;
+- adaptar as telas, grids, formularios e permissoes do modulo;
+- testar o fluxo completo de ocorrencia, causa, plano e encerramento.
+
+===============================================================================
+15. IMPLEMENTACAO DO MENU E DA LISTA GERAL DE OCORRENCIAS - 21/08/2026
+===============================================================================
+
+Foi criado o arquivo da nova transacao:
+
+- principal/naoconformidades_listageralocorrencias.php
+
+Foi executado o script:
+
+- database/109_menu_nao_conformidades_lista_geral.sql
+
+Implementacao realizada:
+
+- menu pai: NAO_CONFORMIDADES / Nao Conformidades;
+- submenu: NAO_CONFORMIDADES_LISTA_OCORRENCIAS / Lista geral de ocorrencias;
+- URL: /principal/naoconformidades_listageralocorrencias.php;
+- view utilizada: gmodelo_dbp.vlistadeocorrenciasnc;
+- grid baseado no componente padrao ManutencaoLegalCadastroGrid;
+- 31 colunas funcionais mantidas na ordem do legado;
+- codigo da ocorrencia mantido como chave tecnica oculta;
+- grid configurado como somente leitura;
+- busca, filtros, paginacao, ordenacao, preferencias, recarregamento e
+  exportacao disponibilizados pelo padrao do projeto;
+- permissoes criadas para os perfis existentes, com visualizacao e
+  exportacao, sem incluir, editar ou excluir registros;
+- sintaxe PHP validada com sucesso;
+- menu, permissoes e registro MENU_NC_LISTA_GERAL_109 conferidos no banco.
+
+A abertura da ocorrencia por duplo clique e as regras de direcionamento para
+os formularios especificos do legado permanecem como etapa complementar da
+transacao, apos a validacao visual e funcional do grid principal.
+
+===============================================================================
+16. ORDENACAO PADRAO DA LISTA GERAL - 21/08/2026
+===============================================================================
+
+Foi definida e aplicada a regra de que a lista geral deve abrir sempre
+ordenada de forma decrescente pelo campo CODOCORRENCIA.
+
+Alteracoes realizadas:
+
+- a transacao declara default_sort = CODOCORRENCIA / desc;
+- o componente padrao passou a aceitar ordenacao inicial configuravel;
+- o javascript grid-sort.js aplica a ordenacao inicial ao carregar o grid;
+- a regra e aplicada independentemente das preferencias salvas do usuario;
+- a versao de cache do grid-sort.js foi incrementada para v3.
+
+Arquivos alterados:
+
+- principal/naoconformidades_listageralocorrencias.php;
+- classes/ManutencaoLegalCadastroGrid.php;
+- assets/js/grid-sort.js.
+
+===============================================================================
+17. CONFIGURACAO E VALIDACAO DOS COMBOBOXES - 21/08/2026
+===============================================================================
+
+Os filtros categoricos foram configurados como comboboxes na transacao:
+
+- principal/naoconformidades_listageralocorrencias.php
+
+Campos configurados como select:
+
+- DSCUNIDADE;
+- ETAPA;
+- NOME_GESTOR;
+- NOME_RESPONSAVEL;
+- NOME_EMISSOR;
+- SITUACAO;
+- DSCAREA;
+- DSCTIPOOCORRENCIA;
+- DSCTIPONAOCONFORMIDADE;
+- DSCLISTA;
+- DSCTIPOACAO;
+- DSCORIGEMACAO;
+- DSCSIGLAGESTAO;
+- ENCERRADO.
+
+Os demais campos permanecem como filtros textuais. As opcoes dos comboboxes
+sao carregadas a partir dos valores distintos da view
+gmodelo_dbp.vlistadeocorrenciasnc.
+
+Durante o teste foi identificado que o backend padrao aplicava LIKE tambem
+para valores selecionados. Para garantir o filtro exato dos comboboxes, foi
+executado:
+
+- database/110_filtros_exatos_combobox_nc.sql
+
+O javascript passou a enviar comboboxes como filtros exatos, mantendo os
+campos de texto com busca parcial. A alteracao foi registrada como
+FILTROS_COMBO_NC_110.
+
+Validacao:
+
+- SITUACAO = EFICAZ: 2.993 registros exatos;
+- SITUACAO textual contendo EFICAZ: 3.076 registros, demonstrando a
+  diferenca entre combobox exato e filtro textual parcial;
+- DSCUNIDADE = Modelo Estancia: 730 registros exatos;
+- total sem filtro: 3.620 registros.
+
+===============================================================================
+18. AVALIACAO DE DESEMPENHO DOS FILTROS - 21/08/2026
+===============================================================================
+
+Foi avaliado o desempenho da busca geral da lista de ocorrencias.
+
+Diagnostico:
+
+- a busca geral usa sp_crud_count e sp_crud_select;
+- o parametro de busca e aplicado com LIKE '%texto%' em todas as colunas
+  textuais da view;
+- a view possui campos MEDIUMTEXT, como DESCRICAO, PROVIDENCIA e analises;
+- LIKE com curinga inicial nao utiliza os indices B-tree existentes;
+- a view tambem calcula ENCERRADO por funcao para cada ocorrencia;
+- os indices da tabela principal estao presentes para NRANO, ETAPA, unidade,
+  area, usuarios e codigos de relacionamento, mas nao resolvem a busca
+  textual ampla com curinga inicial.
+
+Foi identificado ainda que o limite padrao de GROUP_CONCAT, de 1.024 bytes,
+truncava o SQL dinamico da busca geral por causa da quantidade de colunas da
+view. O script database/110_filtros_exatos_combobox_nc.sql foi atualizado para
+usar group_concat_max_len de 1 MB nas procedures sp_crud_count e
+sp_crud_select. A busca voltou a executar corretamente.
+
+Resultados conferidos:
+
+- busca textual por auditoria: 1.628 registros;
+- busca textual por 5003: 3 registros;
+- combobox exato SITUACAO = EFICAZ: 2.993 registros.
+
+Conclusao: os comboboxes com correspondencia exata possuem desempenho melhor
+e aproveitam os relacionamentos indexados. A busca geral continuara mais
+custosa por sua natureza de pesquisa parcial em varias colunas. Como melhoria
+futura, recomenda-se limitar a busca geral a colunas curtas e relevantes ou
+criar uma estrategia de busca textual dedicada, sem incluir os campos longos
+de analise.
+
+===============================================================================
+19. FILTRO PADRAO DE OCORRENCIAS NAO FINALIZADAS - 21/08/2026
+===============================================================================
+
+Foi aplicada a regra funcional da lista geral:
+
+- ao abrir o grid, ocorrencias com ETAPA = Finalizado ficam ocultas;
+- o resultado inicial mostra somente as etapas ainda nao finalizadas;
+- quando o usuario seleciona Finalizado no combobox de Etapa, a regra padrao
+  e substituida e somente as ocorrencias finalizadas sao exibidas;
+- a ordenacao inicial permanece decrescente por CODOCORRENCIA.
+
+A regra foi implementada com filtro padrao configurado na transacao e suporte
+ao operador de exclusao nas procedures de consulta, sem alterar os dados.
+
+Validacao realizada:
+
+- total geral: 3.620 ocorrencias;
+- sem selecionar etapa: 498 ocorrencias nao finalizadas;
+- selecionando Finalizado: 3.122 ocorrencias finalizadas.
+
+===============================================================================
+20. FONTES DOS COMBOBOXES DE DOMINIO - 21/08/2026
+===============================================================================
+
+As opcoes dos comboboxes foram ajustadas para vir dos cadastros de dominio,
+e nao somente dos valores presentes na pagina atual do grid.
+
+Fontes configuradas:
+
+- DSCUNIDADE: unidades;
+- ETAPA e SITUACAO: nc_indicacao_ocorrencia;
+- DSCAREA: areas;
+- DSCTIPOOCORRENCIA: nc_tipoocorrencia e
+  nc_classificacao_fornecedor, pois a view combina as duas origens;
+- DSCTIPONAOCONFORMIDADE: nc_tipo_de_naoconformidade;
+- DSCLISTA: nc_listadistribuicao;
+- DSCTIPOACAO: nc_tipoacao;
+- DSCORIGEMACAO: nc_origemacao;
+- DSCSIGLAGESTAO: nc_siglagestao.
+
+Gestor, responsavel e emitente continuam usando os valores associados as
+ocorrencias, evitando carregar os 2.526 usuarios do cadastro geral sem
+necessidade.
+
+Foi adicionada a configuracao options_sources ao componente padrao
+ManutencaoLegalCadastroGrid. Os arquivos PHP foram validados sem erros.
+
+Durante a validacao, foi identificado que a procedure sp_crud_select limita
+o retorno a 1.000 linhas. Por isso, as fontes dos comboboxes passaram a ser
+consultadas com SELECT DISTINCT diretamente no componente, evitando que a
+ordem fisica das primeiras linhas restringisse as opcoes. O combobox ETAPA
+passou a carregar as 8 etapas encontradas na tabela nc_indicacao_ocorrencia,
+incluindo as etapas nao finalizadas.
+
+Auditoria complementar dos demais comboboxes:
+
+- NOME_GESTOR: corrigido para DISTINCT da view completa, 106 valores;
+- NOME_RESPONSAVEL: corrigido para DISTINCT da view completa, 112 valores;
+- NOME_EMISSOR: corrigido para DISTINCT da view completa, 45 valores;
+- ENCERRADO: corrigido para DISTINCT da view completa, 2 valores.
+
+Esses quatro campos utilizam options_from_view_distinct e nao dependem mais
+do limite de 1.000 linhas da procedure de consulta.
+
+Foi corrigido um erro de collation encontrado durante o carregamento das
+opcoes: a verificacao de texto vazio usava comparacao direta entre
+utf8mb4_general_ci e utf8mb4_0900_ai_ci. A implementacao passou a usar
+LENGTH(TRIM(campo)) > 0, eliminando a comparacao entre collations. Os dois
+arquivos PHP foram novamente validados sem erros.
+
+===============================================================================
+21. PDF SOB DEMANDA DA OCORRENCIA - 21/08/2026
+===============================================================================
+
+Foi implementada a geracao do PDF da ocorrencia selecionada no grid.
+
+Arquivo criado:
+
+- principal/naoconformidade_ocorrenciapdf.php
+
+O endpoint valida sessao, permissao e CODOCORRENCIA, consulta os dados
+principais pela view vlistadeocorrenciasnc, carrega causas, planos de acao e
+historico, e gera o PDF em memoria no momento da solicitacao. O arquivo nao e
+salvo permanentemente e e aberto pelo visualizador PDF.js existente.
+
+O botao PDF foi adicionado como acao geral da transacao
+naoconformidades_listageralocorrencias e e habilitado somente depois que o
+usuario seleciona uma linha.
+
+Arquivos ajustados:
+
+- principal/naoconformidades_listageralocorrencias.php;
+- principal/naoconformidade_ocorrenciapdf.php;
+- assets/js/visualizador-pdf.js;
+- assets/js/manutencao-legal-cadastro.js.
+
+Os arquivos PHP foram validados sem erros de sintaxe.
+
+===============================================================================
+22. FORMATO PROFISSIONAL DO PDF - 21/08/2026
+===============================================================================
+
+O PDF da ocorrencia foi aprimorado para uso dos clientes em consultas. A
+geracao continua sendo feita sob demanda, em memoria, sem criar arquivo
+permanente no servidor.
+
+Melhorias aplicadas:
+
+- cabecalho institucional Green Portal;
+- titulo e subtitulo de consulta;
+- hierarquia visual entre titulo, secoes, campos e textos;
+- secoes destacadas para dados da ocorrencia, causas, planos e historico;
+- quebra automatica de textos longos;
+- rodape com identificacao do documento e numeracao de paginas;
+- fontes Helvetica normal e negrito com suporte a caracteres acentuados;
+- melhor aproveitamento da pagina A4 e quebra automatica em varias paginas.
+
+O botao existente e o visualizador PDF.js permanecem os mesmos. A alteracao
+fica concentrada na apresentacao do documento e nao modifica os dados
+consultados.
+
+===============================================================================
+23. TABELA DE CAUSAS E PLANOS VINCULADOS - 21/08/2026
+===============================================================================
+
+O PDF foi reorganizado para representar a relacao entre causas e planos de
+acao. As causas agora sao exibidas em uma tabela com codigo, tipo e descricao.
+
+Abaixo de cada causa e criada uma subtabela com os respectivos planos de
+acao, contendo codigo, acao, responsavel, status, prioridade e periodo. Dessa
+forma, o cliente consegue identificar diretamente quais providencias pertencem
+a cada causa, sem depender de uma lista geral separada.
+
+Causas sem plano exibem uma mensagem informativa. Planos que eventualmente
+nao possuam uma causa correspondente sao apresentados em uma secao separada,
+para nao serem omitidos do documento.
+
+===============================================================================
+24. AJUSTE DE SOBREPOSICAO NO LAYOUT DAS TABELAS - 21/08/2026
+===============================================================================
+
+Foi corrigida a ordem de desenho da subtabela de planos. O fundo do cabecalho
+agora e desenhado antes dos textos, impedindo que a faixa cubra ou sobreponha
+as informacoes do cabecalho.
+
+Tambem foi preservado o espacamento vertical entre a causa, o cabecalho da
+subtabela, as linhas dos planos e a proxima secao do documento.
+
+===============================================================================
+25. NOVA OCORRENCIA DA EMPRESA E WORKFLOW DE APROVACAO - 21/08/2026
+===============================================================================
+
+Foi criada a transacao NAO_CONFORMIDADES_NOVA_OCORRENCIA_EMPRESA, com tela em
+principal/naoconformidades_novaocorrenciaempresa.php e endpoint protegido em
+principal/api/naoconformidades_novaocorrenciaempresa.php.
+
+O endpoint exige sessao autenticada, permissao da transacao, token CSRF,
+validacao dos campos obrigatorios e comandos PDO parametrizados. O tipo da
+ocorrencia e fixado em 3 (Registro de Nao Conformidade da Empresa). O numero
+da ocorrencia e gravado no formato CODOCORRENCIA/ANO apos a inclusao.
+
+O gestor selecionado somente e aceito se estiver ativo, possuir o perfil
+GESTOR e pertencer ao grupo GESTORES, regra validada novamente no servidor.
+O criador pode salvar como Em criacao ou enviar diretamente para a etapa
+Com o Gestor.
+
+Foi criada a tabela nc_workflow_historico pela migracao
+111_nc_nova_ocorrencia_empresa_workflow.sql. Cada criacao, envio, aprovacao
+ou recusa fica registrada com usuario, etapa, data e motivo.
+
+Na etapa Com o Gestor, somente o gestor atribuido, ainda elegivel e com
+permissao de edicao pode deliberar. A aprovacao encaminha a ocorrencia para
+Em Analise da Causa Raiz. A recusa exige motivo, grava RECUSA_DO_GESTOR e
+altera a etapa para Recusado pelo Gestor.
+
+A tela de deliberacao fica disponivel em
+principal/naoconformidades_aprovacao.php?codigo=CODIGO e reutiliza o mesmo
+endpoint seguro.
+
+===============================================================================
+26. DIRETRIZ DE DATAS E MENSAGENS AO USUARIO - 22/08/2026
+===============================================================================
+
+Campos datetime-local devem ser convertidos no endpoint do formato enviado
+pelo navegador (YYYY-MM-DDTHH:MM) para o formato aceito pelo MySQL
+(YYYY-MM-DD HH:MM:SS). Datas invalidas devem ser rejeitadas antes da gravacao,
+com indicacao do campo e orientacao para uso do seletor do formulario.
+
+Mensagens de validacao devem explicar o que falta ou o que precisa ser
+corrigido. Erros internos nao devem expor SQL ou detalhes tecnicos; devem ser
+registrados no log e apresentados ao usuario como falha operacional com uma
+orientacao para revisar os dados ou tentar novamente.
+
+===============================================================================
+27. MINHAS OCORRENCIAS - 22/08/2026
+===============================================================================
+
+Foi criada a transacao NAO_CONFORMIDADES_MINHAS_OCORRENCIAS, posicionada
+antes da Lista geral de ocorrencias. A tela reutiliza o mesmo layout e as
+mesmas colunas do grid geral, mas a consulta e restringida no servidor ao
+usuario autenticado.
+
+O usuario aparece quando esta envolvido como emitente, gestor, responsavel
+pela analise da causa raiz ou responsavel por plano de acao. A view
+vminhasocorrenciasnc consolida esses vinculos e o grid aplica o usuario como
+filtro de contexto OR, impedindo que o usuario consulte ocorrencias de outros
+participantes por simples alteracao de filtros visuais.
+
+Foi criada a migracao 113_nc_view_minhas_ocorrencias.sql para a view e a
+migracao 114_menu_nc_minhas_ocorrencias.sql para o menu e permissoes. A view
+foi otimizada para consultar a view base uma unica vez.
+
+No teste com o usuario admin, foram identificadas 3.589 ocorrencias envolvidas.
+O grid estava vazio porque herdava o filtro de etapa da Lista geral, que exclui
+Finalizado e nao e interpretado pelo procedimento de contexto. Esse filtro foi
+removido exclusivamente de Minhas ocorrencias.
+
+A consulta inicial da view repetia a view base varias vezes e foi reduzida
+para uma unica leitura da base com consolidacao dos vinculos. O tempo medido
+para a consulta paginada caiu para aproximadamente 2,5 segundos no ambiente
+Modelo, contra mais de 17 segundos na primeira versao.
+
+===============================================================================
+FIM DA ANALISE
+===============================================================================

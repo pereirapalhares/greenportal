@@ -1,0 +1,6 @@
+<?php
+declare(strict_types=1);
+require_once dirname(__DIR__).'/classes/GreenPortalDatabase.php';
+require_once dirname(__DIR__).'/classes/OcrQueueService.php';
+$env=GreenPortalDatabase::env();$pdo=GreenPortalDatabase::connect($env,'gatlas_dbp','GPT');$before=(int)$pdo->query('SELECT COUNT(*) FROM green_ocr_jobs')->fetchColumn();$pdo->beginTransaction();
+try{$queue=new OcrQueueService($pdo,$env);$a=$queue->enqueue(['chave_idempotencia'=>'TEST:OCR:IDEMPOTENCIA','tipo'=>'TESTE','entidade'=>'teste','registro_id'=>'1','arquivo'=>'teste.pdf','caminho_arquivo'=>'E:/teste.pdf','tamanho_bytes'=>1,'codusuario'=>1]);$b=$queue->enqueue(['chave_idempotencia'=>'TEST:OCR:IDEMPOTENCIA','tipo'=>'TESTE','entidade'=>'teste','registro_id'=>'1','arquivo'=>'teste.pdf','caminho_arquivo'=>'E:/teste.pdf','tamanho_bytes'=>1,'codusuario'=>1]);$same=((int)$a['codjob']===(int)$b['codjob']);$pdo->rollBack();$after=(int)$pdo->query('SELECT COUNT(*) FROM green_ocr_jobs')->fetchColumn();echo json_encode(['ok'=>$same&&$before===$after,'idempotente'=>$same,'rollback'=>$before===$after,'antes'=>$before,'depois'=>$after],JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT).PHP_EOL;exit(($same&&$before===$after)?0:1);}catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();throw $e;}

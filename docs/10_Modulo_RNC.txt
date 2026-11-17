@@ -1,0 +1,968 @@
+﻿ESPECIFICAÇÃO FUNCIONAL — GREEN 4.0
+Versão: 1.0 — elaboração em 12/11/2026
+Fonte: Passo a passo mudança no Green4.0 — Revisão G — 13/08/2026.doc.
+Situação: especificação para revisão funcional; não representa validação do software existente.
+
+COMO INTERPRETAR
+- IDs dos requisitos preservam a numeração da fonte. Txxx/Rxxx identifica tabela/linha,
+  contando a partir de zero na ordem do documento, para rastreabilidade sem paginação variável.
+- "Sim" indica solicitação de implementação na fonte, não comprova implementação.
+- Campo "Implementar?" vazio significa decisão pendente. Requisito dependente de outro
+  item marcado Sim é identificado, mas a inconsistência da marcação é preservada.
+- Detalhamento da fonte é reproduzido em cada requisito para conservar campos, exemplos,
+  condições, exceções e fluxos. Exemplos não constituem listas fechadas de domínio.
+- Critérios de aceite e regras consolidadas são operacionalizações propostas para revisão.
+  Decisões ausentes não foram convertidas em regras definitivas.
+- Referências a capturas de concorrentes são referências visuais do DOC original; imagens
+  não são reproduzidas em TXT. Não foram inferidas regras a partir de elementos só visuais.
+- Não há definição de banco físico, linguagem, endpoints ou cronograma nesta versão.
+
+
+10 — Módulo RNC
+
+OBJETIVO
+Especificar as mudanças deste tema preservando o escopo e as ressalvas da Revisão G.
+
+ESCOPO CONSOLIDADO
+Aplicar a nova experiência, risco Alto/Médio/Baixo, histórico, IA documental,
+Minhas RNCs, notificações, agenda e fluxo de gestão, além das correções de textos.
+Preservar distinção entre ocorrências Empresa/Cliente/Fornecedor, Planejamento,
+Assistência Técnica e Solicitações nas correções listadas.
+Defeitos relatados na fonte devem ser reproduzidos e corrigidos: Lista Geral V2 vazia,
+Log do Plano de Ação, Indicadores de Plano de Ação e formulários/avanço de Assistência Técnica.
+Esses relatos não constituem diagnóstico técnico realizado no ambiente atual.
+
+PENDÊNCIAS ESPECÍFICAS
+- Confirmar Motivo da Recusa do Gestor para NC Empresa e Cliente; a fonte pergunta se deve existir.
+- Corrigir ambiguidade Tipo de Tampa versus Tamanho da Tampa; campos de lata/tampa são da Crown.
+- Confirmar transições e retorno após recusa, incluindo eficácia facultativa em Planejamento/AT.
+- Verificar implementação atual de Minhas RNCs antes de criar tela duplicada.
+- Conciliar avaliação de risco do fluxo geral 18.4 com o fluxo específico 164.
+
+REGRAS TRANSVERSAIS E DEPENDÊNCIAS
+Consultar 01_Mudancas_Gerais.txt para Home, permissões por grupo, personalização,
+notificações, agenda, delegação, usuários ativos, idiomas, logs e ajuda.
+As consultas pessoais e gerenciais devem respeitar a permissão de acesso e o âmbito
+da empresa/unidade. Ser responsável não substitui o permissionamento do item 7.
+Cards, gráficos e tabelas devem representar o mesmo conjunto de dados e filtros.
+Datas, estados, eventos de alerta e fórmulas dos indicadores precisam de definição
+única antes da implementação; divergências pendentes estão listadas neste arquivo.
+
+CONTEXTO DO DOCUMENTO ORIGINAL
+
+Origem P0257: A alteração do módulo RNC é mínima. Na verdade se resume a compatibilizar com a nova roupagem do Green (orientação para o usuário, nova Home, construção de dashboards, etc.) e a corrigir erros de grafia de alguns links e campos.
+
+Origem P0259: As tabelas abaixo apresentam as correções de grafia. Essa grafia deveria ser revisada para que o novo módulo tenha os cabeçalhos, títulos das tabelas, etc. sem erros ortográficos. Isso poderia ser executado pelo Tomás na medida em que ele gera as novas tabelas através do setup.
+
+Origem P0281: As mudanças para compatibilizar o Green com a nova roupagem seguem abaixo:
+
+
+REQUISITOS FUNCIONAIS RASTREÁVEIS
+
+------------------------------------------------------------------------------
+RNC-156 — Implementar uma nova Home para melhorar a experiência de navegabilidade e tornar a interface com o usuário mais amigável
+
+Origem: item 156; T093/R001, T094/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Alguns elementos essenciais na nova Home:
+Logo do Cliente
+Logo do Green
+Cards (com totalizações, estatísticas, pendências, avisos)
+Dashboard
+orientação para o usuário (schedule, notificações)
+foto do usuário (para aumentar a personalização do sistema. Essa foto deveria ser colocada junto ao nome do usuário como se fosse o Teams)
+navegabilidade entre tabelas
+navegabilidade a partir dos dashboards
+acessos rápidos
+
+Exemplo de Dashboards:
+
+RNCs
+Total de RNCs em Criação
+Total de RNCs com o Gestor
+Total de RNCs Recusado pelo Gestor
+Total de RNCs em Análise da Causa Raiz
+Total de RNCs com Plano de Ação Finalizado
+Total de RNCs em Avaliação da Eficácia
+Total de RNCs Recusado pela Avaliação da Eficácia
+Total de RNCs com Avaliação da Eficácia Finalizada
+
+Atualização Mensal
+Total de RNCs Novas
+Total de Acidentes e Incidentes Ambientais
+Total de Acidentes e Incidentes de Segurança Trabalho e Condições Inseguras
+Total de RNCs de Análise Critica do SIG
+Total de RNCs de Auditoria Externa
+Total de RNCs de Auditoria Interna
+Total de Descumprimento de Padrões e Avaliação de Processos
+Total de Descumprimento de Requisitos Legais
+Total de Reclamação de Cliente
+Total de Não-Conformidade de Fornecedores
+
+Avisos (Card)
+
+Continuação: Implementar uma nova Home para melhorar a experiência de navegabilidade e tornar a interface com o usuário mais amigável
+
+(Continuação)
+Alertas Enviados (Card)
+
+Dashboard
+
+Gerar as estatísticas:
+por unidade
+por período
+por responsável
+etc.
+
+Os dashboards devem ser apresentados em forma gráfica e em forma de tabelas
+
+Os Dashboard deverão ser gerados por unidade, por período e por responsável.
+
+O cabeçalho pode conter informações para acessos rápidos. Veja o exemplo da imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir a Home com dados de duas unidades/períodos/responsáveis; conferir todos os indicadores descritos, comparar gráfico/tabela e clicar em um card para abrir apenas os registros correspondentes.
+
+------------------------------------------------------------------------------
+RNC-157 — Criar o Link Minhas RNCs
+
+Origem: item 157; T094/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Veja o item 5.1 acima
+
+Talvez esse item já esteja implementado no módulo
+
+CRITÉRIO DE ACEITE PROPOSTO
+Entrar com dois usuários com responsabilidades distintas e conferir que a visão pessoal e a consulta gerencial autorizada apresentam os conjuntos corretos.
+
+------------------------------------------------------------------------------
+RNC-158 — Incluir um campo na tabela de Gestão de RNCs denominado "Risco".
+
+Origem: item 158; T094/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Os riscos poderiam ser:
+Alto
+Médio
+Baixo
+
+Esse risco estaria associado à RNC.
+
+Esse item risco deverá fazer parte dos dashboards, ou seja, deverá ser possível visualizar as estatísticas com a lente do risco. Ex: RNCs com risco alto, médio e baixo, etc.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Registrar casos Alto, Médio e Baixo e conferir filtro/estatística de risco vinculados à entidade correta, sem contar registros fora da seleção.
+
+------------------------------------------------------------------------------
+RNC-159 — Gerar Histórico automático das mudanças feitas na tabela de Gestão de RNC
+
+Origem: item 159; T094/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Gerar um log das mudanças feita nos registros da tabela de RNC. Creio que a aplicação de logs para todas as ações do sistema (vide item 16) é uma maneira de implementar essa funcionalidade.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Alterar um registro autorizado e consultar o histórico para identificar operação, registro, usuário e data; conferir acesso e retenção conforme política definida.
+
+------------------------------------------------------------------------------
+RNC-160 — Gerar automaticamente as informações das RNCs via IA a partir do upload do documento
+
+Origem: item 160; T095/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Extrair todos os dados do documento carregado como evidência da adequação da RNC e preencher as informações da tabela de gestão de RNC (da mesma forma como foi aplicado no novo GED-E)
+
+CRITÉRIO DE ACEITE PROPOSTO
+Carregar documento de teste com dados conhecidos, comparar campos extraídos com o original e aplicar o procedimento aprovado para valores ausentes, divergentes ou ilegíveis. Política de confirmação humana deve ser definida.
+
+------------------------------------------------------------------------------
+RNC-161 — Criar um visual mais "clean" para a Tabela de Gestão de RNC
+
+Origem: item 161; T095/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+O visual atual torna a experiência pouco agradável. Temos que partir para ícones, "flags"ou coisas do gênero.
+
+CRITÉRIO DE ACEITE PROPOSTO
+Revisar a tela com registros de diferentes situações, confirmar ícones/sinalizadores e legibilidade dos estados com os mesmos dados de origem.
+
+------------------------------------------------------------------------------
+RNC-162 — Visualizar pendências do usuário.
+
+Origem: item 162; T095/R002
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Através do ícone de um sininho é possível visualizar, de modo rápido e resumido, todas as pendências (do usuário logado):
+
+
+
+A imagem abaixo apresenta o resultado da consulta ao clicar no sininho. Na realidade ao clicar no sininho aparece uma versão com informações resumidas das pendências (o exemplo da figura abaixo é do módulo de licenças. Algo parecido terá que ser aplicado para o módulo de RNC):
+
+
+
+
+
+
+
+
+Em algum outro link deve aparecer uma versão com informações mais completas, como na imagem abaixo:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Com dois usuários, conferir resumo e lista completa de pendências do usuário logado e testar resolução/atualização sem expor itens não autorizados.
+
+------------------------------------------------------------------------------
+RNC-163 — Visualizar o que tem agendado para o usuário
+
+Origem: item 163; T095/R003
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Poderia ser adotado, por exemplo, o ícone de uma agenda para visualizar, de modo rápido e resumido, todas as ações futuras (do usuário logado). Essa é apenas 1 ideia. O importante é que exista uma agenda de pendências viva para o usuário que está logado para o módulo de RNC:
+
+CRITÉRIO DE ACEITE PROPOSTO
+Criar evento futuro relacionado ao módulo e conferir data, responsável e acesso ao registro pela agenda pessoal/gerencial autorizada.
+
+------------------------------------------------------------------------------
+RNC-164 — Fluxo do estágio em que o processo se encontra tipo "Entrega do Mercado Livre" (como foi aplicado no caso do GED-E)
+
+Origem: item 164; T096/R000
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Esse fluxo é bem interessante de ser aplicado em todos os módulos. As atividades de todos os módulos, de alguma forma, funcionam como um processo. Segue o workflow do módulo:
+
+. No módulo RNC a pessoa:
+1- cadastra a ocorrência
+2- define o gestor responsável pela ocorrência
+3- classifica a ocorrência
+4- define a ação imediata da ocorrência
+5- avalia abrangência da ocorrência
+6- define o responsável pela análise da causa raiz
+7- analisa a causa raiz da ocorrência
+8- define o plano de ação corretiva
+9- finaliza o plano de ação corretiva
+10- avalia a eficácia da ação corretiva
+11- encerra a RNC
+
+CRITÉRIO DE ACEITE PROPOSTO
+Percorrer as etapas descritas com um registro de teste, conferir destaque do estágio atual e preservar etapas facultativas; validar transições e retornos após esclarecimento das pendências.
+
+------------------------------------------------------------------------------
+RNC-165 — Prever o link "Ajuda" / "Como Funciona" em todos os módulos para servir como um treinamento para o usuário.
+
+Origem: item 165; T096/R001
+Situação: SOLICITADO NA FONTE (Implementar? = Sim)
+
+COMPORTAMENTO / DADOS / REGRAS — DETALHAMENTO DA FONTE
+Nesse link poderíamos carregar o texto da ajuda e um vídeo mostrando como o sistema funciona
+
+CRITÉRIO DE ACEITE PROPOSTO
+Abrir Ajuda/Como Funciona no módulo e conferir texto e vídeo configurado explicando o processo correspondente.
+
+
+CORREÇÕES DE MENUS, FORMULÁRIOS E DEFEITOS RELATADOS
+A sequência e as colunas de localização da fonte são preservadas abaixo. Células
+vazias herdam o contexto da árvore da linha anterior. OK significa sem alteração
+específica solicitada nesta revisão; não significa teste realizado. Perguntas e
+expressões como talvez/creio continuam pendentes, mesmo neste catálogo.
+
+RNC-COR-001 | Origem T079/R000
+Localização na fonte: Não Conformidade
+Pedido/observação:
+(sem alteração específica descrita)
+
+RNC-COR-002 | Origem T079/R001
+Localização na fonte: Administração NC
+Pedido/observação:
+(sem alteração específica descrita)
+
+RNC-COR-003 | Origem T079/R002
+Localização na fonte: Alterar Data da ocorrencia
+Pedido/observação:
+Mudar "ocorrencia" para "Ocorrência"
+
+Mudar o texto no formulário de "Nova data da ocorrencia" para "Nova Data da Ocorrência"
+
+RNC-COR-004 | Origem T079/R003
+Localização na fonte: Alterar Emitente
+Pedido/observação:
+Mudar o texto no formulário de "Novo Emitente da Nao Conformidade" para "Novo Emitente da Não Conformidade"
+
+RNC-COR-005 | Origem T079/R004
+Localização na fonte: Alterar Responsavel
+Pedido/observação:
+Mudar "Responsavel" para "Responsável"
+
+Mudar o texto no formulário de "Novo Responsavel da analise da Causa Raiz" para "Novo Responsável pela Análise da Causa Raiz"
+
+RNC-COR-006 | Origem T079/R005
+Localização na fonte: Alterar Gestor
+Pedido/observação:
+OK
+
+RNC-COR-007 | Origem T079/R006
+Localização na fonte: Alterar Etapa
+Pedido/observação:
+Mudar o texto da mensagem de "A alteracao somente sera aplicada as NC finalizadas!" para "A Alteração Somente Será Aplicada às NC Finalizadas!"
+
+RNC-COR-008 | Origem T079/R007
+Localização na fonte: Alterar ocorrencia
+Pedido/observação:
+Mudar "ocorrencia" para "Ocorrência"
+
+Mudar os textos no formulário de "Descricao da Ocorrencia" e "Sumario da Ocorrencia" para "Descrição da Ocorrência" e "Sumário da Ocorrência"
+
+Mudar o texto da mensagem de "Instrucao de uso:1)Digite o NR/Ano e click em "Confirmar". Deve aparecer a descricao e o sumerio atuais.2)Altera a descricao e o sumario conforme necessidade e click em "Confirmar""
+
+para
+
+"Instrução de Uso:1) Digite o NR/Ano e Clique em "Confirmar". Deve Aparecer a Descrição e o Sumário Atuais.2) Altere a Descrição e o Sumário Conforme Necessário e Clique em "Confirmar""
+
+RNC-COR-009 | Origem T079/R008
+Localização na fonte: Alterar lista e unidades
+Pedido/observação:
+Mudar "lista e unidades" para "Lista e Unidades"
+
+Mudar o texto no formulário de "Listas de distribuicao" para "Listas de Distribuição"
+
+Mudar o texto da mensagem de "Instrucao de uso:1)Digite o NR/Ano e click em "Confirmar".2)Altera a lista e a unidade conforme necessidade e click em "Confirmar""
+
+para
+
+"Instrução de uso:1) Digite o NR/Ano e Clique em "Confirmar".2) Altere a Lista e a Unidade Conforme Necessário e Clique em "Confirmar""
+
+RNC-COR-010 | Origem T080/R000
+Localização na fonte: Participantes
+Pedido/observação:
+OK
+
+RNC-COR-011 | Origem T080/R001
+Localização na fonte: Setores
+Pedido/observação:
+OK
+
+RNC-COR-012 | Origem T080/R002
+Localização na fonte: Tipo de Ocorrência
+Pedido/observação:
+OK
+
+RNC-COR-013 | Origem T080/R003
+Localização na fonte: Origem da Ocorrência
+Pedido/observação:
+OK
+
+RNC-COR-014 | Origem T080/R004
+Localização na fonte: Sistema de Gestão
+Pedido/observação:
+OK
+
+RNC-COR-015 | Origem T080/R005
+Localização na fonte: Classificação
+Pedido/observação:
+OK
+
+RNC-COR-016 | Origem T080/R006
+Localização na fonte: Tipos de Causas
+Pedido/observação:
+OK
+
+RNC-COR-017 | Origem T080/R007
+Localização na fonte: Tipo de Ocorrência x Campos
+Pedido/observação:
+OK
+
+RNC-COR-018 | Origem T080/R008
+Localização na fonte: Lista de distribuição
+Pedido/observação:
+Mudar "distribuição" para "Distribuição"
+
+RNC-COR-019 | Origem T080/R009
+Localização na fonte: Categorias
+Pedido/observação:
+OK
+
+RNC-COR-020 | Origem T080/R010
+Localização na fonte: Administração NC Clientes
+Pedido/observação:
+OK
+
+RNC-COR-021 | Origem T080/R011
+Localização na fonte: Unidades do cliente
+Pedido/observação:
+Mudar "cliente" para "Cliente"
+
+Mudar o nome da tabela de "Unidades do cliente" para "Unidades do Cliente"
+
+RNC-COR-022 | Origem T080/R012
+Localização na fonte: Clientes
+Pedido/observação:
+OK
+
+RNC-COR-023 | Origem T080/R013
+Localização na fonte: Tipos do documento
+Pedido/observação:
+Mudar "Tipos do documento" para "Tipos de Documento"
+
+Mudar o nome da tabela de "Tipos do documento" para "Tipos de Documento"
+
+RNC-COR-024 | Origem T080/R014
+Localização na fonte: Produtos
+Pedido/observação:
+OK
+
+RNC-COR-025 | Origem T080/R015
+Localização na fonte: Tamanho da lata
+Pedido/observação:
+Mudar "lata" para "Lata"
+
+Mudar o nome da tabela de "Tamanho da lata" para " Tamanho da Lata"
+
+Observação: Esse item é específico da Crown. Não é aplicável à outros clientes
+
+RNC-COR-026 | Origem T080/R016
+Localização na fonte: Tipo de tampa
+Pedido/observação:
+Mudar "tampa" para "Tampa"
+
+Mudar o nome da tabela de "Tamanho da tampa" para " Tamanho da Tampa"
+
+Observação: Esse item é específico da Crown. Não é aplicável à outros clientes
+
+RNC-COR-027 | Origem T080/R017
+Localização na fonte: Tipo de reclamação
+Pedido/observação:
+Mudar "reclamação" para "Reclamação"
+
+Mudar o nome da tabela de "Tipo de reclamação" para "Tipo de Reclamação"
+
+RNC-COR-028 | Origem T080/R018
+Localização na fonte: Alteração do cliente
+Pedido/observação:
+Mudar "cliente" para "Cliente"
+
+Mudar o texto no formulário de "Alterar o cliente da Nao Conformidade" para "Alterar o Cliente da Não Conformidade"
+
+RNC-COR-029 | Origem T081/R000
+Localização na fonte: Administração NC Fornecedores
+Pedido/observação:
+(sem alteração específica descrita)
+
+RNC-COR-030 | Origem T081/R001
+Localização na fonte: Alterar fornecedor
+Pedido/observação:
+Mudar "fornecedor" para "Fornecedor"
+
+Mudar o texto da mensagem de "Atencao, a alteracao do fornecedor, implica na alteracao do responsavel pela analise da causa,caso exista, e tambem alterar o responsavel pela acao do plano de acao, caso exista! "
+
+para
+
+"Atenção, a Alteração do Fornecedor, Implica na Alteração do Responsável pela Análise da Causa, Caso Exista, e na Alteração do Responsável pela Ação do Plano de Ação, Caso Exista!"
+
+RNC-COR-031 | Origem T081/R002
+Localização na fonte: Classificação de fornecedores
+Pedido/observação:
+Mudar "fornecedores" para "Fornecedores"
+
+RNC-COR-032 | Origem T081/R003
+Localização na fonte: Nova Ocorrência.
+Pedido/observação:
+Retirar o "." (ponto) após o texto do link Nova Ocorrência
+
+RNC-COR-033 | Origem T081/R004
+Localização na fonte: da Empresa
+Pedido/observação:
+Etapa 1
+Mudar o texto no formulário de "Data da Ocorrência(dd/mm/aaaa):" para "Data da Ocorrência (dd/mm/aaaa):"
+
+Etapa 2
+Mudar o texto no cabeçalho de "Enviar para o Responsavel" para "Enviar para o Responsável"
+
+Mudar o texto no formulário de "Atualizar relação de riscos e oportunidades?" e "Abrir nova Avaliaçãode mudança?" e "Responsável pela Análise da Causa Raíz e Ação Corretiva:" para "Atualizar Relação de Riscos e Oportunidades?" e "Abrir Nova Avaliação de Mudança?" e "Responsável pela Análise da Causa Raiz e Ação Corretiva:"
+
+Etapa 3  Corrigir a Aba: "Raíz" para "Raiz"
+Mudar o texto no cabeçalho de "Enviar para o Gestor para Avaliação de eficácia" para "Enviar para o Gestor para Avaliação de Eficácia"
+
+Mudar o texto no cabeçalho de "Anexar evidências" para "Anexar Evidências"
+Mudar o texto no cabeçalho de "Motivo da recusa do gestor" para "Motivo da Recusa do Gestor" (Pergunta: esse link não está disponível nas NCs Tipo Empresa. Deveria estar previsto?)
+
+Etapa 3  Plano de Ação
+Mudar o texto no cabeçalho da tabela:
+De "Responsável(Atenção! Se aparecer apenas o código o usuario esta desativado" para "Responsável (Atenção! Se Aparecer Apenas o Código do Usuário Isso Indica que Ele Está Desativado"
+De "Status(%)" para "Status (%)"
+De "Arquivos(favor salvar o registro antes de anexar o arquivo)" para "Arquivos (Favor Salvar o Registro Antes de Anexar o Arquivo)"
+De "qtddias" para "Quantidade de Dias"
+
+Etapa 4
+OK
+
+RNC-COR-034 | Origem T082/R000
+Localização na fonte: do Cliente
+Pedido/observação:
+Etapa 1
+Mudar o texto no formulário de "Data da Ocorrência(dd/mm/aaaa):" para "Data da Ocorrência (dd/mm/aaaa):"
+
+Etapa 2
+Mudar o texto no cabeçalho de "Enviar para o Responsavel" para "Enviar para o Responsável"
+
+Mudar o texto no formulário de "Atualizar relação de riscos e oportunidades?" e "Abrir nova Avaliaçãode mudança?" e "Responsável pela Análise da Causa Raíz e Ação Corretiva:" para "Atualizar Relação de Riscos e Oportunidades?" e "Abrir Nova Avaliação de Mudança?" e "Responsável pela Análise da Causa Raiz e Ação Corretiva:"
+
+Etapa 3  Corrigir a Aba: "Raíz" para "Raiz"
+Mudar o texto no cabeçalho de "Enviar para o Gestor para Avaliação de eficácia" para "Enviar para o Gestor para Avaliação de Eficácia"
+
+Mudar o texto no cabeçalho de "Anexar evidências" para "Anexar Evidências"
+Mudar o texto no cabeçalho de "Motivo da recusa do gestor" para "Motivo da Recusa do Gestor" (Pergunta: esse link não está disponível nas NCs Tipo Cliente. Deveria estar previsto?)
+
+Etapa 3  Plano de Ação
+Mudar o texto no cabeçalho da tabela:
+De "Responsável(Atenção! Se aparecer apenas o código o usuario esta desativado" para "Responsável (Atenção! Se Aparecer Apenas o Código do Usuário Isso Indica que Ele Está Desativado"
+De "Status(%)" para "Status (%)"
+De "Arquivos(favor salvar o registro antes de anexar o arquivo)" para "Arquivos (Favor Salvar o Registro Antes de Anexar o Arquivo)"
+De "qtddias" para "Quantidade de Dias"
+
+Etapa 4
+OK
+
+RNC-COR-035 | Origem T082/R001
+Localização na fonte: do Fornecedor
+Pedido/observação:
+Etapa 1
+Mudar o texto no formulário de "Data da Ocorrência(dd/mm/aaaa):" para "Data da Ocorrência (dd/mm/aaaa):"
+
+Mudar o texto no formulário de "Ocorreu parada de linha?" para "Ocorreu Parada de Linha?"
+
+Etapa 2
+Mudar o texto no cabeçalho de "Enviar para o Responsavel" para "Enviar para o Responsável"
+
+Mudar o texto no formulário de "Atualizar relação de riscos e oportunidades?" e "Abrir nova Avaliaçãode mudança?" e "Responsável pela Análise da Causa Raíz e Ação Corretiva:" para "Atualizar Relação de Riscos e Oportunidades?" e "Abrir Nova Avaliação de Mudança?" e "Responsável pela Análise da Causa Raiz e Ação Corretiva:"
+
+Etapa 3  Corrigir a Aba: "Raíz" para "Raiz"
+Mudar o texto no cabeçalho de "Enviar para o Gestor para Avaliação de eficácia" para "Enviar para o Gestor para Avaliação de Eficácia"
+
+Mudar o texto no cabeçalho de "Anexar evidências" para "Anexar Evidências"
+Mudar o texto no cabeçalho de "Motivo da recusa do gestor" para "Motivo da Recusa do Gestor"
+
+Etapa 3  Plano de Ação
+Mudar o texto no cabeçalho da tabela:
+De "Responsável(Atenção! Se aparecer apenas o código o usuario esta desativado" para "Responsável (Atenção! Se Aparecer Apenas o Código do Usuário Isso Indica que Ele Está Desativado"
+De "Status(%)" para "Status (%)"
+De "Arquivos(favor salvar o registro antes de anexar o arquivo)" para "Arquivos (Favor Salvar o Registro Antes de Anexar o Arquivo)"
+De "qtddias" para "Quantidade de Dias"
+
+Etapa 4
+OK
+
+RNC-COR-036 | Origem T082/R002
+Localização na fonte: Planejamento
+Pedido/observação:
+Etapa 1
+Mudar o texto no formulário de "Data da Ocorrência(dd/mm/aaaa):" para "Data da Ocorrência (dd/mm/aaaa):"
+
+Mudar o texto no formulário de "Passar pela Analise da Eficácia?" para "Passar pela Análise da Eficácia?"
+
+Etapa 2
+
+Mudar o texto da mensagem de "ATENÇÃO! Click aqui após salvar uma ação para comunicar ao responsável a pendencia." para "Atenção! Clique Aqui Após Salvar Uma Ação para Comunicar ao Responsável a Pendência"
+
+Mudar o texto no cabeçalho da tabela:
+De "Responsável(Atenção! Se aparecer apenas o código o usuario esta desativado" para "Responsável (Atenção! Se Aparecer Apenas o Código do Usuário Isso Indica que Ele Está Desativado"
+De "Status(%)" para "Status (%)"
+De "Arquivos(favor salvar o registro antes de anexar o arquivo)" para "Arquivos (Favor Salvar o Registro Antes de Anexar o Arquivo)"
+De "qtddias" para "Quantidade de Dias"
+
+Etapa 3
+OK
+
+RNC-COR-037 | Origem T082/R003
+Localização na fonte: Minhas Ocorrências NC
+Pedido/observação:
+Mudar o texto no cabeçalho de "Todas as ocorrências" para "Todas as Ocorrências"
+
+Mudar o texto no cabeçalho da Tabela de "Providencia" para "Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da Providencia" para "Análise da Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Sistema de gestão" para "Sistema de Gestão"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da causa" para "Análise da Causa"
+
+Mudar o texto no cabeçalho da Tabela de "Verificação de Eficacia" para "Verificação de Eficácia"
+
+Mudar o texto no cabeçalho da Tabela de "Nome do Responsavel" para "Nome do Responsável"
+
+Mudar o texto no cabeçalho da Tabela de "Plano de ação encerrado?" para "Plano de Ação Encerrado?"
+
+RNC-COR-038 | Origem T083/R000
+Localização na fonte: Lista Geral de Ocorrências
+Pedido/observação:
+Mudar o texto no cabeçalho da Tabela de "Providencia" para "Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da Providencia" para "Análise da Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Sistema de gestão" para "Sistema de Gestão"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da causa" para "Análise da Causa"
+
+Mudar o texto no cabeçalho da Tabela de "Verificação de Eficacia" para "Verificação de Eficácia"
+
+Mudar o texto no cabeçalho da Tabela de "Nome do Responsavel" para "Nome do Responsável"
+
+Mudar o texto no cabeçalho da Tabela de "Plano de ação encerrado?" para "Plano de Ação Encerrado?"
+
+RNC-COR-039 | Origem T083/R001
+Localização na fonte: Lista Geral de Ocorrências V2
+Pedido/observação:
+Está em branco. Não aparece nada.
+
+RNC-COR-040 | Origem T083/R002
+Localização na fonte: Lista de Ocorrências
+Pedido/observação:
+Mudar o texto no cabeçalho da Tabela de "Providencia" para "Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da Providencia" para "Análise da Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Sistema de gestão" para "Sistema de Gestão"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da causa" para "Análise da Causa"
+
+Mudar o texto no cabeçalho da Tabela de "Verificação de Eficacia" para "Verificação de Eficácia"
+
+Mudar o texto no cabeçalho da Tabela de "Nome do Responsavel" para "Nome do Responsável"
+
+Mudar o texto no cabeçalho da Tabela de "Plano de ação encerrado?" para "Plano de Ação Encerrado?"
+
+RNC-COR-041 | Origem T083/R003
+Localização na fonte: Novo Minhas Ocorrências NC
+Pedido/observação:
+Mudar o texto no cabeçalho da Tabela de "Providencia" para "Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da Providencia" para "Análise da Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Sistema de gestão" para "Sistema de Gestão"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da causa" para "Análise da Causa"
+
+Mudar o texto no cabeçalho da Tabela de "Verificação de Eficacia" para "Verificação de Eficácia"
+
+Mudar o texto no cabeçalho da Tabela de "Nome do Responsavel" para "Nome do Responsável"
+
+Mudar o texto no cabeçalho da Tabela de "Plano de ação encerrado?" para "Plano de Ação Encerrado?"
+
+Na aba abaixo, mudar o texto de "Ocorrencia" para "Ocorrência"
+
+RNC-COR-042 | Origem T084/R000
+Localização na fonte: Ocorrencias por etapa
+Pedido/observação:
+Mudar "Ocorrencias por etapa" para "Ocorrências por Etapa"
+
+Mudar o texto no cabeçalho da Tabela de "Providencia" para "Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da Providencia" para "Análise da Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Sistema de gestão" para "Sistema de Gestão"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da causa" para "Análise da Causa"
+
+Mudar o texto no cabeçalho da Tabela de "Verificação de Eficacia" para "Verificação de Eficácia"
+
+Mudar o texto no cabeçalho da Tabela de "Nome do Responsavel" para "Nome do Responsável"
+
+Mudar o texto no cabeçalho da Tabela de "Plano de ação encerrado?" para "Plano de Ação Encerrado?"
+
+RNC-COR-043 | Origem T084/R001
+Localização na fonte: Ocorrencias por fornecedor
+Pedido/observação:
+Mudar "Ocorrencias por fornecedor" para "Ocorrências por Fornecedor"
+
+Mudar o texto no cabeçalho de "Fornecedor..." para "Fornecedor"
+
+Mudar o texto no cabeçalho da Tabela de "Ação imediata" para "Ação Imediata"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da causa" para "Análise da Causa"
+
+Mudar o texto no cabeçalho da Tabela de "Verificação de Eficacia" para "Verificação de Eficácia"
+
+Mudar o texto no cabeçalho da Tabela de "Prazo(Em dias)" para "Prazo (Em Dias)"
+
+Mudar o texto no cabeçalho da Tabela de "Data de Conhecimento do fornecedor" para "Data de Conhecimento do Fornecedor"
+
+Mudar o texto no cabeçalho da Tabela de "Data de resposta do fornecedor" para "Data de Resposta do Fornecedor"
+
+Mudar o texto no cabeçalho da Tabela de "Plano de ação encerrado?" para "Plano de Ação Encerrado?"
+
+RNC-COR-044 | Origem T085/R000
+Localização na fonte: Ocorrencias por cliente
+Pedido/observação:
+Mudar "Ocorrencias por cliente" para "Ocorrências por Cliente"
+
+Mudar o texto no cabeçalho da Tabela de "Descrição da ocorrência" para "Descrição da Ocorrência"
+
+Mudar o texto no cabeçalho da Tabela de "Tipo de documento" para "Tipo de Documento"
+
+Mudar o texto no cabeçalho da Tabela de "Unidade do cliente" para "Unidade do Cliente"
+
+Mudar o texto no cabeçalho da Tabela de "Tamanho da lata" para "Tamanho da Lata"
+
+Mudar o texto no cabeçalho da Tabela de "Tipo de tampa" para "Tipo de Tampa"
+
+Mudar o texto no cabeçalho da Tabela de "Tipo de reclamação" para "Tipo de Reclamação"
+
+Mudar o texto no cabeçalho da Tabela de "Afeta segurança de alimentos?" para "Afeta Segurança de Alimentos?"
+
+Mudar o texto no cabeçalho da Tabela de "Procedencia" para "Procedência"
+
+Mudar o texto no cabeçalho da Tabela de "Nome do Responsavel" para "Nome do Responsável"
+
+Mudar o texto no cabeçalho da Tabela de "Plano de ação encerrado?" para "Plano de Ação Encerrado?"
+
+RNC-COR-045 | Origem T085/R001
+Localização na fonte: Estatísticas
+Pedido/observação:
+Mudar o texto no cabeçalho das Tabelas de "Responsável pela Análise da Causa Raíz e Ação Corretiva" para "Responsável pela Análise da Causa Raiz e Ação Corretiva"
+
+Na árvore estatística de Não Conformidade, mudar o texto de "Ocorrência Sem Análise de Causa Raíz" para "Ocorrência Sem Análise de Causa Raiz"
+
+Na árvore estatística de Não Conformidade, mudar o texto de "Em criação" para "Em Criação"
+
+RNC-COR-046 | Origem T085/R002
+Localização na fonte: Consolidação das Estatísticas
+Pedido/observação:
+OK
+
+RNC-COR-047 | Origem T085/R003
+Localização na fonte: Relatório de pendencias
+Pedido/observação:
+Mudar "pendencias" para "Pendências"
+
+Mudar o texto no cabeçalho da Tabela de "Responsável pela ação" para "Responsável pela Ação"
+
+Mudar o texto no cabeçalho da Tabela de "Unidade do responsável" para "Unidade do Responsável"
+
+Mudar o texto no cabeçalho da Tabela de "Unidade do emitente" para "Unidade do Emitente"
+
+Mudar o texto no cabeçalho da Tabela de "Responsavel pela causa raiz" para "Responsável pela Causa Raiz"
+
+Mudar o texto no cabeçalho da Tabela de "Unidade do Responsavel pela causa raiz" para "Unidade do Responsável pela Causa Raiz"
+
+RNC-COR-048 | Origem T086/R000
+Localização na fonte: Indicadores de não conformidades
+Pedido/observação:
+Mudar "não conformidades" para "Não Conformidades"
+
+Mudar o texto no cabeçalho da Tabela de "Origem da ocorrência" para "Origem da Ocorrência"
+
+RNC-COR-049 | Origem T086/R001
+Localização na fonte: Log do plano de ação
+Pedido/observação:
+Mudar "plano de ação" para "Plano de Ação"
+
+A tabela está com pau. Não foi possível verificar seu conteúdo
+
+RNC-COR-050 | Origem T086/R002
+Localização na fonte: Indicadores de plano de ação de NC
+Pedido/observação:
+Mudar "plano de ação" para "Plano de Ação"
+
+A tabela está com pau. Não foi possível verificar seu conteúdo
+
+RNC-COR-051 | Origem T087/R001
+Localização na fonte: Planejamentos
+Pedido/observação:
+OK
+
+RNC-COR-052 | Origem T087/R002
+Localização na fonte: Nova ocorrência PL
+Pedido/observação:
+Mudar "Nova ocorrência PL" para "Nova Ocorrência PL"
+
+Etapa 1
+Mudar o texto no formulário de "Data da Ocorrência(dd/mm/aaaa):" para "Data da Ocorrência (dd/mm/aaaa):"
+
+Mudar o texto no formulário de "Passar pela Analise da Eficácia?" para "Passar pela Análise da Eficácia?"
+
+Etapa 2
+
+Mudar o texto da mensagem de "ATENÇÃO! Click aqui após salvar uma ação para comunicar ao responsável a pendencia." para "Atenção! Clique Aqui Após Salvar Uma Ação para Comunicar ao Responsável a Pendência"
+
+Mudar o texto no cabeçalho da tabela:
+De "Responsável(Atenção! Se aparecer apenas o código o usuario esta desativado" para "Responsável (Atenção! Se Aparecer Apenas o Código do Usuário Isso Indica que Ele Está Desativado"
+De "Status(%)" para "Status (%)"
+De "Arquivos(favor salvar o registro antes de anexar o arquivo)" para "Arquivos (Favor Salvar o Registro Antes de Anexar o Arquivo)"
+De "qtddias" para "Quantidade de Dias"
+
+Etapa 3
+OK
+
+RNC-COR-053 | Origem T088/R000
+Localização na fonte: Minhas Ocorrências PL
+Pedido/observação:
+Mudar o texto no cabeçalho da Tabela de "Providencia" para "Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da Providencia" para "Análise da Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Sistema de gestão" para "Sistema de Gestão"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da causa" para "Análise da Causa"
+
+Mudar o texto no cabeçalho da Tabela de "Verificação de Eficacia" para "Verificação de Eficácia"
+
+Mudar o texto no cabeçalho da Tabela de "Nome do Responsavel" para "Nome do Responsável"
+
+Mudar o texto no cabeçalho da Tabela de "Plano de ação encerrado?" para "Plano de Ação Encerrado?"
+
+RNC-COR-054 | Origem T089/R001
+Localização na fonte: Assistência Técnica
+Pedido/observação:
+OK
+
+RNC-COR-055 | Origem T089/R002
+Localização na fonte: Nova ocorrência AT
+Pedido/observação:
+Mudar "Nova ocorrência AT" para "Nova Ocorrência AT"
+
+Etapa 1
+Mudar o texto no formulário de "Data da Ocorrência(dd/mm/aaaa):" para "Data da Ocorrência (dd/mm/aaaa):"
+
+Mudar o texto no formulário de "Passar pela Analise da Eficácia?" para "Passar pela Análise da Eficácia?"
+
+Etapa 2
+
+Mudar o texto da mensagem de "ATENÇÃO! Click aqui após salvar uma ação para comunicar ao responsável a pendencia." para "Atenção! Clique Aqui Após Salvar Uma Ação para Comunicar ao Responsável a Pendência"
+
+Mudar o texto no cabeçalho da tabela:
+De "Status(%" para "Status (%)"
+De "Arquivos(favor salvar o registro antes de anexar o arquivo)" para "Arquivos (Favor Salvar o Registro Antes de Anexar o Arquivo)"
+De "qtddias" para "Quantidade de Dias"
+
+Os links: "Formulário" na etapa "Plano de Ação" está com pau
+
+Etapa 3
+Não consegui passar para a 3º etapa. Não sei se está com pau
+
+RNC-COR-056 | Origem T090/R000
+Localização na fonte: Minhas ocorrências AT
+Pedido/observação:
+Mudar "Minhas ocorrências AT" para "Minhas Ocorrências AT"
+
+Mudar o texto no cabeçalho da Tabela de "Providencia" para "Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da Providencia" para "Análise da Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Sistema de gestão" para "Sistema de Gestão"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da causa" para "Análise da Causa"
+
+Mudar o texto no cabeçalho da Tabela de "Verificação de Eficacia" para "Verificação de Eficácia"
+
+Mudar o texto no cabeçalho da Tabela de "Nome do Responsavel" para "Nome do Responsável"
+
+Mudar o texto no cabeçalho da Tabela de "Plano de ação encerrado?" para "Plano de Ação Encerrado?"
+
+RNC-COR-057 | Origem T090/R001
+Localização na fonte: Relatório AT
+Pedido/observação:
+Mudar o texto no cabeçalho da Tabela de "Tipo de ocorrencia" para " Tipo de Ocorrência "
+
+Mudar o texto no cabeçalho da Tabela de "Origem da ocorrencia" para " Origem da Ocorrência "
+
+Mudar o texto no cabeçalho da Tabela de "Passar pela avaliação da eficácia?" para "Passar pela Avaliação da Eficácia?"
+
+Na aba abaixo, mudar o texto de "Relatório da ocorrência" para " Relatório da Ocorrência "
+
+RNC-COR-058 | Origem T091/R001
+Localização na fonte: Clientes não conformidades
+Pedido/observação:
+Mudar "Clientes não conformidades" para "Clientes Não Conformidades"
+
+RNC-COR-059 | Origem T091/R002
+Localização na fonte: Nova não conformidades Cliente
+Pedido/observação:
+Mudar "Nova não conformidades Cliente" para "Nova Não Conformidade Cliente"
+
+Idem Nova Ocorrência do Cliente
+
+RNC-COR-060 | Origem T092/R000
+Localização na fonte: Minhas não conformidades Cliente
+Pedido/observação:
+Mudar "Minhas não conformidades Cliente" para "Minhas Não Conformidades Cliente"
+
+Mudar o texto no cabeçalho da Tabela de "Providencia" para "Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da Providencia" para "Análise da Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Sistema de gestão" para "Sistema de Gestão"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da causa" para "Análise da Causa"
+
+Mudar o texto no cabeçalho da Tabela de "Verificação de Eficacia" para "Verificação de Eficácia"
+
+Mudar o texto no cabeçalho da Tabela de "Nome do Responsavel" para "Nome do Responsável"
+
+Mudar o texto no cabeçalho da Tabela de "Plano de ação encerrado?" para "Plano de Ação Encerrado?"
+
+RNC-COR-061 | Origem T092/R001
+Localização na fonte: Solicitações
+Pedido/observação:
+Idem Nova ocorrência PL
+
+RNC-COR-062 | Origem T092/R002
+Localização na fonte: Minha solicitações
+Pedido/observação:
+Mudar "Minha solicitações" para "Minhas Solicitações"
+
+Mudar o texto no cabeçalho da Tabela de "Providencia" para "Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da Providencia" para "Análise da Providência"
+
+Mudar o texto no cabeçalho da Tabela de "Sistema de gestão" para "Sistema de Gestão"
+
+Mudar o texto no cabeçalho da Tabela de "Analise da causa" para "Análise da Causa"
+
+Mudar o texto no cabeçalho da Tabela de "Verificação de Eficacia" para "Verificação de Eficácia"
+
+Mudar o texto no cabeçalho da Tabela de "Nome do Responsavel" para "Nome do Responsável"
+
+Mudar o texto no cabeçalho da Tabela de "Plano de ação encerrado?" para "Plano de Ação Encerrado?"
+
+RNC-COR-063 | Origem T092/R003
+Localização na fonte: Relatorio de Não conformidades Clientes
+Pedido/observação:
+Mudar "Relatorio de Não conformidades Clientes" para "Relatório de Não Conformidade Cliente"
+
+Mudar o texto no cabeçalho da Tabela de "ETAPA" para "Etapa"
+
+Mudar o texto no cabeçalho da Tabela de "Data da ocorrencia" para "Data da Ocorrência"
+
+Mudar o texto no cabeçalho da Tabela de "Tipo de documento" para "Tipo de Documento"
+
+Mudar o texto no cabeçalho da Tabela de "Unidade do cliente" para "Unidade do Cliente"
+
+Mudar o texto no cabeçalho da Tabela de "Tipo de reclamação" para "Tipo de Reclamação"
+
+Mudar o texto no cabeçalho da Tabela de "Afeta segurança de alimentos?" para "Afeta Segurança de Alimentos?"
+
+Mudar o texto no cabeçalho da Tabela de "Procedencia" para "Procedência"
+
+Mudar o texto no cabeçalho da Tabela de "Descrição da ocorrencia" para "Descrição da Ocorrência"
+
+Mudar o texto no cabeçalho da Tabela de "Origem da ocorrencia" para "Origem da Ocorrência"
+
+ACEITE DAS CORREÇÕES
+Conferir cada substituição textual na tela/aba/formulário indicado, sem trocar nomes
+de campos físicos por inferência. Nos defeitos, reproduzir o erro, corrigir e testar
+consulta/gravação/avanço com registro válido e perfil autorizado. Registrar perguntas
+pendentes antes de alterar regras. Testar especialmente os itens específicos da Crown.
+
+
+VALIDAÇÃO DO PACOTE
+Este TXT deve ser revisado em conjunto com as dependências indicadas. A implementação
+exige acesso ao código e banco atuais, ausentes deste anexo. As condições de aceite
+são propostas de homologação funcional, não resultados de testes já executados.

@@ -1,0 +1,138 @@
+HOMOLOGACAO FINAL DA MIGRACAO - GOODYEAR AMERICANA
+===================================================
+Data: 14/10/2026
+Empresa: Goodyear Americana (GD_AM)
+Banco operacional unico: ggdamericana_dbp
+Banco legado principal: green_gd_americana
+Banco legado de seguranca: green_gd_americana_seguranca
+
+1. RESULTADO CONSOLIDADO
+------------------------
+Resultado geral: APROVADO
+
+Contagens no banco operacional:
+- usuarios: 56
+- grupos: 40
+- perfis: 8
+- menus: 93
+- perfil_menus: 48
+- permissoes: 698
+- licencas: 199
+- relacionamentos licenca-requisito: 27
+- documentos: 1
+- infraestrutura: 3
+- LAIA: 1.454
+- LPRO: 2.179
+- revisoes LAIS: 1
+- treinamentos: 0
+- monitoramentos: 0
+- responsabilidades: 0
+
+2. INTEGRIDADE E ORFAOS
+-----------------------
+Foram validados os relacionamentos de licencas, requisitos, unidades,
+areas, atividades, aspectos, destinos, impactos, perigos, riscos e LAIA/LPRO.
+
+- registros orfaos: 0
+- usuarios invalidos em licencas: 0
+- grupos invalidos em licencas: 0
+- permissoes com perfil inexistente: 0
+- empresa com banco de seguranca diferente: 0
+
+3. LOGIN, MENUS E PERMISSOES
+----------------------------
+O login controlado da empresa GD_AM foi aprovado:
+- usuario ativo e senha compativel: sim
+- perfil homologado: ADMINISTRADOR
+- banco utilizado pelo login: ggdamericana_dbp
+- permissoes carregadas na sessao: 77
+- permissoes do perfil ADMINISTRADOR: 96
+- menus do perfil ADMINISTRADOR: 91
+
+Todos os perfis existentes foram conferidos quanto a permissoes e nao foram
+encontradas referencias a perfis inexistentes. A empresa permaneceu ATIVA,
+com status_migracao LEGAL_DOMINIOS_CONCLUIDA e sincronismo automatico
+desativado durante a homologacao.
+
+4. GED, ARQUIVOS E DOWNLOADS
+----------------------------
+Os arquivos nao foram movidos. O acesso continua apontando para:
+E:\projetoGreen\GED\green_gd_americana\<tabela>\<chave primaria>\<arquivo>
+
+A auditoria da migracao GED registrou 796 arquivos. O teste de acesso por
+servico confirmou a resolucao do armazenamento para licencas e as consultas
+das demais pastas sem erro. As telas visuais do Modulo Legal foram conferidas
+no Firefox, incluindo infraestrutura, treinamentos, LAIA, LAIS, LPRO e
+monitoramento.
+
+Evidencias visuais:
+- runtime/firefox-goodyear-modulolegal_InfraEstrutura.png
+- runtime/firefox-goodyear-modulolegal_treinamentos.png
+- runtime/firefox-goodyear-modulolegal_laia.png
+- runtime/firefox-goodyear-modulolegal_lais.png
+- runtime/firefox-goodyear-modulolegal_lpro.png
+- runtime/firefox-goodyear-medicaoemonitoramento_mm_monitoramento.png
+
+5. AUDITORIAS DE MIGRACAO
+-------------------------
+As auditorias 267 a 273 foram encontradas com status CONCLUIDA:
+- seguranca: 56 registros
+- catalogos legais: 27.522 registros
+- licencas: 226 registros processados
+- GED: 796 arquivos
+- controles: 1 registro
+- arquitetura de banco unico: 1 registro
+- demais dominios legais: 3.637 registros
+
+6. BANCO DE SEGURANCA SEPARADO
+------------------------------
+Foi feita consulta direta ao information_schema em 14/10/2026.
+
+Resultado: o schema ggdamericana_seguranca_dbp nao existe no servidor.
+Somente ggdamericana_dbp foi localizado entre os dois schemas consultados.
+
+Consequencias:
+- nao havia banco separado ativo para o login;
+- nao havia dados a preservar nesse schema;
+- nao foi gerado dump vazio ou ficticio;
+- nao foi executado DROP, pois o schema ja estava ausente;
+- a remocao fisica solicitada esta efetivamente concluida.
+
+O banco operacional unico foi confirmado no cadastro central:
+banco_novo = ggdamericana_dbp
+banco_novo_seguranca = ggdamericana_dbp
+
+7. CONCLUSAO
+------------
+A Goodyear Americana esta registrada como migrada para operar no banco unico
+ggdamericana_dbp. Login, seguranca, catalogos, licencas, controles,
+dominios legais, leitura/download GED, vinculos e telas do Modulo Legal foram
+validados. Nao foram identificados registros orfaos. O upload permanece como
+pendencia operacional de permissao da pasta GED, sem impacto nos dados
+migrados ou nos arquivos existentes.
+
+POS-HOMOLOGACAO OPERACIONAL - 275
+---------------------------------
+- backup completo executado: runtime/backups/20261014_goodyear_pos_homologacao_275/ggdamericana_dbp.sql
+- legado Goodyear: congelamento logico adotado; sincronismo da empresa permanece desativado
+- Agendador do Windows: a tarefa GreenPortal-Sincronismo FO legado nao foi localizada
+- o script existente de sincronismo atende Atlas/Modelo e nao possui par Goodyear; por seguranca
+  nao foi ativado automaticamente para a Goodyear
+- empresa oficialmente registrada com status_migracao MIGRACAO_CONCLUIDA
+- sincronismo_ativo permanece 0
+- auditoria registrada: GREEN_GOODYEAR_POS_HOMOLOGACAO_275
+
+O backup possui aproximadamente 6 MB e foi criado antes do encerramento.
+
+TESTE OPERACIONAL CONTROLADO
+----------------------------
+- inclusao de registro no banco: aprovada em transacao controlada;
+- edicao do registro: aprovada;
+- rollback do teste: aprovado, nenhum registro de teste permaneceu;
+- leitura/download de arquivo GED existente: aprovado;
+- upload controlado no caminho GED: bloqueado por permissao de escrita do
+  Windows na pasta E:\projetoGreen\GED\green_gd_americana\licencas\1.
+
+Para concluir o teste de upload, o usuario do processo web/PHP deve receber
+permissao de gravacao nessa arvore GED. Nenhuma permissao foi alterada
+automaticamente durante a homologacao.

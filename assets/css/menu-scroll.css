@@ -1,0 +1,10 @@
+.portal-sidebar { min-height: 0; overflow: hidden; }
+.portal-sidebar > .menu-search { flex: 0 0 auto; }
+.portal-sidebar .portal-menu { min-height: 0; flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: #c8ddd3 transparent; }
+.portal-sidebar .portal-menu { align-content: start; justify-content: stretch; grid-auto-flow: row; }
+.portal-sidebar .portal-submenu { align-content: start; justify-content: stretch; grid-auto-flow: row; }
+.portal-sidebar > .sidebar-bottom { flex: 0 0 auto; }
+.portal-sidebar .portal-menu::-webkit-scrollbar { width: 7px; }
+.portal-sidebar .portal-menu::-webkit-scrollbar-track { background: transparent; }
+.portal-sidebar .portal-menu::-webkit-scrollbar-thumb { border-radius: 8px; background: #c8ddd3; }
+.portal-layout.menu-collapsed .portal-sidebar .portal-menu { overflow-y: auto; }

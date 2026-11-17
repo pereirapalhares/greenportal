@@ -1,0 +1,76 @@
+GREEN PORTAL - MANUTENCAO LEGAL / X EMPRESAS
+
+Esta transacao segue o padrao unico documentado em
+`docs/manutencao_legal_matrizes_diretrizes.txt`.
+
+1. TRANSACAO
+
+A transacao deve ser acessada por:
+/principal/manutencaolegal_legislacaoxempresa.php
+
+O item de menu utiliza o codigo `LEGISLACAO_X_EMPRESAS`, fica abaixo de
+Manutencao Legal e deve respeitar o perfil, a empresa e as permissoes CRUD.
+
+2. ORIGEM DOS DADOS
+
+O grid utiliza a tabela `legislacaoxempresa` do banco da empresa, preservando
+a chave primaria `CODLEGISLACAXEMPRESA` e os relacionamentos
+`CODLEGISLACAO`, `CODEMPRESA` e `codunidade`. As descricoes sao apresentadas
+pela view `vw_legislacaoxempresa_grid`, criada em
+`database/038_manutencao_legal_x_empresas.sql`, com `CODIGO` vindo da
+legislacao e `DSCUNIDADE` vindo de `unidades`.
+
+Como a tabela legada de unidades pode possuir mais de uma linha para o mesmo
+CODUNIDADE, a view deve agrupar a unidade antes do relacionamento para nao
+duplicar linhas do grid.
+
+O grid utiliza tambem a view `vw_legislacaoxempresa_matrix`, que retorna uma
+linha por legislacao e empresa. A tabela de relacoes continua sendo a fonte
+do cruzamento entre legislacao e unidade.
+
+3. FORMATO MATRICIAL
+
+O grid nao deve apresentar uma linha para cada relacao. Cada linha representa
+uma legislacao e a primeira coluna mostra o `CODIGO`, por exemplo `LIB0001A`.
+Cada coluna seguinte representa uma unidade e utiliza `DSCUNIDADE` como
+cabecalho. O cruzamento entre a linha da legislacao e a coluna da unidade
+mostra o valor `tipo_de_lei`.
+
+Exemplo:
+
+CODIGO | Modelo CA | Modelo Ponta Grossa
+LIB0001A | MATRIZ | A
+
+4. COLUNAS
+
+O grid deve apresentar:
+
+- CODIGO: primeira coluna, codigo da lei, somente leitura.
+- Unidades: da segunda coluna em diante, cada uma com o texto DSCUNIDADE.
+- Cruzamento: combobox com MATRIZ e as letras de A ate Z.
+
+A chave primaria `CODLEGISLACAXEMPRESA` deve permanecer oculta por padrao.
+
+5. CRUD
+
+Alteracoes de registros existentes devem atualizar somente `tipo_de_lei` por
+procedure CRUD generica. Uma nova linha deve permitir informar o CODIGO da
+lei, selecionar a unidade e escolher o tipo de lei. O CODIGO e convertido
+para `CODLEGISLACAO` por consulta generica da view de legislacao; o
+`CODEMPRESA` deve ser o da empresa da sessao.
+
+Duplicacao, exclusao e salvamento devem solicitar confirmacao e executar por
+AJAX. O grid deve manter as linhas apos salvar e remover somente a linha
+excluida. Os campos devem ser validados no servidor e valores de tipo fora de
+MATRIZ ou A-Z nao podem ser persistidos.
+
+6. GRID
+
+Deve seguir as diretrizes comuns de grid em lote: 25 registros por pagina,
+busca geral e por coluna no banco, debounce, paginacao AJAX, colunas
+redimensionaveis e persistentes por usuario, modal de carregamento, rolagem
+somente no grid, mensagens nao tecnicas e permissoes por perfil.
+
+Filtros contextuais: abaixo dos botões ficam Empresa, Mês/Ano de atualização e Correlacionados?. A empresa padrão é a empresa da sessão; a seleção de empresa e o período são aplicados à consulta do grid. A opção Sim considera somente leis relacionadas em legislacaoxempresa.
+Quando Correlacionados for Não, o grid deve exibir todas as leis de legislacao, com ou sem registro em legislacaoxempresa; as células sem relação ficam vazias.
+O grid deve manter cabeçalho e filtros fixos, com rolagem vertical e horizontal restrita ao contêiner da tabela quando houver excesso de linhas ou unidades.

@@ -1,0 +1,24 @@
+/* Logo da empresa, foto do usuário e sino com abas no cabeçalho (GER-1/GER-15, 12/11/2026) */
+.company-chip.pode-trocar { cursor: pointer; }
+.company-chip.pode-trocar:hover, .company-chip.pode-trocar:focus-visible { box-shadow: 0 0 0 2px rgba(59, 161, 121, .35); outline: none; }
+.company-logo { display: flex; align-items: center; height: 34px; max-width: 120px; }
+.company-logo[hidden], .company-avatar[hidden] { display: none !important; }
+.company-logo img { max-height: 34px; max-width: 120px; object-fit: contain; }
+.user-avatar.tem-foto { background-color: #fff !important; background-size: cover; background-position: center; color: transparent; }
+
+.sino-abas { display: flex; gap: 4px; padding: 8px 12px 0; border-bottom: 1px solid #edf2ef; }
+.sino-aba { border: 0; background: transparent; padding: 6px 10px; font-size: 12px; font-weight: 600; color: #6a8078; border-bottom: 2px solid transparent; }
+.sino-aba.ativa { color: #2f7d5d; border-bottom-color: #3ba179; }
+.sino-aba-num { font-weight: 500; }
+.sino-aba-num.sino-num-vencida { color: #c0392b; }
+.sino-pendencias[hidden], [data-sino-painel][hidden] { display: none !important; }
+.sino-pend-lista { max-height: 360px; overflow-y: auto; }
+.sino-pend-resumo { padding: 8px 17px; font-size: 11px; color: #49665b; background: #f6faf8; border-bottom: 1px solid #edf2ef; }
+.sino-pend-item { cursor: pointer; border-left: 3px solid transparent; }
+.sino-pend-item.sino-vencido { border-left-color: #c0392b; }
+.sino-pend-item.sino-a-vencer { border-left-color: #e0a100; }
+.sino-pend-item.sino-no-prazo { border-left-color: #3ba179; }
+.sino-pend-todas { display: block; width: 100%; border: 0; border-top: 1px solid #edf2ef; background: #fff; padding: 9px 17px; font-size: 12px; font-weight: 600; color: #2f7d5d; text-align: left; }
+.sino-pend-todas:hover { background: #f3faf6; }
+.portal-shell.theme-azul .sino-aba.ativa { color: #385b75; border-bottom-color: #5b8fc4; }
+.portal-shell.theme-cinza .sino-aba.ativa { color: #4e5d65; border-bottom-color: #7f8d96; }

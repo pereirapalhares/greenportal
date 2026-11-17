@@ -1,0 +1,33 @@
+Diretrizes de backup
+
+O backup deve contemplar a aplicação e todos os bancos cujo nome termina com
+_dbp. Os dumps devem ser gerados com estrutura, dados, procedures, eventos e
+triggers, utilizando utf8mb4 e transação consistente quando suportado.
+
+Backup realizado em 17/08/2026:
+
+- Aplicação: backups/20260817_175735/greenportal_application_final_20260817_175735.zip
+- Banco glegislacao_dbp: backups/20260817_175735/glegislacao_dbp_20260817_175735.sql
+- Banco gmodelo_dbp: backups/20260817_175735/gmodelo_dbp_20260817_175735.sql
+- Banco guniversal_dbp: backups/20260817_175735/guniversal_dbp_20260817_175735.sql
+
+O backup da aplicação foi compactado sem incluir a própria pasta backups, para
+evitar recursividade. Os arquivos devem ser mantidos em local protegido e
+testados periodicamente por meio de restauração em ambiente separado.
+
+Backup realizado em 24/08/2026:
+
+- Pasta: `backups/greenportal_backup_20260824_183438/`
+- Aplicação: `greenportal_app_20260824_183438.zip`
+- Bancos: `glegislacao_dbp.sql`, `gmodelo_dbp.sql` e `guniversal_dbp.sql`
+- Manifesto com tamanho e SHA256: `MANIFEST.txt`
+
+Backup realizado em 25/08/2026:
+
+- Pasta: `backups/greenportal_backup_20260825_182749/`
+- Aplicacao: `greenportal_app_20260825_182749.zip`
+- Bancos: `glegislacao_dbp.sql`, `gmodelo_dbp.sql` e `guniversal_dbp.sql`
+- Manifesto com tamanho e SHA256: `MANIFEST.txt`
+- A compactacao excluiu `backups` e `runtime`, pois `runtime` contem logs ativos
+  bloqueados pelos servicos residentes; os arquivos de codigo e configuracao
+  permanecem incluidos.

@@ -1,0 +1,13 @@
+GREEN PORTAL - PADRÃO DE POPUPS
+
+O sistema possui dois componentes padronizados:
+
+1. popupmensagem.php
+Usado para mensagens informativas, sucesso, alerta, erro e confirmações. O conteúdo deve ser simples, não técnico e multilíngue. Pode exibir um botão opcional de confirmação.
+
+2. popuptransacao.php
+Usado para transações ou conteúdos de trabalho que precisam ser exibidos em uma modal. O conteúdo é inserido no corpo da modal e deve respeitar as permissões da transação aberta.
+
+Os componentes são reutilizáveis através das funções greenPortalPopupMensagem() e greenPortalPopupTransacao(). O arquivo assets/js/popups.js fornece as funções GreenPortalPopups.mensagem() e GreenPortalPopups.transacao().
+
+Os componentes não podem ser acessados diretamente por URL. Toda transação carregada no popup deve manter sua própria autenticação, autorização, contexto e responsabilidade.

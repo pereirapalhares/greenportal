@@ -1,0 +1,32 @@
+/* Homologação de Fornecedores › Documentos do fornecedor (principal/homologacaofornecedor_fornecedorxcriterios.php)
+ * c486: padrão de grid do portal (barra em grupos, busca, filtros no cabeçalho, células em caixa, paginação na barra). */
+.docs-body { background: var(--bs-body-bg, #fff); margin: 0; }
+.docs-fragment { display: flex; flex-direction: column; height: 100vh; padding: .75rem 1rem; gap: .5rem; box-sizing: border-box; }
+.docs-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+.docs-legenda { display: flex; flex-wrap: wrap; gap: .35rem; }
+.docs-legenda button { border: 1px solid var(--bs-border-color); background: var(--bs-body-bg); border-radius: 999px; padding: .15rem .6rem; font-size: .8rem; display: inline-flex; align-items: center; gap: .35rem; }
+.docs-legenda button.ativo { outline: 2px solid var(--bs-primary); }
+.docs-legenda .bola { width: .7rem; height: .7rem; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,.2); }
+.docs-status:empty { display: none; }
+.docs-status .badge { white-space: normal; }
+.docs-grid-form { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.docs-grid-form .menu-grid-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; }
+.docs-fragment .menu-batch-grid { font-size: 11px; table-layout: fixed; width: max-content; min-width: 100%; }
+.docs-fragment .menu-batch-grid th.docs-col-marca, .docs-fragment .menu-batch-grid td.docs-col-marca { width: 34px; }
+.docs-fragment .menu-batch-grid th.docs-col-cor, .docs-fragment .menu-batch-grid td.cor { width: 6px; padding: 0; }
+.docs-fragment tbody tr[data-row] { cursor: pointer; }
+.docs-fragment .grid-local-campo .tipo { color: var(--bs-secondary-color); margin-right: .35rem; }
+.docs-fragment .grid-local-campo .tipo::after { content: ' /'; }
+.docs-fragment .docs-evidencias { min-width: 52px; }
+.cor-VERMELHO { background: #e05a4f; } .cor-AMARELO { background: #f2c94c; } .cor-VERDE { background: #3cb371; } .cor-NEUTRO { background: #b9c2bd; } .cor-BRANCO { background: #fff; }
+/* Linhas pastel pela cor do documento; as caixas ficam levemente transparentes sobre a cor da linha */
+tr.linha-VERMELHO > td:not(.cor) { background-color: #fdeceb; } tr.linha-AMARELO > td:not(.cor) { background-color: #fff8e0; } tr.linha-VERDE > td:not(.cor) { background-color: #ecf8f1; }
+tr.linha-VERMELHO .grid-local-campo, tr.linha-AMARELO .grid-local-campo, tr.linha-VERDE .grid-local-campo { background: rgba(255,255,255,.7); }
+.docs-fragment tbody tr.selected > td:not(.cor) { box-shadow: inset 0 0 0 9999px rgba(46,157,106,.08); }
+.docs-fragment tbody tr.selected .grid-local-campo { background: #fff; border-color: #9fd3bb; }
+.docs-modal { max-width: 90vw; }
+.docs-modal .modal-content { max-height: 90vh; }
+.docs-form-toolbar { display: flex; align-items: center; gap: .4rem; padding: .4rem 1rem; border-bottom: 1px solid var(--bs-border-color); background: var(--bs-tertiary-bg, #f3f5f4); flex-wrap: wrap; }
+.docs-hist { font-size: .78rem; }
+.docs-hist th { white-space: nowrap; position: sticky; top: 0; background: var(--bs-tertiary-bg, #f3f5f4); }
+@media (max-width: 640px) { .docs-fragment { padding: .5rem; } }

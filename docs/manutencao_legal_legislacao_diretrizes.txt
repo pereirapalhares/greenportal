@@ -1,0 +1,207 @@
+GREEN PORTAL - DIRETRIZES DA TRANSACAO LEGISLACAO
+
+CONTEXTO
+--------
+
+A transacao Manutencao Legal / Legislacao e acessada por
+principal/manutencaolegal_legislacao.php e utiliza exclusivamente a tabela
+legislacao do banco independente glegislacao_dbp.
+
+ACENTUACAO
+----------
+
+Todos os arquivos da aplicacao devem ser salvos em UTF-8, preferencialmente
+sem conversao para ANSI, e as respostas HTML devem declarar
+Content-Type: text/html; charset=utf-8. As respostas JSON devem declarar
+application/json; charset=utf-8. A conexao PDO deve utilizar charset=utf8mb4.
+
+O banco glegislacao_dbp e suas tabelas usam utf8mb4_0900_ai_ci. A origem
+green_legislacao permanece latin1 e deve ser convertida somente durante a
+migracao, com SET NAMES utf8mb4 e conversao explicita da estrutura. Valores
+legados que ja contenham o caractere literal '?' devem ser tratados como
+conteudo a revisar; nunca substituir automaticamente sem consultar a fonte
+original, pois isso pode alterar o texto legal.
+
+GRID
+----
+
+O grid e em lote, carrega 25 registros por pagina, possui busca geral, filtro
+por coluna, ordenacao, redimensionamento e organizacao das colunas. As
+preferencias de largura, ordem e visibilidade ficam persistidas por usuario
+no banco do tenant. A chave CODLEGISLACAO fica oculta por padrao.
+
+OPERACOES E PERMISSOES
+----------------------
+
+Novo, duplicar, editar, salvar e excluir atuam nas linhas do grid. As operacoes
+de gravacao e exclusao solicitam confirmacao. As permissoes sao verificadas
+para a transacao LEGISLACAO conforme o perfil do usuario.
+
+BANCO E CRUD
+------------
+
+O CRUD nao utiliza SELECT, INSERT ou UPDATE de entidade no PHP. A classe
+classes/LegislacaoGridService.php chama as procedures universais
+sp_crud_select, sp_crud_count, sp_crud_insert, sp_crud_update e
+sp_crud_delete do banco glegislacao_dbp. A view vw_legislacao_grid e usada
+para leitura do grid.
+
+MENU
+----
+
+O item LEGISLACAO fica abaixo de Manutencao Legal, com labels PT, EN e ES e
+URL /principal/manutencaolegal_legislacao.php.
+As permissoes da transacao sao registradas na matriz oficial permissoes para
+os sete perfis da empresa. Todos recebem visualizacao; o perfil
+ADMINISTRADOR recebe CRUD completo.
+
+ROLAGEM DO GRID
+---------------
+
+Como a transacao possui muitas colunas, a tabela deve permanecer dentro de
+menu-grid-scroll com rolagem horizontal e vertical internas. A rolagem
+horizontal deve aparecer quando a largura das colunas ultrapassar a area
+visivel, permitindo acessar todos os campos do lado direito. O cabecalho
+deve permanecer fixo e sempre visivel durante a rolagem vertical; na rolagem
+horizontal, cabecalho, filtros e linhas devem deslocar-se em conjunto. As
+acoes e a paginacao permanecem fora da area de rolagem dos dados.
+
+LISTAS DE AMBITO E TIPO
+-----------------------
+
+O filtro da coluna CODAMBITO deve ser um combobox com todos os registros da
+tabela ambitos, usando CODAMBITO como valor e DSCAMBITO como descricao. O
+filtro da coluna CODTIPO deve ser um combobox com todos os registros da
+tabela tipos, usando CODTIPO como valor e DSCTIPO como descricao. As listas
+devem ser carregadas pelo banco independente glegislacao_dbp e nao somente
+pelos registros da pagina atual.
+
+Na linha do grid, o usuario deve visualizar DSCAMBITO e DSCTIPO, e nao os
+codigos numericos. Os campos continuam editaveis por combobox: o valor
+enviado para o CRUD permanece CODAMBITO ou CODTIPO, enquanto a descricao
+correspondente e mostrada na tela.
+
+DATAS
+-----
+
+data_atualizacao e os demais campos de data desta transacao devem ser
+apresentados em DD/MM/YYYY HH:MM nos idiomas PT e ES, e em MM/DD/YYYY HH:MM
+no idioma EN. Antes da gravacao, o valor localizado deve ser convertido para
+datetime do banco.
+
+CAMPOS DE SELECAO
+------------------
+
+As colunas MEIO_AMBIENTE, SEGURANCA, QUALIDADE e RESPOSABILIDADE devem usar
+combobox com as opcoes Sim e Nao. A coluna data_atualizacao deve usar o
+controle de data e hora do navegador, com calendario para facilitar a troca
+da data.
+
+A coluna situacao_da_lei deve usar as opcoes Lei Alterada, Lei Inclusa e Lei
+Revogada. A coluna devido_da_lei deve usar as opcoes Alterada pela Atualizacao,
+Alterada pelo Ajuste, Alterado pela Atualizacao, Alterado pelo Ajuste, Devido
+ao Ajuste, Devido a Atualizacao e Retirado pela Atualizacao. Os valores
+persistidos devem manter a acentuacao original do banco.
+
+TEXTO EXTENSO DO PADRAO
+------------------------
+
+A coluna PADRAO deve permanecer somente leitura diretamente no grid. Cada
+celula deve apresentar um icone de lapis para edicao. Ao clicar no icone, o
+sistema deve abrir uma modal proporcional com textarea, botao Confirmar e
+botao Cancelar.
+
+O texto somente deve ser atualizado na celula e considerado alterado depois
+que o usuario clicar em Confirmar. Cancelar deve fechar a modal sem modificar
+o conteudo. O valor completo deve permanecer no campo do formulario para ser
+enviado ao CRUD; a celula pode mostrar uma versao resumida com tooltip.
+A modal deve ter altura suficiente para textos extensos e mostrar o conteudo
+do campo CODIGO da legislacao em edicao, nunca o valor da chave primaria
+CODLEGISLACAO. Para registros novos sem codigo, deve informar que se trata de
+um novo registro.
+
+RELACIONAMENTO COM ASSUNTOS
+---------------------------
+
+A coluna ASSUNTOS mostra os assuntos associados a cada legislacao, separados
+por ponto e virgula. O icone de edicao abre uma modal com busca e selecao dos
+assuntos associados e nao associados. A confirmacao sincroniza os vinculos na
+tabela legislacaoxassunto, usando CODLEGISLACAO e CODASSUNTO, sem alterar a
+tabela legislacao.
+O filtro da coluna ASSUNTOS deve consultar a view vw_legislacao_grid no banco
+glegislacao_dbp usando busca parcial no texto agregado. Assim, ao informar
+qualquer parte da descricao de um assunto, todas as legislacoes que possuam
+aquele assunto relacionado devem ser retornadas. Filtros de codigos, datas e
+listas de selecao continuam usando correspondencia exata.
+
+CRUD E TEXTOS EXTENSOS
+----------------------
+
+As procedures universais do banco devem aumentar o limite de GROUP_CONCAT
+antes de montar o SQL dinamico. Isso evita truncamento e erro de sintaxe ao
+alterar o campo PADRAO ou outros textos extensos. A procedure deve suportar
+quebras de linha, apostrofos e caracteres especiais.
+FILTROS CONTEXTUAIS DE LEGISLAÇÃO
+----------------------------------
+
+A barra de busca contextual fica abaixo dos botões do grid e possui os filtros
+Empresa, Unidade, Mês/Ano de atualização e Padrão. Os filtros são executados
+no banco glegislacao_dbp, respeitam a paginação de 25 registros e atualizam o
+total do rodapé sem recarregar a aba.
+
+Empresa utiliza o cadastro central guniversal_dbp.empresa. Unidade utiliza a
+tabela de cada empresa, no caso Modelo em gmodelo_dbp.unidades. A relação da
+legislação com empresa e unidade é feita por gmodelo_dbp.legislacaoxempresa,
+preservando
+CODLEGISLACAO, CODEMPRESA e codunidade.
+
+O combobox Empresa mostra somente empresas com status ATIVA. O combobox
+Unidades permanece desabilitado até a escolha da empresa e então mostra apenas
+as unidades relacionadas à empresa escolhida em legislacaoxempresa. A busca
+da legislação usa o relacionamento completo, permitindo localizar todos os
+registros vinculados à empresa ou à unidade selecionada.
+
+O filtro Mês/Ano utiliza legislacaoxalteracao.codlegislacao relacionado a
+legislacao.CODLEGISLACAO e considera legislacaoxalteracao.data_da_alteracao.
+O filtro Padrão pesquisa o conteúdo textual de legislacao.PADRAO.
+
+PERFORMANCE DA BUSCA
+--------------------
+
+A leitura paginada utiliza as procedures sp_legislacao_select e
+sp_legislacao_count. Os filtros de Empresa, Unidade e Mês/Ano são aplicados
+com EXISTS sobre as tabelas relacionais, evitando filtros em textos agregados.
+Os períodos do combobox são carregados pela view vw_legislacao_periodos,
+sem carregar todas as linhas de legislacaoxalteracao no PHP. Os índices
+ix_lxe_empresa_unidade_legislacao e ix_lxa_legislacao_data devem ser mantidos.
+
+As migrações estão registradas em database/033_migrar_filtros_legislacao.sql.
+
+FILTROS DE COLUNA SERVER-SIDE
+-----------------------------
+
+Todos os filtros do grid devem ser enviados ao banco, e nao somente aplicados
+nas 25 linhas visiveis no navegador. Os filtros de CODIGO, NR, ANO, ARTIGOS e
+PADRAO usam busca parcial; CODAMBITO e CODTIPO usam o codigo selecionado; os
+campos Sim/Nao, situacao_da_lei e devido_da_lei usam correspondencia exata.
+O filtro ASSUNTOS deve consultar a tabela de relacionamento
+legislacaoxassunto e a descricao em assuntos.
+
+As procedures sp_legislacao_select e sp_legislacao_count recebem o JSON
+filtros e aplicam os mesmos criterios, garantindo que o total do rodape e as
+linhas da pagina sejam coerentes. Essa regra foi implantada em
+database/037_filtros_colunas_legislacao.sql.
+
+TESTES DE CRUD E FILTROS
+------------------------
+
+Os testes devem usar um CODIGO temporario e transacao revertida ao final. A
+bateria minima valida inclusao, alteracao, exclusao, relacionamento com
+legislacaoxassunto, busca geral, empresa, unidade, mes/ano, padrao, codigo,
+ambito, tipo, campos Sim/Nao, situacao, devido da lei e assuntos. Tambem deve
+ser validado que a pagina retorna no maximo 25 linhas e que a ordenacao por
+CODLEGISLACAO permanece estavel.
+
+A barra de acoes utiliza `components/botoes_crud.php`, mantendo os botoes
+CRUD centralizados. Esta transacao possui ainda as acoes especificas `RCL
+Completa` e `RCL Padrao`, exibidas como botoes adicionais na mesma barra.

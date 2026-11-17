@@ -1,0 +1,19 @@
+-- View de ocorrências em que o usuário participa como emitente, gestor,
+-- responsável pela análise ou responsável por plano de ação.
+USE `gmodelo_dbp`;
+SET NAMES utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+DROP VIEW IF EXISTS `vminhasocorrenciasnc`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY INVOKER VIEW `vminhasocorrenciasnc` AS
+SELECT DISTINCT v.*, envolvidos.CODUSUARIO_ENVOLVIDO
+  FROM vlistadeocorrenciasnc v
+  INNER JOIN (
+    SELECT CODOCORRENCIA, CODUSUARIO_EMISSOR AS CODUSUARIO_ENVOLVIDO FROM nc_indicacao_ocorrencia WHERE CODUSUARIO_EMISSOR IS NOT NULL
+    UNION
+    SELECT CODOCORRENCIA, CODUSUARIO_GESTOR FROM nc_indicacao_ocorrencia WHERE CODUSUARIO_GESTOR IS NOT NULL
+    UNION
+    SELECT CODOCORRENCIA, CODUSUARIO_RESPONSAVEL FROM nc_indicacao_ocorrencia WHERE CODUSUARIO_RESPONSAVEL IS NOT NULL
+    UNION
+    SELECT CODOCORRENCIA, CODUSUARIO FROM nc_planodeacao WHERE CODUSUARIO IS NOT NULL
+    UNION
+    SELECT c.CODOCORRENCIA, p.CODUSUARIO FROM nc_causas c INNER JOIN nc_planodeacao p ON p.CODCAUSA=c.CODCAUSA WHERE p.CODUSUARIO IS NOT NULL
+  ) envolvidos ON envolvidos.CODOCORRENCIA=v.CODOCORRENCIA;

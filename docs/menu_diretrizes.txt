@@ -1,0 +1,43 @@
+GREEN PORTAL - DIRETRIZES DE MENU
+
+1. CADASTRO
+
+Menus devem ser cadastrados na tabela menus, com codigo, labels PT/EN/ES,
+icone, URL, nivel, ordem, modulo, item pai e situacao.
+
+As URLs devem ser simples de cadastrar e devem apontar diretamente para o
+PHP da transacao, por exemplo:
+
+- /principal/usuarios.php
+- /principal/setup_login.php
+
+2. HIERARQUIA
+
+O menu suporta ate quatro niveis. Itens de nivel zero ou nivel um podem
+conter subitens. A ordem deve ser respeitada em todos os idiomas.
+
+3. EXECUCAO
+
+Item com URL valida abre o PHP correspondente em uma nova aba da main.
+Item sem implementacao deve mostrar a mensagem Em construcao, sem gerar erro
+tecnico.
+
+4. PERMISSOES
+
+O acesso ao menu e controlado pelo perfil. A ausencia de permissao deve
+ocultar ou desabilitar a funcionalidade conforme a regra do grid, com
+mensagem traduzida em PT, EN e ES.
+
+5. ROLAGEM
+
+O menu lateral deve possuir uma area de rolagem vertical propria. A barra
+deve usar comportamento automatico e aparecer somente quando os itens do
+menu ultrapassarem a altura disponivel da tela. Cabecalho, controle do menu
+e rodape nao devem rolar junto com os itens.
+
+6. SEPARACAO DE RESPONSABILIDADES
+
+A classe classes/MenuService.php deve concentrar consulta, idioma,
+hierarquia, ordenacao, icones e filtragem por permissao. O arquivo
+principal/menu.php deve somente renderizar o HTML do menu. A main.php deve
+coordenar o layout e incluir o componente, sem duplicar a regra de montagem.

@@ -1,0 +1,32 @@
+GREEN PORTAL - DIRETRIZES DE EXPORTACAO
+
+Exportacoes Excel devem ocorrer em segundo plano e nunca bloquear a
+interacao do portal. O mesmo usuario nao pode solicitar outra exportacao do
+mesmo grid enquanto existir uma solicitacao em andamento.
+
+O servidor deve permitir no maximo dois slots simultaneos de processamento.
+Novas tarefas aguardam a liberacao de um slot.
+
+A exportacao deve respeitar os filtros e a busca usados no grid. Sem filtro,
+deve exportar todos os registros da transacao, nao apenas os 25 da pagina.
+
+O arquivo deve ser XLSX profissional, contendo tipo de informacao, data/hora
+e usuario solicitante. Ao registrar a solicitacao, o usuario recebe um alerta
+de inicio. O worker deve alterar o status para PROCESSANDO e gravar iniciada_em.
+Ao finalizar, deve gravar concluido_em e enviar alerta final com data/hora de
+inicio, data/hora de fim e link para baixar o XLSX. Em caso de erro, deve
+enviar alerta final com as duas datas e a mensagem do erro.
+
+Os alertas de exportacao devem conter um link separado para "Ver status".
+Esse link abre popup com a solicitacao, status, percentual indicativo e
+horarios de solicitacao, inicio e fim. O popup consulta o status enquanto o
+job estiver SOLICITADA ou PROCESSANDO.
+
+O XLSX deve conter somente os campos visiveis configurados no grid no momento
+da solicitacao, incluindo as preferencias individuais de colunas do usuario.
+A ordem e os labels devem corresponder ao grid exibido. O cabecalho da tabela deve usar verde pastel com texto preto,
+mantendo a leitura e a identidade visual do portal.
+
+As transacoes mlTreinamentos e mlInfraestruturas usam, respectivamente, as
+transacoes modulolegal_treinamentos e modulolegal_infraestrutura e as views
+vw_modulolegal_treinamentos_grid e vw_modulolegal_infraestrutura_grid.

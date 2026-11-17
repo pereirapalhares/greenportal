@@ -1,0 +1,121 @@
+GREEN PORTAL - DIRETRIZES DE MIGRACAO DO MODULO DE LEGISLACAO
+
+OBJETIVO
+--------
+
+O modulo legado green_legislacao deve ser migrado para o banco independente
+glegislacao_dbp. O banco de destino utiliza utf8mb4_0900_ai_ci para evitar
+problemas de acentuacao e compatibilidade com a aplicacao.
+
+TABELAS MIGRADAS
+----------------
+
+assuntos, legislacao, legislacao_categoria,
+legislacaopaixlegislacaofilha, legislacaoxalteracao, legislacaoxassunto,
+legislacaoxcategoria, legislacaoxmes, legislacaoxpalavraschave,
+legislacaoxpergunta, perguntas e tipo_de_alteracao.
+Tambem sao migradas do banco green_universal as tabelas tipos,
+tipos_palavras_chaves, tiposxpalavras_chaves e ambitos, pois seus codigos sao
+utilizados nas referencias de legislacao.
+
+CHAVES
+------
+
+As chaves primarias do legado devem ser mantidas sem substituicao por id.
+Exemplos: legislacao.CODLEGISLACAO, assuntos.CODASSUNTO,
+perguntas.CODPERGUNTA, tipo_de_alteracao.CODTIPODEALTERACAO,
+legislacaoxalteracao.codalteracao e legislacaoxcategoria.CODLEGISLACAOXCATEGORIA.
+As tabelas de relacionamento que nao possuem chave primaria no legado
+continuam sem chave artificial no destino.
+
+ACENTUACAO E CONVERSAO
+----------------------
+
+As tabelas legadas sao tratadas como latin1 na origem. A estrutura de destino
+e criada a partir da origem e convertida para utf8mb4_0900_ai_ci antes da
+carga. A sessao SQL usa SET NAMES utf8mb4 para que os textos sejam convertidos
+corretamente durante a migracao.
+
+AUDITORIA DA MIGRACAO
+---------------------
+
+O banco glegislacao_dbp possui registros_migracao. O script registra a
+origem, o destino, o tipo da operacao, a versao, o status, as quantidades de
+registros e os detalhes das chaves e da conversao de charset.
+
+SCRIPT DE EXECUCAO
+------------------
+
+database/028_migrar_legislacao.sql
+
+database/031_migrar_universal_legislacao.sql
+
+O script foi executado em 15/08/2026 no servidor MySQL com acesso aos bancos
+green_legislacao e glegislacao_dbp. A auditoria confirmou a carga dos 12
+objetos e a igualdade das quantidades de origem e destino. Em uma nova
+execucao, validar antes se o destino possui dados alterados pela aplicacao,
+especialmente nas tabelas de relacionamento que nao possuem chave primaria.
+
+RESULTADO DA PRIMEIRA CARGA
+---------------------------
+
+Todas as tabelas migradas ficaram com status CONCLUIDA em
+glegislacao_dbp.registros_migracao. As quantidades registradas foram:
+
+- assuntos: 21613
+- legislacao: 37945
+- legislacao_categoria: 18
+- legislacaopaixlegislacaofilha: 484
+- legislacaoxalteracao: 27653
+- legislacaoxassunto: 37898
+- legislacaoxcategoria: 8556
+- legislacaoxmes: 21
+- legislacaoxpalavraschave: 37423
+- legislacaoxpergunta: 30600
+- perguntas: 9797
+- tipo_de_alteracao: 47
+
+RESULTADO DA MIGRACAO UNIVERSAL
+-------------------------------
+
+As tabelas universais foram carregadas no mesmo banco, com as seguintes
+quantidades:
+
+- tipos: 1897
+- tipos_palavras_chaves: 5
+- tiposxpalavras_chaves: 1061
+- ambitos: 130
+
+As chaves preservadas sao CODTIPO, codtipopalavrachave,
+CODTIPOXPALAVRACHAVE e CODAMBITO.
+PRESERVACAO DA FORMATACAO DO PADRAO
+------------------------------------
+
+O campo PADRAO e migrado como LONGTEXT, preservando integralmente o conteudo
+do legado, incluindo quebras de linha, paragrafo e demais caracteres. A
+validacao da carga confirmou 37.945 registros comparados entre
+green_legislacao.legislacao e glegislacao_dbp.legislacao, sem diferencas de
+conteudo.
+CORRECAO DO CRUD PARA TEXTOS EXTENSOS
+-------------------------------------
+
+Foi identificado que o limite padrao de GROUP_CONCAT podia truncar o SQL
+dinamico das procedures universais ao alterar PADRAO. A procedure
+sp_crud_update foi atualizada com group_concat_max_len de 16 MB, e a mesma
+protecao foi aplicada as demais procedures universais.
+MIGRAÇÕES COMPLEMENTARES DOS FILTROS
+-------------------------------------
+
+O script database/033_migrar_filtros_legislacao.sql migra:
+
+- green_modelo.unidades para gmodelo_dbp.unidades e glegislacao_dbp.unidades;
+- green_modelo.legislacaoxempresa para gmodelo_dbp.legislacaoxempresa;
+- green_legislacao.legislacaoxalteracao para glegislacao_dbp.legislacaoxalteracao.
+
+A relação legislacaoxempresa pertence ao banco da empresa e preserva a chave
+CODLEGISLACAXEMPRESA e os campos CODLEGISLACAO, CODEMPRESA e codunidade. A relação de alteração é
+legislacao.CODLEGISLACAO = legislacaoxalteracao.codlegislacao, com a data
+de atualização em data_da_alteracao.
+
+As tabelas de origem latin1 são convertidas para utf8mb4_0900_ai_ci nos
+bancos de destino. Cada migração é registrada em registros_migracao.

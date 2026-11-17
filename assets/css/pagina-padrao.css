@@ -1,0 +1,127 @@
+/*
+ * GreenSolutions — padrão visual das páginas independentes (popups e telas abertas em iframe próprio).
+ * Incluído por components/pagina_padrao.php, que marca o <html> com "gp-pagina theme-<tema do usuário>".
+ * Usa as variáveis do portal (design-system.css) e traduz as classes do Bootstrap para o visual do portal:
+ * fonte DM Sans 12px, títulos Manrope, tabelas no estilo do grid (11px) e cores do tema (verde, azul, cinza).
+ */
+
+/* Temas (mesmos valores de design-system.css), aplicados ao <html> da página */
+html.gp-pagina { --gp-primary: #247a5b; --gp-primary-dark: #185640; --gp-primary-soft: #e8f5ee; --gp-accent: #62b58b; --gp-page: #f3f7f4; --gp-surface: #fbfdfc; --gp-border: #dce9e2; --gp-text: #203f35; --gp-muted: #7f938a; }
+html.gp-pagina.theme-azul { --gp-primary: #477fae; --gp-primary-dark: #315e82; --gp-primary-soft: #e8f1fa; --gp-accent: #77a9d0; --gp-page: #f3f7fb; --gp-surface: #fbfdff; --gp-border: #d9e6f0; --gp-text: #29465d; --gp-muted: #8198aa; }
+html.gp-pagina.theme-cinza { --gp-primary: #687b84; --gp-primary-dark: #526169; --gp-primary-soft: #edf0f2; --gp-accent: #9aa9b0; --gp-page: #f4f6f7; --gp-surface: #fbfcfc; --gp-border: #dfe5e8; --gp-text: #3f5159; --gp-muted: #8b989e; }
+
+/* Base */
+html.gp-pagina, html.gp-pagina body { height: auto; min-height: 100%; overflow: auto; }
+html.gp-pagina body {
+    margin: 0;
+    background: var(--gp-page) !important;
+    color: var(--gp-text);
+    font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 12px;
+    line-height: 1.45;
+    --bs-body-font-size: 12px;
+    --bs-body-color: var(--gp-text);
+    --bs-body-bg: var(--gp-page);
+    --bs-border-color: var(--gp-border);
+    --bs-border-color-translucent: color-mix(in srgb, var(--gp-border) 70%, transparent);
+    --bs-secondary-color: var(--gp-muted);
+    --bs-tertiary-bg: var(--gp-primary-soft);
+    --bs-link-color: var(--gp-primary);
+    --bs-link-color-rgb: 36, 122, 91;
+    --bs-link-hover-color: var(--gp-primary-dark);
+    --bs-primary: var(--gp-primary);
+    --bs-success: var(--gp-primary);
+}
+html.gp-pagina a { color: var(--gp-primary); }
+html.gp-pagina a:hover { color: var(--gp-primary-dark); }
+
+/* Títulos: escala do portal */
+html.gp-pagina h1, html.gp-pagina h2, html.gp-pagina h3, html.gp-pagina h4, html.gp-pagina h5, html.gp-pagina h6,
+html.gp-pagina .h1, html.gp-pagina .h2, html.gp-pagina .h3, html.gp-pagina .h4, html.gp-pagina .h5, html.gp-pagina .h6 {
+    font-family: 'Manrope', 'DM Sans', sans-serif; font-weight: 700; color: var(--gp-primary-dark); letter-spacing: -.2px; line-height: 1.25;
+}
+html.gp-pagina h1, html.gp-pagina .h1 { font-size: 18px; }
+html.gp-pagina h2, html.gp-pagina .h2 { font-size: 16px; }
+html.gp-pagina h3, html.gp-pagina .h3, html.gp-pagina h4, html.gp-pagina .h4 { font-size: 15px; }
+html.gp-pagina h5, html.gp-pagina .h5 { font-size: 13px; }
+html.gp-pagina h6, html.gp-pagina .h6 { font-size: 12px; }
+html.gp-pagina small, html.gp-pagina .small { font-size: 11px; }
+html.gp-pagina .text-muted, html.gp-pagina .text-secondary, html.gp-pagina .form-text { color: var(--gp-muted) !important; }
+html.gp-pagina .lead { font-size: 13px; }
+html.gp-pagina .fs-1, html.gp-pagina .fs-2, html.gp-pagina .fs-3 { font-size: 18px !important; }
+html.gp-pagina .fs-4, html.gp-pagina .fs-5 { font-size: 15px !important; }
+html.gp-pagina .fs-6 { font-size: 12px !important; }
+
+/* Fundos e bordas */
+html.gp-pagina .bg-light, html.gp-pagina .bg-body-tertiary { background-color: var(--gp-page) !important; }
+html.gp-pagina .bg-white, html.gp-pagina .bg-body { background-color: var(--gp-surface) !important; }
+html.gp-pagina .border, html.gp-pagina .border-top, html.gp-pagina .border-bottom, html.gp-pagina .border-start, html.gp-pagina .border-end { border-color: var(--gp-border) !important; }
+html.gp-pagina .rounded { border-radius: var(--gp-radius-sm) !important; }
+html.gp-pagina .card { border-color: var(--gp-border); border-radius: var(--gp-radius-md); background: var(--gp-surface); box-shadow: var(--gp-shadow-sm); }
+html.gp-pagina .card-header, html.gp-pagina .card-footer { background: var(--gp-primary-soft); border-color: var(--gp-border); color: var(--gp-primary-dark); font-weight: 600; }
+html.gp-pagina .list-group-item { border-color: var(--gp-border); color: var(--gp-text); background: var(--gp-surface); }
+html.gp-pagina .list-group-item.active { background: var(--gp-primary-soft); color: var(--gp-primary-dark); border-color: var(--gp-border); }
+html.gp-pagina hr { border-color: var(--gp-border); opacity: 1; }
+
+/* Tabelas: estilo do grid do portal */
+html.gp-pagina .table {
+    font-size: 11px; margin-bottom: 0;
+    --bs-table-color: var(--gp-text); --bs-table-bg: var(--gp-surface); --bs-table-border-color: var(--gp-border);
+    --bs-table-hover-bg: var(--gp-primary-soft); --bs-table-hover-color: var(--gp-text);
+    --bs-table-striped-bg: color-mix(in srgb, var(--gp-primary-soft) 55%, transparent);
+}
+html.gp-pagina .table > thead th, html.gp-pagina .table-light, html.gp-pagina .table-light > th, html.gp-pagina .table-light > td {
+    --bs-table-bg: var(--gp-primary-soft); --bs-table-color: var(--gp-primary-dark);
+    background-color: var(--gp-primary-soft); color: var(--gp-primary-dark); font-weight: 600; border-color: var(--gp-border);
+}
+html.gp-pagina .table td, html.gp-pagina .table th { padding: 5px 7px; }
+
+/* Botões */
+html.gp-pagina .btn { font-size: 12px; }
+html.gp-pagina .btn-sm { font-size: 11px; }
+html.gp-pagina .btn-primary, html.gp-pagina .btn-success {
+    --bs-btn-color: #fff; --bs-btn-bg: var(--gp-primary); --bs-btn-border-color: var(--gp-primary);
+    --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--gp-primary-dark); --bs-btn-hover-border-color: var(--gp-primary-dark);
+    --bs-btn-active-bg: var(--gp-primary-dark); --bs-btn-active-border-color: var(--gp-primary-dark);
+    --bs-btn-disabled-bg: var(--gp-accent); --bs-btn-disabled-border-color: var(--gp-accent);
+}
+html.gp-pagina .btn-outline-primary, html.gp-pagina .btn-outline-success {
+    --bs-btn-color: var(--gp-primary); --bs-btn-border-color: var(--gp-accent);
+    --bs-btn-hover-color: var(--gp-primary-dark); --bs-btn-hover-bg: var(--gp-primary-soft); --bs-btn-hover-border-color: var(--gp-primary);
+    --bs-btn-active-color: var(--gp-primary-dark); --bs-btn-active-bg: var(--gp-primary-soft); --bs-btn-active-border-color: var(--gp-primary);
+}
+html.gp-pagina .btn-outline-secondary {
+    --bs-btn-color: var(--gp-muted); --bs-btn-border-color: var(--gp-border);
+    --bs-btn-hover-color: var(--gp-primary-dark); --bs-btn-hover-bg: var(--gp-primary-soft); --bs-btn-hover-border-color: var(--gp-accent);
+}
+
+/* Etiquetas */
+html.gp-pagina .badge { font-size: 10.5px; font-weight: 600; }
+html.gp-pagina .text-bg-success, html.gp-pagina .text-bg-primary { background-color: var(--gp-primary) !important; color: #fff !important; }
+html.gp-pagina .text-bg-secondary { background-color: var(--gp-muted) !important; color: #fff !important; }
+html.gp-pagina .text-bg-light { background-color: var(--gp-primary-soft) !important; color: var(--gp-primary-dark) !important; border: 1px solid var(--gp-border); }
+html.gp-pagina .text-bg-info { background-color: var(--gp-accent) !important; color: #fff !important; }
+html.gp-pagina .text-success, html.gp-pagina .text-primary { color: var(--gp-primary) !important; }
+
+/* Formulários */
+html.gp-pagina .form-control, html.gp-pagina .form-select { font-size: 12px; color: var(--gp-text); border-color: var(--gp-border); border-radius: var(--gp-radius-sm); }
+html.gp-pagina .form-control-sm, html.gp-pagina .form-select-sm { font-size: 11px; }
+html.gp-pagina .form-control:focus, html.gp-pagina .form-select:focus { border-color: var(--gp-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gp-primary) 12%, transparent); }
+html.gp-pagina .form-label, html.gp-pagina label.col-form-label { font-size: 11px; font-weight: 600; color: var(--gp-primary-dark); margin-bottom: 3px; }
+html.gp-pagina .form-check-input:checked { background-color: var(--gp-primary); border-color: var(--gp-primary); }
+html.gp-pagina .form-check-input:focus { border-color: var(--gp-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gp-primary) 12%, transparent); }
+html.gp-pagina .input-group-text { font-size: 12px; background: var(--gp-primary-soft); border-color: var(--gp-border); color: var(--gp-primary-dark); }
+
+/* Abas, alertas e diálogos */
+html.gp-pagina .nav-tabs { border-color: var(--gp-border); }
+html.gp-pagina .nav-tabs .nav-link { font-size: 12px; color: var(--gp-muted); }
+html.gp-pagina .nav-tabs .nav-link.active { color: var(--gp-primary-dark); border-color: var(--gp-border) var(--gp-border) var(--gp-surface); background: var(--gp-surface); font-weight: 600; }
+html.gp-pagina .nav-pills .nav-link.active { background: var(--gp-primary); }
+html.gp-pagina .alert { font-size: 12px; padding: 8px 12px; border-radius: var(--gp-radius-sm); }
+html.gp-pagina .alert-success { background: var(--gp-primary-soft); border-color: var(--gp-border); color: var(--gp-primary-dark); }
+html.gp-pagina .alert-info, html.gp-pagina .alert-secondary, html.gp-pagina .alert-light { background: var(--gp-surface); border-color: var(--gp-border); color: var(--gp-text); }
+html.gp-pagina .modal-title { font-size: 15px; }
+html.gp-pagina .dropdown-menu { font-size: 12px; border-color: var(--gp-border); }
+html.gp-pagina .page-link { font-size: 11px; color: var(--gp-primary); border-color: var(--gp-border); }
+html.gp-pagina .page-item.active .page-link { background: var(--gp-primary); border-color: var(--gp-primary); color: #fff; }
+html.gp-pagina .progress-bar { background-color: var(--gp-primary); }

@@ -1,0 +1,295 @@
+{
+    "executado_em": "2026-10-14T12:38:40+00:00",
+    "banco": "gatlas_dbp",
+    "registros_corrigidos": 32,
+    "alteracoes": [
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODOCORRENCIA": 6971
+            },
+            "antes": "De acordo com o requisito 6.1.3, requisitos legais e outros requisitos, a organização deve:\na) determinar e ter acesso aos requisitos legais e outros requisitos relacionados a seus aspectos ambientais;\nb) determinar como estes requisitos legais e outros requisitos aplicam-se Ã  organização;\nc) levar requisitos legais e outros requisitos em consideração quando estabelecer, implementar, manter e melhorar continuamente seu sistema de gestão ambiental.\n\nA organização deve manter informação documenta",
+            "depois": "De acordo com o requisito 6.1.3, requisitos legais e outros requisitos, a organização deve:\na) determinar e ter acesso aos requisitos legais e outros requisitos relacionados a seus aspectos ambientais;\nb) determinar como estes requisitos legais e outros requisitos aplicam-se à organização;\nc) levar requisitos legais e outros requisitos em consideração quando estabelecer, implementar, manter e melhorar continuamente seu sistema de gestão ambiental.\n\nA organização deve manter informação documenta"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODOCORRENCIA": 6973
+            },
+            "antes": "Segundo o requisito 10.2, não conformidade e ação corretiva, ao ocorrer uma não conformidade, a organização deve:\na) reagir Ã  não conformidade e, como aplicável:\n1) tomar ação para controlá-la e corrigi-la;\nb) avaliar a necessidade de uma ação para eliminar as causas da não conformidade, a fim de que ela não se repita ou ocorra em outro lugar:\n1) analisando criticamente a não conformidade;\n2) determinando as causas da não conformidade;\n3) determinando se não conformidades similares existem ou s",
+            "depois": "Segundo o requisito 10.2, não conformidade e ação corretiva, ao ocorrer uma não conformidade, a organização deve:\na) reagir à não conformidade e, como aplicável:\n1) tomar ação para controlá-la e corrigi-la;\nb) avaliar a necessidade de uma ação para eliminar as causas da não conformidade, a fim de que ela não se repita ou ocorra em outro lugar:\n1) analisando criticamente a não conformidade;\n2) determinando as causas da não conformidade;\n3) determinando se não conformidades similares existem ou s"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODOCORRENCIA": 7044
+            },
+            "antes": "8.5.4\nA organização deve preservar as saídas durante produção e provisão de serviço na extensão necessária, para assegurar conformidade com requisitos.\nNOTA Preservação pode incluir identificação, manuseio, controle de contaminação, embalagem, armazenamento, transmissão ou transporte e proteção.\nDevem ser observados os documentos Atlas Schindler nÂº 001509 Manuseio, armazenamento preservação de materiais no AA V23.\ne nÂº 010159_Inventário físico nas Filiais V7\n",
+            "depois": "8.5.4\nA organização deve preservar as saídas durante produção e provisão de serviço na extensão necessária, para assegurar conformidade com requisitos.\nNOTA Preservação pode incluir identificação, manuseio, controle de contaminação, embalagem, armazenamento, transmissão ou transporte e proteção.\nDevem ser observados os documentos Atlas Schindler nº 001509 Manuseio, armazenamento preservação de materiais no AA V23.\ne nº 010159_Inventário físico nas Filiais V7\n"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODOCORRENCIA": 7068
+            },
+            "antes": "7.2 Competência\nOs requisitos de competência desta Norma aplicam-se Ã s pessoas que realizam trabalhos\nsob o controle da organização, que afetam seu desempenho ambiental, incluindo pessoas:\na) cujo trabalho tem o potencial de causar um impacto ambiental significativo;\nb) a quem são atribuídas as responsabilidades para o sistema de gestão ambiental, incluindo\nas que:\n1) determinam e avaliam os impactos ambientais e os requisitos legais e outros requisitos;\n2) contribuem para o alcance dos objetiv",
+            "depois": "7.2 Competência\nOs requisitos de competência desta Norma aplicam-se às pessoas que realizam trabalhos\nsob o controle da organização, que afetam seu desempenho ambiental, incluindo pessoas:\na) cujo trabalho tem o potencial de causar um impacto ambiental significativo;\nb) a quem são atribuídas as responsabilidades para o sistema de gestão ambiental, incluindo\nas que:\n1) determinam e avaliam os impactos ambientais e os requisitos legais e outros requisitos;\n2) contribuem para o alcance dos objetiv"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6938
+            },
+            "antes": "Não foram apresentadas as evidências da realização de auditorias de 2Âº Parte, conforme estabelecido neste item 5.3 do Documento NÂº 11581 de todos os fornecedores de destinação de resíduos da empresa. Exemplo:\n.  Balprensa - Destinação de resíduos ferroso\n.  CDM Madeiras - Destinação de resíduos de madeira\n.  Chaco Vaco - Destinação de resíduos de madeira\n.  E-lixo - Destinação de resíduos eletrônicos\n.  Ita Resíduos - Destinação de resíduos de óleo vegetal (cozinha)\n.  LC Entulho - Destinação de resíduos de construção civil\n.  Massfix - Destinação de resíduos de vidro\n.  Nortevisual - Transporte de Resíduos\n\nÉ importante observar que o prazo dos 6 primeiros meses após o início da prestação do serviço para a realização da auditoria de 2Âº Parte pode não ser adequado. Caso os controles apresentados pela empresa de destinação não seja satisfatório, terão sido enviadas quantidades significativas de resíduos sem o devido controle. É importante observar que o atendimento de muitas condicionantes da Licença de Operação da unidade de destinação só é possível ser verificada através de uma auditoria de 2Âº Parte.\n",
+            "depois": "Não foram apresentadas as evidências da realização de auditorias de 2º Parte, conforme estabelecido neste item 5.3 do Documento Nº 11581 de todos os fornecedores de destinação de resíduos da empresa. Exemplo:\n.  Balprensa - Destinação de resíduos ferroso\n.  CDM Madeiras - Destinação de resíduos de madeira\n.  Chaco Vaco - Destinação de resíduos de madeira\n.  E-lixo - Destinação de resíduos eletrônicos\n.  Ita Resíduos - Destinação de resíduos de óleo vegetal (cozinha)\n.  LC Entulho - Destinação de resíduos de construção civil\n.  Massfix - Destinação de resíduos de vidro\n.  Nortevisual - Transporte de Resíduos\n\nÉ importante observar que o prazo dos 6 primeiros meses após o início da prestação do serviço para a realização da auditoria de 2º Parte pode não ser adequado. Caso os controles apresentados pela empresa de destinação não seja satisfatório, terão sido enviadas quantidades significativas de resíduos sem o devido controle. É importante observar que o atendimento de muitas condicionantes da Licença de Operação da unidade de destinação só é possível ser verificada através de uma auditoria de 2º Parte.\n"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6944
+            },
+            "antes": "O item 6.3 do documento Procedimento para Gerenciamento de Mudanças - NÂº do documento: 11679 - Versão: 01 - Data: 05/12/2017 confunde planejar mudanças com cronograma de ações. O cronograma de ações é uma consequência do planejamento de mudanças, ou seja, o cronograma não substitui o planejamento de mudanças, mas uma vez estabelecido o planejamento, existe a necessidade de ações para adequar as instalações Ã s mudanças identificadas.",
+            "depois": "O item 6.3 do documento Procedimento para Gerenciamento de Mudanças - Nº do documento: 11679 - Versão: 01 - Data: 05/12/2017 confunde planejar mudanças com cronograma de ações. O cronograma de ações é uma consequência do planejamento de mudanças, ou seja, o cronograma não substitui o planejamento de mudanças, mas uma vez estabelecido o planejamento, existe a necessidade de ações para adequar as instalações às mudanças identificadas."
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6948
+            },
+            "antes": "O Depósito de GLP não possui as sinalizações obrigatórias previstas na ABNT NBR 15.514/07 (Itens 4.11, 4.25 e 4.26), NR 20 (Item 20.13.4), ABNT NBR 13.523/17, Resolução ANP NÂº 70/11 entre outras (exemplo: Classe de Risco e Perigo Inflamável).",
+            "depois": "O Depósito de GLP não possui as sinalizações obrigatórias previstas na ABNT NBR 15.514/07 (Itens 4.11, 4.25 e 4.26), NR 20 (Item 20.13.4), ABNT NBR 13.523/17, Resolução ANP Nº 70/11 entre outras (exemplo: Classe de Risco e Perigo Inflamável)."
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6950
+            },
+            "antes": "Recomendamos que o critério para a aplicação da avaliação SQA, previsto no documento Critérios de Homologação de Fornecedores - NÂº do documento: 010567 - Versão: 01 - Data: 09/06/2015, inclua elementos ambientais . Atualmente o critério abrange exclusivamente aspectos comerciais (faturamento superior ou inferior a 2 milhões de R$) e da qualidade (ser um componente crítico para a qualidade).\n\nAs perguntas das Auditorias SQA (Supplier Quality Audit) são muito genéricas (ex: o fornecedor cumpre todos os requisitos legais?). Este tipo de pergunta obriga o auditor a ter conhecimento específico em relação ao item que está sendo avaliado (ex: conhecimento dos requisitos legais aplicáveis ao fornecedor), o que nem sempre ocorre. Para reduzir o risco de realizar uma avaliação superficial da questão, é recomendável que as perguntas sejam mais dirigidas para pontos específicos da legislação, por exemplo, considerando os requisitos legais que podem gerar uma co-responsabilidade legal entre a Atlas Schindler e o fornecedor.\n",
+            "depois": "Recomendamos que o critério para a aplicação da avaliação SQA, previsto no documento Critérios de Homologação de Fornecedores - Nº do documento: 010567 - Versão: 01 - Data: 09/06/2015, inclua elementos ambientais . Atualmente o critério abrange exclusivamente aspectos comerciais (faturamento superior ou inferior a 2 milhões de R$) e da qualidade (ser um componente crítico para a qualidade).\n\nAs perguntas das Auditorias SQA (Supplier Quality Audit) são muito genéricas (ex: o fornecedor cumpre todos os requisitos legais?). Este tipo de pergunta obriga o auditor a ter conhecimento específico em relação ao item que está sendo avaliado (ex: conhecimento dos requisitos legais aplicáveis ao fornecedor), o que nem sempre ocorre. Para reduzir o risco de realizar uma avaliação superficial da questão, é recomendável que as perguntas sejam mais dirigidas para pontos específicos da legislação, por exemplo, considerando os requisitos legais que podem gerar uma co-responsabilidade legal entre a Atlas Schindler e o fornecedor.\n"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6951
+            },
+            "antes": "Segundo o item 5.1.c, Empresas autorizadas para retirada da sucata, do documento Gestão e Destinação de Resíduos Fábrica - NÂº do documento: 000000 - Versão: 01 - Data: 2018, após avaliação da empresa, a Recicla BR deverá validar ou não sua regularidade e informar ao departamento de Compras, para nova cotação, se aplicável. Para validação ambiental, as empresas.\ndeverão encaminhar no mínimo os seguintes documentos:\n1. Licença de Operação válida/ protocolo de renovação/Dispensa de Licença pelo órgão ambiental competente;\n2. Fluxograma de destinação de resíduos;\n3. Cadastro na ANTT quando aplicável;\n4. Cartão CNPJ;\n5. Caso a empresa não seja o destino final, encaminhar documentação da empresa de destino final e prova de relação entre elas;\n6. Modelo de certificado de destinação;\n7. Alvará de funcionamento.\nNem todos os critérios estabelecidos no o item 5.1.c estão registrados no software GreenSolutions para como especificação a ser atendida pelo fornecedor.\n",
+            "depois": "Segundo o item 5.1.c, Empresas autorizadas para retirada da sucata, do documento Gestão e Destinação de Resíduos Fábrica - Nº do documento: 000000 - Versão: 01 - Data: 2018, após avaliação da empresa, a Recicla BR deverá validar ou não sua regularidade e informar ao departamento de Compras, para nova cotação, se aplicável. Para validação ambiental, as empresas.\ndeverão encaminhar no mínimo os seguintes documentos:\n1. Licença de Operação válida/ protocolo de renovação/Dispensa de Licença pelo órgão ambiental competente;\n2. Fluxograma de destinação de resíduos;\n3. Cadastro na ANTT quando aplicável;\n4. Cartão CNPJ;\n5. Caso a empresa não seja o destino final, encaminhar documentação da empresa de destino final e prova de relação entre elas;\n6. Modelo de certificado de destinação;\n7. Alvará de funcionamento.\nNem todos os critérios estabelecidos no o item 5.1.c estão registrados no software GreenSolutions para como especificação a ser atendida pelo fornecedor.\n"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6967
+            },
+            "antes": "1. Os objetivos e metas ambientais estão sendo medidos. Para estes objetivos existem programas de gestão sendo executados. Não estão sendo, no entanto, verificadas as tendências ao atendimentos das metas de melhoria estabelecidas.\n\nOs objetivos e metas não foram definidos com base nos aspectos ambientais mais relevantes identificados no Levantamento de Aspectos e Impactos Ambientais.\n \n2 .(Obs) Segundo o item 5.7.1 do documento Identificação de Aspectos e Impactos Ambientais - NÂº do documento: 010829 - Versão: 01 - Data: 02/12/2015, para aspectos ambientais de Significância Alta é compulsória a definição de um Objetivo e meta de melhoria.\nNão foram estabelecidos objetivos e metas de melhoria para todo aspecto ambiental com significância alta.\n\n3. (Obs) Objetivos de Melhoria estão sendo acompanhados como se fossem indicadores de Desempenho. Existe uma diferença essencial entre estes 2 tipos de indicadores, pois o primeiro, através dos programas de gestão ambiental, visa aprimorar o desempenho ambiental. O segundo, por outro lado, é estabelecido para controlar o processo para garantir que estes processos estejam de acordo com requisitos legais ou com o que foi planejado.\n\nÉ importante observar que o monitoramento dos objetivos de melhoria deve ser feito através de gráficos de tendência e não como está sendo feito pela unidade Londrina, ou seja, através da simples verificação se as ações do programa de gestão foram ou não realizadas.\n\n",
+            "depois": "1. Os objetivos e metas ambientais estão sendo medidos. Para estes objetivos existem programas de gestão sendo executados. Não estão sendo, no entanto, verificadas as tendências ao atendimentos das metas de melhoria estabelecidas.\n\nOs objetivos e metas não foram definidos com base nos aspectos ambientais mais relevantes identificados no Levantamento de Aspectos e Impactos Ambientais.\n \n2 .(Obs) Segundo o item 5.7.1 do documento Identificação de Aspectos e Impactos Ambientais - Nº do documento: 010829 - Versão: 01 - Data: 02/12/2015, para aspectos ambientais de Significância Alta é compulsória a definição de um Objetivo e meta de melhoria.\nNão foram estabelecidos objetivos e metas de melhoria para todo aspecto ambiental com significância alta.\n\n3. (Obs) Objetivos de Melhoria estão sendo acompanhados como se fossem indicadores de Desempenho. Existe uma diferença essencial entre estes 2 tipos de indicadores, pois o primeiro, através dos programas de gestão ambiental, visa aprimorar o desempenho ambiental. O segundo, por outro lado, é estabelecido para controlar o processo para garantir que estes processos estejam de acordo com requisitos legais ou com o que foi planejado.\n\nÉ importante observar que o monitoramento dos objetivos de melhoria deve ser feito através de gráficos de tendência e não como está sendo feito pela unidade Londrina, ou seja, através da simples verificação se as ações do programa de gestão foram ou não realizadas.\n\n"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6968
+            },
+            "antes": "1. Foram observadas diversas falhas no controle de documentos no software GED:\n.  O procedimento Controle de Documentos - NÂº do documento - 000041  estava disponível no GED na Versão 5 - Data: 30/12/2009, sendo que a versão atual é a 6 - Data: 20/06/2017\n.  O documento Identificação de Aspectos e Impactos Ambientais está referenciado no GED como aprovado em 14/06/2016, sendo que no cabeçalho deste documento aparece que ele foi aprovado em 02/12/2015\n.  Embora o documento Gestão e Destinação de Resíduos Fábrica - NÂº do documento: 000000 - Versão 1 - Data: 2018 esteja em uso, ele não passou pelo processo de aprovação do software GED\n\n2. (Obs)\nA navegabilidade do Sistema GED não é amigável. Não é possível, por exemplo, acessar uma Lista Mestra que mostre a situação da revisão de cada um dos documentos.",
+            "depois": "1. Foram observadas diversas falhas no controle de documentos no software GED:\n.  O procedimento Controle de Documentos - Nº do documento - 000041  estava disponível no GED na Versão 5 - Data: 30/12/2009, sendo que a versão atual é a 6 - Data: 20/06/2017\n.  O documento Identificação de Aspectos e Impactos Ambientais está referenciado no GED como aprovado em 14/06/2016, sendo que no cabeçalho deste documento aparece que ele foi aprovado em 02/12/2015\n.  Embora o documento Gestão e Destinação de Resíduos Fábrica - Nº do documento: 000000 - Versão 1 - Data: 2018 esteja em uso, ele não passou pelo processo de aprovação do software GED\n\n2. (Obs)\nA navegabilidade do Sistema GED não é amigável. Não é possível, por exemplo, acessar uma Lista Mestra que mostre a situação da revisão de cada um dos documentos."
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6969
+            },
+            "antes": "O controle referenciado no item 2.1 do procedimento Controle de Documentos - NÂº do documento - 000041 - Versão 6 - Data: 20/06/2017 não se aplica Ã  Políticas Ambiental da Atlas Schindler. Não existe um controle da versão da política, contrariando, o item 2.1 do procedimento Controle de Documentos - NÂº do documento - 000041 - Versão 6 - Data: 20/06/2017 e o requisito 5.2 da NBR ISO 14001:2015",
+            "depois": "O controle referenciado no item 2.1 do procedimento Controle de Documentos - Nº do documento - 000041 - Versão 6 - Data: 20/06/2017 não se aplica à Políticas Ambiental da Atlas Schindler. Não existe um controle da versão da política, contrariando, o item 2.1 do procedimento Controle de Documentos - Nº do documento - 000041 - Versão 6 - Data: 20/06/2017 e o requisito 5.2 da NBR ISO 14001:2015"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6976
+            },
+            "antes": "Não foi possível verificar registro da eficácia de treinamentos relativos Ã  Gestão Ambiental.  Atualmente a eficácia do treinamento é registrada no Plano de Desenvolvimento Individual (PDI) de modo facultativo e não compulsório conforme previsto no requisito 7.2.d da NBR ISO 14001.\n\nNão existem requisitos específicos de competência para a ISO 14001. Por exemplo, a Analista Administrativo Junior Andressa de Oliveira Souza atua como Gestora do Sistema de Gestão Ambiental. Na sua descrição de cargo não existe qualquer referência Ã  competência relacionada Ã  área ambiental.\n",
+            "depois": "Não foi possível verificar registro da eficácia de treinamentos relativos à Gestão Ambiental.  Atualmente a eficácia do treinamento é registrada no Plano de Desenvolvimento Individual (PDI) de modo facultativo e não compulsório conforme previsto no requisito 7.2.d da NBR ISO 14001.\n\nNão existem requisitos específicos de competência para a ISO 14001. Por exemplo, a Analista Administrativo Junior Andressa de Oliveira Souza atua como Gestora do Sistema de Gestão Ambiental. Na sua descrição de cargo não existe qualquer referência à competência relacionada à área ambiental.\n"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6977
+            },
+            "antes": "1. Recomendamos acrescentar no documento Comunicação Interna e Externa do Sistema de gestão Integrado (Qualidade e Meio Ambiente) - NÂº do documento: 011730 - Versão: 01 - Data: 23/01/2018 que os links abaixo da página Intranet Comunicação Nacional Gestão Ambiental fazem parte do processo de comunicação ambiental da empresa: .  Indicadores Ambientais .  Campanhas Ambientais .  Canal Verde  O documento Comunicação Interna e Externa do Sistema de gestão Integrado (Qualidade e Meio Ambiente) - NÂÂº do documento: 011730 - Versão: 01 - Data: 23/01/2018 não faz referência a diversas outras ferramentas para comunicação ambiental existentes no SGA: DDQS  Comunicação com fornecedores (divulgação do SGA), Fique sabendo, Relatórios Sustentabilidade Schindler .\n\n2. Foram identificados diferentes formulários para registrar comunicações ambientais, sendo que estes formulários são conflitantes entre si: Comunicação Interna ou Externa (Gestão Ambiental) - NÂº do documento: 10823 - Versão: 01 - Data: 12/11/2015 Ficha de Comunicação Ambiental - (janeiro 2008) - NÂº do documento: 11613 - Versão: 01. Ficha de Comunicação Ambiental (sem código) - Data: 10/10/2018  Observada Ficha de Comunicação Ambiental (sem código) aberta em 10/10/2018 descrevendo problema com a coleta seletiva. Não foi possível observar uma resposta a esta comunicação. Segundo informado, a resposta foi dada através do Canal Verde (intranet). Este canal para respostas a comunicações ambientais não está, contudo, formalizado no SGA.  \n\n3. Não está definido no documento Comunicação Interna e Externa do Sistema de gestão Integrado (Qualidade e Meio Ambiente) - NÂº do documento: 011730 - Versão: 01 - Data: 23/01/2018 que a comunicação externa para a diretoria Brasil ocorre bimestralmente através do Comitê da Qualidade.\n\n4. Não foi possível verificar como o escopo é disponibilizado para as partes interessadas identificadas.\n\n",
+            "depois": "1. Recomendamos acrescentar no documento Comunicação Interna e Externa do Sistema de gestão Integrado (Qualidade e Meio Ambiente) - Nº do documento: 011730 - Versão: 01 - Data: 23/01/2018 que os links abaixo da página Intranet Comunicação Nacional Gestão Ambiental fazem parte do processo de comunicação ambiental da empresa: .  Indicadores Ambientais .  Campanhas Ambientais .  Canal Verde  O documento Comunicação Interna e Externa do Sistema de gestão Integrado (Qualidade e Meio Ambiente) - NÂº do documento: 011730 - Versão: 01 - Data: 23/01/2018 não faz referência a diversas outras ferramentas para comunicação ambiental existentes no SGA: DDQS  Comunicação com fornecedores (divulgação do SGA), Fique sabendo, Relatórios Sustentabilidade Schindler .\n\n2. Foram identificados diferentes formulários para registrar comunicações ambientais, sendo que estes formulários são conflitantes entre si: Comunicação Interna ou Externa (Gestão Ambiental) - Nº do documento: 10823 - Versão: 01 - Data: 12/11/2015 Ficha de Comunicação Ambiental - (janeiro 2008) - Nº do documento: 11613 - Versão: 01. Ficha de Comunicação Ambiental (sem código) - Data: 10/10/2018  Observada Ficha de Comunicação Ambiental (sem código) aberta em 10/10/2018 descrevendo problema com a coleta seletiva. Não foi possível observar uma resposta a esta comunicação. Segundo informado, a resposta foi dada através do Canal Verde (intranet). Este canal para respostas a comunicações ambientais não está, contudo, formalizado no SGA.  \n\n3. Não está definido no documento Comunicação Interna e Externa do Sistema de gestão Integrado (Qualidade e Meio Ambiente) - Nº do documento: 011730 - Versão: 01 - Data: 23/01/2018 que a comunicação externa para a diretoria Brasil ocorre bimestralmente através do Comitê da Qualidade.\n\n4. Não foi possível verificar como o escopo é disponibilizado para as partes interessadas identificadas.\n\n"
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6982
+            },
+            "antes": "Apresentado o croqui F- 36 Plano de Preparação e Respostas Ã  Emergência que define as Rotas de Fuga Fábrica Londrina 2017/ 2018. Comparando o croqui apresentado com a situação existente na área da expedição, observaram-se rotas de fuga obstruídas.",
+            "depois": "Apresentado o croqui F- 36 Plano de Preparação e Respostas à Emergência que define as Rotas de Fuga Fábrica Londrina 2017/ 2018. Comparando o croqui apresentado com a situação existente na área da expedição, observaram-se rotas de fuga obstruídas."
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6992
+            },
+            "antes": "A lista de verificação da instalação (documento nÂº 010779_V3) utilizada no projeto 214400, contém divergência no preenchimentos de vários pontos do check list, os campo foram assinados e datados sem colocar o status de execução da atividade (reincidência). ",
+            "depois": "A lista de verificação da instalação (documento nº 010779_V3) utilizada no projeto 214400, contém divergência no preenchimentos de vários pontos do check list, os campo foram assinados e datados sem colocar o status de execução da atividade (reincidência). "
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 6993
+            },
+            "antes": "1- O local de armazenamento dos materiais referente aos projetos 210567 e 68, contem água de chuva empoçada no piso e alguns materiais estão em contato danificando as caixas de papelão.\n2- Projetos 210567 e 68 estão com os Batentes pré montados em contato com água de chuva empoçada no piso, além de conter restos de embalagens molhadas (descarte) em cima dos Batentes e palete de maderia escorado nos Batentes encontados na parede.\n3- O projeto 214400, contém local para armazenamento dos materias em obra, porém esta área é pequena e não comporta todos os materiais segregados (vários materiais estão armazenados em local improvisado, com acesso livre de pessoas terceiras) - reincidência.\n4- O projeto 214400 esta com as guias armazenadas divergente da instrução nÂº K608265, respeitando o quantidade de empilhamento, número de calços de madeira e as distâncias entre eles. Podendo assim empenar as Guias durante o período que elas ficam armazenagem em obra.",
+            "depois": "1- O local de armazenamento dos materiais referente aos projetos 210567 e 68, contem água de chuva empoçada no piso e alguns materiais estão em contato danificando as caixas de papelão.\n2- Projetos 210567 e 68 estão com os Batentes pré montados em contato com água de chuva empoçada no piso, além de conter restos de embalagens molhadas (descarte) em cima dos Batentes e palete de maderia escorado nos Batentes encontados na parede.\n3- O projeto 214400, contém local para armazenamento dos materias em obra, porém esta área é pequena e não comporta todos os materiais segregados (vários materiais estão armazenados em local improvisado, com acesso livre de pessoas terceiras) - reincidência.\n4- O projeto 214400 esta com as guias armazenadas divergente da instrução nº K608265, respeitando o quantidade de empilhamento, número de calços de madeira e as distâncias entre eles. Podendo assim empenar as Guias durante o período que elas ficam armazenagem em obra."
+        },
+        {
+            "tabela": "nc_indicacao_ocorrencia",
+            "coluna": "DESCRICAO",
+            "chave": {
+                "CODOCORRENCIA": 7055
+            },
+            "antes": "Cadastro de Forncedores : Colaborador responsável procedimento de cadastro desconhecia o diagrama de processos, desconhecia a Base GED para acesso Ã  documentação e desconhecia o procedimento definido no diagrama (PRC0353 - Cadastro de Fornecedores) para execução da atividade.  Apresentou documentação não oficial impressa com as instruções como procedimento utilizado para realização do Cadastro de Fornecedores.\n",
+            "depois": "Cadastro de Forncedores : Colaborador responsável procedimento de cadastro desconhecia o diagrama de processos, desconhecia a Base GED para acesso à documentação e desconhecia o procedimento definido no diagrama (PRC0353 - Cadastro de Fornecedores) para execução da atividade.  Apresentou documentação não oficial impressa com as instruções como procedimento utilizado para realização do Cadastro de Fornecedores.\n"
+        },
+        {
+            "tabela": "pendencias_planodeacao",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODPENDENCIA": 38
+            },
+            "antes": "De acordo com o requisito 6.1.3, requisitos legais e outros requisitos, a organização deve:\na) determinar e ter acesso aos requisitos legais e outros requisitos relacionados a seus aspectos ambientais;\nb) determinar como estes requisitos legais e outros requisitos aplicam-se Ã  organização;\nc) levar",
+            "depois": "De acordo com o requisito 6.1.3, requisitos legais e outros requisitos, a organização deve:\na) determinar e ter acesso aos requisitos legais e outros requisitos relacionados a seus aspectos ambientais;\nb) determinar como estes requisitos legais e outros requisitos aplicam-se à organização;\nc) levar"
+        },
+        {
+            "tabela": "pendencias_planodeacao",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODPENDENCIA": 39
+            },
+            "antes": "De acordo com o requisito 6.1.3, requisitos legais e outros requisitos, a organização deve:\na) determinar e ter acesso aos requisitos legais e outros requisitos relacionados a seus aspectos ambientais;\nb) determinar como estes requisitos legais e outros requisitos aplicam-se Ã  organização;\nc) levar",
+            "depois": "De acordo com o requisito 6.1.3, requisitos legais e outros requisitos, a organização deve:\na) determinar e ter acesso aos requisitos legais e outros requisitos relacionados a seus aspectos ambientais;\nb) determinar como estes requisitos legais e outros requisitos aplicam-se à organização;\nc) levar"
+        },
+        {
+            "tabela": "pendencias_planodeacao",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODPENDENCIA": 49
+            },
+            "antes": "Segundo o requisito 10.2, não conformidade e ação corretiva, ao ocorrer uma não conformidade, a organização deve:\na) reagir Ã  não conformidade e, como aplicável:\n1) tomar ação para controlá-la e corrigi-la;\nb) avaliar a necessidade de uma ação para eliminar as causas da não conformidade, a fim de q",
+            "depois": "Segundo o requisito 10.2, não conformidade e ação corretiva, ao ocorrer uma não conformidade, a organização deve:\na) reagir à não conformidade e, como aplicável:\n1) tomar ação para controlá-la e corrigi-la;\nb) avaliar a necessidade de uma ação para eliminar as causas da não conformidade, a fim de q"
+        },
+        {
+            "tabela": "pendencias_planodeacao",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODPENDENCIA": 145
+            },
+            "antes": "O Item 9.1, monitoramento, medição, análise e avaliação, do Manual do Sistema de Gestão Integrado da Qualidade e Ambiental - NÂº do documento: 001596 - Versão: 13 - Data: 28/06/2018, a Atlas Schindler estabelece que todo o controle do processo de medição e monitoramento é realizado software GreenSol",
+            "depois": "O Item 9.1, monitoramento, medição, análise e avaliação, do Manual do Sistema de Gestão Integrado da Qualidade e Ambiental - Nº do documento: 001596 - Versão: 13 - Data: 28/06/2018, a Atlas Schindler estabelece que todo o controle do processo de medição e monitoramento é realizado software GreenSol"
+        },
+        {
+            "tabela": "pendencias_planodeacao",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODPENDENCIA": 151
+            },
+            "antes": "7.2 Competência\nOs requisitos de competência desta Norma aplicam-se Ã s pessoas que realizam trabalhos\nsob o controle da organização, que afetam seu desempenho ambiental, incluindo pessoas:\na) cujo trabalho tem o potencial de causar um impacto ambiental significativo;\nb) a quem são atribuídas as res",
+            "depois": "7.2 Competência\nOs requisitos de competência desta Norma aplicam-se às pessoas que realizam trabalhos\nsob o controle da organização, que afetam seu desempenho ambiental, incluindo pessoas:\na) cujo trabalho tem o potencial de causar um impacto ambiental significativo;\nb) a quem são atribuídas as res"
+        },
+        {
+            "tabela": "pendencias_planodeacao",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODPENDENCIA": 160
+            },
+            "antes": "O Item 9.1, monitoramento, medição, análise e avaliação, do Manual do Sistema de Gestão Integrado da Qualidade e Ambiental - NÂº do documento: 001596 - Versão: 13 - Data: 28/06/2018, a Atlas Schindler estabelece que todo o controle do processo de medição e monitoramento é realizado software GreenSol",
+            "depois": "O Item 9.1, monitoramento, medição, análise e avaliação, do Manual do Sistema de Gestão Integrado da Qualidade e Ambiental - Nº do documento: 001596 - Versão: 13 - Data: 28/06/2018, a Atlas Schindler estabelece que todo o controle do processo de medição e monitoramento é realizado software GreenSol"
+        },
+        {
+            "tabela": "pendencias_planodeacao",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODPENDENCIA": 165
+            },
+            "antes": "Segundo o requisito 10.2, não conformidade e ação corretiva, ao ocorrer uma não conformidade, a organização deve:\na) reagir Ã  não conformidade e, como aplicável:\n1) tomar ação para controlá-la e corrigi-la;\nb) avaliar a necessidade de uma ação para eliminar as causas da não conformidade, a fim de q",
+            "depois": "Segundo o requisito 10.2, não conformidade e ação corretiva, ao ocorrer uma não conformidade, a organização deve:\na) reagir à não conformidade e, como aplicável:\n1) tomar ação para controlá-la e corrigi-la;\nb) avaliar a necessidade de uma ação para eliminar as causas da não conformidade, a fim de q"
+        },
+        {
+            "tabela": "pendencias_planodeacao_tmp",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODPENDENCIA": 38
+            },
+            "antes": "De acordo com o requisito 6.1.3, requisitos legais e outros requisitos, a organização deve:\na) determinar e ter acesso aos requisitos legais e outros requisitos relacionados a seus aspectos ambientais;\nb) determinar como estes requisitos legais e outros requisitos aplicam-se Ã  organização;\nc) levar",
+            "depois": "De acordo com o requisito 6.1.3, requisitos legais e outros requisitos, a organização deve:\na) determinar e ter acesso aos requisitos legais e outros requisitos relacionados a seus aspectos ambientais;\nb) determinar como estes requisitos legais e outros requisitos aplicam-se à organização;\nc) levar"
+        },
+        {
+            "tabela": "pendencias_planodeacao_tmp",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODPENDENCIA": 39
+            },
+            "antes": "De acordo com o requisito 6.1.3, requisitos legais e outros requisitos, a organização deve:\na) determinar e ter acesso aos requisitos legais e outros requisitos relacionados a seus aspectos ambientais;\nb) determinar como estes requisitos legais e outros requisitos aplicam-se Ã  organização;\nc) levar",
+            "depois": "De acordo com o requisito 6.1.3, requisitos legais e outros requisitos, a organização deve:\na) determinar e ter acesso aos requisitos legais e outros requisitos relacionados a seus aspectos ambientais;\nb) determinar como estes requisitos legais e outros requisitos aplicam-se à organização;\nc) levar"
+        },
+        {
+            "tabela": "pendencias_planodeacao_tmp",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODPENDENCIA": 49
+            },
+            "antes": "Segundo o requisito 10.2, não conformidade e ação corretiva, ao ocorrer uma não conformidade, a organização deve:\na) reagir Ã  não conformidade e, como aplicável:\n1) tomar ação para controlá-la e corrigi-la;\nb) avaliar a necessidade de uma ação para eliminar as causas da não conformidade, a fim de q",
+            "depois": "Segundo o requisito 10.2, não conformidade e ação corretiva, ao ocorrer uma não conformidade, a organização deve:\na) reagir à não conformidade e, como aplicável:\n1) tomar ação para controlá-la e corrigi-la;\nb) avaliar a necessidade de uma ação para eliminar as causas da não conformidade, a fim de q"
+        },
+        {
+            "tabela": "pendencias_planodeacao_tmp",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODPENDENCIA": 145
+            },
+            "antes": "O Item 9.1, monitoramento, medição, análise e avaliação, do Manual do Sistema de Gestão Integrado da Qualidade e Ambiental - NÂº do documento: 001596 - Versão: 13 - Data: 28/06/2018, a Atlas Schindler estabelece que todo o controle do processo de medição e monitoramento é realizado software GreenSol",
+            "depois": "O Item 9.1, monitoramento, medição, análise e avaliação, do Manual do Sistema de Gestão Integrado da Qualidade e Ambiental - Nº do documento: 001596 - Versão: 13 - Data: 28/06/2018, a Atlas Schindler estabelece que todo o controle do processo de medição e monitoramento é realizado software GreenSol"
+        },
+        {
+            "tabela": "pendencias_planodeacao_tmp",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODPENDENCIA": 151
+            },
+            "antes": "7.2 Competência\nOs requisitos de competência desta Norma aplicam-se Ã s pessoas que realizam trabalhos\nsob o controle da organização, que afetam seu desempenho ambiental, incluindo pessoas:\na) cujo trabalho tem o potencial de causar um impacto ambiental significativo;\nb) a quem são atribuídas as res",
+            "depois": "7.2 Competência\nOs requisitos de competência desta Norma aplicam-se às pessoas que realizam trabalhos\nsob o controle da organização, que afetam seu desempenho ambiental, incluindo pessoas:\na) cujo trabalho tem o potencial de causar um impacto ambiental significativo;\nb) a quem são atribuídas as res"
+        },
+        {
+            "tabela": "pendencias_planodeacao_tmp",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODPENDENCIA": 160
+            },
+            "antes": "O Item 9.1, monitoramento, medição, análise e avaliação, do Manual do Sistema de Gestão Integrado da Qualidade e Ambiental - NÂº do documento: 001596 - Versão: 13 - Data: 28/06/2018, a Atlas Schindler estabelece que todo o controle do processo de medição e monitoramento é realizado software GreenSol",
+            "depois": "O Item 9.1, monitoramento, medição, análise e avaliação, do Manual do Sistema de Gestão Integrado da Qualidade e Ambiental - Nº do documento: 001596 - Versão: 13 - Data: 28/06/2018, a Atlas Schindler estabelece que todo o controle do processo de medição e monitoramento é realizado software GreenSol"
+        },
+        {
+            "tabela": "pendencias_planodeacao_tmp",
+            "coluna": "IDENTIFICACAO",
+            "chave": {
+                "CODPENDENCIA": 165
+            },
+            "antes": "Segundo o requisito 10.2, não conformidade e ação corretiva, ao ocorrer uma não conformidade, a organização deve:\na) reagir Ã  não conformidade e, como aplicável:\n1) tomar ação para controlá-la e corrigi-la;\nb) avaliar a necessidade de uma ação para eliminar as causas da não conformidade, a fim de q",
+            "depois": "Segundo o requisito 10.2, não conformidade e ação corretiva, ao ocorrer uma não conformidade, a organização deve:\na) reagir à não conformidade e, como aplicável:\n1) tomar ação para controlá-la e corrigi-la;\nb) avaliar a necessidade de uma ação para eliminar as causas da não conformidade, a fim de q"
+        }
+    ]
+}

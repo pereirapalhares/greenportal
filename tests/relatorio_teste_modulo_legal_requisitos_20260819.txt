@@ -1,0 +1,254 @@
+===============================================================================
+GREEN PORTAL - RELATORIO DE VALIDACAO VISUAL E FUNCIONAL
+Tela testada: Modulo Legal > Requisitos legais (CRUD principal + botoes de
+               relacionamento que abrem popups com outros CRUDs)
+Ambiente: instancia local (http://localhost/greenportal), empresa "Modelo",
+          usuario "admin"
+Data do teste: 19/08/2026
+Metodo: navegacao e interacao manual via navegador (Chrome), incluindo
+        inclusao, edicao e exclusao reais de registros de teste (revertidos
+        ao final), leitura do console e das chamadas de rede da aplicacao.
+===============================================================================
+
+-------------------------------------------------------------------------------
+0. RESUMO DO QUE FOI TESTADO
+-------------------------------------------------------------------------------
+
+  - Grid principal "Requisitos legais" (1282 registros): visualizacao, busca
+    textual, filtros de coluna, paginacao, configuracao de colunas exibidas,
+    visualizacao de texto completo (popup "Padrao") e visualizacao do PDF da
+    lei ("Texto da Lei").
+  - Botao de relacionamento "Situacao" (icone verde na barra de ferramentas):
+    abre um popup com um CRUD completo (Novo, Salvar, Excluir, Cancelar) -
+    testado incluindo, editando e excluindo um registro real de teste.
+  - Botao de relacionamento "Documentos Licenciatorios": abre um popup com
+    grid relacionado (somente leitura) - testado com dois requisitos
+    diferentes.
+  - Botao de relacionamento "Medicao e Monitoramento": abre um popup com grid
+    relacionado (somente leitura) - testado com um requisito.
+
+===============================================================================
+1. CRITICO / ALTO - BUGS FUNCIONAIS CONFIRMADOS
+===============================================================================
+
+1.1 [ALTO] Perda silenciosa da data ao criar um novo registro em "Situacao"
+
+  Passos para reproduzir:
+    1. Na grid "Requisitos legais", selecionar qualquer registro e clicar no
+       botao de relacionamento "Situacao" (2º icone da barra de ferramentas).
+    2. No popup, clicar em "+" (Novo) para adicionar uma linha.
+    3. Preencher o campo "Situacao" e digitar uma data valida no campo
+       "Data de Avaliacao" (ex.: 19/08/2026).
+    4. Clicar em salvar (✓) e confirmar a gravacao.
+    5. Reabrir o popup "Situacao" para o mesmo requisito.
+
+  Resultado observado: a data digitada NAO foi salva - o campo volta a
+  exibir o placeholder vazio "dd/mm/aaaa" apos a gravacao, sem nenhuma
+  mensagem de erro ou aviso ao usuario.
+
+  Causa provavel (observada durante o teste): no momento em que a linha e
+  recem-adicionada (antes do primeiro salvamento), o campo de data e
+  renderizado como um input de texto simples, sem a mascara/componente de
+  data usado nos registros ja existentes. Ao editar esse MESMO campo depois
+  que o registro ja foi salvo uma vez (ou seja, apos recarregar do servidor),
+  o campo passa a se comportar corretamente como um input de data mascarado
+  (dd/mm/aaaa com segmentos) e o valor e salvo com sucesso - isso foi
+  confirmado e reproduzido no teste. Ou seja, o problema esta especificamente
+  na primeira gravacao de uma linha nova, nao no campo de data em si.
+
+  Impacto: qualquer usuario que preencha data de avaliacao/vencimento ao
+  criar uma nova situacao perde essa informacao sem perceber, o que e grave
+  em um modulo de compliance legal onde essas datas sao usadas para
+  acompanhar prazos.
+
+  Sugestao: garantir que o componente de mascara/date-picker (o mesmo usado
+  em assets/js/main.js para inputs type="date"/"datetime-local", conforme
+  padrao ja documentado do projeto) seja inicializado tambem nas linhas
+  adicionadas dinamicamente dentro de popups/modais - hoje o
+  MutationObserver parece nao cobrir esse caso, ou o popup usa um componente
+  de grid diferente que nao aciona a mesma inicializacao.
+
+-------------------------------------------------------------------------------
+1.2 [ALTO] Campo "Responsavel" salva um valor diferente do exibido
+
+  Passos para reproduzir: mesmo fluxo do item 1.1 - ao adicionar uma nova
+  "Situacao", o campo "Responsavel" aparece pre-selecionado como "visitante".
+  Sem alterar esse campo, o registro foi salvo e, ao reabrir, o campo
+  "Responsavel" exibia um usuario completamente diferente ("Adriana
+  Soldera...").
+
+  Impacto: o valor mostrado no formulario antes de salvar nao corresponde ao
+  valor realmente gravado no banco. Isso e um problema de integridade/
+  confianca nos dados - o usuario pode achar que esta atribuindo a
+  responsabilidade a uma pessoa e, na pratica, o sistema grava outra. Em um
+  modulo de compliance isso pode gerar responsabilizacao incorreta.
+
+  Sugestao: verificar a logica de valor padrao do campo Responsavel no
+  formulario de nova Situacao - o "visitante" exibido parece ser apenas um
+  placeholder da lista suspensa (talvez o primeiro item carregado antes dos
+  dados reais chegarem) que nao reflete o "value" efetivamente selecionado/
+  submetido. O correto seria o campo vir vazio (obrigando selecao explicita)
+  ou pre-selecionado com o usuario logado, nunca com um valor que diverge do
+  que sera salvo.
+
+-------------------------------------------------------------------------------
+1.3 [ALTO] Popups de relacionamento "Documentos Licenciatorios" e "Medicao e
+    Monitoramento" sempre aparecem vazios, mesmo indicando registros
+
+  Passos para reproduzir:
+    1. Selecionar um requisito na grid principal (testado com dois
+       requisitos diferentes: codigo de legislacao 1 e codigo de legislacao
+       8, ambos com CODUNIDADE=1).
+    2. Clicar no botao "Documentos Licenciatorios": o popup abre e informa
+       "43 registros - Pagina 1", mas a area da grid fica completamente
+       vazia (nenhuma linha renderizada), mesmo apos aguardar e clicar em
+       Atualizar.
+    3. Repetir com o botao "Medicao e Monitoramento": o popup informa
+       "25 registros - Pagina 1" e tambem fica completamente vazio.
+    4. Confirmado com dois requisitos diferentes (nao e um problema pontual
+       de um unico registro) - em ambos os casos o contador de registros e
+       identico independentemente do requisito selecionado, o que sugere que
+       a consulta que gera a contagem nao esta de fato filtrando pelo mesmo
+       criterio (CODLEGISLACAO/CODUNIDADE) usado na consulta que busca as
+       linhas a exibir.
+
+  Verificacao tecnica: as chamadas de rede (manutencaolegalrequisitoslegais_
+  licencas.php e manutencaolegalrequisitoslegais_medicaomonitoramento.php)
+  retornam HTTP 200 em ambos os casos, sem erros no console do navegador -
+  ou seja, a falha e silenciosa (a API responde, mas o conteudo/formato da
+  resposta nao populam a grid), o que torna o problema dificil de perceber
+  sem inspecionar a rede como foi feito aqui.
+
+  Impacto: essas duas telas relacionadas ficam inuteis na pratica - o
+  usuario nao consegue visualizar nem gerenciar documentos licenciatorios
+  nem dados de medicao/monitoramento vinculados a um requisito legal, mesmo
+  quando existem registros (o contador nao-zero sugere que ha dados).
+
+  Sugestao: revisar o endpoint/consulta SQL usada para popular essas duas
+  grids (provavelmente a MESMA duvida se aplica a ambas, dado o padrao
+  identico do bug) - comparar com a implementacao do popup "Situacao" (que
+  funciona corretamente) para identificar a diferenca. Verificar se a
+  contagem usada na paginacao vem de uma consulta diferente (sem o mesmo
+  WHERE) da consulta que busca as linhas.
+
+===============================================================================
+2. MEDIO
+===============================================================================
+
+2.1 Caractere corrompido no cabecalho "Medicao e Monitoramento"
+
+  A coluna "Parametros" aparece como "Par?metros" (caractere de acentuacao
+  corrompido) no cabecalho da grid do popup "Medicao e Monitoramento". Este
+  e o MESMO tipo de problema ja identificado no relatorio de codigo anterior
+  (classes/ModuloLegalRequisitosGrid.php, linha 80: "Codigo do ?mbito") - a
+  recorrencia em outro arquivo do mesmo modulo confirma que este nao e um
+  erro isolado, e sim um problema sistemico de codificacao de caracteres
+  (provavelmente arquivos PHP salvos em encoding diferente de UTF-8, ou uma
+  string literal com o caractere acentuado digitado/colado incorretamente)
+  que deve ser buscado e corrigido em todo o modulo Legal, nao apenas nos
+  dois pontos ja encontrados.
+
+  Sugestao: fazer uma busca por caracteres de substituicao Unicode (?, ou
+  bytes invalidos de UTF-8) em todos os arquivos PHP do modulo Legal, e
+  padronizar a codificacao dos arquivos-fonte para UTF-8 sem BOM.
+
+-------------------------------------------------------------------------------
+2.2 Coluna sem cabecalho exibindo um ID interno na grid principal
+
+  A grid "Requisitos legais" exibe uma coluna adicional, sem titulo/cabecalho
+  e sem caixa de filtro, à esquerda da coluna "Unidade...", mostrando um
+  numero (aparentemente o codigo interno/ID do requisito, ex.: 1, 8, 10, 11,
+  16...). Essa coluna nao aparece na lista de colunas configuraveis
+  ("Colunas do grid"), entao o usuario nao consegue ocultar/mostrar nem
+  entender do que se trata.
+
+  Sugestao: dar um titulo apropriado a essa coluna (ex.: "Codigo") e
+  inclui-la na lista de colunas configuraveis, ou remove-la da exibicao se
+  for apenas um identificador tecnico sem utilidade para o usuario final.
+
+-------------------------------------------------------------------------------
+2.3 Botoes Novo/Editar/Excluir permanentemente desabilitados na grid principal
+
+  Na grid "Requisitos legais", os icones de Novo, Editar e Excluir (e
+  tambem o icone de "Lista") permanecem sempre acinzentados/inativos,
+  independentemente de haver ou nao um registro selecionado - apenas o
+  botao de relacionamento "Situacao" e o de exportar Excel reagem a selecao.
+
+  Isso pode ser proposital (o cadastro de requisitos legais em si e mantido
+  de forma centralizada pelo modulo de Legislacao, e cada empresa so
+  gerencia sua "Situacao"/atendimento em relacao a cada requisito) - mas
+  como o padrao do projeto usa esse mesmo conjunto de botoes para CRUD
+  completo em outras telas, vale confirmar explicitamente com quem definiu
+  as regras de negocio se isso e intencional. Se for intencional, sugere-se
+  ocultar esses botoes em vez de mostra-los desabilitados, para nao sugerir
+  ao usuario uma funcionalidade que nunca estara disponivel nesta tela.
+
+-------------------------------------------------------------------------------
+2.4 Indicador de "alteracoes nao salvas" e tela de carregamento na busca
+
+  Ao digitar um termo no campo "Buscar no grid" (testado com "CONSEMA"), a
+  aplicacao chegou a exibir por alguns segundos o aviso de rodape
+  "Alteracoes nao salvas" e uma tela de "Processando..." cobrindo toda a
+  grid, antes de finalmente mostrar o resultado correto da busca (15
+  registros). Nenhum dado foi de fato alterado - o aviso parece ser um falso
+  positivo disparado pelo proprio mecanismo de busca/recarga da grid.
+
+  Sugestao: revisar se o evento de busca esta acionando, por engano, o
+  mesmo sinalizador usado para indicar edicoes pendentes em campos
+  editaveis da grid.
+
+===============================================================================
+3. OBSERVACOES / PONTOS POSITIVOS
+-------------------------------------------------------------------------------
+
+  - O popup "Situacao" tem uma boa experiencia de CRUD: confirma tanto a
+    gravacao quanto a exclusao com uma caixa de dialogo explicita ("Confirma
+    a gravacao das alteracoes?" / "Confirma a exclusao do registro
+    selecionado?"), o que evita perdas acidentais de dados.
+  - O popup de visualizacao de texto completo (icone de "olho" nas celulas
+    truncadas, ex.: coluna "Padrao") funciona bem e melhora a leitura de
+    textos longos sem poluir a grid.
+  - O visualizador de PDF embutido para o "Texto da Lei" (a partir do icone
+    de codigo na coluna "Codigo") funciona corretamente, inclusive com busca
+    de texto dentro do PDF.
+  - A configuracao de colunas visiveis ("Colunas do grid") funciona bem e
+    oferece boa flexibilidade ao usuario.
+  - A busca textual no grid, os filtros por coluna e a paginacao funcionam
+    corretamente para a grid principal de Requisitos legais.
+  - Nenhum erro de JavaScript foi observado no console durante os testes
+    (os problemas encontrados sao silenciosos no front-end, o que reforca a
+    necessidade de tratamento/registro de erros no backend tambem).
+
+===============================================================================
+4. PROXIMOS PASSOS SUGERIDOS (EM ORDEM DE PRIORIDADE)
+-------------------------------------------------------------------------------
+
+  1. [ALTO] Corrigir a inicializacao do campo de data em linhas novas do
+     popup "Situacao" para usar o mesmo componente de mascara/date-picker
+     das linhas existentes, evitando perda silenciosa de datas (item 1.1).
+
+  2. [ALTO] Corrigir o valor padrao/submetido do campo "Responsavel" ao
+     criar uma nova Situacao, garantindo que o que e exibido no formulario
+     seja o que de fato sera salvo (item 1.2).
+
+  3. [ALTO] Investigar e corrigir a consulta de dados dos popups "Documentos
+     Licenciatorios" e "Medicao e Monitoramento", que hoje sempre aparecem
+     vazios apesar de indicarem registros existentes (item 1.3).
+
+  4. [MEDIO] Buscar e corrigir problemas de codificacao de caracteres
+     (acentuacao corrompida) em todo o modulo Legal, nao so nos dois pontos
+     ja encontrados (item 2.1).
+
+  5. [MEDIO] Dar titulo e tornar configuravel a coluna de ID sem cabecalho
+     na grid principal (item 2.2).
+
+  6. [MEDIO] Confirmar se a desabilitacao permanente dos botoes de
+     Novo/Editar/Excluir na grid principal e intencional e, se for, ocultar
+     esses botoes em vez de exibi-los inativos (item 2.3).
+
+  7. [BAIXO] Revisar o disparo indevido do aviso "Alteracoes nao salvas"
+     durante a busca textual no grid (item 2.4).
+
+===============================================================================
+FIM DO RELATORIO
+===============================================================================

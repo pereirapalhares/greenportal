@@ -1,0 +1,145 @@
+PLANO DE TESTE VISUAL E OPERACIONAL - GREENPORTAL / GREENADMIN
+Empresa: Atlas
+Usuario: thiago.luchez
+Ambiente: Firefox via geckodriver
+Escopo: aplicacao GreenPortal/GreenAdmin completa
+Data de elaboracao: 16/10/2026
+
+1. OBJETIVO
+Validar visualmente e operacionalmente a aplicacao autenticada como usuario da
+empresa Atlas, confirmando navegacao, menus, permissoes, grids, filtros,
+popups, formularios, CRUD, exportacoes, GED e mensagens de erro.
+
+2. REGRAS DE SEGURANCA DO TESTE
+- Nao alterar registros produtivos existentes sem necessidade.
+- Registros criados pelo teste devem possuir o marcador TESTE_FIREFOX_ATLAS.
+- Exclusoes serao executadas somente sobre registros criados pelo teste.
+- Uploads serao feitos apenas com arquivos de teste identificados.
+- Senhas e credenciais nao serao registradas nos relatorios.
+- Falhas de permissao serao registradas como resultado esperado quando forem
+  coerentes com o perfil do usuario.
+
+3. PRE-CONDIÇÕES
+- Firefox e geckodriver disponiveis na porta 4444.
+- Aplicacao acessivel pelo IP configurado do ambiente.
+- Usuario thiago.luchez ativo na empresa Atlas.
+- Banco Atlas acessivel e sessao iniciada.
+- Existencia de arquivo de teste para upload, quando aplicavel.
+- Confirmacao de que o ambiente permite dados de teste controlados.
+
+4. TESTE DE LOGIN E SESSAO
+4.1 Abrir a tela de login.
+4.2 Confirmar tema, cores, fontes, logo, idioma e campos.
+4.3 Confirmar que o combobox apresenta Atlas e empresas migradas permitidas.
+4.4 Entrar com o usuario da Atlas.
+4.5 Confirmar redirecionamento para a Home.
+4.6 Confirmar nome do usuario, empresa e perfil exibidos.
+4.7 Testar encerramento de sessao e bloqueio de pagina protegida.
+
+5. TESTE DA HOME E DO MENU
+5.1 Validar Dashboard pessoal como primeira aba.
+5.2 Validar cards, graficos, popups, iframes e PDF.
+5.3 Validar informacao de empresa e usuario no PDF.
+5.4 Validar ordem hierarquica dos menus.
+5.5 Confirmar que somente modulos e transacoes autorizados aparecem.
+5.6 Testar abertura e fechamento de popups pai e filho.
+
+6. TESTES COMUNS DE CADA GRID
+Para cada tela acessivel:
+- carregar a tela sem erro PHP/JavaScript;
+- conferir titulo, fontes, cores, botoes e alinhamento;
+- selecionar linha e validar estado dos botoes CRUD;
+- usar busca generica;
+- usar filtros por coluna;
+- testar paginação e ordenacao;
+- abrir popup de inclusão/edição;
+- validar campos obrigatorios, formatos e mensagens;
+- incluir registro de teste quando o perfil permitir;
+- editar registro de teste;
+- excluir somente registro criado pelo teste;
+- confirmar persistencia após recarregar;
+- testar exportação Excel conforme o conteúdo visível do grid;
+- validar nomes, labels e normalização dos dados exportados;
+- testar PDF quando disponível;
+- registrar resultado e evidência.
+
+7. GRUPO SEGURANÇA
+- seguranca_usuarios.php;
+- seguranca_grupos.php;
+- seguranca_perfil.php;
+- seguranca_permissoes.php;
+- seguranca_formulario.php;
+- seguranca_lista.php;
+- seguranca_modulos_empresa.php.
+Validar especialmente ocultação de ADMINISTRADOR, senha mascarada, usuario
+superior, grupos, permissões por menu e exportação sem coluna senha.
+
+8. GRUPO ADMINISTRAÇÃO E CONFIGURAÇÕES
+- unidades;
+- areas;
+- atividades;
+- textos e idiomas;
+- guia do usuario;
+- configurações de login, layout e sistema;
+- empresas e solicitações de migração, se disponíveis ao perfil.
+
+9. MÓDULO LEGAL / GESTÃO AMBIENTAL
+- legislação;
+- requisitos legais;
+- licenças;
+- requisitos x licenças;
+- controles e evidências;
+- treinamentos;
+- infraestrutura;
+- monitoramento e calibração;
+- LAIA, LAIS e LPRO;
+- responsabilidades e telas auxiliares.
+Validar requisitos sem evidencia, uploads GED, visualização, download,
+versionamento e preservação de vínculos.
+
+10. HOMOLOGAÇÃO DE FORNECEDORES
+- fornecedores;
+- funcionários;
+- documentos e evidências;
+- treinamentos;
+- responsabilidades;
+- avaliações e homologação;
+- busca generica, popups, CRUD e GED.
+
+11. NÃO CONFORMIDADES
+- lista de ocorrências;
+- cadastro e edição;
+- causas e ações;
+- planos de ação;
+- avaliação de eficácia;
+- fluxos, aprovações e popups.
+
+12. ALERTAS, GED E IA
+- ordenar alertas por data decrescente;
+- validar formatos PT/EN das datas;
+- testar links Ver status, Baixar Excel e Mostrar resultado;
+- validar popup de documento e resultado da IA;
+- validar indicadores de confirmação pendente;
+- testar upload, visualização e download de arquivo permitido.
+
+13. TESTES DE PERMISSÃO NEGATIVA
+- abrir URL de transação sem permissão;
+- tentar incluir, editar, excluir e exportar sem autorização;
+- confirmar bloqueio no servidor, não apenas no botão;
+- validar que menus não autorizados não aparecem.
+
+14. CRITÉRIOS DE APROVAÇÃO
+- nenhuma tela acessível apresenta erro fatal;
+- CRUD de registros de teste funciona conforme permissão;
+- nenhum dado produtivo é excluído;
+- filtros, paginação, popups e exportações funcionam;
+- arquivos GED respeitam o caminho da empresa;
+- falhas encontradas possuem evidência, causa e correção ou pendência;
+- resultado final classificado como APROVADO, APROVADO COM RESSALVAS ou REPROVADO.
+
+15. ARTEFATOS DO TESTE
+- este plano;
+- relatorio final em docs/relatorio_teste_visual_greenadmin_atlas.txt;
+- capturas de tela em runtime/;
+- lista de falhas e correções aplicadas;
+- lista dos registros de teste criados e removidos.

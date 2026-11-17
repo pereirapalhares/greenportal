@@ -1,0 +1,4 @@
+<?php
+declare(strict_types=1);
+require_once dirname(__DIR__) . '/classes/GreenPortalDatabase.php';
+$e=GreenPortalDatabase::env();$out=[];foreach([['legado','green_gd_americana','LEGADO_MODELO'],['target','ggdamericana_dbp','GPT']] as [$n,$db,$p]){$pdo=GreenPortalDatabase::connect($e,$db,$p);$rows=$pdo->query("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND (LOWER(TABLE_NAME) IN ('laia','lais','lpro','requisitos','legislacao','legislacaoxempresa') OR LOWER(TABLE_NAME) LIKE 'laia%' OR LOWER(TABLE_NAME) LIKE 'lais%' OR LOWER(TABLE_NAME) LIKE 'lpro%') ORDER BY TABLE_NAME")->fetchAll(PDO::FETCH_COLUMN);foreach($rows as $t)$out[$n][$t]=(int)$pdo->query("SELECT COUNT(*) FROM `$t`")->fetchColumn();}echo json_encode($out,JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT).PHP_EOL;

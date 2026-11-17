@@ -1,0 +1,1234 @@
+{
+    "counts": {
+        "source_groups": 11,
+        "target_groups": 11,
+        "target_profiles": 155,
+        "atlas_group_profiles": 11,
+        "effective_user_profiles": 136,
+        "target_users": 176,
+        "users_without_profile": 10
+    },
+    "source_groups": [
+        {
+            "CODGRUPO": 1,
+            "DSCGRUPO": "ADMINISTRADOR"
+        },
+        {
+            "CODGRUPO": 2,
+            "DSCGRUPO": "VISITANTE"
+        },
+        {
+            "CODGRUPO": 3,
+            "DSCGRUPO": "USUARIOS"
+        },
+        {
+            "CODGRUPO": 4,
+            "DSCGRUPO": "ADM DA EMPRESA"
+        },
+        {
+            "CODGRUPO": 7,
+            "DSCGRUPO": "EMAIL"
+        },
+        {
+            "CODGRUPO": 8,
+            "DSCGRUPO": "FORNECEDOR"
+        },
+        {
+            "CODGRUPO": 100001,
+            "DSCGRUPO": "HOMOLOGACAO"
+        },
+        {
+            "CODGRUPO": 100002,
+            "DSCGRUPO": "GRUPO"
+        },
+        {
+            "CODGRUPO": 100003,
+            "DSCGRUPO": "SPONSOR"
+        },
+        {
+            "CODGRUPO": 100004,
+            "DSCGRUPO": "PORTARIA"
+        },
+        {
+            "CODGRUPO": 100005,
+            "DSCGRUPO": "FORNECEDOR_GESTOR"
+        }
+    ],
+    "correspondence": [
+        {
+            "codgrupo": 1,
+            "grupo": "ADMINISTRADOR",
+            "codperfil": 1,
+            "codigo": "ADMINISTRADOR",
+            "perfil": "ADMINISTRADOR",
+            "usuarios": 5
+        },
+        {
+            "codgrupo": 2,
+            "grupo": "VISITANTE",
+            "codperfil": 52,
+            "codigo": "ATLAS_GRUPO_2",
+            "perfil": "VISITANTE",
+            "usuarios": 0
+        },
+        {
+            "codgrupo": 3,
+            "grupo": "USUARIOS",
+            "codperfil": 53,
+            "codigo": "ATLAS_GRUPO_3",
+            "perfil": "USUARIOS",
+            "usuarios": 19
+        },
+        {
+            "codgrupo": 4,
+            "grupo": "ADM DA EMPRESA",
+            "codperfil": 2,
+            "codigo": "ADM_DA_EMPRESA",
+            "perfil": "ADM DA EMPRESA",
+            "usuarios": 3
+        },
+        {
+            "codgrupo": 7,
+            "grupo": "EMAIL",
+            "codperfil": 55,
+            "codigo": "ATLAS_GRUPO_7",
+            "perfil": "EMAIL",
+            "usuarios": 0
+        },
+        {
+            "codgrupo": 8,
+            "grupo": "FORNECEDOR",
+            "codperfil": 7,
+            "codigo": "FORNECEDOR",
+            "perfil": "FORNECEDOR",
+            "usuarios": 6
+        },
+        {
+            "codgrupo": 100001,
+            "grupo": "HOMOLOGACAO",
+            "codperfil": 57,
+            "codigo": "ATLAS_GRUPO_100001",
+            "perfil": "HOMOLOGACAO",
+            "usuarios": 2
+        },
+        {
+            "codgrupo": 100002,
+            "grupo": "GRUPO",
+            "codperfil": 58,
+            "codigo": "ATLAS_GRUPO_100002",
+            "perfil": "GRUPO",
+            "usuarios": 0
+        },
+        {
+            "codgrupo": 100003,
+            "grupo": "SPONSOR",
+            "codperfil": 59,
+            "codigo": "ATLAS_GRUPO_100003",
+            "perfil": "SPONSOR",
+            "usuarios": 0
+        },
+        {
+            "codgrupo": 100004,
+            "grupo": "PORTARIA",
+            "codperfil": 60,
+            "codigo": "ATLAS_GRUPO_100004",
+            "perfil": "PORTARIA",
+            "usuarios": 2
+        },
+        {
+            "codgrupo": 100005,
+            "grupo": "FORNECEDOR_GESTOR",
+            "codperfil": 61,
+            "codigo": "ATLAS_GRUPO_100005",
+            "perfil": "FORNECEDOR_GESTOR",
+            "usuarios": 0
+        }
+    ],
+    "profiles": [
+        {
+            "codperfil": 1,
+            "codigo": "ADMINISTRADOR",
+            "nome": "ADMINISTRADOR",
+            "acesso_total": 1,
+            "ativo": 1
+        },
+        {
+            "codperfil": 2,
+            "codigo": "ADM_DA_EMPRESA",
+            "nome": "ADM DA EMPRESA",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 3,
+            "codigo": "GESTOR",
+            "nome": "Gestor",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 4,
+            "codigo": "EMITENTE",
+            "nome": "Emitente",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 5,
+            "codigo": "REVISOR",
+            "nome": "Revisor",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 6,
+            "codigo": "APROVADOR",
+            "nome": "Aprovador",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 7,
+            "codigo": "FORNECEDOR",
+            "nome": "FORNECEDOR",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 50,
+            "codigo": "VISITANTE_DOCUMENTOS",
+            "nome": "Visitante - leitura de documentos",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 51,
+            "codigo": "ATLAS_GRUPO_1",
+            "nome": "ADMINISTRADOR",
+            "acesso_total": 0,
+            "ativo": 0
+        },
+        {
+            "codperfil": 52,
+            "codigo": "ATLAS_GRUPO_2",
+            "nome": "VISITANTE",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 53,
+            "codigo": "ATLAS_GRUPO_3",
+            "nome": "USUARIOS",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 54,
+            "codigo": "ATLAS_GRUPO_4",
+            "nome": "ADM DA EMPRESA",
+            "acesso_total": 0,
+            "ativo": 0
+        },
+        {
+            "codperfil": 55,
+            "codigo": "ATLAS_GRUPO_7",
+            "nome": "EMAIL",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 56,
+            "codigo": "ATLAS_GRUPO_8",
+            "nome": "FORNECEDOR",
+            "acesso_total": 0,
+            "ativo": 0
+        },
+        {
+            "codperfil": 57,
+            "codigo": "ATLAS_GRUPO_100001",
+            "nome": "HOMOLOGACAO",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 58,
+            "codigo": "ATLAS_GRUPO_100002",
+            "nome": "GRUPO",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 59,
+            "codigo": "ATLAS_GRUPO_100003",
+            "nome": "SPONSOR",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 60,
+            "codigo": "ATLAS_GRUPO_100004",
+            "nome": "PORTARIA",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 61,
+            "codigo": "ATLAS_GRUPO_100005",
+            "nome": "FORNECEDOR_GESTOR",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 62,
+            "codigo": "ATLAS_USUARIO_11",
+            "nome": "Acesso legado: andreia.duarte",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 99,
+            "codigo": "ATLAS_USUARIO_27",
+            "nome": "Acesso legado: 27",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 100,
+            "codigo": "ATLAS_USUARIO_33",
+            "nome": "Acesso legado: iara.cristina",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 101,
+            "codigo": "ATLAS_USUARIO_44",
+            "nome": "Acesso legado: 44",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 102,
+            "codigo": "ATLAS_USUARIO_49",
+            "nome": "Acesso legado: 49",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 103,
+            "codigo": "ATLAS_USUARIO_55",
+            "nome": "Acesso legado: rebecca.silva",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 104,
+            "codigo": "ATLAS_USUARIO_66",
+            "nome": "Acesso legado: aimbere.maranhao",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 105,
+            "codigo": "ATLAS_USUARIO_78",
+            "nome": "Acesso legado: thiago.luchez",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 106,
+            "codigo": "ATLAS_USUARIO_82",
+            "nome": "Acesso legado: luis.maciel",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 107,
+            "codigo": "ATLAS_USUARIO_79",
+            "nome": "Acesso legado: karla.moran",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 108,
+            "codigo": "ATLAS_USUARIO_83",
+            "nome": "Acesso legado: juliano.imparato",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 109,
+            "codigo": "ATLAS_USUARIO_81",
+            "nome": "Acesso legado: fernanda.tavares",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 110,
+            "codigo": "ATLAS_USUARIO_63",
+            "nome": "Acesso legado: flavio.archanjo",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 111,
+            "codigo": "ATLAS_USUARIO_74",
+            "nome": "Acesso legado: leandro.batista",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 112,
+            "codigo": "ATLAS_USUARIO_85",
+            "nome": "Acesso legado: guilherme.jose",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 113,
+            "codigo": "ATLAS_USUARIO_89",
+            "nome": "Acesso legado: henrique.otavio",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 114,
+            "codigo": "ATLAS_USUARIO_92",
+            "nome": "Acesso legado: Rafael.roberto",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 115,
+            "codigo": "ATLAS_USUARIO_93",
+            "nome": "Acesso legado: Camila.cristina",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 116,
+            "codigo": "ATLAS_USUARIO_94",
+            "nome": "Acesso legado: 94",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 117,
+            "codigo": "ATLAS_USUARIO_95",
+            "nome": "Acesso legado: beatriz.rocha",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 118,
+            "codigo": "ATLAS_USUARIO_96",
+            "nome": "Acesso legado: diogo.silva",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 119,
+            "codigo": "ATLAS_USUARIO_98",
+            "nome": "Acesso legado: 98",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 120,
+            "codigo": "ATLAS_USUARIO_99",
+            "nome": "Acesso legado: fernando.hiraga",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 121,
+            "codigo": "ATLAS_USUARIO_100",
+            "nome": "Acesso legado: amanda.fanhani",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 122,
+            "codigo": "ATLAS_USUARIO_101",
+            "nome": "Acesso legado: anafatima.peixoto",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 123,
+            "codigo": "ATLAS_USUARIO_102",
+            "nome": "Acesso legado: arisson.macedo",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 124,
+            "codigo": "ATLAS_USUARIO_104",
+            "nome": "Acesso legado: cleberson.facanha",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 125,
+            "codigo": "ATLAS_USUARIO_105",
+            "nome": "Acesso legado: edson.sodre",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 126,
+            "codigo": "ATLAS_USUARIO_106",
+            "nome": "Acesso legado: fernando.roberto",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 127,
+            "codigo": "ATLAS_USUARIO_107",
+            "nome": "Acesso legado: jessica.padella",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 128,
+            "codigo": "ATLAS_USUARIO_108",
+            "nome": "Acesso legado: jhamson.costa",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 129,
+            "codigo": "ATLAS_USUARIO_2147483647",
+            "nome": "Acesso legado: 2147483647",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 130,
+            "codigo": "ATLAS_USUARIO_110",
+            "nome": "Acesso legado: marcos.cavalcanti",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 131,
+            "codigo": "ATLAS_USUARIO_109",
+            "nome": "Acesso legado: joao.macario",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 132,
+            "codigo": "ATLAS_USUARIO_111",
+            "nome": "Acesso legado: maria.queiroz",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 133,
+            "codigo": "ATLAS_USUARIO_112",
+            "nome": "Acesso legado: rafhael.bezerra",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 134,
+            "codigo": "ATLAS_USUARIO_113",
+            "nome": "Acesso legado: renato.vianna",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 135,
+            "codigo": "ATLAS_USUARIO_114",
+            "nome": "Acesso legado: samira.khouwayer",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 136,
+            "codigo": "ATLAS_USUARIO_115",
+            "nome": "Acesso legado: shirley.rodrigues",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 137,
+            "codigo": "ATLAS_USUARIO_116",
+            "nome": "Acesso legado: thailine.duran",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 138,
+            "codigo": "ATLAS_USUARIO_118",
+            "nome": "Acesso legado: mario.lijenko",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 139,
+            "codigo": "ATLAS_USUARIO_103",
+            "nome": "Acesso legado: bruno.fittipaldi",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 140,
+            "codigo": "ATLAS_USUARIO_88",
+            "nome": "Acesso legado: erica.saviani",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 141,
+            "codigo": "ATLAS_USUARIO_80",
+            "nome": "Acesso legado: leandro.braga",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 142,
+            "codigo": "ATLAS_USUARIO_91",
+            "nome": "Acesso legado: marcelo.parpulov",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 143,
+            "codigo": "ATLAS_USUARIO_120",
+            "nome": "Acesso legado: rodrigo.fontes",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 144,
+            "codigo": "ATLAS_USUARIO_123",
+            "nome": "Acesso legado: andrea.santos",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 145,
+            "codigo": "ATLAS_USUARIO_124",
+            "nome": "Acesso legado: daniela.castro",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 146,
+            "codigo": "ATLAS_USUARIO_125",
+            "nome": "Acesso legado: edson.savio",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 147,
+            "codigo": "ATLAS_USUARIO_127",
+            "nome": "Acesso legado: grasiela.siqueira",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 148,
+            "codigo": "ATLAS_USUARIO_128",
+            "nome": "Acesso legado: rayane.ribeiro",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 149,
+            "codigo": "ATLAS_USUARIO_129",
+            "nome": "Acesso legado: ana.modesto",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 150,
+            "codigo": "ATLAS_USUARIO_132",
+            "nome": "Acesso legado: aline.silva",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 151,
+            "codigo": "ATLAS_USUARIO_131",
+            "nome": "Acesso legado: pedro.junior",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 152,
+            "codigo": "ATLAS_USUARIO_133",
+            "nome": "Acesso legado: david.pereira",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 153,
+            "codigo": "ATLAS_USUARIO_121",
+            "nome": "Acesso legado: joseilson,oliveira",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 154,
+            "codigo": "ATLAS_USUARIO_134",
+            "nome": "Acesso legado: diego.pavia",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 155,
+            "codigo": "ATLAS_USUARIO_135",
+            "nome": "Acesso legado: niza.martins",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 156,
+            "codigo": "ATLAS_USUARIO_136",
+            "nome": "Acesso legado: vanessa.tavares",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 157,
+            "codigo": "ATLAS_USUARIO_137",
+            "nome": "Acesso legado: fernando.silveira",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 158,
+            "codigo": "ATLAS_USUARIO_97",
+            "nome": "Acesso legado: rene.silva",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 159,
+            "codigo": "ATLAS_USUARIO_138",
+            "nome": "Acesso legado: yula.santos",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 160,
+            "codigo": "ATLAS_USUARIO_141",
+            "nome": "Acesso legado: douglas.couto",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 161,
+            "codigo": "ATLAS_USUARIO_142",
+            "nome": "Acesso legado: paulo.victor",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 162,
+            "codigo": "ATLAS_USUARIO_143",
+            "nome": "Acesso legado: gilmar.lacerda",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 163,
+            "codigo": "ATLAS_USUARIO_148",
+            "nome": "Acesso legado: manuela.vasconcelos",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 164,
+            "codigo": "ATLAS_USUARIO_152",
+            "nome": "Acesso legado: rosane.rodrigues",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 165,
+            "codigo": "ATLAS_USUARIO_154",
+            "nome": "Acesso legado: iris.garcia",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 166,
+            "codigo": "ATLAS_USUARIO_155",
+            "nome": "Acesso legado: shirley.raquel",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 167,
+            "codigo": "ATLAS_USUARIO_156",
+            "nome": "Acesso legado: adelmo.santana",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 168,
+            "codigo": "ATLAS_USUARIO_157",
+            "nome": "Acesso legado: pedro.milenium",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 169,
+            "codigo": "ATLAS_USUARIO_158",
+            "nome": "Acesso legado: luis.santos",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 170,
+            "codigo": "ATLAS_USUARIO_159",
+            "nome": "Acesso legado: claudio.pereira",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 171,
+            "codigo": "ATLAS_USUARIO_160",
+            "nome": "Acesso legado: gleice.faria",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 172,
+            "codigo": "ATLAS_USUARIO_161",
+            "nome": "Acesso legado: erick.freitas",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 173,
+            "codigo": "ATLAS_USUARIO_162",
+            "nome": "Acesso legado: samuel.harthman",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 174,
+            "codigo": "ATLAS_USUARIO_164",
+            "nome": "Acesso legado: douglas.goncalves",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 175,
+            "codigo": "ATLAS_USUARIO_165",
+            "nome": "Acesso legado: arthur.medeiros",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 176,
+            "codigo": "ATLAS_USUARIO_166",
+            "nome": "Acesso legado: 166",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 177,
+            "codigo": "ATLAS_USUARIO_167",
+            "nome": "Acesso legado: daniel.galvao",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 178,
+            "codigo": "ATLAS_USUARIO_168",
+            "nome": "Acesso legado: emanuel.ferreira",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 179,
+            "codigo": "ATLAS_USUARIO_169",
+            "nome": "Acesso legado: claudio.florentino",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 180,
+            "codigo": "ATLAS_USUARIO_170",
+            "nome": "Acesso legado: valmi.maia",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 181,
+            "codigo": "ATLAS_USUARIO_171",
+            "nome": "Acesso legado: mario.domingus",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 182,
+            "codigo": "ATLAS_USUARIO_172",
+            "nome": "Acesso legado: gleyber.silva",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 183,
+            "codigo": "ATLAS_USUARIO_173",
+            "nome": "Acesso legado: andre.silva",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 184,
+            "codigo": "ATLAS_USUARIO_174",
+            "nome": "Acesso legado: ana.santos",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 185,
+            "codigo": "ATLAS_USUARIO_175",
+            "nome": "Acesso legado: emanuele.nogueira",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 186,
+            "codigo": "ATLAS_USUARIO_176",
+            "nome": "Acesso legado: rogerio.oliveira@limpidus.com.br",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 187,
+            "codigo": "ATLAS_USUARIO_177",
+            "nome": "Acesso legado: karina.rodrigues",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 188,
+            "codigo": "ATLAS_USUARIO_178",
+            "nome": "Acesso legado: viviane.cristina",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 189,
+            "codigo": "ATLAS_USUARIO_179",
+            "nome": "Acesso legado: douglas.campaner",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 190,
+            "codigo": "ATLAS_USUARIO_180",
+            "nome": "Acesso legado: GIANNI.REIS",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 191,
+            "codigo": "ATLAS_USUARIO_181",
+            "nome": "Acesso legado: aline.boaventura",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 192,
+            "codigo": "ATLAS_USUARIO_182",
+            "nome": "Acesso legado: andre.martiniano",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 193,
+            "codigo": "ATLAS_USUARIO_183",
+            "nome": "Acesso legado: italo.dertinati",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 194,
+            "codigo": "ATLAS_USUARIO_184",
+            "nome": "Acesso legado: raimundo.pedrosa",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 195,
+            "codigo": "ATLAS_USUARIO_117",
+            "nome": "Acesso legado: vitor.schindler",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 196,
+            "codigo": "ATLAS_USUARIO_185",
+            "nome": "Acesso legado: marcos.fraga",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 197,
+            "codigo": "ATLAS_USUARIO_187",
+            "nome": "Acesso legado: bruna.cristina",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 198,
+            "codigo": "ATLAS_USUARIO_186",
+            "nome": "Acesso legado: mauro.jorge",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 199,
+            "codigo": "ATLAS_USUARIO_193",
+            "nome": "Acesso legado: camila.machado",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 200,
+            "codigo": "ATLAS_USUARIO_192",
+            "nome": "Acesso legado: guilherme.bueno",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 201,
+            "codigo": "ATLAS_USUARIO_191",
+            "nome": "Acesso legado: liane.alves",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 202,
+            "codigo": "ATLAS_USUARIO_189",
+            "nome": "Acesso legado: luis.brugnera",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 203,
+            "codigo": "ATLAS_USUARIO_190",
+            "nome": "Acesso legado: rebeca.reis",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 204,
+            "codigo": "ATLAS_USUARIO_194",
+            "nome": "Acesso legado: daniel.medeiros",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 205,
+            "codigo": "ATLAS_USUARIO_72",
+            "nome": "Acesso legado: bruno.dutra",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 206,
+            "codigo": "ATLAS_USUARIO_195",
+            "nome": "Acesso legado: francieli.nestorio",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 207,
+            "codigo": "ATLAS_USUARIO_196",
+            "nome": "Acesso legado: taina.bernardinelli",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 208,
+            "codigo": "ATLAS_USUARIO_197",
+            "nome": "Acesso legado: camila.silva",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 209,
+            "codigo": "ATLAS_USUARIO_198",
+            "nome": "Acesso legado: eder.nascimento",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 210,
+            "codigo": "ATLAS_USUARIO_199",
+            "nome": "Acesso legado: carlos.silva@schindler.com",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 211,
+            "codigo": "ATLAS_USUARIO_200",
+            "nome": "Acesso legado: andre.antonelli",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 212,
+            "codigo": "ATLAS_USUARIO_201",
+            "nome": "Acesso legado: leandro.santos",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 213,
+            "codigo": "ATLAS_USUARIO_202",
+            "nome": "Acesso legado: gustavo.avallone",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 214,
+            "codigo": "ATLAS_USUARIO_204",
+            "nome": "Acesso legado: marcela.fukui",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 215,
+            "codigo": "ATLAS_USUARIO_203",
+            "nome": "Acesso legado: paloma.picarone",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 216,
+            "codigo": "ATLAS_USUARIO_205",
+            "nome": "Acesso legado: izaias.santos",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 217,
+            "codigo": "ATLAS_USUARIO_206",
+            "nome": "Acesso legado: jennifer.silva",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 218,
+            "codigo": "ATLAS_USUARIO_207",
+            "nome": "Acesso legado: danielly.paula",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 219,
+            "codigo": "ATLAS_USUARIO_208",
+            "nome": "Acesso legado: claudio.lourenco",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 220,
+            "codigo": "ATLAS_USUARIO_209",
+            "nome": "Acesso legado: adriele.silva",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 221,
+            "codigo": "ATLAS_USUARIO_210",
+            "nome": "Acesso legado: renato.santos",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 222,
+            "codigo": "ATLAS_USUARIO_211",
+            "nome": "Acesso legado: irmily.burity",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 223,
+            "codigo": "ATLAS_USUARIO_212",
+            "nome": "Acesso legado: carlos.teixeira",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 224,
+            "codigo": "ATLAS_USUARIO_213",
+            "nome": "Acesso legado: dik.mendes",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 225,
+            "codigo": "ATLAS_USUARIO_214",
+            "nome": "Acesso legado: vinicius.serra",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 226,
+            "codigo": "ATLAS_USUARIO_215",
+            "nome": "Acesso legado: thiago.franca",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 227,
+            "codigo": "ATLAS_USUARIO_216",
+            "nome": "Acesso legado: joelmir.duarte",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 228,
+            "codigo": "ATLAS_USUARIO_217",
+            "nome": "Acesso legado: kethaly.silva",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 229,
+            "codigo": "ATLAS_USUARIO_218",
+            "nome": "Acesso legado: luciano.marques",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 230,
+            "codigo": "ATLAS_USUARIO_219",
+            "nome": "Acesso legado: paulo.moreira",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 231,
+            "codigo": "ATLAS_USUARIO_220",
+            "nome": "Acesso legado: livia.pires",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 232,
+            "codigo": "ATLAS_USUARIO_222",
+            "nome": "Acesso legado: alexsandro.lima",
+            "acesso_total": 0,
+            "ativo": 1
+        },
+        {
+            "codperfil": 233,
+            "codigo": "ATLAS_USUARIO_223",
+            "nome": "Acesso legado: bruno.rios",
+            "acesso_total": 0,
+            "ativo": 1
+        }
+    ]
+}

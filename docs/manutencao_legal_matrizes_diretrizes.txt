@@ -1,0 +1,68 @@
+GREEN PORTAL - PADRAO UNICO DAS MATRIZES X EMPRESAS E X PODER
+
+1. ESCOPO
+
+As transacoes `manutencaolegal_legislacaoxempresa.php` e
+`manutencaolegal_legislacaoxpoder.php` utilizam o mesmo padrao visual,
+comportamental e de paginacao. A unica diferenca funcional e a tabela de
+relacionamento usada no cruzamento:
+
+- X Empresas: `gmodelo_dbp.legislacaoxempresa`.
+- X Poder: `gmodelo_dbp.legislacaoxpoder`.
+
+As duas transacoes relacionam seus dados com `glegislacao_dbp.legislacao` e
+com `gmodelo_dbp.unidades`.
+
+2. ESTRUTURA DO GRID
+
+Cada linha representa uma legislacao. A primeira coluna e `CODIGO` e as
+colunas seguintes representam as unidades, usando `DSCUNIDADE` no cabecalho.
+O grid e matricial: cada celula representa o relacionamento entre uma lei e
+uma unidade.
+
+Na matriz X Empresas, a celula e um combobox com `MATRIZ` e as letras de A a
+Z. Na matriz X Poder, a celula e um combobox com `Controle`, `Conhecimento` e
+`Influência`.
+
+3. FILTRO CORRELACIONADOS
+
+O filtro fica abaixo dos botoes, junto com Empresa e Mes/Ano de atualizacao.
+
+- `Sim`: mostra somente leis existentes em `legislacao` que possuem relacao
+  na tabela da transacao (`legislacaoxempresa` ou `legislacaoxpoder`).
+- `Não`: mostra todas as leis de `legislacao`, relacionadas ou nao. Para leis
+  sem relacao, as celulas da matriz permanecem vazias.
+
+O filtro Empresa e aplicado aos relacionamentos. O filtro Mes/Ano usa
+`legislacao.data_atualizacao`. A contagem da paginacao deve respeitar os
+filtros ativos.
+
+4. PAGINACAO E ROLAGEM
+
+As duas telas usam exatamente o mesmo comportamento:
+
+- 25 leis por pagina.
+- Contagem total conforme os filtros.
+- Navegacao por AJAX, sem recarregar a aba inteira.
+- Botoes de paginacao ao lado do botao Colunas.
+- Indicacao de pagina atual e total de registros.
+- Cabecalho fixo.
+- Rolagem vertical e horizontal somente no contenedor do grid.
+- A rolagem horizontal deve aparecer quando as unidades excederem a largura
+  disponivel.
+
+5. CRUD E PERMISSOES
+
+Alteracoes de celula usam as procedures CRUD genericas e respeitam as
+permissoes do perfil. A limpeza da celula remove o relacionamento; a escolha
+de um valor cria ou atualiza o relacionamento. Toda alteracao exige
+confirmacao e os valores sao validados no servidor.
+
+O botao Salvar somente fica habilitado quando houver alteracao. O modal de
+carregamento aparece durante consultas, filtros e paginacao. Mensagens devem
+ser amigaveis e multidioma.
+
+6. COLUNAS E PREFERENCIAS
+
+O usuario pode redimensionar, ordenar e ocultar colunas. As preferencias sao
+persistidas por usuario. A coluna de chave tecnica nao deve ser exibida.
