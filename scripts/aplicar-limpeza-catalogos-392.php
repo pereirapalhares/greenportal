@@ -58,15 +58,20 @@ if ($aplicar) register_shutdown_function(static function () use (&$backup, $arqB
  * Move as referências de $de para $para na coluna $col da tabela; se o mesmo "dono" (colunas cod* da linha, fora a chave e
  * a própria coluna) já tem $para, apaga a linha repetida. Devolve [movidas, apagadas].
  */
-$mover = function (string $banco, string $tabela, string $col, int $de, int $para) use (&$backup, $bancos, $call, $todas, $pk, $aplicar): array {
+$exemplos = [];
+$mover = function (string $banco, string $tabela, string $col, int $de, int $para) use (&$backup, &$exemplos, $bancos, $call, $todas, $pk, $aplicar): array {
     $pdo = $bancos[$banco]; $chave = $pk($pdo, $tabela);
     $linhas = $todas($pdo, $tabela, [$col => $de]);
     $mov = 0; $apag = 0;
     foreach ($linhas as $r) {
         if ((int)($r[$col] ?? 0) !== $de) continue; // segurança (filtro numérico é igual)
+        // dono do vínculo = colunas cod* da linha, fora a própria coluna; a chave primária só fica de fora quando é um código
+        // próprio da linha (não contém a coluna). Ex.: tiposxpalavras_chaves com chave (codtipo, codpalavrachave) → dono codtipo.
+        $chaveSurrogada = $chave && !in_array(strtolower($col), array_map('strtolower', $chave), true);
         $dono = [];
-        foreach ($r as $c => $v) if (strcasecmp($c, $col) !== 0 && !in_array($c, $chave, true) && stripos($c, 'cod') === 0 && $v !== null) $dono[$c] = $v;
-        $ja = array_filter($todas($pdo, $tabela, $dono + [$col => $para]), static function ($x) use ($dono, $col, $para) { foreach ($dono as $c => $v) if ((string)$x[$c] !== (string)$v) return false; return (int)$x[$col] === $para; });
+        foreach ($r as $c => $v) if (strcasecmp($c, $col) !== 0 && !($chaveSurrogada && in_array($c, $chave, true)) && stripos($c, 'cod') === 0 && $v !== null) $dono[$c] = $v;
+        $ja = $dono ? array_filter($todas($pdo, $tabela, $dono + [$col => $para]), static function ($x) use ($dono, $col, $para) { foreach ($dono as $c => $v) if ((string)$x[$c] !== (string)$v) return false; return (int)$x[$col] === $para; }) : [];
+        $exemplos[$tabela][] = json_encode($dono, JSON_UNESCAPED_UNICODE) . ($ja ? ' já tem ' : ' passa para ') . $para;
         $k = $chave ? array_intersect_key($r, array_flip($chave)) : array_filter($r, static fn($v) => $v !== null);
         $backup[] = ['banco' => $banco, 'tabela' => $tabela, 'acao' => $ja ? 'apagada (já tinha o destino)' : "movida $de -> $para", 'linha' => $r];
         if ($ja) { if ($aplicar) $call($pdo, 'CALL sp_crud_delete(?, ?)', [$tabela, json_encode($k, JSON_UNESCAPED_UNICODE)]); $apag++; }
@@ -131,5 +136,6 @@ if (!isset($pal[$de], $pal[$para]) || $norm($pal[$de]) !== $norm($pal[$para])) {
 }
 
 $rel['linhas_alteradas_ou_apagadas'] = count($backup);
+$rel['conferencia_dono_do_vinculo'] = array_map(static fn($l) => array_slice($l, 0, 8), $exemplos);
 if ($aplicar) $rel['backup'] = $arqBackup;
 echo json_encode($rel, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), PHP_EOL;
