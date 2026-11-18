@@ -328,7 +328,7 @@ if ($assistenteLiberado && empty($_SESSION['assistente_ia_csrf'])) $_SESSION['as
 <script src="<?php echo $baseUrl; ?>/assets/js/cabecalho-imagens.js?v=1"></script>
 <script src="<?php echo $baseUrl; ?>/assets/js/footer.js?v=2"></script>
 <script src="<?php echo $baseUrl; ?>/assets/js/minha-conta.js?v=5"></script>
-<script src="<?php echo $baseUrl; ?>/assets/js/main.js?v=11"></script>
+<script src="<?php echo $baseUrl; ?>/assets/js/main.js?v=12"></script>
 <script src="<?php echo $baseUrl; ?>/assets/js/filtro-atraso.js?v=2"></script>
 <?php if ($abrirAlertaJs): ?><script>(function(){var a=<?php echo json_encode($abrirAlertaJs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;try{history.replaceState(null,'',location.pathname);}catch(e){}window.setTimeout(function(){if(typeof window.greenPortalOpenTab==='function')window.greenPortalOpenTab(a.id,a.url,a.titulo);},300);}());</script><?php endif; ?>
 <?php if ($buscaLiberada): ?><script src="<?php echo $baseUrl; ?>/assets/js/busca-cabecalho.js?v=2"></script><?php endif; ?>

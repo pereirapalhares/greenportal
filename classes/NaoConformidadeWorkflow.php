@@ -6,6 +6,7 @@ require_once __DIR__ . '/UsuarioSessao.php';
 require_once __DIR__ . '/PermissaoTransacao.php';
 require_once __DIR__ . '/TenantContext.php';
 require_once __DIR__ . '/HomologacaoBancos.php';
+require_once __DIR__ . '/NaoConformidadeTextos.php';
 
 /**
  * Não Conformidades — apoio às telas do fluxo (c491, migração 321).
@@ -25,18 +26,18 @@ final class NaoConformidadeWorkflow
     public static function iniciar(): array
     {
         if (session_status() !== PHP_SESSION_ACTIVE) session_start();
-        if (empty($_SESSION['autenticado']) || empty($_SESSION['tenant']['banco_dados'])) self::falhar(401, 'Sua sessão expirou. Entre novamente no portal.');
+        if (empty($_SESSION['autenticado']) || empty($_SESSION['tenant']['banco_dados'])) self::falhar(401, ncT('wf.sessao'));
         try {
             $pdo = TenantContext::connect(GreenPortalDatabase::env(), $_SESSION);
             if (!UsuarioSessao::atualizar($pdo, $_SESSION)) throw new RuntimeException('sessao');
-        } catch (Throwable) { self::falhar(401, 'Sua sessão expirou. Entre novamente no portal.'); }
+        } catch (Throwable) { self::falhar(401, ncT('wf.sessao')); }
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         $permissoes = [];
         foreach (self::MENUS as $m) $permissoes[$m] = PermissaoTransacao::obter($m);
         $acesso = false;
         foreach ($permissoes as $p) if (!empty($p['pode_visualizar'])) $acesso = true;
-        if (!$acesso) self::falhar(403, 'Seu perfil não tem permissão para acessar esta transação.');
+        if (!$acesso) self::falhar(403, ncT('wf.sem_permissao'));
         return [$pdo, (int)($_SESSION['usuario']['codusuario'] ?? 0), $permissoes];
     }
 
@@ -187,10 +188,10 @@ final class NaoConformidadeWorkflow
     /** Texto do SIGNAL (validação das procedures) ou mensagem genérica. */
     public static function erro(Throwable $e): string
     {
-        if ($e instanceof PDOException && preg_match('/1644\s*(.+)$/s', $e->getMessage(), $m)) return trim($m[1]);
+        if ($e instanceof PDOException && preg_match('/1644\s*(.+)$/s', $e->getMessage(), $m)) return IdiomaService::mensagemBanco(trim($m[1])); // texto do SIGNAL no idioma do usuário (grupo BANCO)
         if ($e instanceof RuntimeException) return $e->getMessage();
         error_log('NC: ' . $e->getMessage());
-        return 'Não foi possível concluir a operação. Tente novamente.';
+        return ncT('wf.erro');
     }
 
     /** Crown: a avaliação da eficácia exige a data da análise e o responsável pela pendência (como no legado, chamado 15652015).
@@ -210,7 +211,7 @@ final class NaoConformidadeWorkflow
     public static function exigirCsrf(): void
     {
         $token = (string)($_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($_POST['csrf'] ?? ''));
-        if (!hash_equals(self::csrf(), $token)) self::falhar(419, 'Token de segurança inválido. Recarregue a tela.');
+        if (!hash_equals(self::csrf(), $token)) self::falhar(419, ncT('wf.token'));
     }
 
     public static function e(mixed $value): string { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }

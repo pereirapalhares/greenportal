@@ -26,7 +26,8 @@ require_once __DIR__ . '/naoconformidade_relatoriopdftemplate.php';
 $relatorio = NaoConformidadeRelatorio::montar($pdo, (int)$codigo, GreenPortalDatabase::env(), $_SESSION);
 if (!$relatorio) {
     http_response_code(404);
-    exit('Ocorrencia nao encontrada.');
+    require_once dirname(__DIR__) . '/classes/NaoConformidadeTextos.php';
+    exit(NaoConformidadeTextos::t('oc.nao_encontrada'));
 }
 $templateHtml = renderNaoConformidadeRelatorioPdf($relatorio);
 try { AuditService::record($pdo, 'naoconformidades_ocorrencia', 'PDF', 'SUCESSO', 'nc_indicacao_ocorrencia', (string)(int)$codigo); } catch (Throwable) {}

@@ -65,7 +65,7 @@ if (!function_exists('greenPortalListaDupla')) {
         $editavel = !empty($cfg['editavel']);
         $buscar = $t('comum.busca.grid', ['pt' => 'Buscar no grid', 'en' => 'Search the grid', 'es' => 'Buscar en la cuadrícula']);
         $conf = ['url' => (string)($cfg['url'] ?? ''), 'csrf' => (string)($cfg['csrf'] ?? ''), 'editavel' => $editavel, 'colunas' => array_keys($colunas),
-            'vazio' => ['esquerda' => (string)($cfg['vazio_esquerda'] ?? 'Nenhum item.'), 'direita' => (string)($cfg['vazio_direita'] ?? 'Nenhum item.')]];
+            'vazio' => ['esquerda' => (string)($cfg['vazio_esquerda'] ?? $t('comum.lista_dupla.vazio', ['pt' => 'Nenhum item.', 'en' => 'No items.', 'es' => 'Ningún elemento.'])), 'direita' => (string)($cfg['vazio_direita'] ?? $t('comum.lista_dupla.vazio', ['pt' => 'Nenhum item.', 'en' => 'No items.', 'es' => 'Ningún elemento.']))]];
         echo '<section class="setup-fragment menu-grid-fragment lista-dupla grid-ready" id="' . $e($id) . '" data-lista-dupla="' . $e(json_encode($conf, JSON_UNESCAPED_UNICODE)) . '">';
         echo '<div class="crud-toolbar menu-grid-toolbar">';
         greenPortalCrudButtons(['transaction' => (string)($cfg['transaction'] ?? ''), 'save' => false, 'new' => false, 'duplicate' => false, 'delete' => false, 'reload' => true, 'export' => false, 'columns' => false,
@@ -78,19 +78,33 @@ if (!function_exists('greenPortalListaDupla')) {
                     . '<button type="button" class="btn btn-sm btn-success" data-ld-mover="direita" disabled title="' . $e($t('comum.lista_dupla.incluir', ['pt' => 'Incluir os marcados', 'en' => 'Add ticked', 'es' => 'Incluir los marcados'])) . '"><i class="bi bi-chevron-right"></i></button>'
                     . '<button type="button" class="btn btn-sm btn-outline-danger" data-ld-mover="esquerda" disabled title="' . $e($t('comum.lista_dupla.retirar', ['pt' => 'Retirar os marcados', 'en' => 'Remove ticked', 'es' => 'Quitar los marcados'])) . '"><i class="bi bi-chevron-left"></i></button></div>';
             }
-            echo '<div class="ld-lado" data-ld-lado="' . $lado . '"><div class="ld-cab"><h3>' . $e($cfg['titulo_' . $lado] ?? ($lado === 'esquerda' ? 'Disponíveis' : 'Selecionados')) . ' <span class="ld-n" data-ld-total>…</span></h3>'
+            echo '<div class="ld-lado" data-ld-lado="' . $lado . '"><div class="ld-cab"><h3>' . $e($cfg['titulo_' . $lado] ?? ($lado === 'esquerda' ? $t('comum.lista_dupla.disponiveis', ['pt' => 'Disponíveis', 'en' => 'Available', 'es' => 'Disponibles']) : $t('comum.lista_dupla.selecionados', ['pt' => 'Selecionados', 'en' => 'Selected', 'es' => 'Seleccionados']))) . ' <span class="ld-n" data-ld-total>…</span></h3>'
                 . ($lado === 'esquerda' && ($cfg['filtros_esquerda'] ?? '') !== '' ? '<div class="ld-extras">' . $cfg['filtros_esquerda'] . '</div>' : '')
                 . '<div class="crud-search"><i class="bi bi-search"></i><input type="search" data-ld-busca placeholder="' . $e($buscar) . '" aria-label="' . $e($buscar) . '"></div></div>'
-                . '<div class="menu-grid-scroll"><table class="table table-sm menu-batch-grid"><thead><tr><th class="ld-marca">' . ($editavel ? '<input class="form-check-input" type="checkbox" data-ld-marcar-pagina title="Marcar a página">' : '') . '</th>';
+                . '<div class="menu-grid-scroll"><table class="table table-sm menu-batch-grid"><thead><tr><th class="ld-marca">' . ($editavel ? '<input class="form-check-input" type="checkbox" data-ld-marcar-pagina title="' . $e($t('comum.lista_dupla.marcar_pagina', ['pt' => 'Marcar a página', 'en' => 'Tick the page', 'es' => 'Marcar la página'])) . '">' : '') . '</th>';
             foreach ($colunas as $k => $c) echo '<th data-column="' . $e($k) . '"' . (!empty($c['width']) ? ' style="width:' . $e($c['width']) . '"' : '') . '><div class="column-heading"><span>' . $e($c['label'] ?? $k) . '</span></div></th>';
             echo '</tr></thead><tbody data-ld-corpo></tbody></table></div>'
-                . '<nav class="grid-pagination"><button type="button" class="btn btn-sm btn-outline-secondary" data-ld-pag="-1" title="Anterior"><i class="bi bi-chevron-left"></i></button><span class="grid-page-status" data-ld-status></span><button type="button" class="btn btn-sm btn-outline-secondary" data-ld-pag="1" title="Próxima"><i class="bi bi-chevron-right"></i></button></nav></div>';
+                . '<nav class="grid-pagination"><button type="button" class="btn btn-sm btn-outline-secondary" data-ld-pag="-1" title="' . $e($t('comum.paginacao.anterior', ['pt' => 'Anterior', 'en' => 'Previous', 'es' => 'Anterior'])) . '"><i class="bi bi-chevron-left"></i></button><span class="grid-page-status" data-ld-status></span><button type="button" class="btn btn-sm btn-outline-secondary" data-ld-pag="1" title="' . $e($t('comum.paginacao.proxima', ['pt' => 'Próxima', 'en' => 'Next', 'es' => 'Siguiente'])) . '"><i class="bi bi-chevron-right"></i></button></nav></div>';
         }
         echo '</div></section>';
     }
 
     function greenPortalListaDuplaScripts(): void
     {
-        echo '<script src="../assets/js/lista-dupla.js?v=3"></script>';
+        // textos do JavaScript (greenT) nos três idiomas
+        echo IdiomaService::script(['comum'], greenPortalListaDuplaTextos());
+        echo '<script src="../assets/js/lista-dupla.js?v=5"></script>';
+    }
+
+    /** Textos do JavaScript da lista dupla (greenT), nos três idiomas — também usados pelos popups da Legislação. */
+    function greenPortalListaDuplaTextos(): array
+    {
+        return [
+            'comum.relacionamentos.carregando' => ['pt' => 'Carregando...', 'en' => 'Loading...', 'es' => 'Cargando...'],
+            'comum.lista_dupla.erro_carregar' => ['pt' => 'Não foi possível carregar.', 'en' => 'Could not load.', 'es' => 'No fue posible cargar.'],
+            'comum.msg.nao_concluido' => ['pt' => 'Não foi possível concluir.', 'en' => 'Could not complete the operation.', 'es' => 'No fue posible concluir la operación.'],
+            'comum.msg.atencao' => ['pt' => 'Atenção', 'en' => 'Attention', 'es' => 'Atención'],
+            'comum.paginacao.registros' => ['pt' => 'registros', 'en' => 'records', 'es' => 'registros'],
+        ];
     }
 }

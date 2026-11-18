@@ -5,6 +5,16 @@
  */
 (function ($) {
     'use strict';
+    // O popup roda num iframe do portal e o grid que abriu fica em OUTRO iframe (aba): avisa a janela de cima e todos os
+    // iframes dela (antes ia só para window.parent e o grid de trás não recebia).
+    function avisarJanelas(msg) {
+        try {
+            var p = window.parent; if (!p || p === window) return;
+            p.postMessage(msg, '*');
+            for (var i = 0; i < p.frames.length; i++) if (p.frames[i] !== window) p.frames[i].postMessage(msg, '*');
+        } catch (e) {}
+    }
+    function T(k, p) { return typeof window.greenT === 'function' ? window.greenT(k, p) : p; }
     function esc(v) { return $('<div>').text(v == null ? '' : String(v)).html(); }
     function host() { try { return window.top && window.top.GreenPortalPopups ? window.top : (window.parent && window.parent.GreenPortalPopups ? window.parent : null); } catch (e) { return null; } }
 
@@ -16,7 +26,7 @@
 
         function aviso(t, k) {
             if (window.LP && typeof window.LP.aviso === 'function') return window.LP.aviso(t, k);
-            if (t && k === 'danger') { var h = host(); if (h) h.GreenPortalPopups.mensagem({ titulo: 'Atenção', mensagem: t, icone: 'bi-exclamation-triangle text-warning' }); }
+            if (t && k === 'danger') { var h = host(); if (h) h.GreenPortalPopups.mensagem({ titulo: T('comum.msg.atencao', 'Atenção'), mensagem: t, icone: 'bi-exclamation-triangle text-warning' }); }
         }
         function filtros(l) {
             var f = {};
@@ -41,7 +51,7 @@
             }).join(''));
             var paginas = st.total !== null ? Math.max(1, Math.ceil(st.total / st.porPagina)) : null;
             $lado(l).find('[data-ld-total]').text(st.total !== null ? st.total.toLocaleString('pt-BR') : '…');
-            $lado(l).find('[data-ld-status]').text(st.pagina + '/' + (paginas || '?')).attr('title', st.total !== null ? st.total + ' registros' : '');
+            $lado(l).find('[data-ld-status]').text(st.pagina + '/' + (paginas || '?')).attr('title', st.total !== null ? st.total + ' ' + T('comum.paginacao.registros', 'registros') : '');
             $lado(l).find('[data-ld-pag="-1"]').prop('disabled', st.pagina <= 1);
             $lado(l).find('[data-ld-pag="1"]').prop('disabled', paginas !== null ? st.pagina >= paginas : st.itens.length < st.porPagina);
             $lado(l).find('[data-ld-marcar-pagina]').prop('checked', false);
@@ -52,7 +62,7 @@
             var $l = $lado(l), $o = $l.children('.ld-carregando');
             if (!sim) { $o.remove(); return; }
             var sc = $l.find('.menu-grid-scroll').get(0);
-            if (!$o.length) $o = $('<div class="ld-carregando" role="status" aria-live="polite">Carregando...</div>').appendTo($l);
+            if (!$o.length) $o = $('<div class="ld-carregando" role="status" aria-live="polite">' + esc(T('comum.relacionamentos.carregando', 'Carregando...')) + '</div>').appendTo($l);
             if (sc) $o.css({ top: sc.offsetTop + 'px', height: sc.offsetHeight + 'px' });
         }
         function carregar(l) {
@@ -61,11 +71,11 @@
             post({ action: 'ld_listar', lado: l, busca: String($lado(l).find('[data-ld-busca]').val() || '').trim(), pagina: st.pagina, filtros: JSON.stringify(filtros(l)) })
                 .done(function (r) {
                     if (n !== st.req) return;
-                    if (!r || !r.ok) { aviso((r && r.message) || 'Não foi possível carregar.', 'danger'); return; }
+                    if (!r || !r.ok) { aviso((r && r.message) || T('comum.lista_dupla.erro_carregar', 'Não foi possível carregar.'), 'danger'); return; }
                     st.itens = r.itens || []; st.total = (r.total === null || r.total === undefined) ? null : Number(r.total); st.porPagina = Number(r.por_pagina || 25);
                     render(l);
                 })
-                .fail(function (x) { if (n === st.req) aviso((x.responseJSON && x.responseJSON.message) || 'Não foi possível carregar.', 'danger'); })
+                .fail(function (x) { if (n === st.req) aviso((x.responseJSON && x.responseJSON.message) || T('comum.lista_dupla.erro_carregar', 'Não foi possível carregar.'), 'danger'); })
                 .always(function () { if (n === st.req) carregando(l, false); });
         }
         function mover(para, ids) {
@@ -73,13 +83,13 @@
             ocupado = true; botoes();
             post({ action: 'ld_mover', para: para, ids: JSON.stringify(ids) })
                 .done(function (r) {
-                    if (!r || !r.ok) { aviso((r && r.message) || 'Não foi possível concluir.', 'danger'); return; }
+                    if (!r || !r.ok) { aviso((r && r.message) || T('comum.msg.nao_concluido', 'Não foi possível concluir.'), 'danger'); return; }
                     aviso(r.message || '', 'success');
-                    try { if (r.resumo && window.parent) window.parent.postMessage(r.resumo, '*'); } catch (e) {}
+                    if (r.resumo) avisarJanelas(r.resumo);
                     section.dispatchEvent(new CustomEvent('lista-dupla-movida', { bubbles: true, detail: r }));
                     carregar('esquerda'); carregar('direita');
                 })
-                .fail(function (x) { aviso((x.responseJSON && x.responseJSON.message) || 'Não foi possível concluir.', 'danger'); })
+                .fail(function (x) { aviso((x.responseJSON && x.responseJSON.message) || T('comum.msg.nao_concluido', 'Não foi possível concluir.'), 'danger'); })
                 .always(function () { ocupado = false; botoes(); });
         }
 

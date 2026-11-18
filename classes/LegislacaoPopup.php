@@ -17,7 +17,7 @@ final class LegislacaoPopup
     public static function inicio(string $titulo, array $lei, string $explicacao, string $css = ''): void
     {
         $L = LegislacaoAssociacoes::class;
-        echo '<!doctype html><html lang="pt-BR" data-popup-cheio><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+        echo '<!doctype html><html lang="' . $L::h(IdiomaService::idioma()) . '" data-popup-cheio><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             . '<title>' . $L::h($titulo . ' — ' . $L::rotulo($lei)) . '</title>'
             . '<link href="../assets/vendor/bootstrap/css/bootstrap.min.css?v=2" rel="stylesheet"><link href="../assets/vendor/bootstrap-icons/font/bootstrap-icons.min.css?v=2" rel="stylesheet">';
         greenPortalGridLocalHead();
@@ -31,7 +31,7 @@ final class LegislacaoPopup
             . '.lp-link{word-break:break-all}.lp-pre{white-space:pre-wrap}'
             . $css . '</style></head><body>';
         echo '<div class="lp-cab"><h2><i class="bi bi-journal-text"></i>' . $L::h($titulo) . ' — ' . $L::h($L::rotulo($lei)) . ' <span class="text-muted fw-normal" style="font-size:11px">' . $L::h((string)($lei['CODIGO'] ?? ''))
-            . (trim((string)($lei['situacao_da_lei'] ?? '')) !== '' ? ' · ' . $L::h((string)$lei['situacao_da_lei']) : '') . '</span></h2>'
+            . (trim((string)($lei['situacao_da_lei'] ?? '')) !== '' ? ' · ' . $L::h(LegislacaoTextos::valor((string)$lei['situacao_da_lei'])) : '') . '</span></h2>'
             . '<div class="lp-sub">' . $explicacao . '</div></div><div class="lp-aviso" data-lp-aviso></div>';
     }
 
@@ -46,18 +46,22 @@ final class LegislacaoPopup
     {
         $L = LegislacaoAssociacoes::class;
         greenPortalGridLocalScripts();
+        // textos do JavaScript dos popups (greenT): grupo comum + os da Legislação (classes/LegislacaoTextos.php)
+        require_once __DIR__ . '/LegislacaoTextos.php';
+        echo IdiomaService::script(['comum', LegislacaoTextos::GRUPO], LegislacaoTextos::js() + (function_exists('greenPortalListaDuplaTextos') ? greenPortalListaDuplaTextos() : []));
         echo '<script src="../assets/js/ajuda-transacao.js?v=1"></script>' . $scripts . '<script>'
             . '(function(){var $=window.jQuery,id=' . $id . ',csrf=' . json_encode($L::csrf()) . ',url=window.location.pathname+window.location.search;'
             . 'var host=function(){try{return window.top&&window.top.GreenPortalPopups?window.top:(window.parent&&window.parent.GreenPortalPopups?window.parent:null);}catch(e){return null;}};'
             . 'var LP=window.LP={tipo:' . json_encode($tipo) . ',id:id,'
+            . 'T:function(k,p){return typeof window.greenT==="function"?window.greenT(k,p):p;},'
             . 'esc:function(v){return $("<div>").text(v==null?"":String(v)).html();},'
             . 'aviso:function(t,k){var $a=$("[data-lp-aviso]");if(!t){$a.empty();return;}$a.html(\'<div class="alert alert-\'+(k||"info")+\' py-1 px-2 mb-0">\'+LP.esc(t)+"</div>");},'
             . 'enviar:function(d,$b){if($b)$b.prop("disabled",true);return new Promise(function(ok,falha){$.ajax({url:url,method:"POST",dataType:"json",data:$.extend({ajax:"1",CODLEGISLACAO:id,csrf:csrf},d)})'
-            . '.done(function(r){if(r&&r.ok)ok(r);else{LP.aviso((r&&r.message)||"Não foi possível concluir.","danger");falha(r);}})'
-            . '.fail(function(x){LP.aviso((x.responseJSON&&x.responseJSON.message)||"Não foi possível concluir.","danger");falha(x);})'
+            . '.done(function(r){if(r&&r.ok)ok(r);else{LP.aviso((r&&r.message)||LP.T("comum.msg.nao_concluido","Não foi possível concluir."),"danger");falha(r);}})'
+            . '.fail(function(x){LP.aviso((x.responseJSON&&x.responseJSON.message)||LP.T("comum.msg.nao_concluido","Não foi possível concluir."),"danger");falha(x);})'
             . '.always(function(){if($b)$b.prop("disabled",false);});});},'
             . 'confirmar:function(titulo,texto,fn){var h=host();if(h)h.GreenPortalPopups.mensagem({titulo:titulo,mensagem:texto,icone:"bi-exclamation-triangle text-warning",confirmar:fn});else fn();},'
-            . 'gravado:function(r){try{if(r&&r.resumo&&window.parent)window.parent.postMessage(r.resumo,"*");}catch(e){}try{sessionStorage.setItem("lp-msg",(r&&r.message)||"");}catch(e){}window.location.reload();},'
+            . 'gravado:function(r){try{var p=window.parent;if(r&&r.resumo&&p&&p!==window){p.postMessage(r.resumo,"*");for(var i=0;i<p.frames.length;i++)if(p.frames[i]!==window)p.frames[i].postMessage(r.resumo,"*");}}catch(e){}try{sessionStorage.setItem("lp-msg",(r&&r.message)||"");}catch(e){}window.location.reload();},'
             . 'linha:function($b){return $b.closest("tr");}};'
             . 'try{var m=sessionStorage.getItem("lp-msg");if(m){sessionStorage.removeItem("lp-msg");LP.aviso(m,"success");setTimeout(function(){LP.aviso("");},6000);}}catch(e){}'
             . '}());</script><script>' . $js . '</script></body></html>';

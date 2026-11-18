@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once dirname(__DIR__) . '/classes/AdministracaoTextos.php';
 
 /*
  * Meu perfil de atribuições (migração 268). Cada usuário responde o próprio perfil; não depende de permissão de menu.
@@ -156,7 +157,7 @@ $marcado = static function ($v, string $op): bool { return in_array($op, array_m
 </form>
 <script src="../assets/vendor/jquery/jquery-3.7.1.min.js?v=2"></script>
 <script>window.PA_TEXTOS = <?= json_encode($T, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>; window.PA_POPUP = <?= $popup ? 'true' : 'false' ?>;</script>
-<script src="../assets/js/ajuda-transacao.js?v=2"></script>
-<script src="../assets/js/perfil-atribuicoes.js?v=2"></script>
+<?= AdministracaoTextos::script() ?><script src="../assets/js/ajuda-transacao.js?v=2"></script>
+<script src="../assets/js/perfil-atribuicoes.js?v=2-i3"></script>
 </body>
 </html>

@@ -5,6 +5,7 @@ require_once __DIR__ . '/GreenPortalDatabase.php';
 require_once __DIR__ . '/PermissaoTransacao.php';
 require_once __DIR__ . '/IaTaximetro.php';
 require_once __DIR__ . '/LegislacaoEmpresas.php';
+require_once __DIR__ . '/LegislacaoTextos.php';
 
 /*
  * Migração 382 — Legislação (Manutenção Legal › Legislação): associações de cada lei.
@@ -54,7 +55,7 @@ final class LegislacaoAssociacoes
     public static function usuarioNome(): string
     {
         $u = (array)($_SESSION['usuario'] ?? []);
-        return mb_substr(trim((string)($u['nome'] ?? $u['userid'] ?? ('usuário ' . ($u['codusuario'] ?? '?')))), 0, 150);
+        return mb_substr(trim((string)($u['nome'] ?? $u['userid'] ?? LegislacaoTextos::t('texto.usuario', ['cod' => $u['codusuario'] ?? '?']))), 0, 150);
     }
 
     public static function empresaNome(): string
@@ -114,7 +115,7 @@ final class LegislacaoAssociacoes
         $txt = trim($tipo . ($nr !== '' ? ' nº ' . $nr : '') . ($ano !== '' ? '/' . $ano : ''));
         if ($txt !== '') return $txt;
         $cod = trim((string)($lei[$prefixo . 'CODIGO'] ?? ''));
-        return $cod !== '' ? $cod : '(legislação não encontrada no cadastro)';
+        return $cod !== '' ? $cod : LegislacaoTextos::t('erro.lei_sem_cadastro');
     }
 
     /** Contagens por lei para o grid: [CODLEGISLACAO => [QTD_URLS, QTD_URLS_SUGERIDAS, QTD_FILHAS, QTD_PAIS]]. */
@@ -153,11 +154,11 @@ final class LegislacaoAssociacoes
     {
         $url = trim($url);
         if ($url !== '' && !preg_match('#^[a-z][a-z0-9+.-]*://#i', $url)) $url = 'https://' . $url;
-        if (strlen($url) > 1000 || !filter_var($url, FILTER_VALIDATE_URL)) throw new InvalidArgumentException('Endereço inválido. Informe um link completo, por exemplo https://www.planalto.gov.br/...');
+        if (strlen($url) > 1000 || !filter_var($url, FILTER_VALIDATE_URL)) throw new InvalidArgumentException(LegislacaoTextos::t('erro.url_invalida'));
         $esquema = strtolower((string)parse_url($url, PHP_URL_SCHEME));
-        if (!in_array($esquema, ['http', 'https'], true)) throw new InvalidArgumentException('Use um endereço http:// ou https://.');
+        if (!in_array($esquema, ['http', 'https'], true)) throw new InvalidArgumentException(LegislacaoTextos::t('erro.url_esquema'));
         $host = strtolower((string)parse_url($url, PHP_URL_HOST));
-        if ($host === '' || $host === 'localhost' || filter_var($host, FILTER_VALIDATE_IP)) throw new InvalidArgumentException('Use o endereço público do site (não um IP ou localhost).');
+        if ($host === '' || $host === 'localhost' || filter_var($host, FILTER_VALIDATE_IP)) throw new InvalidArgumentException(LegislacaoTextos::t('erro.url_publica'));
         return $url;
     }
 
@@ -176,15 +177,15 @@ final class LegislacaoAssociacoes
     private static function urlDaLei(int $id, int $codurl): array
     {
         foreach (self::ler('legislacaoxurl', ['CODLEGISLACAOURL' => $codurl], '', 1) as $u) if ((int)$u['CODLEGISLACAO'] === $id) return $u;
-        throw new RuntimeException('Link não encontrado (pode ter sido excluído por outra pessoa).');
+        throw new RuntimeException(LegislacaoTextos::t('erro.url_nao_encontrada'));
     }
 
     public static function incluirUrl(int $id, string $url, string $descricao): void
     {
-        if (!self::lei($id)) throw new RuntimeException('Legislação não encontrada.');
+        if (!self::lei($id)) throw new RuntimeException(LegislacaoTextos::t('erro.lei_nao_encontrada'));
         $url = self::normalizarUrl($url);
-        if ($e = self::urlExistente($id, $url)) throw new RuntimeException('Esse link já está na lista' . ((string)$e['SITUACAO'] === 'SUGERIDA' ? ' como sugestão da IA (confirme-o).' : '.'));
-        if (count(self::urls($id)) >= self::MAX_URLS) throw new RuntimeException('Limite de ' . self::MAX_URLS . ' links por legislação.');
+        if ($e = self::urlExistente($id, $url)) throw new RuntimeException(LegislacaoTextos::t((string)$e['SITUACAO'] === 'SUGERIDA' ? 'erro.url_repetida_sugestao' : 'erro.url_repetida'));
+        if (count(self::urls($id)) >= self::MAX_URLS) throw new RuntimeException(LegislacaoTextos::t('erro.url_limite', ['n' => self::MAX_URLS]));
         $agora = date('Y-m-d H:i:s');
         self::inserir('legislacaoxurl', ['CODLEGISLACAO' => $id, 'URL' => $url, 'DESCRICAO' => self::corta($descricao, 300), 'ORIGEM' => 'USUARIO', 'SITUACAO' => 'CONFIRMADA',
             'USUARIO_INCLUSAO' => self::usuarioNome(), 'EMPRESA_INCLUSAO' => self::empresaNome(), 'DATA_INCLUSAO' => $agora, 'USUARIO_CONFIRMACAO' => self::usuarioNome(), 'DATA_CONFIRMACAO' => $agora]);
@@ -194,7 +195,7 @@ final class LegislacaoAssociacoes
     {
         self::urlDaLei($id, $codurl);
         $url = self::normalizarUrl($url);
-        if (self::urlExistente($id, $url, $codurl)) throw new RuntimeException('Esse link já está na lista.');
+        if (self::urlExistente($id, $url, $codurl)) throw new RuntimeException(LegislacaoTextos::t('erro.url_repetida'));
         self::atualizar('legislacaoxurl', ['CODLEGISLACAOURL' => $codurl], ['URL' => $url, 'DESCRICAO' => self::corta($descricao, 300)]);
     }
 
@@ -249,11 +250,11 @@ final class LegislacaoAssociacoes
 
     public static function statusTexto(?int $s): array
     {
-        if ($s === null) return ['não verificado', 'secondary'];
-        if ($s >= 200 && $s < 400) return ['responde', 'success'];
-        if ($s === 0) return ['não respondeu', 'danger'];
-        if ($s === 401 || $s === 403) return ['bloqueia verificação (' . $s . ')', 'warning'];
-        return ['erro ' . $s, 'danger'];
+        if ($s === null) return [LegislacaoTextos::t('status.nao_verificado'), 'secondary'];
+        if ($s >= 200 && $s < 400) return [LegislacaoTextos::t('status.responde'), 'success'];
+        if ($s === 0) return [LegislacaoTextos::t('status.nao_respondeu'), 'danger'];
+        if ($s === 401 || $s === 403) return [LegislacaoTextos::t('status.bloqueia', ['n' => $s]), 'warning'];
+        return [LegislacaoTextos::t('status.erro', ['n' => $s]), 'danger'];
     }
 
     /** Pede à IA (prompt LEG_URL_PESQUISA, limite de IA da empresa) links para acompanhar a lei. Grava como SUGERIDA. */
@@ -281,7 +282,7 @@ final class LegislacaoAssociacoes
     private static function dadosLeiIa(int $id): array
     {
         $lei = self::lei($id);
-        if (!$lei) throw new RuntimeException('Legislação não encontrada.');
+        if (!$lei) throw new RuntimeException(LegislacaoTextos::t('erro.lei_nao_encontrada'));
         $completa = self::ler('legislacao', ['CODLEGISLACAO' => $id], '', 1)[0] ?? [];
         $ambito = '';
         if (!empty($completa['CODAMBITO'])) $ambito = (string)(self::ler('ambitos', ['CODAMBITO' => (int)$completa['CODAMBITO']], '', 1)[0]['DSCAMBITO'] ?? '');
@@ -315,11 +316,11 @@ final class LegislacaoAssociacoes
         $resp = is_string($raw) ? json_decode($raw, true) : null;
         if ($raw === false || $erro !== '' || $http < 200 || $http >= 300) {
             IaTaximetro::registrar(is_array($resp) ? $resp : null, $model, $ms, false, $erro !== '' ? $erro : 'HTTP ' . $http); IaTaximetro::limpar();
-            throw new RuntimeException('O serviço de IA não respondeu' . ($http ? ' (HTTP ' . $http . ')' : '') . '. Tente de novo em instantes.');
+            throw new RuntimeException(LegislacaoTextos::t('erro.ia_nao_respondeu', ['http' => $http ? ' (HTTP ' . $http . ')' : '']));
         }
         $conteudo = json_decode((string)($resp['choices'][0]['message']['content'] ?? ''), true);
         IaTaximetro::registrar($resp, $model, $ms, is_array($conteudo), is_array($conteudo) ? null : 'JSON inválido.'); IaTaximetro::limpar();
-        if (!is_array($conteudo)) throw new RuntimeException('A IA devolveu uma resposta inválida. Tente de novo.');
+        if (!is_array($conteudo)) throw new RuntimeException(LegislacaoTextos::t('erro.ia_resposta'));
         return $conteudo;
     }
 
@@ -335,7 +336,7 @@ final class LegislacaoAssociacoes
             $s = $pdo->prepare('CALL sp_ia_prompt_obter(?, ?)'); $s->execute([$codigo, $idioma]);
             $p = trim((string)(($s->fetch(PDO::FETCH_ASSOC) ?: [])['prompt'] ?? '')); while ($s->nextRowset()) {} $s->closeCursor();
         } catch (Throwable) {}
-        if ($p === '') throw new RuntimeException('O prompt ' . $codigo . ' não está cadastrado ou está inativo nesta empresa (Setup › Prompts de IA; migração 382).');
+        if ($p === '') throw new RuntimeException(LegislacaoTextos::t('erro.ia_prompt', ['codigo' => $codigo]));
         return $p;
     }
 
@@ -352,7 +353,7 @@ final class LegislacaoAssociacoes
             if ($key === '' && preg_match('/define\s*\(\s*[\'\"]OPENAI_API_KEY[\'\"]\s*,\s*[\'\"]([^\'\"]+)[\'\"]\s*\)/i', $src, $m)) $key = trim($m[1]);
             if ($model === 'gpt-4o-mini' && preg_match('/define\s*\(\s*[\'\"]OPENAI_MODEL[\'\"]\s*,\s*[\'\"]([^\'\"]+)[\'\"]\s*\)/i', $src, $m)) $model = trim($m[1]);
         }
-        if ($key === '') throw new RuntimeException('Serviço de IA não configurado.');
+        if ($key === '') throw new RuntimeException(LegislacaoTextos::t('erro.ia_config'));
         return [$url, $key, $model];
     }
 
@@ -392,7 +393,7 @@ final class LegislacaoAssociacoes
         if ($tipo > 0) $f['CODTIPO'] = $tipo;
         if (trim($nr) !== '') $f['NR'] = trim($nr);
         if (trim($ano) !== '') $f['ANO'] = trim($ano);
-        if (!$f && mb_strlen(trim($texto)) < 3) throw new InvalidArgumentException('Informe o tipo, o número, o ano ou pelo menos 3 letras do texto.');
+        if (!$f && mb_strlen(trim($texto)) < 3) throw new InvalidArgumentException(LegislacaoTextos::t('erro.busca_curta'));
         $ja = [$id => true];
         foreach (self::filhas($id) as $r) $ja[(int)$r['CODLEGISLACAO_FILHA']] = true;
         $out = [];
@@ -407,10 +408,10 @@ final class LegislacaoAssociacoes
 
     public static function incluirFilha(int $pai, int $filha): void
     {
-        if ($pai === $filha) throw new RuntimeException('Uma legislação não pode ser filha dela mesma.');
-        if (!self::lei($pai) || !self::lei($filha)) throw new RuntimeException('Legislação não encontrada.');
+        if ($pai === $filha) throw new RuntimeException(LegislacaoTextos::t('erro.filha_propria'));
+        if (!self::lei($pai) || !self::lei($filha)) throw new RuntimeException(LegislacaoTextos::t('erro.lei_nao_encontrada'));
         foreach (self::filhas($pai) as $r) if ((int)$r['CODLEGISLACAO_FILHA'] === $filha) return;
-        if (self::ascendente($pai, $filha)) throw new RuntimeException('Essa legislação já é pai (direta ou indiretamente) desta: o vínculo fecharia um ciclo.');
+        if (self::ascendente($pai, $filha)) throw new RuntimeException(LegislacaoTextos::t('erro.filha_ciclo'));
         self::inserir('legislacaopaixlegislacaofilha', ['CODLEGISLACAO_PAI' => $pai, 'CODLEGISLACAO_FILHA' => $filha]);
     }
 
@@ -422,7 +423,7 @@ final class LegislacaoAssociacoes
             foreach ($todos as $x) if ((int)$x['CODLEGISLACAO_FILHA'] === (int)$r['CODLEGISLACAO_FILHA']) self::excluir('legislacaopaixlegislacaofilha', ['codlegislacaopai_filha' => (int)$x['codlegislacaopai_filha']]);
             return;
         }
-        throw new RuntimeException('Vínculo não encontrado (pode ter sido removido por outra pessoa).');
+        throw new RuntimeException(LegislacaoTextos::t('erro.vinculo_nao_encontrado'));
     }
 
     /** Migração 388 (lista dupla): tira a lei filha $filha da lei $pai (todos os vínculos repetidos do par). */
@@ -531,10 +532,10 @@ final class LegislacaoAssociacoes
         $out = [];
         foreach ($tipos as $cod => $nome) {
             $pts = 0; $mot = [];
-            if ($cod === $codtipoPai) { $pts += 40; $mot[] = 'mesmo tipo'; }
-            if ($famPai && $cod !== $codtipoPai && in_array(self::classeNorma($nome), $famPai, true)) { $pts += 30; $mot[] = 'altera ou regulamenta (família das leis)'; }
-            if ($orgPai && ($comum = array_intersect_key($orgPai, self::orgaosTipo($nome)))) { $pts += 25; if ($cod !== $codtipoPai) $mot[] = 'mesmo órgão (' . implode(', ', array_keys($comum)) . ')'; }
-            if ($espPai !== '' && $cod !== $codtipoPai && self::especieTipo($nome) === $espPai) { $pts += 10; if (count($mot) === 0) $mot[] = 'mesma espécie'; }
+            if ($cod === $codtipoPai) { $pts += 40; $mot[] = LegislacaoTextos::t('motivo.mesmo_tipo'); }
+            if ($famPai && $cod !== $codtipoPai && in_array(self::classeNorma($nome), $famPai, true)) { $pts += 30; $mot[] = LegislacaoTextos::t('motivo.familia'); }
+            if ($orgPai && ($comum = array_intersect_key($orgPai, self::orgaosTipo($nome)))) { $pts += 25; if ($cod !== $codtipoPai) $mot[] = LegislacaoTextos::t('motivo.orgao', ['orgaos' => implode(', ', array_keys($comum))]); }
+            if ($espPai !== '' && $cod !== $codtipoPai && self::especieTipo($nome) === $espPai) { $pts += 10; if (count($mot) === 0) $mot[] = LegislacaoTextos::t('motivo.especie'); }
             if ($pts > 0) $out[$cod] = ['pts' => $pts, 'motivo' => implode(', ', $mot)];
         }
         return $out;
@@ -557,7 +558,7 @@ final class LegislacaoAssociacoes
         foreach ($rows as &$r) {
             $m = [];
             if (isset($rel[(int)$r['CODTIPO']]) && $rel[(int)$r['CODTIPO']]['motivo'] !== '') $m[] = $rel[(int)$r['CODTIPO']]['motivo'];
-            if ((int)$r['MESMO_ASSUNTO'] === 1) $m[] = 'assunto em comum';
+            if ((int)$r['MESMO_ASSUNTO'] === 1) $m[] = LegislacaoTextos::t('motivo.assunto');
             $r['MOTIVO'] = ucfirst(implode(', ', $m));
         }
         unset($r);
@@ -608,19 +609,19 @@ final class LegislacaoAssociacoes
      */
     public static function salvarAlteracao(int $id, int $cod, string $data, string $tipo, string $descricao, ?array $lei): void
     {
-        if (!self::lei($id)) throw new RuntimeException('Legislação não encontrada.');
-        $data = self::dataValida($data, 'Data da alteração');
+        if (!self::lei($id)) throw new RuntimeException(LegislacaoTextos::t('erro.lei_nao_encontrada'));
+        $data = self::dataValida($data, LegislacaoTextos::t('campo.data_alteracao'));
         $tipo = trim($tipo);
-        if ($tipo === '') throw new InvalidArgumentException('Escolha o tipo de alteração.');
-        if (!in_array($tipo, self::tiposAlteracao(), true)) throw new InvalidArgumentException('Tipo de alteração fora do cadastro.');
+        if ($tipo === '') throw new InvalidArgumentException(LegislacaoTextos::t('erro.tipo_alteracao'));
+        if (!in_array($tipo, self::tiposAlteracao(), true)) throw new InvalidArgumentException(LegislacaoTextos::t('erro.tipo_alteracao_fora'));
         $descricao = trim($descricao);
-        if ($descricao === '') throw new InvalidArgumentException('Descreva a alteração.');
-        if (mb_strlen($descricao) > 5000) throw new InvalidArgumentException('A descrição passa de 5.000 caracteres.');
+        if ($descricao === '') throw new InvalidArgumentException(LegislacaoTextos::t('erro.descreva_alteracao'));
+        if (mb_strlen($descricao) > 5000) throw new InvalidArgumentException(LegislacaoTextos::t('erro.descricao_longa'));
         $dados = ['codlegislacao' => $id, 'tipo' => mb_substr($tipo, 0, 300), 'descricao' => $descricao, 'data_da_alteracao' => $data . ' 00:00:00'];
         if ($cod > 0) {
             $existe = false;
             foreach (self::ler('legislacaoxalteracao', ['codalteracao' => $cod], '', 1) as $r) $existe = (int)$r['codlegislacao'] === $id;
-            if (!$existe) throw new RuntimeException('Alteração não encontrada (pode ter sido excluída por outra pessoa).');
+            if (!$existe) throw new RuntimeException(LegislacaoTextos::t('erro.alteracao_nao_encontrada'));
             self::atualizar('legislacaoxalteracao', ['codalteracao' => $cod], $dados);
         } else {
             self::inserir('legislacaoxalteracao', $dados);
@@ -628,9 +629,9 @@ final class LegislacaoAssociacoes
         if ($lei !== null) {
             $situacao = trim((string)($lei['situacao'] ?? ''));
             $devido = trim((string)($lei['devido'] ?? ''));
-            if (!in_array($situacao, self::SITUACOES, true)) throw new InvalidArgumentException('Escolha a situação da lei.');
-            if (!in_array($devido, self::DEVIDOS, true)) throw new InvalidArgumentException('Escolha o "devido" da lei.');
-            $dataLei = self::dataValida((string)($lei['data'] ?? ''), 'Data de atualização da lei');
+            if (!in_array($situacao, self::SITUACOES, true)) throw new InvalidArgumentException(LegislacaoTextos::t('erro.situacao'));
+            if (!in_array($devido, self::DEVIDOS, true)) throw new InvalidArgumentException(LegislacaoTextos::t('erro.devido'));
+            $dataLei = self::dataValida((string)($lei['data'] ?? ''), LegislacaoTextos::t('campo.data_atualizacao'));
             self::atualizar('legislacao', ['CODLEGISLACAO' => $id], ['situacao_da_lei' => $situacao, 'devido_da_lei' => $devido, 'data_atualizacao' => $dataLei . ' 00:00:00']);
         }
     }
@@ -639,7 +640,7 @@ final class LegislacaoAssociacoes
     {
         foreach (self::ler('legislacaoxalteracao', ['codalteracao' => $cod], '', 1) as $r)
             if ((int)$r['codlegislacao'] === $id) { self::excluir('legislacaoxalteracao', ['codalteracao' => $cod]); return; }
-        throw new RuntimeException('Alteração não encontrada (pode ter sido excluída por outra pessoa).');
+        throw new RuntimeException(LegislacaoTextos::t('erro.alteracao_nao_encontrada'));
     }
 
     /** Situação, devido e data de atualização atuais da lei (para o popup e para atualizar a linha do grid). */
@@ -653,7 +654,7 @@ final class LegislacaoAssociacoes
     {
         $v = trim($v);
         $d = DateTime::createFromFormat('!Y-m-d', $v);
-        if (!$d || $d->format('Y-m-d') !== $v || (int)$d->format('Y') < 1900 || $d > new DateTime('+1 year')) throw new InvalidArgumentException($rotulo . ' inválida.');
+        if (!$d || $d->format('Y-m-d') !== $v || (int)$d->format('Y') < 1900 || $d > new DateTime('+1 year')) throw new InvalidArgumentException(LegislacaoTextos::t('erro.data_invalida', ['campo' => $rotulo]));
         return $v;
     }
 
@@ -673,7 +674,7 @@ final class LegislacaoAssociacoes
     public static function buscarPerguntas(int $id, string $termo): array
     {
         $termo = trim($termo);
-        if (mb_strlen($termo) < 3 && !ctype_digit($termo)) throw new InvalidArgumentException('Digite pelo menos 3 letras (ou o código da pergunta).');
+        if (mb_strlen($termo) < 3 && !ctype_digit($termo)) throw new InvalidArgumentException(LegislacaoTextos::t('erro.busca_pergunta'));
         $ja = array_fill_keys(array_column(self::perguntasDaLei($id), 'cod'), true);
         $rows = ctype_digit($termo) ? self::ler('perguntas', ['CODPERGUNTA' => (int)$termo], '', 1) : self::ler('perguntas', [], $termo, 50);
         return array_map(static fn($p) => ['cod' => (int)$p['CODPERGUNTA'], 'texto' => (string)$p['DSCPERGUNTA'], 'vinculada' => isset($ja[(int)$p['CODPERGUNTA']])], $rows);
@@ -681,7 +682,7 @@ final class LegislacaoAssociacoes
 
     public static function vincularPergunta(int $id, int $cod): void
     {
-        if (!self::lei($id) || !self::ler('perguntas', ['CODPERGUNTA' => $cod], '', 1)) throw new RuntimeException('Pergunta ou legislação não encontrada.');
+        if (!self::lei($id) || !self::ler('perguntas', ['CODPERGUNTA' => $cod], '', 1)) throw new RuntimeException(LegislacaoTextos::t('erro.pergunta_ou_lei'));
         if (self::ler('legislacaoxpergunta', ['CODLEGISLACAO' => $id, 'CODPERGUNTA' => $cod], '', 1)) return;
         self::inserir('legislacaoxpergunta', ['CODLEGISLACAO' => $id, 'CODPERGUNTA' => $cod]);
     }
@@ -696,11 +697,11 @@ final class LegislacaoAssociacoes
     {
         $texto = self::textoCatalogo($texto, 1000, 'pergunta');
         foreach (self::ler('perguntas', [], mb_substr($texto, 0, 60), 1000) as $p)
-            if (self::chave((string)$p['DSCPERGUNTA']) === self::chave($texto)) throw new RuntimeException('Essa pergunta já existe no catálogo (código ' . $p['CODPERGUNTA'] . '): use "Vincular".');
+            if (self::chave((string)$p['DSCPERGUNTA']) === self::chave($texto)) throw new RuntimeException(LegislacaoTextos::t('erro.pergunta_existe_vincular', ['cod' => $p['CODPERGUNTA']]));
         self::inserir('perguntas', ['DSCPERGUNTA' => $texto]);
         $cod = 0;
         foreach (self::ler('perguntas', [], mb_substr($texto, 0, 60), 1000) as $p) if ((string)$p['DSCPERGUNTA'] === $texto) $cod = max($cod, (int)$p['CODPERGUNTA']);
-        if ($cod < 1) throw new RuntimeException('A pergunta foi gravada, mas não foi possível vinculá-la. Busque e vincule.');
+        if ($cod < 1) throw new RuntimeException(LegislacaoTextos::t('erro.pergunta_gravada_sem_vinculo'));
         self::vincularPergunta($id, $cod);
         return $cod;
     }
@@ -709,7 +710,11 @@ final class LegislacaoAssociacoes
     public static function editarPergunta(int $cod, string $texto): void
     {
         $texto = self::textoCatalogo($texto, 1000, 'pergunta');
-        if (!self::ler('perguntas', ['CODPERGUNTA' => $cod], '', 1)) throw new RuntimeException('Pergunta não encontrada.');
+        if (!self::ler('perguntas', ['CODPERGUNTA' => $cod], '', 1)) throw new RuntimeException(LegislacaoTextos::t('erro.pergunta_nao_encontrada'));
+        // teste CRUD 18/11: a edição não pode recriar as repetidas que a limpeza 392 juntou
+        foreach (self::ler('perguntas', [], mb_substr($texto, 0, 60), 1000) as $p)
+            if ((int)$p['CODPERGUNTA'] !== $cod && self::chave((string)$p['DSCPERGUNTA']) === self::chave($texto))
+                throw new RuntimeException(LegislacaoTextos::t('erro.pergunta_existe', ['cod' => $p['CODPERGUNTA']]));
         self::atualizar('perguntas', ['CODPERGUNTA' => $cod], ['DSCPERGUNTA' => $texto]);
     }
 
@@ -736,8 +741,52 @@ final class LegislacaoAssociacoes
     public static function infoPergunta(int $cod): array
     {
         $p = self::ler('perguntas', ['CODPERGUNTA' => $cod], '', 1)[0] ?? null;
-        if (!$p) throw new RuntimeException('Pergunta não encontrada.');
+        if (!$p) throw new RuntimeException(LegislacaoTextos::t('erro.pergunta_nao_encontrada'));
         return ['cod' => $cod, 'texto' => (string)($p['DSCPERGUNTA'] ?? ''), 'usos' => self::usosPergunta($cod)];
+    }
+
+    // ------------------------------------------------------------------ Assuntos da lei em lista dupla (17/11/2026)
+
+    /** Catálogo de assuntos (21 mil) em páginas: [itens [{cod, texto}], total|null]. Busca por texto ou código. */
+    public static function paginaAssuntos(string $busca, int $pagina, int $porPagina = 25): array
+    {
+        $busca = trim($busca);
+        if ($busca !== '' && ctype_digit($busca)) {
+            $p = self::ler('assuntos', ['CODASSUNTO' => (int)$busca], '', 1);
+            return [$pagina === 1 ? array_map(static fn($x) => ['cod' => (int)$x['CODASSUNTO'], 'texto' => (string)$x['DSCASSUNTO']], $p) : [], count($p)];
+        }
+        $itens = array_map(static fn($x) => ['cod' => (int)$x['CODASSUNTO'], 'texto' => (string)($x['DSCASSUNTO'] ?? '')], self::ler('assuntos', [], $busca, $porPagina, max(0, ($pagina - 1) * $porPagina)));
+        $total = null;
+        try {
+            $s = self::legislacao()->prepare('CALL sp_crud_count(?, ?, ?)');
+            $s->execute(['assuntos', '{}', $busca === '' ? null : $busca]);
+            $row = $s->fetch(PDO::FETCH_NUM); while ($s->nextRowset()) {} $s->closeCursor();
+            if ($row) $total = (int)$row[0];
+        } catch (Throwable) {}
+        return [$itens, $total];
+    }
+
+    /** Assuntos da lei: [{cod, texto}] em ordem alfabética. */
+    public static function assuntosDaLei(int $id): array
+    {
+        $cods = [];
+        foreach (self::ler('legislacaoxassunto', ['CODLEGISLACAO' => $id]) as $r) $cods[(int)$r['CODASSUNTO']] = true;
+        $out = [];
+        foreach (array_keys($cods) as $c) { $a = self::ler('assuntos', ['CODASSUNTO' => $c], '', 1)[0] ?? null; $out[] = ['cod' => $c, 'texto' => $a ? (string)$a['DSCASSUNTO'] : LegislacaoTextos::t('texto.assunto_nao_encontrado', ['cod' => $c])]; }
+        usort($out, static fn($a, $b) => strnatcasecmp($a['texto'], $b['texto']));
+        return $out;
+    }
+
+    public static function vincularAssunto(int $id, int $cod): void
+    {
+        if (!self::ler('assuntos', ['CODASSUNTO' => $cod], '', 1)) throw new RuntimeException(LegislacaoTextos::t('erro.assunto_nao_encontrado'));
+        if (self::ler('legislacaoxassunto', ['CODLEGISLACAO' => $id, 'CODASSUNTO' => $cod], '', 1)) return;
+        self::inserir('legislacaoxassunto', ['CODLEGISLACAO' => $id, 'CODASSUNTO' => $cod]);
+    }
+
+    public static function desvincularAssunto(int $id, int $cod): void
+    {
+        self::excluir('legislacaoxassunto', ['CODLEGISLACAO' => $id, 'CODASSUNTO' => $cod]);
     }
 
     /** Leis que têm checklist (migração 392), para escolher de onde copiar: [{id, rotulo, codigo, qtd}], sem a própria lei. */
@@ -758,8 +807,8 @@ final class LegislacaoAssociacoes
     /** Copia para $destino as perguntas do checklist de $origem que ele ainda não tem. @return array{0:int,1:int} [copiadas, já existiam] */
     public static function copiarChecklist(int $destino, int $origem): array
     {
-        if ($destino === $origem) throw new InvalidArgumentException('Escolha outra lei.');
-        if (!self::lei($destino) || !self::lei($origem)) throw new RuntimeException('Legislação não encontrada.');
+        if ($destino === $origem) throw new InvalidArgumentException(LegislacaoTextos::t('erro.outra_lei'));
+        if (!self::lei($destino) || !self::lei($origem)) throw new RuntimeException(LegislacaoTextos::t('erro.lei_nao_encontrada'));
         $ja = [];
         for ($o = 0; ; $o += 1000) { $p = self::ler('legislacaoxpergunta', ['CODLEGISLACAO' => $destino], '', 1000, $o); foreach ($p as $r) $ja[(int)$r['CODPERGUNTA']] = true; if (count($p) < 1000) break; }
         $novas = []; $existiam = 0;
@@ -768,7 +817,7 @@ final class LegislacaoAssociacoes
             foreach ($p as $r) { $c = (int)$r['CODPERGUNTA']; if (isset($ja[$c])) $existiam++; else $novas[$c] = true; }
             if (count($p) < 1000) break;
         }
-        if (!$novas && !$existiam) throw new RuntimeException('A lei escolhida não tem checklist.');
+        if (!$novas && !$existiam) throw new RuntimeException(LegislacaoTextos::t('erro.sem_checklist'));
         foreach (array_keys($novas) as $c) self::inserir('legislacaoxpergunta', ['CODLEGISLACAO' => $destino, 'CODPERGUNTA' => $c]);
         return [count($novas), $existiam];
     }
@@ -848,10 +897,10 @@ final class LegislacaoAssociacoes
             if ($chave !== '' && !str_contains(self::chave($texto[$cod] . ' ' . $cod), $chave)) continue;
             $f = (int)$r['FAMILIA']; $a = (int)$r['ASSUNTO']; $g = (int)$r['TIPO_AMBITO'];
             $m = [];
-            if ($f) $m[] = $f . ' lei' . ($f === 1 ? '' : 's') . ' da família';
-            if ($a) $m[] = $a . ' do mesmo assunto';
-            if ($g) $m[] = $g . ' do mesmo tipo e âmbito';
-            $out[] = ['cod' => $cod, 'texto' => $texto[$cod], 'pontos' => 50 * $f + 10 * min($a, 20) + min($g, 50), 'motivo' => 'Usada em ' . implode(', ', $m)];
+            if ($f) $m[] = LegislacaoTextos::t('motivo.familia_n', ['n' => $f]);
+            if ($a) $m[] = LegislacaoTextos::t('motivo.assunto_n', ['n' => $a]);
+            if ($g) $m[] = LegislacaoTextos::t('motivo.tipo_ambito_n', ['n' => $g]);
+            $out[] = ['cod' => $cod, 'texto' => $texto[$cod], 'pontos' => 50 * $f + 10 * min($a, 20) + min($g, 50), 'motivo' => LegislacaoTextos::t('motivo.usada_em', ['n' => implode(', ', $m)])];
         }
         usort($out, static fn($x, $y) => [$y['pontos'], $x['texto']] <=> [$x['pontos'], $y['texto']]);
         return [array_slice($out, ($pagina - 1) * $porPagina, $porPagina), count($out)];
@@ -861,7 +910,7 @@ final class LegislacaoAssociacoes
     public static function infoPalavra(int $cod): array
     {
         $p = self::palavra($cod);
-        if (!$p) throw new RuntimeException('Palavra-chave não encontrada.');
+        if (!$p) throw new RuntimeException(LegislacaoTextos::t('erro.palavra_nao_encontrada'));
         return ['cod' => $cod, 'texto' => (string)($p['dscpalavrachave'] ?? ''), 'usos' => self::usosPalavra($cod)];
     }
 
@@ -873,7 +922,7 @@ final class LegislacaoAssociacoes
             $cod = (int)$r['codpalavrachave'];
             if (isset($lista[$cod])) continue;
             $p = self::palavra($cod);
-            $lista[$cod] = ['cod' => $cod, 'vinculo' => (int)$r['codlegislacaoxpalavrachave'], 'texto' => (string)($p['dscpalavrachave'] ?? '(palavra não encontrada no catálogo)'), 'usos' => self::usosPalavra($cod)];
+            $lista[$cod] = ['cod' => $cod, 'vinculo' => (int)$r['codlegislacaoxpalavrachave'], 'texto' => (string)($p['dscpalavrachave'] ?? LegislacaoTextos::t('texto.palavra_nao_encontrada')), 'usos' => self::usosPalavra($cod)];
         }
         $lista = array_values($lista);
         usort($lista, static fn($a, $b) => strnatcasecmp($a['texto'], $b['texto']));
@@ -883,16 +932,18 @@ final class LegislacaoAssociacoes
     public static function buscarPalavras(int $id, string $termo): array
     {
         $termo = trim($termo);
-        if (mb_strlen($termo) < 2) throw new InvalidArgumentException('Digite pelo menos 2 letras.');
+        if (mb_strlen($termo) < 2) throw new InvalidArgumentException(LegislacaoTextos::t('erro.busca_curta2'));
         $ja = array_fill_keys(array_column(self::palavrasDaLei($id), 'cod'), true);
         return array_map(static fn($p) => ['cod' => (int)$p['codpalavrachave'], 'texto' => (string)$p['dscpalavrachave'], 'vinculada' => isset($ja[(int)$p['codpalavrachave']])], self::lerUni('palavras_chaves', [], $termo, 50));
     }
 
-    public static function vincularPalavra(int $id, int $cod): void
+    /** Devolve false quando a palavra já estava vinculada (nada é gravado). */
+    public static function vincularPalavra(int $id, int $cod): bool
     {
-        if (!self::lei($id) || !self::palavra($cod)) throw new RuntimeException('Palavra-chave ou legislação não encontrada.');
-        if (self::ler('legislacaoxpalavraschave', ['codlegislacao' => $id, 'codpalavrachave' => $cod], '', 1)) return;
+        if (!self::lei($id) || !self::palavra($cod)) throw new RuntimeException(LegislacaoTextos::t('erro.palavra_ou_lei'));
+        if (self::ler('legislacaoxpalavraschave', ['codlegislacao' => $id, 'codpalavrachave' => $cod], '', 1)) return false;
         self::inserir('legislacaoxpalavraschave', ['codlegislacao' => $id, 'codpalavrachave' => $cod]);
+        return true;
     }
 
     public static function desvincularPalavra(int $id, int $cod): void
@@ -911,24 +962,31 @@ final class LegislacaoAssociacoes
     /** Cria no catálogo (ou reaproveita a existente igual) e vincula. */
     public static function novaPalavra(int $id, string $texto): int
     {
+        return self::novaPalavraDetalhe($id, $texto)['cod'];
+    }
+
+    /** Como novaPalavra, dizendo o que aconteceu: ['cod', 'criada' (entrou no catálogo), 'vinculada' (vínculo novo)]. */
+    public static function novaPalavraDetalhe(int $id, string $texto): array
+    {
         $texto = self::textoCatalogo($texto, 200, 'palavra-chave');
         $cod = self::palavraExistente($texto);
+        $criada = false;
         if ($cod < 1) {
             self::crudUni('CALL sp_crud_insert(?, ?)', ['palavras_chaves', json_encode(['dscpalavrachave' => $texto], JSON_UNESCAPED_UNICODE)]);
             $cod = self::palavraExistente($texto);
-            if ($cod < 1) throw new RuntimeException('A palavra-chave foi gravada, mas não foi possível vinculá-la. Busque e vincule.');
+            if ($cod < 1) throw new RuntimeException(LegislacaoTextos::t('erro.palavra_gravada_sem_vinculo'));
+            $criada = true;
         }
-        self::vincularPalavra($id, $cod);
-        return $cod;
+        return ['cod' => $cod, 'criada' => $criada, 'vinculada' => self::vincularPalavra($id, $cod)];
     }
 
     /** Muda o texto no catálogo único: vale para todas as leis (e licenças) que usam a palavra. */
     public static function editarPalavra(int $cod, string $texto): void
     {
         $texto = self::textoCatalogo($texto, 200, 'palavra-chave');
-        if (!self::palavra($cod)) throw new RuntimeException('Palavra-chave não encontrada.');
+        if (!self::palavra($cod)) throw new RuntimeException(LegislacaoTextos::t('erro.palavra_nao_encontrada'));
         $outra = self::palavraExistente($texto);
-        if ($outra > 0 && $outra !== $cod) throw new RuntimeException('Já existe essa palavra-chave no catálogo (código ' . $outra . ').');
+        if ($outra > 0 && $outra !== $cod) throw new RuntimeException(LegislacaoTextos::t('erro.palavra_existe', ['cod' => $outra]));
         self::crudUni('CALL sp_crud_update(?, ?, ?)', ['palavras_chaves', json_encode(['codpalavrachave' => $cod]), json_encode(['dscpalavrachave' => $texto], JSON_UNESCAPED_UNICODE)]);
     }
 
@@ -958,8 +1016,8 @@ final class LegislacaoAssociacoes
     private static function textoCatalogo(string $v, int $max, string $nome): string
     {
         $v = trim((string)preg_replace('/\s+/u', ' ', $v));
-        if (mb_strlen($v) < 2) throw new InvalidArgumentException('Digite o texto da ' . $nome . '.');
-        if (mb_strlen($v) > $max) throw new InvalidArgumentException('O texto da ' . $nome . ' passa de ' . $max . ' caracteres.');
+        if (mb_strlen($v) < 2) throw new InvalidArgumentException(LegislacaoTextos::t($nome === 'pergunta' ? 'erro.texto_vazio_pergunta' : 'erro.texto_vazio_palavra'));
+        if (mb_strlen($v) > $max) throw new InvalidArgumentException(LegislacaoTextos::t($nome === 'pergunta' ? 'erro.texto_longo_pergunta' : 'erro.texto_longo_palavra', ['max' => $max]));
         return $v;
     }
 
@@ -981,17 +1039,17 @@ final class LegislacaoAssociacoes
             if ($ajax) self::json(['ok' => false, 'message' => $msg], $http);
             http_response_code($http); header('Content-Type: text/html; charset=utf-8'); exit(self::h($msg));
         };
-        if (empty($_SESSION['autenticado'])) $negar(401, 'Sessão expirada. Entre de novo no portal.');
-        if (!UsuarioSessao::atualizar(self::empresa(), $_SESSION)) $negar(401, 'Sessão expirada. Entre de novo no portal.');
+        if (empty($_SESSION['autenticado'])) $negar(401, LegislacaoTextos::t('erro.sessao'));
+        if (!UsuarioSessao::atualizar(self::empresa(), $_SESSION)) $negar(401, LegislacaoTextos::t('erro.sessao'));
         $perm = self::permissao();
-        if (!$perm['ver']) $negar(403, 'Seu perfil não tem permissão para ver a Legislação.');
+        if (!$perm['ver']) $negar(403, LegislacaoTextos::t('erro.sem_permissao_ver'));
         $id = (int)($_POST['CODLEGISLACAO'] ?? $_GET['CODLEGISLACAO'] ?? 0);
         $lei = self::lei($id);
-        if (!$lei) $negar(404, 'Legislação não encontrada.');
+        if (!$lei) $negar(404, LegislacaoTextos::t('erro.lei_nao_encontrada'));
         self::csrf();
         if ($ajax && !in_array((string)($_POST['action'] ?? ''), ['estado', 'buscar', 'ld_listar'], true)) {
-            if (!$perm['editar']) $negar(403, 'Seu perfil não tem permissão para alterar a Legislação (a lista é a mesma para todas as empresas).');
-            if (!self::csrfValido($_POST['csrf'] ?? null)) $negar(400, 'A página expirou. Feche e abra de novo.');
+            if (!$perm['editar']) $negar(403, LegislacaoTextos::t('erro.sem_permissao_alterar'));
+            if (!self::csrfValido($_POST['csrf'] ?? null)) $negar(400, LegislacaoTextos::t('erro.pagina_expirada'));
         }
         session_write_close(); // a IA e a verificação de links demoram: não prende a sessão das outras telas
         return [$id, $perm, $lei];

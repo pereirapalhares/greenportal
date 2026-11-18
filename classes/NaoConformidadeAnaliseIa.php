@@ -15,6 +15,8 @@ require_once __DIR__ . '/DocumentAiQueueService.php';
  * sp_nc_plano_salvar, sp_nc_analise_salvar), tudo numa transação, e registra no histórico da NC.
  * Leitura por views (vw_nc_*), gravação por procedures (sp_nc_*).
  */
+require_once __DIR__ . '/NaoConformidadeTextos.php';
+
 final class NaoConformidadeAnaliseIa
 {
     public const PROMPT = 'NC_ANALISE_CAUSA';
@@ -22,6 +24,12 @@ final class NaoConformidadeAnaliseIa
     public const MAX_ACOES = 6;
     public const MAX_SEMELHANTES = 5;
     public const PRIORIDADES = ['Alta', 'Média', 'Baixa'];
+
+    /** Prioridade gravada (em português) => rótulo no idioma do usuário. */
+    public static function prioridadesRotulos(): array
+    {
+        return ['Alta' => NaoConformidadeTextos::t('prio.alta'), 'Média' => NaoConformidadeTextos::t('prio.media'), 'Baixa' => NaoConformidadeTextos::t('prio.baixa')];
+    }
     private const STOP = ['para', 'como', 'pela', 'pelo', 'pelas', 'pelos', 'com', 'sem', 'que', 'uma', 'umas', 'uns', 'dos', 'das', 'nos', 'nas', 'num', 'numa',
         'este', 'esta', 'esse', 'essa', 'isso', 'isto', 'aquele', 'aquela', 'onde', 'quando', 'qual', 'quais', 'sobre', 'entre', 'apos', 'após', 'ate', 'até',
         'foi', 'foram', 'ser', 'sendo', 'sido', 'esta', 'está', 'estava', 'estavam', 'tem', 'têm', 'tinha', 'havia', 'houve', 'mais', 'menos', 'muito', 'muita',
@@ -147,8 +155,9 @@ final class NaoConformidadeAnaliseIa
     public static function exigirSemPendente(PDO $pdo, int $codigo, int $uid, string $tipo): void
     {
         $p = self::situacao($pdo, $codigo, $uid, $tipo)['pendente'];
-        if ($p) throw new RuntimeException(($p['meu'] ? 'Você já pediu' : $p['usuario'] . ' já pediu') . ($tipo === 'EFICACIA' ? ' o parecer da IA sobre a eficácia' : ' uma análise da IA')
-            . ' para esta NC em ' . date('d/m/Y H:i', strtotime($p['criado_em']) ?: time()) . '. Aguarde a resposta nos Alertas para pedir de novo.');
+        if ($p) throw new RuntimeException(NaoConformidadeTextos::t($p['meu'] ? 'ia.ja_pediu_voce' : 'ia.ja_pediu_outro', ['usuario' => $p['usuario'],
+            'oque' => NaoConformidadeTextos::t($tipo === 'EFICACIA' ? 'ia.oque_eficacia' : 'ia.oque_analise'),
+            'data' => date(IdiomaService::idioma() === 'en' ? 'm/d/Y H:i' : 'd/m/Y H:i', strtotime($p['criado_em']) ?: time())]));
     }
 
     /** Põe na fila de IA (serviço "ia" do Agendador) e registra a análise (nc_ia_analises). $tipoJob: NC_ANALISE_CAUSA | NC_EFICACIA. */
@@ -181,11 +190,11 @@ final class NaoConformidadeAnaliseIa
     {
         $s = $pdo->prepare('SELECT * FROM vw_nc_ia_analises WHERE CODANALISE = ? AND CODOCORRENCIA = ? AND CODUSUARIO = ? AND TIPO = ?');
         $s->execute([$codanalise, $codigo, $uid, $tipo]); $a = $s->fetch(PDO::FETCH_ASSOC) ?: null; $s->closeCursor();
-        if (!$a) throw new RuntimeException('Resposta da IA não encontrada.');
+        if (!$a) throw new RuntimeException(NaoConformidadeTextos::t('ia.resp_nao_encontrada'));
         $base = ['codanalise' => $codanalise, 'semelhantes' => json_decode((string)$a['SEMELHANTES'], true) ?: [], 'criado_em' => (string)$a['CRIADO_EM']];
-        if (in_array($a['STATUS'], ['APLICADA', 'DESCARTADA', 'SUBSTITUIDA'], true)) throw new RuntimeException('Esta resposta da IA já foi encerrada. Peça uma nova.');
+        if (in_array($a['STATUS'], ['APLICADA', 'DESCARTADA', 'SUBSTITUIDA'], true)) throw new RuntimeException(NaoConformidadeTextos::t('ia.resp_encerrada'));
         if ($a['STATUS'] === 'ERRO') return $base + ['status' => 'ERRO', 'erro' => (string)$a['ERRO']];
-        if ($a['STATUS'] === 'EXTRAINDO') return $base + ['status' => 'NA_FILA', 'job_status' => 'lendo os arquivos de evidência'];
+        if ($a['STATUS'] === 'EXTRAINDO') return $base + ['status' => 'NA_FILA', 'job_status' => NaoConformidadeTextos::t('ia.lendo_arquivos')];
         if ($a['STATUS'] === 'SUGERIDA' && (string)$a['SUGESTAO'] !== '') return $base + ['status' => 'SUGERIDA', 'bruto' => json_decode((string)$a['SUGESTAO'], true) ?: []];
         $job = (string)($a['JOB_STATUS'] ?? '');
         if ($job === 'ERRO' || $job === 'CANCELADA' || $job === '') {
@@ -198,7 +207,7 @@ final class NaoConformidadeAnaliseIa
         $bruto = is_array($r['sugestao'] ?? null) ? $r['sugestao'] : null;
         if ($bruto === null) {
             NaoConformidadeWorkflow::chamar($pdo, 'sp_nc_ia_analise_resultado', [$codanalise, $uid, null, 'A IA devolveu um resultado inválido.']);
-            return $base + ['status' => 'ERRO', 'erro' => 'A IA devolveu um resultado inválido. Peça de novo.'];
+            return $base + ['status' => 'ERRO', 'erro' => NaoConformidadeTextos::t('ia.invalida_peca')];
         }
         NaoConformidadeWorkflow::chamar($pdo, 'sp_nc_ia_analise_resultado', [$codanalise, $uid, json_encode($bruto, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE), null]);
         return $base + ['status' => 'SUGERIDA', 'bruto' => $bruto];
@@ -237,7 +246,7 @@ final class NaoConformidadeAnaliseIa
             $conf = (float)($c['confianca'] ?? 0); if ($conf > 0 && $conf <= 1) $conf *= 100;
             $causas[] = ['descricao' => $d, 'tipo_causa' => $tipoNome, 'codtipocausa' => $codTipo, 'justificativa' => $txt($c['justificativa'] ?? '', 600),
                 'confianca' => (int)max(0, min(100, round($conf))), 'base' => $lista($c['base'] ?? [], 5, 40)];
-            if ($tipoNome !== '' && $codTipo === '') $alertas[] = 'Tipo de causa sugerido "' . $tipoNome . '" não está no cadastro: escolha um tipo na causa ' . count($causas) . '.';
+            if ($tipoNome !== '' && $codTipo === '') $alertas[] = NaoConformidadeTextos::t('ia.tipo_fora', ['tipo' => $tipoNome, 'n' => count($causas)]);
         }
         $acoes = [];
         $duplicadas = array_map(static fn($c) => self::chave((string)$c['DSCAUSA']), $causasAtuais);
@@ -253,8 +262,8 @@ final class NaoConformidadeAnaliseIa
                 'codusuario' => $resp !== '' ? ($nomesUsuarios[self::chave($resp)] ?? '') : '', 'recursos' => $txt($a['recursos'] ?? '', 1000), 'base' => $lista($a['base'] ?? [], 5, 40)];
         }
         foreach ($causas as $i => $c) {
-            if (in_array(self::chave($c['descricao']), $duplicadas, true)) $alertas[] = 'A causa ' . ($i + 1) . ' já está cadastrada nesta ocorrência.';
-            if (!array_filter($acoes, static fn($a) => $a['causa'] === $i)) $alertas[] = 'A IA não sugeriu ação para a causa ' . ($i + 1) . ': para enviar à eficácia, cada causa precisa de pelo menos 1 ação.';
+            if (in_array(self::chave($c['descricao']), $duplicadas, true)) $alertas[] = NaoConformidadeTextos::t('ia.causa_ja', ['n' => $i + 1]);
+            if (!array_filter($acoes, static fn($a) => $a['causa'] === $i)) $alertas[] = NaoConformidadeTextos::t('ia.causa_sem_acao', ['n' => $i + 1]);
         }
         return ['resumo_problema' => $txt($s['resumo_problema'] ?? '', 600), 'cinco_porques' => $lista($s['cinco_porques'] ?? [], 5, 300),
             'causas' => $causas, 'acoes' => $acoes, 'analise_da_causa' => $txt($s['analise_da_causa'] ?? '', 4000), 'alertas' => array_values(array_unique($alertas))];
@@ -280,8 +289,8 @@ final class NaoConformidadeAnaliseIa
         $analise = is_array($dados['analise'] ?? null) ? $dados['analise'] : [];
         $modo = in_array($analise['modo'] ?? '', ['acrescentar', 'substituir'], true) ? (string)$analise['modo'] : 'manter';
         $textoAnalise = trim((string)($analise['texto'] ?? ''));
-        if (!$causasIn && !$acoesIn && ($modo === 'manter' || $textoAnalise === '')) throw new RuntimeException('Marque pelo menos uma causa, uma ação ou o texto da análise para aplicar.');
-        if (count($causasIn) > self::MAX_CAUSAS || count($acoesIn) > self::MAX_ACOES) throw new RuntimeException('Sugestão com itens demais.');
+        if (!$causasIn && !$acoesIn && ($modo === 'manter' || $textoAnalise === '')) throw new RuntimeException(NaoConformidadeTextos::t('ia.marque_algo'));
+        if (count($causasIn) > self::MAX_CAUSAS || count($acoesIn) > self::MAX_ACOES) throw new RuntimeException(NaoConformidadeTextos::t('ia.itens_demais'));
         $existentes = array_map('intval', array_column($causasAtuais, 'CODCAUSA'));
         $ad = $admin ? 1 : 0;
         $feito = ['causas' => [], 'acoes' => [], 'analise' => $modo];
@@ -290,23 +299,23 @@ final class NaoConformidadeAnaliseIa
             $ref = [];
             foreach ($causasIn as $i => $c) {
                 $d = trim((string)($c['DSCAUSA'] ?? ''));
-                if ($d === '') throw new RuntimeException('Descreva a causa ' . ($i + 1) . ' ou desmarque-a.');
+                if ($d === '') throw new RuntimeException(NaoConformidadeTextos::t('ia.descreva_causa', ['n' => $i + 1]));
                 $tipo = (string)($c['CODTIPOCAUSA'] ?? '');
-                if ($tipo !== '' && !isset($tiposCausa[$tipo])) throw new RuntimeException('Tipo de causa inválido na causa ' . ($i + 1) . '.');
+                if ($tipo !== '' && !isset($tiposCausa[$tipo])) throw new RuntimeException(NaoConformidadeTextos::t('ia.tipo_invalido', ['n' => $i + 1]));
                 $r = NaoConformidadeWorkflow::chamar($pdo, 'sp_nc_causa_salvar', [null, $codigo, (int)$tipo, mb_substr($d, 0, 500), $uid, $ad]);
                 $ref[(string)($c['ref'] ?? ('n' . $i))] = (int)($r['CODCAUSA'] ?? 0);
                 $feito['causas'][] = ['CODCAUSA' => (int)($r['CODCAUSA'] ?? 0), 'DSCAUSA' => mb_substr($d, 0, 500)];
             }
             foreach ($acoesIn as $i => $a) {
                 $t = trim((string)($a['ACAO'] ?? ''));
-                if ($t === '') throw new RuntimeException('Descreva a ação ' . ($i + 1) . ' ou desmarque-a.');
+                if ($t === '') throw new RuntimeException(NaoConformidadeTextos::t('ia.descreva_acao', ['n' => $i + 1]));
                 $causa = (string)($a['causa'] ?? '');
                 $codCausa = $ref[$causa] ?? (ctype_digit($causa) && in_array((int)$causa, $existentes, true) ? (int)$causa : 0);
-                if ($codCausa < 1) throw new RuntimeException('Escolha a causa da ação ' . ($i + 1) . ' (a causa sugerida dela não foi marcada).');
+                if ($codCausa < 1) throw new RuntimeException(NaoConformidadeTextos::t('ia.escolha_causa', ['n' => $i + 1]));
                 $resp = (string)(int)($a['CODUSUARIO'] ?? 0);
-                if ($resp !== '0' && !isset($responsaveis[$resp])) throw new RuntimeException('Responsável inválido na ação ' . ($i + 1) . '.');
+                if ($resp !== '0' && !isset($responsaveis[$resp])) throw new RuntimeException(NaoConformidadeTextos::t('ia.resp_invalido', ['n' => $i + 1]));
                 $ini = self::data($a['DATAINICIAL'] ?? ''); $fim = self::data($a['DATAFINAL'] ?? '');
-                if ($ini && $fim && $fim < $ini) throw new RuntimeException('Na ação ' . ($i + 1) . ' o fim é anterior ao início.');
+                if ($ini && $fim && $fim < $ini) throw new RuntimeException(NaoConformidadeTextos::t('ia.fim_antes', ['n' => $i + 1]));
                 $plano = ['CODCAUSA' => $codCausa, 'ACAO' => $t, 'PRIORIDADE' => mb_substr(trim((string)($a['PRIORIDADE'] ?? '')), 0, 500), 'CODUSUARIO' => $resp === '0' ? '' : $resp,
                     'DATAINICIAL' => $ini, 'DATAFINAL' => $fim, 'RECURSOS' => trim((string)($a['RECURSOS'] ?? '')), 'STATUS' => '0', 'OBS' => 'Sugerida pela IA e revisada pelo responsável.'];
                 $r = NaoConformidadeWorkflow::chamar($pdo, 'sp_nc_plano_salvar', [null, $codigo, json_encode($plano, JSON_UNESCAPED_UNICODE), $uid, $ad]);
@@ -324,7 +333,10 @@ final class NaoConformidadeAnaliseIa
             if ($pdo->inTransaction()) $pdo->rollBack();
             throw $x;
         }
-        return $feito + ['resumo' => $resumo];
+        // $resumo fica em português no histórico; a mensagem da tela sai no idioma do usuário
+        $resumoTela = NaoConformidadeTextos::t('ia.resumo', ['causas' => count($feito['causas']), 'acoes' => count($feito['acoes'])])
+            . ($feito['analise'] === 'manter' ? '' : '; ' . NaoConformidadeTextos::t($feito['analise'] === 'acrescentar' ? 'ia.resumo_complementado' : 'ia.resumo_substituido'));
+        return $feito + ['resumo' => $resumoTela];
     }
 
     public static function descartar(PDO $pdo, int $uid, int $codigo, int $codanalise): void

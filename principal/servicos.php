@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once dirname(__DIR__) . '/classes/AdministracaoTextos.php';
 session_start();
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
@@ -16,15 +17,15 @@ require_once dirname(__DIR__) . '/classes/GreenPortalDatabase.php';
  * Antes da 353 a tela listava as ~20 tarefas soltas (servicos_task_status); elas foram desativadas pelo orquestrador.
  */
 
-if (empty($_SESSION['autenticado'])) { http_response_code(401); exit('Sessão expirada.'); }
+if (empty($_SESSION['autenticado'])) { http_response_code(401); exit(adm_t('Sessão expirada.')); }
 
 $cfg = GreenPortalDatabase::env();
 $tenantDb = preg_replace('/[^a-zA-Z0-9_]/', '', (string)($_SESSION['tenant']['banco_dados'] ?? ''));
 $pdo = GreenPortalDatabase::connect($cfg, $tenantDb, 'GPT');
-if (!UsuarioSessao::atualizar($pdo, $_SESSION)) { http_response_code(401); exit('Sessão expirada.'); }
+if (!UsuarioSessao::atualizar($pdo, $_SESSION)) { http_response_code(401); exit(adm_t('Sessão expirada.')); }
 
 $profile = strtoupper((string)($_SESSION['usuario']['codigo_perfil'] ?? ''));
-if (!in_array($profile, ['ADMINISTRADOR', 'ADM_DA_EMPRESA'], true)) { http_response_code(403); exit('Perfil sem permissão para acessar Serviços.'); }
+if (!in_array($profile, ['ADMINISTRADOR', 'ADM_DA_EMPRESA'], true)) { http_response_code(403); exit(adm_t('Perfil sem permissão para acessar Serviços.')); }
 $isPlatformAdmin = $profile === 'ADMINISTRADOR';
 $central = GreenPortalDatabase::connect($cfg, preg_replace('/[^a-zA-Z0-9_]/', '', (string)($cfg['GUNIVERSAL_DB_DATABASE'] ?? 'guniversal_dbp')), 'GUNIVERSAL');
 date_default_timezone_set('America/Sao_Paulo');
@@ -53,17 +54,17 @@ if (($_GET['acao'] ?? '') === 'historico') {
     $codigo = strtoupper(preg_replace('/[^A-Za-z0-9_]/', '', (string)($_GET['servico'] ?? '')));
     $limite = max(1, min(500, (int)($_GET['limite'] ?? 100)));
     try { $responder(['ok' => true, 'linhas' => $call('CALL sp_orq_execucoes_listar(?, ?)', [$codigo, $limite])]); }
-    catch (Throwable $e) { $responder(['ok' => false, 'mensagem' => 'Não foi possível ler o histórico: ' . $e->getMessage()], 500); }
+    catch (Throwable $e) { $responder(['ok' => false, 'mensagem' => adm_t('Não foi possível ler o histórico: ') . $e->getMessage()], 500); }
 }
 
 // ------------------------------------------------------------------ alterar cadastro / liberar suspensão (só ADMINISTRADOR)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!$isPlatformAdmin) $responder(['ok' => false, 'mensagem' => 'Só o ADMINISTRADOR altera os serviços.'], 403);
-    if (!hash_equals($csrf, (string)($_POST['csrf'] ?? ''))) $responder(['ok' => false, 'mensagem' => 'Sessão da tela expirou. Atualize a página e tente de novo.'], 400);
+    if (!$isPlatformAdmin) $responder(['ok' => false, 'mensagem' => adm_t('Só o ADMINISTRADOR altera os serviços.')], 403);
+    if (!hash_equals($csrf, (string)($_POST['csrf'] ?? ''))) $responder(['ok' => false, 'mensagem' => adm_t('Sessão da tela expirou. Atualize a página e tente de novo.')], 400);
     $acao = (string)($_POST['acao'] ?? '');
     $codigo = strtoupper(preg_replace('/[^A-Za-z0-9_]/', '', (string)($_POST['servico'] ?? '')));
     $usuario = (int)($_SESSION['usuario']['codusuario'] ?? 0);
-    if ($codigo === '' || !in_array($acao, ['salvar', 'liberar'], true)) $responder(['ok' => false, 'mensagem' => 'Pedido inválido.'], 400);
+    if ($codigo === '' || !in_array($acao, ['salvar', 'liberar'], true)) $responder(['ok' => false, 'mensagem' => adm_t('Pedido inválido.')], 400);
     $detalhe = [];
     try {
         if ($acao === 'salvar') {
@@ -75,10 +76,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
             $linha = $call('CALL sp_orq_servico_alterar(?, ?, ?, ?, ?, ?, ?, ?, ?)', [$codigo, $detalhe['ativo'], $detalhe['trilha'], $detalhe['ordem'],
                 $detalhe['intervalo_min'], $detalhe['horario'], $dias, $detalhe['limite_seg'], $usuario])[0] ?? null;
-            $mensagem = 'Cadastro do serviço salvo. A suspensão e as falhas seguidas foram zeradas.';
+            $mensagem = adm_t('Cadastro do serviço salvo. A suspensão e as falhas seguidas foram zeradas.');
         } else {
             $linha = $call('CALL sp_orq_servico_liberar(?, ?)', [$codigo, $usuario])[0] ?? null;
-            $mensagem = 'Suspensão retirada: o serviço volta a rodar no próximo ciclo da trilha.';
+            $mensagem = adm_t('Suspensão retirada: o serviço volta a rodar no próximo ciclo da trilha.');
         }
         $ok = true;
     } catch (PDOException $e) {
@@ -103,7 +104,7 @@ try {
     $problemas = $call('CALL sp_orq_saude()');
     $servicos = $call('CALL sp_orq_situacao()');
 } catch (Throwable $e) {
-    $erroOrq = 'O orquestrador não está instalado neste banco (migrações 352 e 353): ' . $e->getMessage();
+    $erroOrq = adm_t('O orquestrador não está instalado neste banco (migrações 352 e 353): ') . $e->getMessage();
 }
 $trilhaPorNumero = [];
 foreach ($trilhas as $t) $trilhaPorNumero[(int)$t['trilha']] = $t;
@@ -119,14 +120,14 @@ try {
 
 // ------------------------------------------------------------------ formatação
 $agora = new DateTimeImmutable('now');
-$diasNome = [1 => 'seg', 2 => 'ter', 3 => 'qua', 4 => 'qui', 5 => 'sex', 6 => 'sáb', 7 => 'dom'];
+$diasNome = [1 => 'seg', 2 => 'ter', 3 => 'qua', 4 => 'qui', 5 => 'sex', 6 => adm_t('sáb'), 7 => 'dom'];
 $ha = static function (mixed $seg): string {
-    if ($seg === null || $seg === '') return 'nunca';
+    if ($seg === null || $seg === '') return adm_t('nunca');
     $s = max(0, (int)$seg);
-    if ($s < 60) return "há {$s} s";
-    if ($s < 3600) return 'há ' . intdiv($s, 60) . ' min';
-    if ($s < 172800) return 'há ' . intdiv($s, 3600) . ' h' . ($s < 36000 && $s % 3600 >= 60 ? ' ' . intdiv($s % 3600, 60) . ' min' : '');
-    return 'há ' . intdiv($s, 86400) . ' dias';
+    if ($s < 60) return adm_t('há {t}', ['t' => $s . ' s']);
+    if ($s < 3600) return adm_t('há {t}', ['t' => intdiv($s, 60) . ' min']);
+    if ($s < 172800) return adm_t('há {t}', ['t' => intdiv($s, 3600) . ' h' . ($s < 36000 && $s % 3600 >= 60 ? ' ' . intdiv($s % 3600, 60) . ' min' : '')]);
+    return adm_t('há {t} dias', ['t' => intdiv($s, 86400)]);
 };
 $duracao = static function (mixed $seg): string {
     if ($seg === null || $seg === '') return '-';
@@ -143,18 +144,18 @@ $dataCurta = static function (mixed $v) use ($agora): string {
 $frequencia = static function (array $s) use ($diasNome): string {
     $dias = array_filter(array_map('intval', explode(',', (string)($s['dias_semana'] ?? ''))));
     $txtDias = $dias ? ' (' . implode(', ', array_map(static fn($d) => $diasNome[$d] ?? $d, $dias)) . ')' : '';
-    if (!empty($s['horario'])) return ($dias ? 'Às ' : 'Diário às ') . $s['horario'] . $txtDias;
+    if (!empty($s['horario'])) return ($dias ? adm_t('Às ') : adm_t('Diário às ')) . $s['horario'] . $txtDias;
     $m = (int)$s['intervalo_min'];
-    $base = $m < 60 || $m % 60 ? "A cada {$m} min" : 'A cada ' . ($m / 60) . ' h';
+    $base = adm_t('A cada {t}', ['t' => $m < 60 || $m % 60 ? $m . ' min' : ($m / 60) . ' h']);
     return $base . $txtDias;
 };
 // Próxima execução prevista, pela mesma regra de sp_orq_devidos (horário fixo: uma vez por dia, a partir do horário)
 $proxima = static function (array $s, ?array $t) use ($agora): array {
     if ((int)$s['ativo'] !== 1) return ['Desligado', 'text-muted'];
-    if ($t && (int)$t['ativo'] !== 1) return ['Trilha desligada', 'text-danger'];
-    if (!empty($s['suspenso_ate']) && new DateTimeImmutable((string)$s['suspenso_ate']) > $agora) return ['Suspenso até ' . (new DateTimeImmutable((string)$s['suspenso_ate']))->format('H:i'), 'text-danger'];
-    $sim = $t && $t['modo'] !== 'EXECUTAR' ? ' (só simula)' : '';
-    if (!empty($s['codexecucao_atual'])) return ['Executando agora', 'text-primary'];
+    if ($t && (int)$t['ativo'] !== 1) return [adm_t('Trilha desligada'), 'text-danger'];
+    if (!empty($s['suspenso_ate']) && new DateTimeImmutable((string)$s['suspenso_ate']) > $agora) return [adm_t('Suspenso até ') . (new DateTimeImmutable((string)$s['suspenso_ate']))->format('H:i'), 'text-danger'];
+    $sim = $t && $t['modo'] !== 'EXECUTAR' ? adm_t(' (só simula)') : '';
+    if (!empty($s['codexecucao_atual'])) return [adm_t('Executando agora'), 'text-primary'];
     $dias = array_filter(array_map('intval', explode(',', (string)($s['dias_semana'] ?? ''))));
     if (!empty($s['horario'])) {
         $ultima = !empty($s['ultima_inicio']) ? new DateTimeImmutable((string)$s['ultima_inicio']) : null;
@@ -164,43 +165,43 @@ $proxima = static function (array $s, ?array $t) use ($agora): array {
             $quando = new DateTimeImmutable($dia->format('Y-m-d') . ' ' . $s['horario'] . ':00');
             if ($i === 0) {
                 if ($ultima && $ultima->format('Y-m-d') === $agora->format('Y-m-d')) continue;
-                if ($agora >= $quando) return ['No próximo ciclo' . $sim, ''];
+                if ($agora >= $quando) return [adm_t('No próximo ciclo') . $sim, ''];
             }
-            return [($i === 0 ? 'Hoje' : ($i === 1 ? 'Amanhã' : $quando->format('d/m'))) . ' às ' . $quando->format('H:i') . $sim, ''];
+            return [($i === 0 ? 'Hoje' : ($i === 1 ? adm_t('Amanhã') : $quando->format('d/m'))) . adm_t(' às ') . $quando->format('H:i') . $sim, ''];
         }
         return ['-', 'text-muted'];
     }
-    if (empty($s['ultima_inicio'])) return ['No próximo ciclo' . $sim, ''];
+    if (empty($s['ultima_inicio'])) return [adm_t('No próximo ciclo') . $sim, ''];
     $quando = (new DateTimeImmutable((string)$s['ultima_inicio']))->modify('+' . (int)$s['intervalo_min'] . ' minutes');
-    return [$quando <= $agora ? 'No próximo ciclo' . $sim : ($quando->format('Y-m-d') === $agora->format('Y-m-d') ? $quando->format('H:i') : $quando->format('d/m H:i')) . $sim, ''];
+    return [$quando <= $agora ? adm_t('No próximo ciclo') . $sim : ($quando->format('Y-m-d') === $agora->format('Y-m-d') ? $quando->format('H:i') : $quando->format('d/m H:i')) . $sim, ''];
 };
 $classeStatus = static fn(?string $st): string => match ((string)$st) {
     'CONCLUIDA' => 'text-bg-success', 'EXECUTANDO' => 'text-bg-primary', 'SIMULADA' => 'text-bg-light border',
     'ERRO', 'TEMPO_ESGOTADO' => 'text-bg-danger', 'ABANDONADA' => 'text-bg-warning', default => 'text-bg-secondary',
 };
 $sinal = static function (?array $t) use ($ha): array {
-    if (!$t || $t['batimento_em'] === null) return ['nunca', 'text-bg-danger'];
+    if (!$t || $t['batimento_em'] === null) return [adm_t('nunca'), 'text-bg-danger'];
     $s = (int)$t['segundos_sem_sinal'];
     return [$ha($s), $s > 900 ? 'text-bg-danger' : ($s > 180 ? 'text-bg-warning' : 'text-bg-success')];
 };
 $tarefaTxt = static function (?array $t) use ($ha): array {
-    if (!$t || empty($t['tarefa_coletada_em'])) return ['Aguardando coleta', 'text-bg-secondary', ''];
+    if (!$t || empty($t['tarefa_coletada_em'])) return [adm_t('Aguardando coleta'), 'text-bg-secondary', ''];
     $estado = (string)$t['tarefa_estado'];
     $cl = match ($estado) { 'READY', 'RUNNING', 'QUEUED' => 'text-bg-success', 'DISABLED', 'NAO_INSTALADO' => 'text-bg-danger', default => 'text-bg-warning' };
     $res = $t['tarefa_resultado'] === null ? '' : ' · resultado ' . $t['tarefa_resultado'];
-    $nomes = ['READY' => 'Pronta', 'RUNNING' => 'Rodando', 'QUEUED' => 'Na fila', 'DISABLED' => 'Desativada', 'NAO_INSTALADO' => 'Não encontrada'];
-    return [($nomes[$estado] ?? $estado) . $res, $cl, 'coletado ' . $ha($t['segundos_desde_coleta'] ?? null)];
+    $nomes = ['READY' => adm_t('Pronta'), 'RUNNING' => adm_t('Rodando'), 'QUEUED' => adm_t('Na fila'), 'DISABLED' => adm_t('Desativada'), 'NAO_INSTALADO' => adm_t('Não encontrada')];
+    return [($nomes[$estado] ?? $estado) . $res, $cl, adm_t('coletado {t}', ['t' => $ha($t['segundos_desde_coleta'] ?? null)])];
 };
-$nomeTrilha = static fn(int $n, ?array $t): string => "Trilha {$n}" . ($t ? ' — ' . $t['nome'] : '');
+$nomeTrilha = static fn(int $n, ?array $t): string => adm_t('Trilha {n}', ['n' => $n]) . ($t ? ' — ' . adm_t((string)$t['nome']) : '');
 $fila = static function (string $codigo) use ($filas): string {
     $partes = [];
     if (isset($filas[$codigo])) {
         $f = $filas[$codigo];
-        $partes[] = "Pendentes {$f['pendentes']} · Processando {$f['processando']} · Erros {$f['erros']}";
+        $partes[] = adm_t('Pendentes {p} · Processando {r} · Erros {e}', ['p' => $f['pendentes'], 'r' => $f['processando'], 'e' => $f['erros']]);
     }
     if ($codigo === 'EXPORTACAO_GRID' && isset($filas['EXPORTACAO_GRID_PLANILHAS'])) {
         $p = $filas['EXPORTACAO_GRID_PLANILHAS'];
-        $partes[] = 'Planilhas (cache): ' . (int)($p['total'] ?? 0) . ' · erros ' . (int)($p['erros'] ?? 0);
+        $partes[] = adm_t('Planilhas (cache): {t} · erros {e}', ['t' => (int)($p['total'] ?? 0), 'e' => (int)($p['erros'] ?? 0)]);
     }
     return implode("\n", $partes);
 };
@@ -232,11 +233,11 @@ ksort($grupos);
 <section class="setup-fragment menu-grid-fragment grid-ready services-fragment" data-services-page data-url="<?= $html($selfUrl) ?>" data-csrf="<?= $html($csrf) ?>" data-platform-admin="<?= $isPlatformAdmin ? '1' : '0' ?>">
     <div class="crud-toolbar menu-grid-toolbar">
         <div class="crud-actions crud-actions-standard">
-            <button type="button" class="btn btn-sm btn-outline-secondary grid-crud-button" data-services-refresh title="Atualizar" aria-label="Atualizar"><i class="bi bi-arrow-clockwise"></i></button>
-            <button type="button" class="btn btn-sm btn-outline-secondary grid-crud-button" data-historico-todos title="Últimas execuções de todos os serviços" aria-label="Últimas execuções de todos os serviços"><i class="bi bi-clock-history"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-secondary grid-crud-button" data-services-refresh title="<?= adm_a('Atualizar') ?>" aria-label="<?= adm_a('Atualizar') ?>"><i class="bi bi-arrow-clockwise"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-secondary grid-crud-button" data-historico-todos title="<?= adm_a('Últimas execuções de todos os serviços') ?>" aria-label="<?= adm_a('Últimas execuções de todos os serviços') ?>"><i class="bi bi-clock-history"></i></button>
             <?php $gpAjuda = class_exists('IdiomaService') ? IdiomaService::t('comum.botao.ajuda', ['pt' => 'Ajuda', 'en' => 'Help', 'es' => 'Ayuda']) : 'Ajuda'; ?><button class="btn btn-sm btn-outline-info grid-crud-button" type="button" data-open-transacao-ajuda data-help-transaction="servicos" title="<?= $html($gpAjuda) ?>" aria-label="<?= $html($gpAjuda) ?>"><i class="bi bi-question-circle"></i></button><script src="../assets/js/ajuda-transacao.js?v=1"></script>
         </div>
-        <div class="crud-search"><i class="bi bi-search"></i><input type="search" data-service-search placeholder="Buscar no grid" aria-label="Buscar no grid"></div>
+        <div class="crud-search"><i class="bi bi-search"></i><input type="search" data-service-search placeholder="<?= adm_a('Buscar no grid') ?>" aria-label="<?= adm_a('Buscar no grid') ?>"></div>
     </div>
 
     <?php if ($erroOrq !== ''): ?>
@@ -245,7 +246,7 @@ ksort($grupos);
 
     <?php if ($problemas): $soAviso = !array_filter($problemas, static fn($p) => $p['gravidade'] === 'ERRO'); ?>
         <div class="alert alert-light border orq-problemas <?= $soAviso ? 'so-aviso' : '' ?> mb-3">
-            <strong><i class="bi bi-exclamation-octagon me-1 <?= $soAviso ? 'text-warning' : 'text-danger' ?>"></i><?= count($problemas) ?> problema(s) nos serviços agora</strong>
+            <strong><i class="bi bi-exclamation-octagon me-1 <?= $soAviso ? 'text-warning' : 'text-danger' ?>"></i><?= count($problemas) ?> <?= adm_h('problema(s) nos serviços agora') ?></strong>
             <ul class="mb-0 mt-2 ps-3">
                 <?php foreach ($problemas as $p): ?>
                     <li><span class="badge <?= $p['gravidade'] === 'ERRO' ? 'text-bg-danger' : 'text-bg-warning' ?> me-1"><?= $html($p['gravidade']) ?></span><strong><?= $html($p['titulo']) ?>.</strong> <span class="text-body-secondary"><?= $html($p['mensagem']) ?></span></li>
@@ -253,7 +254,7 @@ ksort($grupos);
             </ul>
         </div>
     <?php elseif ($erroOrq === ''): ?>
-        <div class="alert alert-light border mb-3"><i class="bi bi-check-circle text-success me-2"></i>Nenhum problema: as trilhas estão rodando e nenhum serviço ou empresa está suspenso.</div>
+        <div class="alert alert-light border mb-3"><i class="bi bi-check-circle text-success me-2"></i><?= adm_h('Nenhum problema: as trilhas estão rodando e nenhum serviço ou empresa está suspenso.') ?></div>
     <?php endif; ?>
 
     <?php if ($trilhas): ?>
@@ -263,42 +264,42 @@ ksort($grupos);
                 <h3><?= $html($nomeTrilha($n, $t)) ?></h3>
                 <div class="mb-2">
                     <span class="badge <?= $t['modo'] === 'EXECUTAR' ? 'text-bg-success' : 'text-bg-warning' ?>"><?= $html($t['modo']) ?></span>
-                    <?php if ((int)$t['ativo'] !== 1): ?><span class="badge text-bg-danger">Desligada</span><?php endif; ?>
+                    <?php if ((int)$t['ativo'] !== 1): ?><span class="badge text-bg-danger"><?= adm_h('Desligada') ?></span><?php endif; ?>
                 </div>
                 <dl>
-                    <dt>Sinal de vida</dt><dd><span class="badge <?= $sCl ?>"><?= $html($sTxt) ?></span></dd>
-                    <dt>Rodando agora</dt><dd><?= $html($t['servico_atual'] ?: '—') ?></dd>
-                    <dt>Último ciclo</dt><dd><?php if (!$t['ciclo_inicio']): ?>—<?php else: ?><?= $html($dataCurta($t['ciclo_inicio'])) ?><?= $t['ciclo_fim'] && $t['ciclo_fim'] >= $t['ciclo_inicio'] ? ' → ' . $html($dataCurta($t['ciclo_fim'])) : ' (em andamento)' ?><?php endif; ?></dd>
-                    <dt>Tarefa do Windows</dt><dd><span class="badge <?= $tCl ?>"><?= $html($tTxt) ?></span> <small class="text-muted"><?= $html($tCol) ?></small></dd>
-                    <dt>Serviços</dt><dd><?= (int)$t['servicos_ligados'] ?> ligados<?= (int)$t['servicos_suspensos'] ? ' · <span class="text-danger">' . (int)$t['servicos_suspensos'] . ' suspenso(s)</span>' : '' ?></dd>
-                    <dt>Falhas em 24 h</dt><dd class="<?= (int)$t['falhas_24h'] ? 'text-danger' : '' ?>"><?= (int)$t['falhas_24h'] ?></dd>
+                    <dt><?= adm_h('Sinal de vida') ?></dt><dd><span class="badge <?= $sCl ?>"><?= $html($sTxt) ?></span></dd>
+                    <dt><?= adm_h('Rodando agora') ?></dt><dd><?= $html($t['servico_atual'] ?: '—') ?></dd>
+                    <dt><?= adm_h('Último ciclo') ?></dt><dd><?php if (!$t['ciclo_inicio']): ?>—<?php else: ?><?= $html($dataCurta($t['ciclo_inicio'])) ?><?= $t['ciclo_fim'] && $t['ciclo_fim'] >= $t['ciclo_inicio'] ? ' → ' . $html($dataCurta($t['ciclo_fim'])) : adm_t(' (em andamento)') ?><?php endif; ?></dd>
+                    <dt><?= adm_h('Tarefa do Windows') ?></dt><dd><span class="badge <?= $tCl ?>"><?= $html($tTxt) ?></span> <small class="text-muted"><?= $html($tCol) ?></small></dd>
+                    <dt><?= adm_h('Serviços') ?></dt><dd><?= $html(adm_t('{n} ligados', ['n' => (int)$t['servicos_ligados']])) ?><?= (int)$t['servicos_suspensos'] ? ' · <span class="text-danger">' . $html(adm_t('{n} suspenso(s)', ['n' => (int)$t['servicos_suspensos']])) . '</span>' : '' ?></dd>
+                    <dt><?= adm_h('Falhas em 24 h') ?></dt><dd class="<?= (int)$t['falhas_24h'] ? 'text-danger' : '' ?>"><?= (int)$t['falhas_24h'] ?></dd>
                 </dl>
             </div>
         <?php endforeach; ?>
         <?php [$vTxt, $vCl, $vCol] = $tarefaTxt($vigia); $vSeg = $vigia['segundos_sem_rodar'] ?? null; ?>
         <div class="orq-card">
-            <h3>Vigia</h3>
-            <div class="mb-2 small text-muted">Confere as trilhas a cada 10 min e alerta os administradores.</div>
+            <h3><?= adm_h('Vigia') ?></h3>
+            <div class="mb-2 small text-muted"><?= adm_h('Confere as trilhas a cada 10 min e alerta os administradores.') ?></div>
             <dl>
-                <dt>Última execução</dt><dd><span class="badge <?= $vSeg === null || (int)$vSeg > 1800 ? 'text-bg-danger' : 'text-bg-success' ?>"><?= $html($ha($vSeg)) ?></span></dd>
-                <dt>Resultado</dt><dd><?= $html($vigia['mensagem'] ?? '-') ?></dd>
-                <dt>Tarefa do Windows</dt><dd><span class="badge <?= $vCl ?>"><?= $html($vTxt) ?></span> <small class="text-muted"><?= $html($vCol) ?></small></dd>
-                <dt>Avisos abertos</dt><dd><?= (int)($vigia['avisos_abertos'] ?? 0) ?></dd>
+                <dt><?= adm_h('Última execução') ?></dt><dd><span class="badge <?= $vSeg === null || (int)$vSeg > 1800 ? 'text-bg-danger' : 'text-bg-success' ?>"><?= $html($ha($vSeg)) ?></span></dd>
+                <dt><?= adm_h('Resultado') ?></dt><dd><?= $html($vigia['mensagem'] ?? '-') ?></dd>
+                <dt><?= adm_h('Tarefa do Windows') ?></dt><dd><span class="badge <?= $vCl ?>"><?= $html($vTxt) ?></span> <small class="text-muted"><?= $html($vCol) ?></small></dd>
+                <dt><?= adm_h('Avisos abertos') ?></dt><dd><?= (int)($vigia['avisos_abertos'] ?? 0) ?></dd>
             </dl>
         </div>
     </div>
     <?php endif; ?>
 
     <div class="d-flex gap-2 align-items-center mb-2">
-        <select class="form-select form-select-sm w-auto" data-filtro-trilha aria-label="Filtrar trilha"><option value="">Todas as trilhas</option><?php foreach (array_keys($grupos) as $n): ?><option value="<?= $n ?>">Trilha <?= $n ?></option><?php endforeach; ?></select>
-        <select class="form-select form-select-sm w-auto" data-filtro-status aria-label="Filtrar situação"><option value="">Todas as situações</option><option>CONCLUIDA</option><option>EXECUTANDO</option><option>ERRO</option><option>TEMPO_ESGOTADO</option><option>ABANDONADA</option><option>SIMULADA</option><option value="SUSPENSO">Suspenso</option><option value="DESLIGADO">Desligado</option></select>
-        <small class="text-muted">Clique num serviço para ver as execuções dele.</small>
+        <select class="form-select form-select-sm w-auto" data-filtro-trilha aria-label="<?= adm_a('Filtrar trilha') ?>"><option value=""><?= adm_h('Todas as trilhas') ?></option><?php foreach (array_keys($grupos) as $n): ?><option value="<?= $n ?>"><?= adm_h('Trilha') ?> <?= $n ?></option><?php endforeach; ?></select>
+        <select class="form-select form-select-sm w-auto" data-filtro-status aria-label="<?= adm_a('Filtrar situação') ?>"><option value=""><?= adm_h('Todas as situações') ?></option><option>CONCLUIDA</option><option>EXECUTANDO</option><option>ERRO</option><option>TEMPO_ESGOTADO</option><option>ABANDONADA</option><option>SIMULADA</option><option value="SUSPENSO"><?= adm_h('Suspenso') ?></option><option value="DESLIGADO"><?= adm_h('Desligado') ?></option></select>
+        <small class="text-muted"><?= adm_h('Clique num serviço para ver as execuções dele.') ?></small>
     </div>
     <div class="menu-grid-scroll services-grid-scroll">
         <table class="table table-sm menu-batch-grid services-grid" id="servicosBatchGrid">
             <thead><tr>
-                <th>Serviço</th><th>Ordem</th><th>Frequência</th><th>Tempo máx.</th><th>Última execução</th><th>Próxima (prevista)</th><th>Falhas</th><th>Fila</th><th>Mensagem</th>
-                <?php if ($isPlatformAdmin): ?><th>Ações</th><?php endif; ?>
+                <th><?= adm_h('Serviço') ?></th><th><?= adm_h('Ordem') ?></th><th><?= adm_h('Frequência') ?></th><th><?= adm_h('Tempo máx.') ?></th><th><?= adm_h('Última execução') ?></th><th><?= adm_h('Próxima (prevista)') ?></th><th><?= adm_h('Falhas') ?></th><th><?= adm_h('Fila') ?></th><th><?= adm_h('Mensagem') ?></th>
+                <?php if ($isPlatformAdmin): ?><th><?= adm_h('Ações') ?></th><?php endif; ?>
             </tr></thead>
             <tbody>
             <?php foreach ($grupos as $n => $lista): $t = $trilhaPorNumero[$n] ?? null; ?>
@@ -313,61 +314,61 @@ ksort($grupos);
                         'limite' => (int)$s['limite_seg'], 'script' => trim($s['script'] . ' ' . ($s['argumentos'] ?? ''))];
                 ?>
                 <tr data-service-row data-service-code="<?= $html($s['codigo']) ?>" data-trilha="<?= $n ?>" data-status="<?= $html($filtroStatus) ?>" class="<?= (int)$s['ativo'] !== 1 ? 'text-muted' : '' ?>">
-                    <td><strong><?= $html($s['nome']) ?></strong><?php if ((int)$s['ativo'] !== 1): ?> <span class="badge text-bg-secondary">Desligado</span><?php endif; ?><small class="service-description"><?= $html($s['descricao']) ?></small><small class="service-description">Código: <?= $html($s['codigo']) ?></small></td>
+                    <td><strong><?= $html($s['nome']) ?></strong><?php if ((int)$s['ativo'] !== 1): ?> <span class="badge text-bg-secondary"><?= adm_h('Desligado') ?></span><?php endif; ?><small class="service-description"><?= $html($s['descricao']) ?></small><small class="service-description"><?= adm_h('Código:') ?> <?= $html($s['codigo']) ?></small></td>
                     <td><?= (int)$s['ordem'] ?></td>
-                    <td><?= $html($frequencia($s)) ?><?php if (!empty($s['janela_inicio']) && !empty($s['janela_fim'])): ?><small class="service-description">Janela <?= $html(substr((string)$s['janela_inicio'], 0, 5)) ?>–<?= $html(substr((string)$s['janela_fim'], 0, 5)) ?></small><?php endif; ?></td>
+                    <td><?= $html($frequencia($s)) ?><?php if (!empty($s['janela_inicio']) && !empty($s['janela_fim'])): ?><small class="service-description"><?= adm_h('Janela') ?> <?= $html(substr((string)$s['janela_inicio'], 0, 5)) ?>–<?= $html(substr((string)$s['janela_fim'], 0, 5)) ?></small><?php endif; ?></td>
                     <td><?= $html($duracao($s['limite_seg'])) ?></td>
                     <td>
                         <?php if ($status !== ''): ?><span class="badge <?= $classeStatus($status) ?>"><?= $html($status) ?></span><?php endif; ?>
                         <small class="service-description"><?= $html($dataCurta($s['ultima_inicio'])) ?><?= $s['ultima_duracao_seg'] !== null && $status !== 'EXECUTANDO' ? ' · ' . $html($duracao($s['ultima_duracao_seg'])) : '' ?></small>
                     </td>
                     <td class="<?= $pCl ?>"><?= $html($pTxt) ?></td>
-                    <td><?php if ($suspenso): ?><span class="badge text-bg-danger">Suspenso até <?= $html((new DateTimeImmutable((string)$s['suspenso_ate']))->format('H:i')) ?></span><?php endif; ?><?= (int)$s['falhas_seguidas'] ? ' <span class="text-danger">' . (int)$s['falhas_seguidas'] . ' seguida(s)</span>' : ($suspenso ? '' : '0') ?></td>
+                    <td><?php if ($suspenso): ?><span class="badge text-bg-danger"><?= adm_h('Suspenso até') ?> <?= $html((new DateTimeImmutable((string)$s['suspenso_ate']))->format('H:i')) ?></span><?php endif; ?><?= (int)$s['falhas_seguidas'] ? ' <span class="text-danger">' . (int)$s['falhas_seguidas'] . ' seguida(s)</span>' : ($suspenso ? '' : '0') ?></td>
                     <td class="orq-fila"><?= $html($fila((string)$s['codigo']) ?: '-') ?></td>
                     <td class="service-message" title="<?= $html($s['ultima_mensagem'] ?? '') ?>"><?= $html($s['ultima_mensagem'] ?: '') ?></td>
                     <?php if ($isPlatformAdmin): ?>
                     <td class="text-nowrap">
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-editar='<?= $html(json_encode($dados, JSON_UNESCAPED_UNICODE)) ?>' title="Alterar cadastro" aria-label="Alterar cadastro de <?= $html($s['nome']) ?>"><i class="bi bi-pencil"></i></button>
-                        <?php if ($suspenso || (int)$s['falhas_seguidas'] > 0): ?><button type="button" class="btn btn-sm btn-outline-danger" data-liberar="<?= $html($s['codigo']) ?>" data-nome="<?= $html($s['nome']) ?>" title="Tirar a suspensão e zerar as falhas" aria-label="Liberar <?= $html($s['nome']) ?>"><i class="bi bi-unlock"></i></button><?php endif; ?>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-editar='<?= $html(json_encode($dados, JSON_UNESCAPED_UNICODE)) ?>' title="<?= adm_a('Alterar cadastro') ?>" aria-label="Alterar cadastro de <?= $html($s['nome']) ?>"><i class="bi bi-pencil"></i></button>
+                        <?php if ($suspenso || (int)$s['falhas_seguidas'] > 0): ?><button type="button" class="btn btn-sm btn-outline-danger" data-liberar="<?= $html($s['codigo']) ?>" data-nome="<?= $html($s['nome']) ?>" title="<?= adm_a('Tirar a suspensão e zerar as falhas') ?>" aria-label="Liberar <?= $html($s['nome']) ?>"><i class="bi bi-unlock"></i></button><?php endif; ?>
                     </td>
                     <?php endif; ?>
                 </tr>
                 <?php endforeach; ?>
             <?php endforeach; ?>
-            <?php if (!$servicos && $erroOrq === ''): ?><tr><td colspan="10" class="text-muted">Nenhum serviço no cadastro do orquestrador.</td></tr><?php endif; ?>
+            <?php if (!$servicos && $erroOrq === ''): ?><tr><td colspan="10" class="text-muted"><?= adm_h('Nenhum serviço no cadastro do orquestrador.') ?></td></tr><?php endif; ?>
             </tbody>
         </table>
     </div>
 
     <div class="orq-historico" data-historico hidden>
         <div class="d-flex gap-2 align-items-center mb-2">
-            <strong data-historico-titulo>Execuções</strong>
-            <select class="form-select form-select-sm w-auto" data-historico-status aria-label="Filtrar situação das execuções"><option value="">Todas</option><option>CONCLUIDA</option><option>ERRO</option><option>TEMPO_ESGOTADO</option><option>ABANDONADA</option><option>EXECUTANDO</option><option>SIMULADA</option></select>
-            <small class="text-muted">Últimas 100 · o histórico guarda 30 dias</small>
+            <strong data-historico-titulo><?= adm_h('Execuções') ?></strong>
+            <select class="form-select form-select-sm w-auto" data-historico-status aria-label="<?= adm_a('Filtrar situação das execuções') ?>"><option value=""><?= adm_h('Todas') ?></option><option>CONCLUIDA</option><option>ERRO</option><option>TEMPO_ESGOTADO</option><option>ABANDONADA</option><option>EXECUTANDO</option><option>SIMULADA</option></select>
+            <small class="text-muted"><?= adm_h('Últimas 100 · o histórico guarda 30 dias') ?></small>
         </div>
-        <div class="menu-grid-scroll"><table class="table table-sm"><thead><tr><th>#</th><th>Serviço</th><th>Trilha</th><th>Início</th><th>Fim</th><th>Duração</th><th>Situação</th><th>Saída</th><th>Processo</th><th>Mensagem</th></tr></thead><tbody data-historico-linhas></tbody></table></div>
+        <div class="menu-grid-scroll"><table class="table table-sm"><thead><tr><th>#</th><th><?= adm_h('Serviço') ?></th><th><?= adm_h('Trilha') ?></th><th><?= adm_h('Início') ?></th><th><?= adm_h('Fim') ?></th><th><?= adm_h('Duração') ?></th><th><?= adm_h('Situação') ?></th><th><?= adm_h('Saída') ?></th><th><?= adm_h('Processo') ?></th><th><?= adm_h('Mensagem') ?></th></tr></thead><tbody data-historico-linhas></tbody></table></div>
     </div>
 
     <?php if ($isPlatformAdmin): ?>
     <div class="orq-modal" data-modal role="dialog" aria-modal="true" aria-labelledby="orqModalTitulo">
         <form class="orq-modal-caixa" data-form>
-            <h2 class="h6 mb-1" id="orqModalTitulo" data-modal-titulo>Serviço</h2>
+            <h2 class="h6 mb-1" id="orqModalTitulo" data-modal-titulo><?= adm_h('Serviço') ?></h2>
             <div class="small text-muted mb-3" data-modal-script></div>
             <input type="hidden" name="servico">
-            <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" name="ativo" id="orqAtivo" value="1"><label class="form-check-label" for="orqAtivo">Ligado</label></div>
+            <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" name="ativo" id="orqAtivo" value="1"><label class="form-check-label" for="orqAtivo"><?= adm_h('Ligado') ?></label></div>
             <div class="row g-2">
-                <div class="col-6"><label for="orqTrilha">Trilha</label><select class="form-select form-select-sm" name="trilha" id="orqTrilha"><option value="1">1 — rápida</option><option value="2">2 — filas e regras</option><option value="3">3 — pesada</option></select></div>
-                <div class="col-6"><label for="orqOrdem">Ordem na trilha</label><input class="form-control form-control-sm" type="number" name="ordem" id="orqOrdem" min="0" max="9999"></div>
-                <div class="col-6"><label for="orqIntervalo">Frequência (minutos)</label><input class="form-control form-control-sm" type="number" name="intervalo" id="orqIntervalo" min="1" max="10080" required></div>
-                <div class="col-6"><label for="orqHorario">Horário fixo (opcional)</label><input class="form-control form-control-sm" type="time" name="horario" id="orqHorario"></div>
-                <div class="col-12 orq-dias"><label class="d-block">Dias da semana <small class="text-muted">(nenhum marcado = todos)</small></label>
+                <div class="col-6"><label for="orqTrilha"><?= adm_h('Trilha') ?></label><select class="form-select form-select-sm" name="trilha" id="orqTrilha"><option value="1"><?= adm_h('1 — rápida') ?></option><option value="2">2 — filas e regras</option><option value="3"><?= adm_h('3 — pesada') ?></option></select></div>
+                <div class="col-6"><label for="orqOrdem"><?= adm_h('Ordem na trilha') ?></label><input class="form-control form-control-sm" type="number" name="ordem" id="orqOrdem" min="0" max="9999"></div>
+                <div class="col-6"><label for="orqIntervalo"><?= adm_h('Frequência (minutos)') ?></label><input class="form-control form-control-sm" type="number" name="intervalo" id="orqIntervalo" min="1" max="10080" required></div>
+                <div class="col-6"><label for="orqHorario"><?= adm_h('Horário fixo (opcional)') ?></label><input class="form-control form-control-sm" type="time" name="horario" id="orqHorario"></div>
+                <div class="col-12 orq-dias"><label class="d-block"><?= adm_h('Dias da semana') ?> <small class="text-muted"><?= adm_h('(nenhum marcado = todos)') ?></small></label>
                     <?php foreach ($diasNome as $d => $nomeDia): ?><label><input type="checkbox" name="dias[]" value="<?= $d ?>"> <?= $html($nomeDia) ?></label><?php endforeach; ?>
                 </div>
-                <div class="col-6"><label for="orqLimite">Tempo máximo (segundos)</label><input class="form-control form-control-sm" type="number" name="limite" id="orqLimite" min="30" max="259200" required><small class="text-muted" data-limite-txt></small></div>
+                <div class="col-6"><label for="orqLimite"><?= adm_h('Tempo máximo (segundos)') ?></label><input class="form-control form-control-sm" type="number" name="limite" id="orqLimite" min="30" max="259200" required><small class="text-muted" data-limite-txt></small></div>
             </div>
-            <p class="small text-muted mt-2 mb-2">Com horário fixo o serviço roda uma vez por dia, a partir do horário. Salvar também tira a suspensão e zera as falhas seguidas. Vale a partir do próximo ciclo da trilha.</p>
+            <p class="small text-muted mt-2 mb-2"><?= adm_h('Com horário fixo o serviço roda uma vez por dia, a partir do horário. Salvar também tira a suspensão e zera as falhas seguidas. Vale a partir do próximo ciclo da trilha.') ?></p>
             <div class="alert alert-danger py-1 px-2 small d-none" data-modal-erro></div>
-            <div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-sm btn-outline-secondary" data-fechar>Cancelar</button><button type="submit" class="btn btn-sm btn-primary">Salvar</button></div>
+            <div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-sm btn-outline-secondary" data-fechar><?= adm_h('Cancelar') ?></button><button type="submit" class="btn btn-sm btn-primary"><?= adm_h('Salvar') ?></button></div>
         </form>
     </div>
     <?php endif; ?>
@@ -395,10 +396,10 @@ ksort($grupos);
     let linhasHist=[];
     const cls=s=>({CONCLUIDA:'text-bg-success',EXECUTANDO:'text-bg-primary',SIMULADA:'text-bg-light border',ERRO:'text-bg-danger',TEMPO_ESGOTADO:'text-bg-danger',ABANDONADA:'text-bg-warning'}[s]||'text-bg-secondary');
     const dur=s=>{if(s===null||s==='')return '-';s=+s;if(s<60)return s+' s';if(s<3600)return Math.floor(s/60)+' min'+(s%60?' '+s%60+' s':'');return Math.floor(s/3600)+' h '+String(Math.floor(s%3600/60)).padStart(2,'0')+' min';};
-    const desenhar=()=>{const f=filtroHist.value;const lista=linhasHist.filter(l=>!f||l.status===f);corpo.innerHTML=lista.length?lista.map(l=>'<tr><td>'+esc(l.codexecucao)+'</td><td>'+esc(l.codigo)+'</td><td>'+esc(l.trilha)+'</td><td>'+esc(l.inicio_em)+'</td><td>'+esc(l.fim_em||'')+'</td><td>'+esc(dur(l.duracao_seg))+'</td><td><span class="badge '+cls(l.status)+'">'+esc(l.status)+'</span></td><td>'+esc(l.codigo_saida??'')+'</td><td>'+esc(l.pid??'')+'</td><td class="msg">'+esc(l.mensagem||'')+'</td></tr>').join(''):'<tr><td colspan="10" class="text-muted">Nenhuma execução.</td></tr>';};
+    const desenhar=()=>{const f=filtroHist.value;const lista=linhasHist.filter(l=>!f||l.status===f);corpo.innerHTML=lista.length?lista.map(l=>'<tr><td>'+esc(l.codexecucao)+'</td><td>'+esc(l.codigo)+'</td><td>'+esc(l.trilha)+'</td><td>'+esc(l.inicio_em)+'</td><td>'+esc(l.fim_em||'')+'</td><td>'+esc(dur(l.duracao_seg))+'</td><td><span class="badge '+cls(l.status)+'">'+esc(l.status)+'</span></td><td>'+esc(l.codigo_saida??'')+'</td><td>'+esc(l.pid??'')+'</td><td class="msg">'+esc(l.mensagem||'')+'</td></tr>').join(''):<?= adm_js('<tr><td colspan="10" class="text-muted">Nenhuma execução.</td></tr>') ?>;};
     filtroHist?.addEventListener('change',desenhar);
     const carregar=(codigo,nome)=>{
-        hist.hidden=false; titulo.textContent='Execuções — '+(nome||'todos os serviços'); corpo.innerHTML='<tr><td colspan="10" class="text-muted">Carregando…</td></tr>';
+        hist.hidden=false; titulo.textContent=<?= adm_js('Execuções — ') ?>+(nome||<?= adm_js('todos os serviços') ?>); corpo.innerHTML='<tr><td colspan="10" class="text-muted">Carregando…</td></tr>';
         fetch(url+'?acao=historico&limite=100&servico='+encodeURIComponent(codigo||''),{credentials:'same-origin'}).then(r=>r.json()).then(j=>{if(!j.ok)throw new Error(j.mensagem||'Erro');linhasHist=j.linhas||[];desenhar();hist.scrollIntoView({behavior:'smooth',block:'nearest'});}).catch(e=>{corpo.innerHTML='<tr><td colspan="10" class="text-danger">'+esc(e.message)+'</td></tr>';});
     };
     rows.forEach(r=>r.addEventListener('click',ev=>{if(ev.target.closest('button'))return;rows.forEach(x=>x.classList.remove('table-active'));r.classList.add('table-active');carregar(r.dataset.serviceCode,r.querySelector('strong')?.textContent);}));
@@ -407,7 +408,7 @@ ksort($grupos);
     // Alterar e liberar (ADMINISTRADOR)
     const enviar=dados=>{dados.append('csrf',csrf);return fetch(url,{method:'POST',body:dados,credentials:'same-origin'}).then(r=>r.json());};
     root.querySelectorAll('[data-liberar]').forEach(b=>b.addEventListener('click',()=>{
-        if(!confirm('Tirar a suspensão de "'+b.dataset.nome+'" e zerar as falhas seguidas?'))return;
+        if(!confirm(<?= adm_js('Tirar a suspensão de "') ?>+b.dataset.nome+<?= adm_js('" e zerar as falhas seguidas?') ?>))return;
         const d=new FormData();d.append('acao','liberar');d.append('servico',b.dataset.liberar);
         enviar(d).then(j=>{alert(j.mensagem||'');if(j.ok)location.reload();}).catch(e=>alert(e.message));
     }));
@@ -431,7 +432,7 @@ ksort($grupos);
     form.addEventListener('submit',ev=>{
         ev.preventDefault();
         const d=new FormData(form);d.append('acao','salvar');if(!form.ativo.checked)d.set('ativo','0');
-        enviar(d).then(j=>{if(!j.ok){erro.textContent=j.mensagem||'Não foi possível salvar.';erro.classList.remove('d-none');return;}fechar();location.reload();}).catch(e=>{erro.textContent=e.message;erro.classList.remove('d-none');});
+        enviar(d).then(j=>{if(!j.ok){erro.textContent=j.mensagem||<?= adm_js('Não foi possível salvar.') ?>;erro.classList.remove('d-none');return;}fechar();location.reload();}).catch(e=>{erro.textContent=e.message;erro.classList.remove('d-none');});
     });
 })();
 </script>

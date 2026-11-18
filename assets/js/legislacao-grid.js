@@ -1,13 +1,15 @@
 (function ($) {
     'use strict';
+    // textos nos três idiomas (window.greenT; chaves manutencaolegal_legislacao.js.* em classes/LegislacaoTextos.php)
+    function L(k, p, v) { var t = typeof window.greenT === 'function' ? window.greenT('manutencaolegal_legislacao.js.' + k, p) : p; if (v) Object.keys(v).forEach(function (c) { t = String(t).split('{' + c + '}').join(v[c]); }); return t; }
     var $fragment = $('.legislacao-grid-fragment'), $table = $('#legislacaoBatchGrid'), $form = $('#legislacaoGridForm');
     if (!$table.length) return;
     var preferences = $fragment.data('preferences') || {}, columns = $table.find('thead th').map(function () { return String($(this).data('column')); }).get();
     function installRclButtons() {
         var $pagination = $fragment.find('.grid-pagination').first();
         if (!$pagination.length || $fragment.find('[data-rcl-completa]').length) return;
-        $pagination.append('<button type="button" class="btn btn-sm btn-outline-success grid-special-action" data-rcl-completa title="RCL Completa" aria-label="RCL Completa"><i class="bi bi-file-earmark-text"></i><span>RCL Completa</span></button>');
-        $pagination.append('<button type="button" class="btn btn-sm btn-outline-success grid-special-action" data-rcl-padrao title="RCL Padrão" aria-label="RCL Padrão"><i class="bi bi-file-earmark"></i><span>RCL Padrão</span></button>');
+        $pagination.append('<button type="button" class="btn btn-sm btn-outline-success grid-special-action" data-rcl-completa title="' + L('rcl_completa', 'RCL Completa') + '" aria-label="' + L('rcl_completa', 'RCL Completa') + '"><i class="bi bi-file-earmark-text"></i><span>' + L('rcl_completa', 'RCL Completa') + '</span></button>');
+        $pagination.append('<button type="button" class="btn btn-sm btn-outline-success grid-special-action" data-rcl-padrao title="' + L('rcl_padrao', 'RCL Padrão') + '" aria-label="' + L('rcl_padrao', 'RCL Padrão') + '"><i class="bi bi-file-earmark"></i><span>' + L('rcl_padrao', 'RCL Padrão') + '</span></button>');
     }
     function installAdvancedFilters() {
         if ($fragment.find('.legislacao-advanced-filters').length) return;
@@ -15,7 +17,7 @@
         var labels = language === 'en' ? { company: 'Company', unit: 'Unit', period: 'Update month/year', pattern: 'Pattern' } : language === 'es' ? { company: 'Empresa', unit: 'Unidad', period: 'Mes/año de actualización', pattern: 'Patrón' } : { company: 'Empresa', unit: 'Unidades', period: 'Mês/Ano de atualização', pattern: 'Padrão' };
         var current = options.filtros || {};
         function select(name, label, values, disabled) {
-            var html = '<div class="legislacao-filter-field"><label class="form-label" for="legislacaoFilter' + name + '">' + label + '</label><select class="form-select form-select-sm" id="legislacaoFilter' + name + '" data-grid-filter="' + name + '"' + (disabled ? ' disabled' : '') + '><option value="">' + (disabled ? 'Selecione uma empresa' : 'Todos') + '</option>';
+            var html = '<div class="legislacao-filter-field"><label class="form-label" for="legislacaoFilter' + name + '">' + label + '</label><select class="form-select form-select-sm" id="legislacaoFilter' + name + '" data-grid-filter="' + name + '"' + (disabled ? ' disabled' : '') + '><option value="">' + (disabled ? L('selecione_empresa', 'Selecione uma empresa') : L('todos', 'Todos')) + '</option>';
             Object.keys(values || {}).forEach(function (key) { html += '<option value="' + $('<div>').text(key).html() + '">' + $('<div>').text(values[key]).html() + '</option>'; });
             return html + '</select></div>';
         }
@@ -26,7 +28,7 @@
         $fragment.find('[data-grid-filter]').each(function () { $(this).val(current[String($(this).data('grid-filter'))] || ''); });
         function refreshUnits(companyValue, selectedValue) {
             var values = companyValue ? (options.empresaUnidades || {})[companyValue] || {} : {}, $unit = $fragment.find('#legislacaoFilterCODUNIDADE');
-            $unit.empty().append($('<option>').val('').text(companyValue ? 'Todos' : 'Selecione uma empresa')).prop('disabled', !companyValue);
+            $unit.empty().append($('<option>').val('').text(companyValue ? L('todos', 'Todos') : L('selecione_empresa', 'Selecione uma empresa'))).prop('disabled', !companyValue);
             Object.keys(values).forEach(function (key) { $('<option>').val(key).text(values[key]).appendTo($unit); });
             $unit.val(selectedValue || '');
         }
@@ -41,7 +43,7 @@
             if (!$filter.length || $filter.is('select')) return;
             var selectedValue = $filter.val() || '';
             var $select = $('<select class="column-filter form-select form-select-sm" data-column-filter="' + column + '"></select>');
-            $('<option value="">Todos</option>').appendTo($select);
+            $('<option value="">').text(L('todos', 'Todos')).appendTo($select);
             Object.keys(values).forEach(function (value) { $('<option>').val(value).text(values[value]).appendTo($select); });
             $select.val(selectedValue);
             $filter.replaceWith($select);
@@ -81,7 +83,7 @@
     }
     function contextSelectHtml(column, key, value) {
         var text = String(value === null || value === undefined ? '' : value), options = contextOptions(column);
-        var html = '<select class="grid-input" name="rows[' + key + '][' + column + ']"' + (LAZY_COLUMNS[column] ? ' data-lazy-options="' + column + '"' : '') + '><option value="">Selecione</option>' + unknownOption(column, text);
+        var html = '<select class="grid-input" name="rows[' + key + '][' + column + ']"' + (LAZY_COLUMNS[column] ? ' data-lazy-options="' + column + '"' : '') + '><option value="">' + L('selecione', 'Selecione') + '</option>' + unknownOption(column, text);
         if (LAZY_COLUMNS[column]) {
             if (text !== '' && Object.prototype.hasOwnProperty.call(options, text)) html += '<option value="' + escHtml(text) + '">' + escHtml(options[text]) + '</option>';
         } else html += sortedOptions(column).html;
@@ -93,7 +95,7 @@
         if (!column) return;
         var current = select.value;
         select.removeAttribute('data-lazy-options');
-        select.innerHTML = '<option value="">Selecione</option>' + unknownOption(column, current) + sortedOptions(column).html;
+        select.innerHTML = '<option value="">' + L('selecione', 'Selecione') + '</option>' + unknownOption(column, current) + sortedOptions(column).html;
         select.value = current;
     }
     $(document).on('mousedown focusin keydown touchstart', 'select[data-lazy-options]', function () { fillLazySelect(this); });
@@ -156,7 +158,7 @@
         $modal.find('[data-assuntos-list]').html(html);
     }
     function loadAssuntos($modal, code) {
-        $modal.find('[data-assuntos-list]').html('<div class="text-muted small">Carregando assuntos...</div>');
+        $modal.find('[data-assuntos-list]').html('<div class="text-muted small">' + L('carregando_assuntos', 'Carregando assuntos...') + '</div>');
         $.post(window.location.href, { action: 'load_assuntos', CODLEGISLACAO: code, busca: $modal.find('[data-assuntos-search]').val() || '', ajax: 1 }, function (response) { if (response && response.ok) renderAssuntosList($modal, response.assuntos || []); else $modal.find('[data-assuntos-list]').text('Não foi possível carregar os assuntos.'); }, 'json').fail(function () { $modal.find('[data-assuntos-list]').text('Não foi possível carregar os assuntos.'); });
     }
     function openAssuntosEditor($row) {
@@ -167,17 +169,23 @@
         var lawCode = String($row.find('[data-column="CODIGO"] input').val() || code).trim();
         var url = new URL('manutencaolegal_legislacao_assuntos.php?CODLEGISLACAO=' + encodeURIComponent(code), window.location.href).toString();
         var frame = host.jQuery('<iframe>', { style: 'width:100%;height:100%;border:0;display:block;' }).attr('src', url);
-        popup.transacaoIndependente({ titulo: 'Assuntos da legislação — ' + lawCode, conteudo: frame });
+        popup.transacaoIndependente({ titulo: L('titulo_assuntos', 'Assuntos da legislação — {lei}', { lei: lawCode }), conteudo: frame });
     }
-    window.addEventListener('message', function (event) { if (event.data && event.data.type === 'legislacao-assuntos-saved') window.location.reload(); });
+    // Assuntos (lista dupla): atualiza só a célula da lei; sem o texto, recarrega como antes
+    window.addEventListener('message', function (event) {
+        var d = event.data; if (!d || d.type !== 'legislacao-assuntos-saved') return;
+        var $row = $table.find('tbody tr[data-key="' + String(d.id).replace(/[^0-9]/g, '') + '"]');
+        if ($row.length && typeof d.assuntos === 'string') $row.find('td[data-column="ASSUNTOS"]').html(assuntosCellHtml(d.assuntos));
+        else if (typeof d.assuntos !== 'string') window.location.reload();
+    });
     // Migração 382: URL de pesquisa e Legislações filhas (popups; a contagem da linha é atualizada sem recarregar o grid)
-    var assocPages = { urls: ['manutencaolegal_legislacao_urls.php', 'URL de pesquisa'], filhas: ['manutencaolegal_legislacao_filhas.php', 'Legislações filhas'], alteracoes: ['manutencaolegal_legislacao_alteracoes.php', 'Alterações na legislação'], checklist: ['manutencaolegal_legislacao_catalogo.php?tipo=checklist', 'CheckList'], palavras: ['manutencaolegal_legislacao_catalogo.php?tipo=palavras', 'Palavras-chave'] };
+    var assocPages = { urls: ['manutencaolegal_legislacao_urls.php', L('titulo_urls', 'URL de pesquisa')], filhas: ['manutencaolegal_legislacao_filhas.php', L('titulo_filhas', 'Legislações filhas')], alteracoes: ['manutencaolegal_legislacao_alteracoes.php', L('titulo_alteracoes', 'Alterações na legislação')], checklist: ['manutencaolegal_legislacao_catalogo.php?tipo=checklist', L('titulo_checklist', 'CheckList')], palavras: ['manutencaolegal_legislacao_catalogo.php?tipo=palavras', L('titulo_palavras', 'Palavras-chave')] };
     function assocMessage(text) { var $m = $fragment.find('[data-assoc-msg]'); if (!$m.length) { $m = $('<span class="legislacao-assoc-msg small text-danger ms-2" data-assoc-msg></span>'); var $g = $fragment.find('.tb-grupo-associacoes').first(); if ($g.length) $g.after($m); else $fragment.find('.crud-toolbar').first().append($m); } $m.text(text || ''); clearTimeout($m.data('timer')); if (text) $m.data('timer', setTimeout(function () { $m.text(''); }, 3500)); }
     function openAssociation(kind, $row) {
         var page = assocPages[kind], code = String(($row && $row.data('key')) || '').trim();
         if (!page) return;
-        if (!$row || !$row.length) return assocMessage('Selecione uma legislação no grid.');
-        if (!/^\d+$/.test(code)) return assocMessage('Salve a legislação antes de associar.');
+        if (!$row || !$row.length) return assocMessage(L('selecione_lei', 'Selecione uma legislação no grid.'));
+        if (!/^\d+$/.test(code)) return assocMessage(L('salve_antes', 'Salve a legislação antes de associar.'));
         var host = window.parent && window.parent.GreenPortalPopups ? window.parent : (window.top || window), popup = host.GreenPortalPopups;
         if (!popup || typeof popup.transacaoIndependente !== 'function' || !host.jQuery) { if (window.console) console.error('GreenPortalPopups.transacaoIndependente indisponível.'); return; }
         var lawCode = String($row.find('[data-column="CODIGO"] input').val() || code).trim();
@@ -189,7 +197,7 @@
         var esc = function (v) { return $('<div>').text(String(v)).html(); };
         if (kind === 'URLS') { var n = Number(data.QTD_URLS || 0), s = Number(data.QTD_URLS_SUGERIDAS || 0); return '<button type="button" class="btn btn-sm btn-link p-0 legislacao-assoc-count" data-assoc-open="urls" title="' + esc(n + ' link(s) confirmado(s)' + (s ? ', ' + s + ' sugestão(ões) da IA a confirmar' : '')) + '">' + n + '</button>' + (s ? ' <span class="badge text-bg-warning" title="Sugestões da IA a confirmar">+' + s + '</span>' : ''); }
         var f = Number(data.QTD_FILHAS || 0), p = Number(data.QTD_PAIS || 0);
-        return '<button type="button" class="btn btn-sm btn-link p-0 legislacao-assoc-count" data-assoc-open="filhas" title="' + esc(f + ' legislação(ões) filha(s)' + (p ? '; é filha de ' + p : '')) + '">' + f + '</button>' + (p ? ' <span class="text-muted small" title="É filha de ' + p + ' legislação(ões)">↑' + p + '</span>' : '');
+        return '<button type="button" class="btn btn-sm btn-link p-0 legislacao-assoc-count" data-assoc-open="filhas" title="' + esc(L('filhas_contagem', '{n} legislação(ões) filha(s)', { n: f }) + (p ? '; ' + L('filha_de', 'é filha de {n}', { n: p }) : '')) + '">' + f + '</button>' + (p ? ' <span class="text-muted small" title="' + esc(L('filha_de_n', 'É filha de {n} legislação(ões)', { n: p })) + '">↑' + p + '</span>' : '');
     }
     window.addEventListener('message', function (event) {
         var d = event.data;
@@ -229,33 +237,33 @@
         // Migração 386: destaca o RCL definido para a unidade (Setup › Unidades: tipo de RCL)
         var tipos = (window.legislacaoGridOptions || {}).unidadeTipoRcl || {}, tipo = ((tipos['|' + f.empresa + '|'] || {})['|' + f.unidade + '|']) || '';
         $fragment.find('[data-rcl-completa]').toggleClass('btn-success', tipo === 'COMPLETA').toggleClass('btn-outline-success', tipo !== 'COMPLETA');
-        $fragment.find('[data-rcl-padrao]').toggleClass('btn-success', tipo === 'PADRAO').toggleClass('btn-outline-success', tipo !== 'PADRAO'); $fragment.find('[data-rcl-completa],[data-rcl-padrao]').prop('disabled', !ok).attr('title', function () { var base = $(this).is('[data-rcl-completa]') ? 'RCL Completa' : 'RCL Padrão'; return ok ? base : base + ' — escolha Empresa, Unidade e Mês/Ano nos filtros'; }); }
+        $fragment.find('[data-rcl-padrao]').toggleClass('btn-success', tipo === 'PADRAO').toggleClass('btn-outline-success', tipo !== 'PADRAO'); $fragment.find('[data-rcl-completa],[data-rcl-padrao]').prop('disabled', !ok).attr('title', function () { var base = $(this).is('[data-rcl-completa]') ? L('rcl_completa', 'RCL Completa') : L('rcl_padrao', 'RCL Padrão'); return ok ? base : base + ' — ' + L('rcl_escolha_filtros', 'escolha Empresa, Unidade e Mês/Ano nos filtros'); }); }
     $fragment.on('change', '#legislacaoFilterCODEMPRESA,#legislacaoFilterCODUNIDADE,#legislacaoFilterMES_ANO_ATUALIZACAO', function () { setTimeout(updateRclButtons, 0); });
     $fragment.on('gridPageLoaded', function () { setTimeout(updateRclButtons, 0); });
     $fragment.find('.crud-toolbar').on('click', '[data-rcl-completa],[data-rcl-padrao]', function (event) {
         event.preventDefault(); event.stopImmediatePropagation();
         var f = rclFilters(), $b = $(this), completa = $b.is('[data-rcl-completa]');
-        if (!/^\d+$/.test(f.empresa) || !/^\d+$/.test(f.unidade) || !/^\d{4}-\d{2}$/.test(f.mes)) return rclMessage('Escolha Empresa, Unidade e Mês/Ano nos filtros para gerar o RCL.');
+        if (!/^\d+$/.test(f.empresa) || !/^\d+$/.test(f.unidade) || !/^\d{4}-\d{2}$/.test(f.mes)) return rclMessage(L('rcl_escolha_msg', 'Escolha Empresa, Unidade e Mês/Ano nos filtros para gerar o RCL.'));
         var url = new URL('manutencaolegal_legislacao_rcl.php', window.location.href); url.searchParams.set('empresa', f.empresa); url.searchParams.set('unidade', f.unidade); url.searchParams.set('mes', f.mes); url.searchParams.set('tipo', completa ? 'completa' : 'padrao');
-        $fragment.find('[data-rcl-completa],[data-rcl-padrao]').prop('disabled', true); rclMessage('Gerando ' + (completa ? 'RCL Completa' : 'RCL Padrão') + '...', 'muted');
+        $fragment.find('[data-rcl-completa],[data-rcl-padrao]').prop('disabled', true); rclMessage(L('rcl_gerando', 'Gerando {rcl}...', { rcl: completa ? L('rcl_completa', 'RCL Completa') : L('rcl_padrao', 'RCL Padrão') }), 'muted');
         fetch(url.toString(), { credentials: 'same-origin' }).then(function (response) {
             var type = response.headers.get('Content-Type') || '';
-            if (!response.ok || type.indexOf('spreadsheetml') < 0) return response.text().then(function (t) { throw new Error($('<div>').html(t).text().trim() || 'Não foi possível gerar o RCL.'); });
+            if (!response.ok || type.indexOf('spreadsheetml') < 0) return response.text().then(function (t) { throw new Error($('<div>').html(t).text().trim() || L('rcl_erro', 'Não foi possível gerar o RCL.')); });
             var disposition = response.headers.get('Content-Disposition') || '', match = /filename="([^"]+)"/.exec(disposition);
             return response.blob().then(function (blob) { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = match ? match[1] : 'RCL.xlsx'; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000); rclMessage('RCL gerado.', 'success'); });
-        }).catch(function (error) { rclMessage(error.message || 'Não foi possível gerar o RCL.'); }).finally(updateRclButtons);
+        }).catch(function (error) { rclMessage(error.message || L('rcl_erro', 'Não foi possível gerar o RCL.')); }).finally(updateRclButtons);
     });
     updateRclButtons();
     function openPatternEditor($input) {
         var $modal = $('#legislacaoPatternModal');
         if (!$modal.length) {
-            $modal = $('<div class="modal fade legislacao-pattern-modal" id="legislacaoPatternModal" tabindex="-1"><div class="modal-dialog modal-xl modal-dialog-centered"><div class="modal-content"><div class="modal-header"><div><h5 class="modal-title">Editar padrão</h5><small class="text-muted" data-pattern-code></small></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div><div class="modal-body"><textarea class="form-control" rows="24" data-pattern-text></textarea></div><div class="modal-footer"><button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-sm btn-success" data-confirm-pattern>Confirmar</button></div></div></div></div>').appendTo('body');
+            $modal = $('<div class="modal fade legislacao-pattern-modal" id="legislacaoPatternModal" tabindex="-1"><div class="modal-dialog modal-xl modal-dialog-centered"><div class="modal-content"><div class="modal-header"><div><h5 class="modal-title">' + L('editar_padrao', 'Editar padrão') + '</h5><small class="text-muted" data-pattern-code></small></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + L('fechar', 'Fechar') + '"></button></div><div class="modal-body"><textarea class="form-control" rows="24" data-pattern-text></textarea></div><div class="modal-footer"><button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">' + L('cancelar', 'Cancelar') + '</button><button type="button" class="btn btn-sm btn-success" data-confirm-pattern>' + L('confirmar', 'Confirmar') + '</button></div></div></div></div>').appendTo('body');
         }
         var legislationCode = String($input.closest('tr').find('[data-column="CODIGO"] input, [data-column="CODIGO"] select').val() || '');
         var currentValue = $input.data('pattern-value');
         if (currentValue === undefined) currentValue = $input.val() || '';
         $modal.data('pattern-input', $input).find('[data-pattern-text]').val(currentValue);
-        $modal.find('[data-pattern-code]').text('Código da legislação: ' + (legislationCode || 'Novo registro'));
+        $modal.find('[data-pattern-code]').text(L('codigo_lei', 'Código da legislação: {cod}', { cod: legislationCode || L('novo_registro', 'Novo registro') }));
         $modal.off('click', '[data-confirm-pattern]').on('click', '[data-confirm-pattern]', function () {
             var $target = $modal.data('pattern-input');
             if ($target && $target.length) {
@@ -279,7 +287,7 @@
     }
     function savePreferences() { $.post(window.location.href, { action: 'save_preferences', preferences: JSON.stringify(columns.map(function (column, index) { return { coluna: column, ordem: index, visivel: $table.find('[data-column="' + column + '"]:first').is(':visible') ? 1 : 0, largura: Math.round($table.find('th[data-column="' + column + '"]').outerWidth() || 140) }; })) }); }
     function selected() { return $table.find('tbody tr.selected').first(); }
-    function ask(text, callback) { var $modal = $('#legislacaoConfirmModal'); if (!$modal.length) { $modal = $('<div class="modal fade" id="legislacaoConfirmModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Confirmação</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"></div><div class="modal-footer"><button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-sm btn-success" data-confirm>Confirmar</button></div></div></div></div>').appendTo('body'); } $modal.find('.modal-body').text(text); $modal.off('click', '[data-confirm]').on('click', '[data-confirm]', function () { bootstrap.Modal.getInstance($modal[0]).hide(); if (callback) callback(); }); bootstrap.Modal.getOrCreateInstance($modal[0]).show(); }
+    function ask(text, callback) { var $modal = $('#legislacaoConfirmModal'); if (!$modal.length) { $modal = $('<div class="modal fade" id="legislacaoConfirmModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">' + L('confirmacao', 'Confirmação') + '</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"></div><div class="modal-footer"><button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">' + L('cancelar', 'Cancelar') + '</button><button type="button" class="btn btn-sm btn-success" data-confirm>' + L('confirmar', 'Confirmar') + '</button></div></div></div></div>').appendTo('body'); } $modal.find('.modal-body').text(text); $modal.off('click', '[data-confirm]').on('click', '[data-confirm]', function () { bootstrap.Modal.getInstance($modal[0]).hide(); if (callback) callback(); }); bootstrap.Modal.getOrCreateInstance($modal[0]).show(); }
     function associationContext() {
         var company = $.trim(String($fragment.find('#legislacaoFilterCODEMPRESA').val() || ''));
         var unit = $.trim(String($fragment.find('#legislacaoFilterCODUNIDADE').val() || ''));
@@ -307,7 +315,7 @@
             var list = Object.keys(values).filter(function (value) { return allowed[optionKey(column, value)] || value === current; })
                 .map(function (value) { return { value: value, label: String(values[value] || value) }; })
                 .sort(function (a, b) { return a.label.localeCompare(b.label, locale, { sensitivity: 'base', numeric: true }); });
-            $select[0].innerHTML = '<option value="">Todos</option>' + list.map(function (item) { return '<option value="' + escHtml(item.value) + '">' + escHtml(item.label) + '</option>'; }).join('');
+            $select[0].innerHTML = '<option value="">' + L('todos', 'Todos') + '</option>' + list.map(function (item) { return '<option value="' + escHtml(item.value) + '">' + escHtml(item.label) + '</option>'; }).join('');
             $select.val(current);
         });
     }
@@ -324,20 +332,22 @@
     $table.on('click', '[data-edit-assuntos]', function (event) { event.stopPropagation(); openAssuntosEditor($(this).closest('tr')); });
     $fragment.on('gridPageLoaded', function () { installContextFields(); installPatternFields(); installAssuntosFields(); apply(); });
     $('[data-new-legislacao]').on('click', function () { var context = guardAssociation(); if (!context) return; var key = 'novo_' + Date.now(); $table.find('tbody').prepend('<tr data-row data-key="' + key + '">' + rowHtml(key) + '</tr>'); apply(); setPatternValue($table.find('tbody tr').first(), ''); $form.data('grid-dirty', true); });
-    $('[data-duplicate-legislacao]').on('click', function () { var $row = selected(); if (!$row.length) return ask('Selecione uma linha para duplicar.'); var context = guardAssociation(); if (!context) return; ask('Confirma a duplicação do registro selecionado?', function () { var key = 'novo_' + Date.now(), patternValue = $row.find('td[data-column="PADRAO"] input').first().data('pattern-value') || $row.find('td[data-column="PADRAO"] input').first().val() || ''; $table.find('tbody').prepend('<tr data-row data-key="' + key + '">' + rowHtml(key, $row) + '</tr>'); apply(); setPatternValue($table.find('tbody tr').first(), patternValue); $form.data('grid-dirty', true); }); });
-    $('[data-delete-legislacao]').on('click', function () { var $row = selected(); if (!$row.length) return; var key = String($row.data('key')); ask('Confirma a exclusão do registro selecionado?', function () { if (key.indexOf('novo_') === 0) return $row.remove(); $form.find('input[name="action"]').val('delete_row'); $('<input type="hidden" name="CODLEGISLACAO">').val(key).appendTo($form); $form.data('confirmed', true).trigger('submit'); }); });
+    $('[data-duplicate-legislacao]').on('click', function () { var $row = selected(); if (!$row.length) return ask(L('selecione_duplicar', 'Selecione uma linha para duplicar.')); var context = guardAssociation(); if (!context) return; ask(L('confirma_duplicar', 'Confirma a duplicação do registro selecionado?'), function () { var key = 'novo_' + Date.now(), patternValue = $row.find('td[data-column="PADRAO"] input').first().data('pattern-value') || $row.find('td[data-column="PADRAO"] input').first().val() || ''; $table.find('tbody').prepend('<tr data-row data-key="' + key + '">' + rowHtml(key, $row) + '</tr>'); apply(); setPatternValue($table.find('tbody tr').first(), patternValue); $form.data('grid-dirty', true); }); });
+    $('[data-delete-legislacao]').on('click', function () { var $row = selected(); if (!$row.length) return; var key = String($row.data('key')); ask(L('confirma_excluir', 'Confirma a exclusão do registro selecionado?'), function () { if (key.indexOf('novo_') === 0) return $row.remove(); $form.find('input[name="action"]').val('delete_row'); $('<input type="hidden" name="CODLEGISLACAO">').val(key).appendTo($form); $form.data('confirmed', true).trigger('submit'); }); });
         $form.on('submit', function () { var context = associationContext(); $form.find('[data-legislacao-context]').remove(); $('<input type="hidden" name="context_empresa" data-legislacao-context>').val(context.company).appendTo($form); $('<input type="hidden" name="context_unidade" data-legislacao-context>').val(context.unit).appendTo($form); });
-    $form.on('submit', function (event) { if ($(this).data('confirmed')) { $(this).removeData('confirmed'); return; } event.preventDefault(); ask('Confirma a gravação das alterações?', function () { $form.data('confirmed', true).trigger('submit'); }); });
+    $form.on('submit', function (event) { if ($(this).data('confirmed')) { $(this).removeData('confirmed'); return; } event.preventDefault(); ask(L('confirma_gravar', 'Confirma a gravação das alterações?'), function () { $form.data('confirmed', true).trigger('submit'); }); });
     $('[data-columns]').on('click', function () { var $modal = $('#legislacaoColumnsModal'); if (!$modal.length) $modal = $('<div class="modal fade" id="legislacaoColumnsModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Colunas do grid</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="legislacaoColumnsList"></div><div class="modal-footer"><button type="button" class="btn btn-sm btn-success" data-save-legislacao-columns>Salvar colunas</button></div></div></div></div>').appendTo('body'); $('#legislacaoColumnsList').html(columns.map(function (column) { return '<label class="column-option"><input type="checkbox" data-legislacao-column="' + column + '"' + ($table.find('[data-column="' + column + '"]:first').is(':visible') ? ' checked' : '') + '> ' + $('<div>').text($table.find('th[data-column="' + column + '"] span').text()).html() + '</label>'; }).join('')); bootstrap.Modal.getOrCreateInstance($modal[0]).show(); });
     $(document).on('click', '[data-save-legislacao-columns]', function () { $('[data-legislacao-column]').each(function () { preferences[$(this).data('legislacao-column')] = preferences[$(this).data('legislacao-column')] || {}; preferences[$(this).data('legislacao-column')].visivel = this.checked ? 1 : 0; }); apply(); savePreferences(); bootstrap.Modal.getInstance(document.getElementById('legislacaoColumnsModal')).hide(); });
 }(jQuery));
 
 (function ($) {
     'use strict';
+    // textos nos três idiomas (window.greenT; chaves manutencaolegal_legislacao.js.* em classes/LegislacaoTextos.php)
+    function L(k, p, v) { var t = typeof window.greenT === 'function' ? window.greenT('manutencaolegal_legislacao.js.' + k, p) : p; if (v) Object.keys(v).forEach(function (c) { t = String(t).split('{' + c + '}').join(v[c]); }); return t; }
     var $fragment = $('.legislacao-grid-fragment'), $table = $('#legislacaoBatchGrid');
     if (!$table.length) return;
     function installPdfButtons() {
-        $table.find('td[data-column="CODIGO"]').each(function () { var $cell = $(this); if (!$cell.find('[data-open-legislacao-pdf]').length) { var language = window.greenPortalIdioma || 'pt', label = language === 'en' ? 'Full text of the standard' : (language === 'es' ? 'Texto íntegro de la norma' : 'Integra da norma'); $cell.prepend('<button type="button" class="btn btn-link btn-sm p-0 me-1 legislacao-pdf-button" data-open-legislacao-pdf data-bs-toggle="tooltip" data-bs-placement="top" title="' + label + '" aria-label="' + label + '"><i class="bi bi-file-earmark-pdf"></i></button>'); } });
+        $table.find('td[data-column="CODIGO"]').each(function () { var $cell = $(this); if (!$cell.find('[data-open-legislacao-pdf]').length) { var language = window.greenPortalIdioma || 'pt', label = language === 'en' ? 'Full text of the standard' : (language === 'es' ? 'Texto íntegro de la norma' : 'Íntegra da norma'); $cell.prepend('<button type="button" class="btn btn-link btn-sm p-0 me-1 legislacao-pdf-button" data-open-legislacao-pdf data-bs-toggle="tooltip" data-bs-placement="top" title="' + label + '" aria-label="' + label + '"><i class="bi bi-file-earmark-pdf"></i></button>'); } });
         $table.find('[data-open-legislacao-pdf]').each(function () { if (window.bootstrap && bootstrap.Tooltip && !bootstrap.Tooltip.getInstance(this)) bootstrap.Tooltip.getOrCreateInstance(this); });
     }
     function loadPdfJs() {
@@ -350,14 +360,21 @@
     }
     function openPdf($row) {
         var code = String($row.find('td[data-column="CODIGO"] input,td[data-column="CODIGO"] select').val() || '').trim();
-        if (!/^[A-Za-z0-9_-]+$/.test(code)) { window.alert('Informe um código de legislação válido.'); return; }
+        if (!/^[A-Za-z0-9_-]+$/.test(code)) { if (window.top && window.top.GreenPortalPopups && window.top.GreenPortalPopups.mensagem) window.top.GreenPortalPopups.mensagem({ mensagem: L('codigo_invalido', 'Informe um código de legislação válido.'), icone: 'bi-exclamation-triangle' }); return; }
         var url = 'legislacao_pdf.php?codigo=' + encodeURIComponent(code), $modal = $('#legislacaoPdfModal');
-        if (!$modal.length) $modal = $('<div class="modal fade" id="legislacaoPdfModal" tabindex="-1"><div class="modal-dialog modal-xl modal-dialog-centered"><div class="modal-content" style="height:90vh"><div class="modal-header py-2"><h5 class="modal-title"><i class="bi bi-file-earmark-pdf me-2"></i>Texto da Lei: <span data-legislacao-pdf-code></span></h5><div class="d-flex align-items-center gap-1"><button type="button" class="btn btn-sm btn-outline-secondary" data-pdf-prev title="Página anterior"><i class="bi bi-chevron-left"></i></button><span class="small text-muted" data-pdf-page>1 / 1</span><button type="button" class="btn btn-sm btn-outline-secondary" data-pdf-next title="Próxima página"><i class="bi bi-chevron-right"></i></button><a class="btn btn-sm btn-outline-primary" data-pdf-download download title="Baixar PDF"><i class="bi bi-download"></i></a><button type="button" class="btn-close ms-1" data-bs-dismiss="modal" aria-label="Fechar"></button></div></div><div class="modal-body p-2 text-center overflow-auto bg-secondary-subtle"><canvas data-legislacao-pdf-canvas class="shadow bg-white"></canvas><div class="small text-muted mt-2" data-pdf-message>Carregando documento...</div></div></div></div></div>').appendTo('body');
-        var documentLabel = (window.greenPortalIdioma || 'pt') === 'en' ? 'Full text of the standard' : ((window.greenPortalIdioma || 'pt') === 'es' ? 'Texto íntegro de la norma' : 'Integra da norma'); $modal.find('.modal-title').contents().filter(function () { return this.nodeType === 3; }).first().replaceWith(documentLabel + ': ');
-        var state = { pdf: null, page: 1, scale: 1.25, url: url }; $modal.data('pdf-state', state).find('[data-legislacao-pdf-code]').text(code).end().find('[data-pdf-download]').attr('href', url).end().find('[data-pdf-message]').text('Carregando documento...');
-        function renderPage() { if (!state.pdf) return; state.pdf.getPage(state.page).then(function (page) { var viewport = page.getViewport({ scale: state.scale }), canvas = $modal.find('[data-legislacao-pdf-canvas]')[0], context = canvas.getContext('2d'); canvas.width = viewport.width; canvas.height = viewport.height; return page.render({ canvasContext: context, viewport: viewport }).promise; }).then(function () { $modal.find('[data-pdf-page]').text(state.page + ' / ' + state.pdf.numPages); $modal.find('[data-pdf-prev]').prop('disabled', state.page <= 1); $modal.find('[data-pdf-next]').prop('disabled', state.page >= state.pdf.numPages); $modal.find('[data-pdf-message]').text(''); }).catch(function () { $modal.find('[data-pdf-message]').text('Não foi possível exibir o PDF. Use o botão de download.'); }); }
+        // Padrão do portal (18/11/2026): popup padrão da janela principal com o visualizador de PDF do portal (visualizador_pdf.php).
+        var hostPdf = null; try { hostPdf = window.top && window.top.GreenPortalPopups && window.top.jQuery ? window.top : null; } catch (e) { hostPdf = null; }
+        if (hostPdf) {
+            var idiomaPdf = window.greenPortalIdioma || 'pt', tituloPdf = (idiomaPdf === 'en' ? 'Full text of the standard' : (idiomaPdf === 'es' ? 'Texto íntegro de la norma' : 'Íntegra da norma')) + ': ' + code;
+            hostPdf.GreenPortalPopups.transacaoIndependente({ titulo: tituloPdf, conteudo: hostPdf.jQuery('<iframe>', { src: new URL('visualizador_pdf.php?src=' + encodeURIComponent(url) + '&nome=' + encodeURIComponent(code), window.location.href).toString(), title: tituloPdf, style: 'width:100%;height:100%;border:0;display:block;' }), redimensionavel: true });
+            return;
+        }
+        if (!$modal.length) $modal = $('<div class="modal fade" id="legislacaoPdfModal" tabindex="-1"><div class="modal-dialog modal-xl modal-dialog-centered"><div class="modal-content" style="height:90vh"><div class="modal-header py-2"><h5 class="modal-title"><i class="bi bi-file-earmark-pdf me-2"></i>' + L('texto_lei', 'Texto da Lei:') + ' <span data-legislacao-pdf-code></span></h5><div class="d-flex align-items-center gap-1"><button type="button" class="btn btn-sm btn-outline-secondary" data-pdf-prev title="' + L('pagina_anterior', 'Página anterior') + '"><i class="bi bi-chevron-left"></i></button><span class="small text-muted" data-pdf-page>1 / 1</span><button type="button" class="btn btn-sm btn-outline-secondary" data-pdf-next title="' + L('proxima_pagina', 'Próxima página') + '"><i class="bi bi-chevron-right"></i></button><a class="btn btn-sm btn-outline-primary" data-pdf-download download title="' + L('baixar_pdf', 'Baixar PDF') + '"><i class="bi bi-download"></i></a><button type="button" class="btn-close ms-1" data-bs-dismiss="modal" aria-label="' + L('fechar', 'Fechar') + '"></button></div></div><div class="modal-body p-2 text-center overflow-auto bg-secondary-subtle"><canvas data-legislacao-pdf-canvas class="shadow bg-white"></canvas><div class="small text-muted mt-2" data-pdf-message>' + L('carregando_documento', 'Carregando documento...') + '</div></div></div></div></div>').appendTo('body');
+        var documentLabel = (window.greenPortalIdioma || 'pt') === 'en' ? 'Full text of the standard' : ((window.greenPortalIdioma || 'pt') === 'es' ? 'Texto íntegro de la norma' : 'Íntegra da norma'); $modal.find('.modal-title').contents().filter(function () { return this.nodeType === 3; }).first().replaceWith(documentLabel + ': ');
+        var state = { pdf: null, page: 1, scale: 1.25, url: url }; $modal.data('pdf-state', state).find('[data-legislacao-pdf-code]').text(code).end().find('[data-pdf-download]').attr('href', url).end().find('[data-pdf-message]').text(L('carregando_documento', 'Carregando documento...'));
+        function renderPage() { if (!state.pdf) return; state.pdf.getPage(state.page).then(function (page) { var viewport = page.getViewport({ scale: state.scale }), canvas = $modal.find('[data-legislacao-pdf-canvas]')[0], context = canvas.getContext('2d'); canvas.width = viewport.width; canvas.height = viewport.height; return page.render({ canvasContext: context, viewport: viewport }).promise; }).then(function () { $modal.find('[data-pdf-page]').text(state.page + ' / ' + state.pdf.numPages); $modal.find('[data-pdf-prev]').prop('disabled', state.page <= 1); $modal.find('[data-pdf-next]').prop('disabled', state.page >= state.pdf.numPages); $modal.find('[data-pdf-message]').text(''); }).catch(function () { $modal.find('[data-pdf-message]').text(L('pdf_erro', 'Não foi possível exibir o PDF. Use o botão de download.')); }); }
         $modal.off('click', '[data-pdf-prev]').on('click', '[data-pdf-prev]', function () { if (state.page > 1) { state.page--; renderPage(); } }); $modal.off('click', '[data-pdf-next]').on('click', '[data-pdf-next]', function () { if (state.pdf && state.page < state.pdf.numPages) { state.page++; renderPage(); } });
-        bootstrap.Modal.getOrCreateInstance($modal[0]).show(); loadPdfJs().then(function (pdfjs) { return pdfjs.getDocument(url).promise; }).then(function (pdf) { state.pdf = pdf; renderPage(); }).catch(function () { $modal.find('[data-pdf-message]').text('Não foi possível exibir o PDF. Use o botão de download.'); });
+        bootstrap.Modal.getOrCreateInstance($modal[0]).show(); loadPdfJs().then(function (pdfjs) { return pdfjs.getDocument(url).promise; }).then(function (pdf) { state.pdf = pdf; renderPage(); }).catch(function () { $modal.find('[data-pdf-message]').text(L('pdf_erro', 'Não foi possível exibir o PDF. Use o botão de download.')); });
     }
     $fragment.on('click', '[data-open-legislacao-pdf]', function (event) { event.stopPropagation(); openPdf($(this).closest('tr')); });
     $fragment.on('click', '[data-export-cadastro]', function (event) { event.preventDefault(); var filters = {}; $fragment.find('[data-grid-filter], [data-column-filter]').each(function () { var key = String($(this).data('grid-filter') || $(this).data('column-filter')); var value = String($(this).val() || '').trim(); if (value !== '') filters[key] = value; }); $.post(window.location.href, { action: 'export_request', filtros: JSON.stringify(filters), busca: String($fragment.find('.crud-search input').val() || '').trim(), ajax: 1 }, function (response) { if (response && response.ok) window.alert(response.message || 'Exportação solicitada.'); else window.alert('Não foi possível solicitar a exportação.'); }, 'json').fail(function () { window.alert('Não foi possível solicitar a exportação.'); }); });

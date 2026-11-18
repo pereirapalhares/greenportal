@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once dirname(__DIR__) . '/classes/AdministracaoTextos.php';
 /*
  * Dashboard da empresa (ADMINISTRADOR e ADM DA EMPRESA), em abas:
  *   Visão geral · Atendimento legal · Licenças e entregas · Pendências e equipe · Não conformidades · Fornecedores ·
@@ -84,12 +85,12 @@ $cartao = static fn(string $rotulo, mixed $valor, string $icone, string $tom, st
     '<article class="admin-card ' . $tom . ($abaAlvo !== '' ? ' dash-link" data-ir-aba="' . $abaAlvo : '') . ($atributos !== '' ? ' dash-link"' . $atributos . ' title="' . $e($T('abrir_dica', ['pt' => 'Clique para abrir', 'en' => 'Click to open', 'es' => 'Haga clic para abrir'])) : '') . '"><i class="bi ' . $icone . '"></i><strong>' . $valor . '</strong><span>' . $rotulo . '</span>' . ($extra !== '' ? '<small>' . $extra . '</small>' : '') . '</article>';
 $numLink = static fn(int $n, string $atributos, string $classe = ''): string => $n > 0 ? '<a class="dash-num' . ($classe !== '' ? ' ' . $classe : '') . '"' . $atributos . '>' . $n . '</a>' : '0';
 
-// Migração 367: o cartão filtra a tabela #id da mesma aba (assets/js/dashboard-abas.js)
+// Migração 367: o cartão filtra a tabela #id da mesma aba (assets/js/dashboard-abas.js?v=i3)
 $filtro = static fn(string $id, string $valor, string $rotulo): string => ' data-dash-filtro="' . $e($id) . '" data-dash-valor="' . $e($valor) . '" data-dash-rotulo="' . $e($rotulo) . '"';
 // Migração 341: lente do risco no Atendimento legal (cartões, matriz risco × % de atendimento, por unidade, pendências críticas)
-$rotRisco = ['CRITICO' => [$T('risco.critico', ['pt' => 'Crítico', 'en' => 'Critical', 'es' => 'Crítico']), '#dc3545', 'Crítico'], 'ALTO' => [$T('risco.alto', ['pt' => 'Alto', 'en' => 'High', 'es' => 'Alto']), '#fd7e14', 'Alto'],
+$rotRisco = ['CRITICO' => [$T('risco.critico', ['pt' => 'Crítico', 'en' => 'Critical', 'es' => 'Crítico']), '#dc3545', adm_t('Crítico')], 'ALTO' => [$T('risco.alto', ['pt' => 'Alto', 'en' => 'High', 'es' => 'Alto']), '#fd7e14', 'Alto'],
     'MODERADO' => [$T('risco.moderado', ['pt' => 'Moderado', 'en' => 'Moderate', 'es' => 'Moderado']), '#d39e00', 'Moderado'], 'BAIXO' => [$T('risco.baixo', ['pt' => 'Baixo', 'en' => 'Low', 'es' => 'Bajo']), '#2f8a5f', 'Baixo'],
-    'NAO_AVALIADO' => [$T('risco.nao_avaliado', ['pt' => 'Não avaliado', 'en' => 'Not assessed', 'es' => 'No evaluado']), '#9aa8a1', 'Não avaliado']];
+    'NAO_AVALIADO' => [$T('risco.nao_avaliado', ['pt' => 'Não avaliado', 'en' => 'Not assessed', 'es' => 'No evaluado']), '#9aa8a1', adm_t('Não avaliado')]];
 $blocoRisco = static function (array $unidades, array $matriz, callable $abrirReq) use ($e, $T, $cartao, $rotRisco): string {
     $t = ['ITENS_APLICAVEIS' => 0, 'ITENS_ATENDIDOS' => 0, 'PENDENCIAS_CRITICAS' => 0, 'REQUISITOS_PENDENCIA_CRITICA' => 0];
     foreach (array_keys($rotRisco) as $k) $t['RISCO_' . $k] = 0;
@@ -211,13 +212,13 @@ if ($aba !== '') {
         usort($unidades, static fn($a, $b) => strnatcasecmp((string)$a['UNIDADE'], (string)$b['UNIDADE']));
         $total = array_sum($tot);
         $filtroBase = ['LEI_REVOGADA' => 'NAO'];
-        $naoAtendidos = $sel('vw_modulolegal_requisitos_situacao_grid', $filtroBase + ['SITUACAO_CONSOLIDADA' => 'Não atendido'], 5000) ?? [];
-        $divergentes = $sel('vw_modulolegal_requisitos_situacao_grid', $filtroBase + ['DIVERGENCIA' => 'Sim'], 5000) ?? [];
+        $naoAtendidos = $sel('vw_modulolegal_requisitos_situacao_grid', $filtroBase + ['SITUACAO_CONSOLIDADA' => adm_t('Não atendido')], 5000) ?? [];
+        $divergentes = $sel('vw_modulolegal_requisitos_situacao_grid', $filtroBase + ['DIVERGENCIA' => adm_t('Sim')], 5000) ?? [];
         $relatorios = $sel('exportacoes_grid', ['transacao' => 'modulolegal_relatorio_atendimento'], 1000) ?? [];
         usort($relatorios, static fn($a, $b) => (int)$b['codexportacaogrid'] <=> (int)$a['codexportacaogrid']);
         $relatorios = array_slice($relatorios, 0, 6);
         $tituloReq = $T('legal.requisitos_legais', ['pt' => 'Requisitos legais', 'en' => 'Legal requirements', 'es' => 'Requisitos legales']);
-        $valorSit = ['S' => 'Atendido', 'PA' => 'Parcialmente atendido', 'N' => 'Não atendido', 'AI' => 'Indefinido'];
+        $valorSit = ['S' => adm_t('Atendido'), 'PA' => adm_t('Parcialmente atendido'), 'N' => adm_t('Não atendido'), 'AI' => adm_t('Indefinido')];
         $abrirReq = static fn(array $f, string $sub) => $abrir('modulolegal_requisitoslegais.php', ['LEI_REVOGADA' => 'NAO'] + $f, $tituloReq . ' - ' . $sub);
         $h = '<div class="admin-cards dash-cards-6">'
             . $cartao($e($T('legal.requisitos', ['pt' => 'Requisitos aplicáveis', 'en' => 'Applicable requirements', 'es' => 'Requisitos aplicables'])), $total, 'bi-journal-text', 'blue', '', '', $abrir('modulolegal_requisitoslegais.php', ['LEI_REVOGADA' => 'NAO'], $tituloReq));
@@ -261,7 +262,7 @@ if ($aba !== '') {
         $h .= '<article class="admin-panel" id="dash-legal-unidade"><h3><i class="bi bi-buildings me-1"></i>' . $e($T('legal.por_unidade', ['pt' => 'Por unidade', 'en' => 'By unit', 'es' => 'Por unidad'])) . '</h3>'
             . $tabelaCont($T('col.unidade', ['pt' => 'Unidade', 'en' => 'Unit', 'es' => 'Unidad']), array_map(static fn($u) => [(string)$u['UNIDADE'], ['S' => (int)$u['S'], 'PA' => (int)$u['PA'], 'N' => (int)$u['N'], 'AI' => (int)$u['AI']], ['UNIDADE' => ['value' => (string)$u['UNIDADE'], 'exact' => true]]], $unidades)) . '</article>';
         $h .= '<article class="admin-panel"><h3><i class="bi bi-diagram-3 me-1"></i>' . $e($T('legal.por_area', ['pt' => 'Por área', 'en' => 'By area', 'es' => 'Por área'])) . '</h3>'
-            . $tabelaCont($T('col.area', ['pt' => 'Área', 'en' => 'Area', 'es' => 'Área']), array_map(static fn($p) => [$nomesArea[$p], ['S' => $areas[$p]['S'], 'PA' => $areas[$p]['PA'], 'N' => $areas[$p]['N'], 'AI' => $areas[$p]['TOTAL'] - $areas[$p]['S'] - $areas[$p]['PA'] - $areas[$p]['N']], [$colArea[$p] => ['value' => 'Sim', 'exact' => true]]], array_keys($areas))) . '</article></div>';
+            . $tabelaCont($T('col.area', ['pt' => 'Área', 'en' => 'Area', 'es' => 'Área']), array_map(static fn($p) => [$nomesArea[$p], ['S' => $areas[$p]['S'], 'PA' => $areas[$p]['PA'], 'N' => $areas[$p]['N'], 'AI' => $areas[$p]['TOTAL'] - $areas[$p]['S'] - $areas[$p]['PA'] - $areas[$p]['N']], [$colArea[$p] => ['value' => adm_t('Sim'), 'exact' => true]]], array_keys($areas))) . '</article></div>';
         $quadroUnidade = $h;
         // Migração 368: listas de requisitos no grid padrão (abrem a situação do requisito)
         $lista = static function (string $titulo, string $icone, array $linhas, string $vazio, string $id) use ($T): array {
@@ -626,5 +627,5 @@ $perfilRotulo = $administrador ? $T('admin.perfil', ['pt' => 'ADMINISTRADOR', 'e
 <?php foreach (array_keys($abas) as $id): if ($id === 'geral') continue; ?><section data-painel="<?= $id ?>" hidden><div class="dash-carregando"><span class="spinner-border spinner-border-sm me-2"></span><?= $e($T('carregando', ['pt' => 'Carregando indicadores...', 'en' => 'Loading indicators...', 'es' => 'Cargando indicadores...'])) ?></div></section><?php endforeach; ?>
 </main>
 <?php DashboardGrid::scripts(); ?>
-<script src="../assets/js/dashboard-abas.js?v=6"></script>
+<?= AdministracaoTextos::script() ?><script src="../assets/js/dashboard-abas.js?v=6-i3"></script>
 </body></html>

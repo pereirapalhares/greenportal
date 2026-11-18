@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/AdministracaoTextos.php';
+
+require_once __DIR__ . '/IdiomaService.php';
 
 /**
  * Guia do usuário: conteúdo universal (guniversal_dbp) com rascunho e versões publicadas.
@@ -101,7 +104,7 @@ final class GuiaUsuarioService
     public function publicar(int $revisao, string $observacao, array $autor): array
     {
         $rascunho = $this->rascunho();
-        if (!$rascunho) throw new RuntimeException('Rascunho do guia não inicializado.');
+        if (!$rascunho) throw new RuntimeException(adm_t('Rascunho do guia não inicializado.'));
         $this->validarParaPublicacao($this->normalizar($rascunho['conteudo']));
         $observacao = mb_substr(trim(preg_replace('/\s+/u', ' ', $observacao) ?? ''), 0, 500);
         $rows = $this->chamar('CALL sp_guia_usuario_publicar(?, ?, ?, ?, ?)', [$revisao, $observacao, ...$this->autor($autor)]);
@@ -255,24 +258,24 @@ final class GuiaUsuarioService
     {
         $erros = [];
         $ativos = array_filter($doc['modulos'], static fn(array $m): bool => !empty($m['ativo']));
-        if (!$ativos) $erros[] = 'Inclua ao menos uma aba ativa.';
-        foreach ($doc['perfis'] as $chave => $perfil) if ($perfil['nome']['pt'] === '') $erros[] = 'Perfil "' . $chave . '" sem nome em português.';
+        if (!$ativos) $erros[] = adm_t('Inclua ao menos uma aba ativa.');
+        foreach ($doc['perfis'] as $chave => $perfil) if ($perfil['nome']['pt'] === '') $erros[] = 'Perfil "' . $chave . adm_t('" sem nome em português.');
         foreach ($doc['modulos'] as $m) {
             if (empty($m['ativo'])) continue; // abas ocultas podem ficar em construção
             $nome = $m['nome']['pt'] !== '' ? $m['nome']['pt'] : $m['id'];
-            if ($m['nome']['pt'] === '') $erros[] = 'Aba "' . $m['id'] . '" sem nome em português.';
+            if ($m['nome']['pt'] === '') $erros[] = 'Aba "' . $m['id'] . adm_t('" sem nome em português.');
             foreach ($m['fases'] as $i => $fase) {
-                if ($fase['nome']['pt'] === '') $erros[] = $nome . ': fase ' . ($i + 1) . ' sem nome.';
-                foreach ($fase['passos'] as $j => $passo) if ($passo['titulo']['pt'] === '') $erros[] = $nome . ': etapa ' . ($i + 1) . '.' . ($j + 1) . ' sem título.';
+                if ($fase['nome']['pt'] === '') $erros[] = $nome . ': fase ' . ($i + 1) . adm_t(' sem nome.');
+                foreach ($fase['passos'] as $j => $passo) if ($passo['titulo']['pt'] === '') $erros[] = $nome . ': etapa ' . ($i + 1) . '.' . ($j + 1) . adm_t(' sem título.');
             }
-            foreach ($m['tarefas'] as $i => $tarefa) if ($tarefa['titulo']['pt'] === '') $erros[] = $nome . ': "Como fazer" ' . ($i + 1) . ' sem título.';
-            foreach ($m['termos'] as $i => $termo) if ($termo['termo']['pt'] === '') $erros[] = $nome . ': termo ' . ($i + 1) . ' sem nome.';
+            foreach ($m['tarefas'] as $i => $tarefa) if ($tarefa['titulo']['pt'] === '') $erros[] = $nome . adm_t(': "Como fazer" ') . ($i + 1) . adm_t(' sem título.');
+            foreach ($m['termos'] as $i => $termo) if ($termo['termo']['pt'] === '') $erros[] = $nome . ': termo ' . ($i + 1) . adm_t(' sem nome.');
             foreach ($m['guias'] ?? [] as $i => $guia) {
                 $tg = $guia['titulo']['pt'] !== '' ? $guia['titulo']['pt'] : 'guia ' . ($i + 1);
-                if ($guia['titulo']['pt'] === '') $erros[] = $nome . ': guia passo a passo ' . ($i + 1) . ' sem título.';
-                if (!$guia['passos']) $erros[] = $nome . ': guia "' . $tg . '" sem passos.';
-                foreach ($guia['passos'] as $j => $passo) if ($passo['texto']['pt'] === '') $erros[] = $nome . ': guia "' . $tg . '", passo ' . ($j + 1) . ' sem texto.';
-                if (!$guia['telas']) $erros[] = $nome . ': guia "' . $tg . '" sem tela onde aparece.';
+                if ($guia['titulo']['pt'] === '') $erros[] = $nome . ': guia passo a passo ' . ($i + 1) . adm_t(' sem título.');
+                if (!$guia['passos']) $erros[] = $nome . ': guia "' . $tg . adm_t('" sem passos.');
+                foreach ($guia['passos'] as $j => $passo) if ($passo['texto']['pt'] === '') $erros[] = $nome . ': guia "' . $tg . '", passo ' . ($j + 1) . adm_t(' sem texto.');
+                if (!$guia['telas']) $erros[] = $nome . ': guia "' . $tg . adm_t('" sem tela onde aparece.');
             }
         }
         if ($erros) throw new InvalidArgumentException("Corrija antes de publicar:\n- " . implode("\n- ", array_slice($erros, 0, 12)));
@@ -282,12 +285,12 @@ final class GuiaUsuarioService
     public static function mensagemErro(Throwable $e): array
     {
         $msg = $e->getMessage();
-        if (str_contains($msg, 'CONFLITO_REVISAO')) return [409, 'Outro administrador alterou o rascunho enquanto você editava. Recarregue a tela para ver a versão mais recente.'];
-        if (str_contains($msg, 'SEM_ALTERACOES')) return [422, 'O rascunho é igual à versão publicada. Não há nada novo para publicar.'];
+        if (str_contains($msg, 'CONFLITO_REVISAO')) return [409, adm_t('Outro administrador alterou o rascunho enquanto você editava. Recarregue a tela para ver a versão mais recente.')];
+        if (str_contains($msg, 'SEM_ALTERACOES')) return [422, adm_t('O rascunho é igual à versão publicada. Não há nada novo para publicar.')];
         if ($e instanceof InvalidArgumentException) return [422, $msg];
-        if (preg_match('/1644\s+(.+)$/u', $msg, $m)) return [422, trim($m[1])];
+        if (preg_match('/1644\s+(.+)$/u', $msg, $m)) return [422, IdiomaService::mensagemBanco(trim($m[1]))];
         error_log('GuiaUsuarioService: ' . $msg);
-        return [500, 'Não foi possível concluir a operação no guia.'];
+        return [500, adm_t('Não foi possível concluir a operação no guia.')];
     }
 
     private function texto(mixed $valor, int $limite): array
@@ -348,8 +351,8 @@ final class GuiaUsuarioService
     private function codificar(array $doc): string
     {
         $json = json_encode($doc, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if ($json === false) throw new InvalidArgumentException('Conteúdo do guia inválido.');
-        if (strlen($json) > self::MAX_JSON_BYTES) throw new InvalidArgumentException('O guia ficou grande demais para ser salvo.');
+        if ($json === false) throw new InvalidArgumentException(adm_t('Conteúdo do guia inválido.'));
+        if (strlen($json) > self::MAX_JSON_BYTES) throw new InvalidArgumentException(adm_t('O guia ficou grande demais para ser salvo.'));
         return $json;
     }
 

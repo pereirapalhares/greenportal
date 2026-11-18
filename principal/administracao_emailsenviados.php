@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once dirname(__DIR__) . '/classes/AdministracaoTextos.php';
 
 /*
  * Administração › E-mails enviados (migração 333, 22/10/2026): fila de e-mails da empresa (email_fila), enviada pelo serviço
@@ -18,10 +19,10 @@ $perm = PermissaoTransacao::obter(NaoConformidadeAdministracao::MENU_EMAILS);
 $e = static fn(mixed $v): string => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 $A = NaoConformidadeAdministracao::class;
 $idioma = IdiomaService::idioma();
-$aviso = SmtpCliente::configurado(GreenPortalDatabase::env()) ? '' : 'Servidor de e-mail (SMTP) ainda não configurado no servidor: os e-mails ficam pendentes até a configuração.';
+$aviso = SmtpCliente::configurado(GreenPortalDatabase::env()) ? '' : adm_t('Servidor de e-mail (SMTP) ainda não configurado no servidor: os e-mails ficam pendentes até a configuração.');
 $rows = [];
-$situacao = ['PENDENTE' => 'Pendente', 'PROCESSANDO' => 'Enviando', 'CONCLUIDA' => 'Enviado', 'ERRO' => 'Erro', 'CANCELADA' => 'Cancelado'];
-$origem = ['NAO_CONFORMIDADE' => 'Não conformidade'];
+$situacao = ['PENDENTE' => adm_t('Pendente'), 'PROCESSANDO' => adm_t('Enviando'), 'CONCLUIDA' => adm_t('Enviado'), 'ERRO' => adm_t('Erro'), 'CANCELADA' => adm_t('Cancelado')];
+$origem = ['NAO_CONFORMIDADE' => adm_t('Não conformidade')];
 try {
     $fila = $A::ler($pdo, 'vw_email_fila', [], 6000);
     usort($fila, static fn($a, $b) => (int)$b['codemail'] <=> (int)$a['codemail']);
@@ -48,7 +49,7 @@ try {
 }
 ?>
 <!doctype html><html lang="<?= $idioma === 'pt' ? 'pt-BR' : $e($idioma) ?>"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>E-mails enviados</title>
+<title><?= adm_h('E-mails enviados') ?></title>
 <link href="../assets/vendor/bootstrap/css/bootstrap.min.css?v=2" rel="stylesheet"><link href="../assets/vendor/bootstrap-icons/font/bootstrap-icons.min.css?v=2" rel="stylesheet">
 <?php greenPortalGridLocalHead(); ?>
 <style>.emails-grid-fragment th[data-column="CRIADO_EM"],.emails-grid-fragment th[data-column="ENVIADO_EM"]{width:120px}.emails-grid-fragment th[data-column="PARA"]{width:24%}
@@ -58,19 +59,19 @@ try {
 <?php greenPortalGridLocal([
     'transaction' => 'administracao_emailsenviados', 'fragment_class' => 'emails-grid-fragment', 'id' => 'emailsGrid',
     'columns' => [
-        'CRIADO_EM' => ['label' => 'Criado em', 'filter' => 'none'],
-        'PARA' => ['label' => 'Para'],
-        'ASSUNTO' => ['label' => 'Assunto'],
-        'ORIGEM' => ['label' => 'Origem', 'filter' => 'select'],
-        'STATUS' => ['label' => 'Situação', 'filter' => 'select'],
-        'TENTATIVAS' => ['label' => 'Tentativas', 'filter' => 'none'],
-        'ENVIADO_EM' => ['label' => 'Enviado em', 'filter' => 'none'],
-        'ERRO' => ['label' => 'Último erro'],
+        'CRIADO_EM' => ['label' => adm_t('Criado em'), 'filter' => 'none'],
+        'PARA' => ['label' => adm_t('Para')],
+        'ASSUNTO' => ['label' => adm_t('Assunto')],
+        'ORIGEM' => ['label' => adm_t('Origem'), 'filter' => 'select'],
+        'STATUS' => ['label' => adm_t('Situação'), 'filter' => 'select'],
+        'TENTATIVAS' => ['label' => adm_t('Tentativas'), 'filter' => 'none'],
+        'ENVIADO_EM' => ['label' => adm_t('Enviado em'), 'filter' => 'none'],
+        'ERRO' => ['label' => adm_t('Último erro')],
     ],
     'cell_boxes' => true, 'buttons' => ['columns' => true],
-    'extras' => !empty($perm['pode_editar']) ? '<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-grid-acao-linha="reenviar" disabled title="Reenviar o e-mail selecionado (só os com erro)" aria-label="Reenviar o e-mail selecionado"><i class="bi bi-arrow-repeat"></i></button>' : '',
+    'extras' => !empty($perm['pode_editar']) ? ('<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-grid-acao-linha="reenviar" disabled title="' . adm_a('Reenviar o e-mail selecionado (só os com erro)') . '" aria-label="' . adm_a('Reenviar o e-mail selecionado') . '"><i class="bi bi-arrow-repeat"></i></button>') : '',
     'rows' => $rows, 'default_sort' => ['CRIADO_EM', 'desc'],
-    'empty' => 'Nenhum e-mail na fila.',
+    'empty' => adm_t('Nenhum e-mail na fila.'),
     'notice' => $aviso,
 ]); ?>
 <?php greenPortalGridLocalScripts(); ?>

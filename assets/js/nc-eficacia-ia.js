@@ -8,10 +8,11 @@
  */
 (function () {
   'use strict';
+  function T(k, p) { return typeof window.greenT === 'function' ? window.greenT('naoconformidades.js.' + k, p) : p; }
   var C, H, IA, modal, corpo, botao, botoes = {}, codanalise = 0, parecer = null, ocupado = false;
   var CORES = { EFICAZ: 'text-bg-success', NAO_EFICAZ: 'text-bg-danger', INCONCLUSIVO: 'text-bg-warning', ATENDE: 'text-bg-success', PARCIAL: 'text-bg-warning', NAO_ATENDE: 'text-bg-danger', SEM_DADOS: 'text-bg-secondary' };
-  var ABAS = [['parecer', 'Parecer', 'bi-clipboard-check'], ['acoes', 'Ações e evidências', 'bi-list-check'], ['recorrencias', 'Recorrências', 'bi-arrow-repeat'],
-    ['falta', 'Falta comprovar', 'bi-question-circle'], ['texto', 'Texto da verificação', 'bi-journal-text']];
+  var ABAS = [['parecer', T('parecer', 'Parecer'), 'bi-clipboard-check'], ['acoes', T('acoes_evidencias', 'Ações e evidências'), 'bi-list-check'], ['recorrencias', T('recorrencias', 'Recorrências'), 'bi-arrow-repeat'],
+    ['falta', T('falta_comprovar', 'Falta comprovar'), 'bi-question-circle'], ['texto', T('texto_verificacao', 'Texto da verificação'), 'bi-journal-text']];
 
   function el(tag, attrs, filhos) {
     var e = document.createElement(tag);
@@ -30,8 +31,8 @@
     return fetch(C.url + '?codigo=' + C.codigo + '&acao=iaeficacia', {
       method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': C.csrf, 'X-Requested-With': 'XMLHttpRequest' },
       body: JSON.stringify({ sub: sub, dados: dados || {} })
-    }).then(function (r) { return r.json().catch(function () { return { ok: false, message: 'Resposta inválida do servidor.' }; }); })
-      .then(function (res) { if (!res.ok) throw new Error(res.message || 'Não foi possível concluir.'); return res; });
+    }).then(function (r) { return r.json().catch(function () { return { ok: false, message: T('resposta_invalida', 'Resposta inválida do servidor.') }; }); })
+      .then(function (res) { if (!res.ok) throw new Error(res.message || T('nao_concluiu', 'Não foi possível concluir.')); return res; });
   }
   function estado(pronto) { botoes.aplicar.disabled = !pronto || ocupado; botoes.descartar.disabled = !codanalise || ocupado; botoes.nova.disabled = ocupado; }
   function mensagem(texto, tipo, girando) {
@@ -54,17 +55,17 @@
     if (ocupado) return; ocupado = true; botao.disabled = true;
     post('solicitar', {}).then(function (res) {
       ocupado = false; IA.pronta = 0; IA.pendente = true; botao.disabled = true;
-      botao.innerHTML = '<i class="bi bi-hourglass-split"></i>'; botao.title = 'Parecer da IA em processamento'; botao.setAttribute('aria-label', 'Parecer da IA em processamento'); if (botao.parentElement && botao.parentElement.hasAttribute('data-disabled-tooltip-wrapper')) botao.parentElement.title = 'Parecer da IA em processamento';
-      if (botao.parentNode) botao.parentNode.title = 'A resposta chega nos Alertas; até lá não é possível pedir outro.';
-      popup('Avaliação da eficácia com IA', res.message, 'bi-stars', 'success');
-    }).catch(function (e) { ocupado = false; botao.disabled = false; popup('Avaliação da eficácia com IA', e.message, 'bi-exclamation-triangle', 'danger'); });
+      botao.innerHTML = '<i class="bi bi-hourglass-split"></i>'; botao.title = T('iaef_processando', 'Parecer da IA em processamento'); botao.setAttribute('aria-label', T('iaef_processando', 'Parecer da IA em processamento')); if (botao.parentElement && botao.parentElement.hasAttribute('data-disabled-tooltip-wrapper')) botao.parentElement.title = T('iaef_processando', 'Parecer da IA em processamento');
+      if (botao.parentNode) botao.parentNode.title = T('iaef_espere', 'A resposta chega nos Alertas; até lá não é possível pedir outro.');
+      popup(T('iaef_titulo', 'Avaliação da eficácia com IA'), res.message, 'bi-stars', 'success');
+    }).catch(function (e) { ocupado = false; botao.disabled = false; popup(T('iaef_titulo', 'Avaliação da eficácia com IA'), e.message, 'bi-exclamation-triangle', 'danger'); });
   }
   function consultar() {
-    estado(false); mensagem('Abrindo o parecer da IA...', 'secondary', true);
+    estado(false); mensagem(T('iaef_abrindo', 'Abrindo o parecer da IA...'), 'secondary', true);
     post('consultar', { codanalise: codanalise }).then(function (res) {
       if (res.status === 'SUGERIDA') { parecer = res; desenhar(res); estado(true); return; }
-      if (res.status === 'ERRO') { mensagem('A IA não conseguiu responder: ' + (res.erro || 'erro') + ' Use "Pedir outro parecer" para tentar de novo.', 'danger'); estado(false); return; }
-      mensagem('O pedido ainda está na fila da IA (' + (res.job_status || 'pendente') + '). A resposta chega nos Alertas.', 'warning'); estado(false);
+      if (res.status === 'ERRO') { mensagem(T('ia_nao_respondeu', 'A IA não conseguiu responder: ') + (res.erro || 'erro') + T('iaef_pedir_outro', ' Use "Pedir outro parecer" para tentar de novo.'), 'danger'); estado(false); return; }
+      mensagem(T('ia_na_fila', 'O pedido ainda está na fila da IA (') + (res.job_status || 'pendente') + T('ia_na_fila2', '). A resposta chega nos Alertas.'), 'warning'); estado(false);
     }).catch(function (e) { mensagem(e.message, 'danger'); codanalise = 0; IA.pronta = 0; estado(false); });
   }
 
@@ -86,35 +87,35 @@
     var tabela = function (cab, larg) { var t = el('table', { class: 'table table-sm align-top nc-tabela mb-2' }), tr = el('tr'); cab.forEach(function (c, i) { tr.appendChild(el('th', { text: c, style: larg[i] ? 'width:' + larg[i] : '' })); }); t.appendChild(el('thead', {}, [tr])); var b = el('tbody'); t.appendChild(b); return [t, b]; };
 
     // Parecer
-    pane.parecer.appendChild(el('div', { class: 'd-flex align-items-center gap-2 mb-2' }, [el('span', { class: 'small text-muted', text: 'Parecer sugerido:' }), selo(p.parecer, p.parecer_rotulo),
-      p.confianca ? el('span', { class: 'small text-muted', text: 'confiança ' + p.confianca + '%' }) : null]));
+    pane.parecer.appendChild(el('div', { class: 'd-flex align-items-center gap-2 mb-2' }, [el('span', { class: 'small text-muted', text: T('parecer_sugerido', 'Parecer sugerido:') }), selo(p.parecer, p.parecer_rotulo),
+      p.confianca ? el('span', { class: 'small text-muted', text: T('confianca', 'confiança ') + p.confianca + '%' }) : null]));
     if (p.resumo) pane.parecer.appendChild(el('div', { class: 'alert alert-light border py-2 small mb-2', text: p.resumo }));
     if ((p.criterios || []).length) {
-      var tc = tabela(['Critério', 'Avaliação', 'Comentário'], ['260px', '140px', '']);
+      var tc = tabela([T('criterio', 'Critério'), T('avaliacao', 'Avaliação'), T('comentario', 'Comentário')], ['260px', '140px', '']);
       p.criterios.forEach(function (c) { tc[1].appendChild(el('tr', {}, [el('td', { text: c.criterio }), el('td', {}, [selo(c.avaliacao, IA.avaliacoes[c.avaliacao])]), el('td', { text: c.comentario || '' })])); });
       pane.parecer.appendChild(tc[0]);
     }
-    pane.parecer.appendChild(el('div', { class: 'small text-muted', text: 'O resultado da avaliação continua sendo decisão do gestor: "Levar para a verificação" só preenche a tela para você conferir e aplicar.' }));
+    pane.parecer.appendChild(el('div', { class: 'small text-muted', text: T('iaef_decisao', 'O resultado da avaliação continua sendo decisão do gestor: "Levar para a verificação" só preenche a tela para você conferir e aplicar.') }));
 
     // Ações e evidências
-    if (!(p.acoes || []).length) vazio('acoes', 'A IA não comentou as ações do plano.');
+    if (!(p.acoes || []).length) vazio('acoes', T('iaef_sem_acoes', 'A IA não comentou as ações do plano.'));
     else {
-      var ta = tabela(['#', 'Ação', 'Status', 'Avaliação', 'Comentário da IA'], ['36px', '30%', '70px', '130px', '']);
+      var ta = tabela(['#', T('acao', 'Ação'), T('status', 'Status'), T('avaliacao', 'Avaliação'), T('comentario_ia', 'Comentário da IA')], ['36px', '30%', '70px', '130px', '']);
       p.acoes.forEach(function (a) { ta[1].appendChild(el('tr', {}, [el('td', { text: String(a.numero) }), el('td', { text: a.acao }), el('td', { text: a.status + '%' }), el('td', {}, [selo(a.avaliacao, IA.avaliacoes[a.avaliacao])]), el('td', { text: a.comentario || '' })])); });
       pane.acoes.appendChild(ta[0]);
     }
 
     // Recorrências
     (p.recorrencias || []).forEach(function (r) { pane.recorrencias.appendChild(el('div', { class: 'alert alert-warning py-2 small mb-2' }, [el('b', { text: 'NC ' + r.nc + ': ' }), r.comentario || ''])); });
-    if (!sem.length) vazio('recorrencias', 'Nenhuma NC parecida foi aberta depois desta (entre as que você pode ver).');
+    if (!sem.length) vazio('recorrencias', T('iaef_sem_recorrencia', 'Nenhuma NC parecida foi aberta depois desta (entre as que você pode ver).'));
     else {
-      var tr = tabela(['NC', 'Aberta em', 'Sumário', 'Situação'], ['120px', '170px', '', '220px']);
+      var tr = tabela(['NC', T('aberta_em', 'Aberta em'), T('sumario', 'Sumário'), T('situacao', 'Situação')], ['120px', '170px', '', '220px']);
       sem.forEach(function (n) {
-        tr[1].appendChild(el('tr', {}, [el('td', {}, [el('a', { href: C.url + '?codigo=' + n.codigo + '&aba=ocorrencia', 'data-iaef-nc': n.codigo, text: 'NC ' + n.nrano, title: 'Abrir a NC' })]),
-          el('td', {}, [(n.data || '').split('-').reverse().join('/'), n.depois ? el('span', { class: 'badge text-bg-danger ms-1', text: 'depois do plano', title: 'Aberta depois do envio desta NC para a avaliação da eficácia' }) : null]),
+        tr[1].appendChild(el('tr', {}, [el('td', {}, [el('a', { href: C.url + '?codigo=' + n.codigo + '&aba=ocorrencia', 'data-iaef-nc': n.codigo, text: 'NC ' + n.nrano, title: T('abrir_nc', 'Abrir a NC') })]),
+          el('td', {}, [(n.data || '').split('-').reverse().join('/'), n.depois ? el('span', { class: 'badge text-bg-danger ms-1', text: 'depois do plano', title: T('aberta_depois', 'Aberta depois do envio desta NC para a avaliação da eficácia') }) : null]),
           el('td', { text: n.sumario || '' }), el('td', { text: (n.etapa || '') + (n.situacao ? ' / ' + n.situacao : '') })]));
       });
-      pane.recorrencias.appendChild(el('div', { class: 'small text-muted mb-1', text: 'NCs parecidas abertas depois desta que a IA considerou.' }));
+      pane.recorrencias.appendChild(el('div', { class: 'small text-muted mb-1', text: T('iaef_parecidas', 'NCs parecidas abertas depois desta que a IA considerou.') }));
       pane.recorrencias.appendChild(tr[0]);
     }
 
@@ -127,23 +128,23 @@
     if ((p.alertas || []).length) {
       var ua = el('ul', { class: 'mb-0 ps-3' });
       p.alertas.forEach(function (a) { ua.appendChild(el('li', { text: a })); });
-      pane.falta.appendChild(el('div', { class: 'alert alert-warning py-2 small' }, [el('b', { text: 'Pontos de atenção' }), ua]));
+      pane.falta.appendChild(el('div', { class: 'alert alert-warning py-2 small' }, [el('b', { text: T('pontos_atencao', 'Pontos de atenção') }), ua]));
     }
-    if (!qtd.falta) vazio('falta', 'A IA não apontou pendências de comprovação.');
+    if (!qtd.falta) vazio('falta', T('iaef_sem_falta', 'A IA não apontou pendências de comprovação.'));
 
     // Texto da verificação (e motivo da devolução, se não eficaz)
     var bloco = el('div', { 'data-iaef-texto': '' });
     if (p.verificacao_da_eficacia) {
       var modo = IA.verificacao_atual ? 'acrescentar' : 'substituir', radios = el('div', { class: 'd-flex gap-3 small mb-1 flex-wrap' });
-      [['manter', 'Não alterar a verificação'], ['acrescentar', 'Acrescentar ao texto atual'], ['substituir', IA.verificacao_atual ? 'Substituir o texto atual' : 'Usar este texto']].forEach(function (o) {
+      [['manter', T('nao_alterar_verif', 'Não alterar a verificação')], ['acrescentar', T('acrescentar', 'Acrescentar ao texto atual')], ['substituir', IA.verificacao_atual ? T('substituir', 'Substituir o texto atual') : T('usar_texto', 'Usar este texto')]].forEach(function (o) {
         if (o[0] === 'acrescentar' && !IA.verificacao_atual) return;
         radios.appendChild(el('label', { class: 'form-check-label' }, [el('input', { type: 'radio', class: 'form-check-input me-1', name: 'iaEfModo', value: o[0], checked: o[0] === modo }), o[1]]));
       });
-      bloco.appendChild(el('h6', { class: 'mb-1', text: 'Verificação da eficácia' })); bloco.appendChild(radios);
+      bloco.appendChild(el('h6', { class: 'mb-1', text: T('verificacao', 'Verificação da eficácia') })); bloco.appendChild(radios);
       bloco.appendChild(el('textarea', { class: 'form-control form-control-sm mb-2', rows: '7', 'data-campo': 'verificacao', value: p.verificacao_da_eficacia }));
-    } else bloco.appendChild(el('div', { class: 'small text-muted py-2', text: 'A IA não sugeriu texto para a verificação da eficácia.' }));
+    } else bloco.appendChild(el('div', { class: 'small text-muted py-2', text: T('iaef_sem_texto', 'A IA não sugeriu texto para a verificação da eficácia.') }));
     if (p.parecer === 'NAO_EFICAZ') {
-      bloco.appendChild(el('label', { class: 'form-check-label small' }, [el('input', { type: 'checkbox', class: 'form-check-input me-1', 'data-campo': 'usar_motivo', checked: !!p.motivo_nao_eficaz }), 'Preencher o motivo da devolução ao responsável']));
+      bloco.appendChild(el('label', { class: 'form-check-label small' }, [el('input', { type: 'checkbox', class: 'form-check-input me-1', 'data-campo': 'usar_motivo', checked: !!p.motivo_nao_eficaz }), T('iaef_motivo', 'Preencher o motivo da devolução ao responsável')]));
       bloco.appendChild(el('textarea', { class: 'form-control form-control-sm mt-1', rows: '4', 'data-campo': 'motivo', value: p.motivo_nao_eficaz || '' }));
     }
     pane.texto.appendChild(bloco);

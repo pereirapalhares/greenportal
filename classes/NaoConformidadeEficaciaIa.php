@@ -19,6 +19,8 @@ require_once __DIR__ . '/NaoConformidadeAnaliseIa.php';
  * resultado sugerido (e, se não eficaz, o motivo da devolução) já preenchidos na tela; o resultado continua sendo aplicado pelo
  * gestor em "Aplicar o resultado" (o motivo não é gravado antes, para o "Salvar" da tela não apagá-lo).
  */
+require_once __DIR__ . '/NaoConformidadeTextos.php';
+
 final class NaoConformidadeEficaciaIa
 {
     public const PROMPT = 'NC_EFICACIA';
@@ -26,6 +28,18 @@ final class NaoConformidadeEficaciaIa
     public const MAX_RECORRENCIAS = 8;
     public const PARECERES = ['EFICAZ' => 'Eficaz', 'NAO_EFICAZ' => 'Não eficaz', 'INCONCLUSIVO' => 'Inconclusivo (faltam evidências)'];
     public const AVALIACOES = ['ATENDE' => 'Atende', 'PARCIAL' => 'Atende em parte', 'NAO_ATENDE' => 'Não atende', 'SEM_DADOS' => 'Sem dados'];
+
+    /** PARECERES no idioma do usuário (tela). */
+    public static function pareceres(): array
+    {
+        $out = []; foreach (self::PARECERES as $k => $pt) $out[$k] = NaoConformidadeTextos::t('iaef.par.' . strtolower($k)); return $out;
+    }
+
+    /** AVALIACOES no idioma do usuário (tela). */
+    public static function avaliacoes(): array
+    {
+        $out = []; foreach (self::AVALIACOES as $k => $pt) $out[$k] = NaoConformidadeTextos::t('iaef.av.' . strtolower($k)); return $out;
+    }
 
     /** Leitura (OCR) das evidências (migração 338): formatos, tamanho e quantidade máximos e o texto por arquivo/total no contexto. */
     public const OCR_EXTENSOES = ['pdf', 'jpg', 'jpeg', 'png', 'tif', 'tiff', 'bmp', 'doc', 'docx'];
@@ -259,7 +273,7 @@ final class NaoConformidadeEficaciaIa
         foreach (array_slice(is_array($s['recorrencias'] ?? null) ? $s['recorrencias'] : [], 0, self::MAX_RECORRENCIAS) as $x)
             if (is_array($x) && ($n = $txt($x['nc'] ?? '', 40)) !== '') $rec[] = ['nc' => $n, 'comentario' => $txt($x['comentario'] ?? '', 400)];
         $parecer = $cod($s['parecer'] ?? '', self::PARECERES, 'INCONCLUSIVO');
-        return ['parecer' => $parecer, 'parecer_rotulo' => self::PARECERES[$parecer], 'confianca' => (int)max(0, min(100, round($conf))), 'resumo' => $txt($s['resumo'] ?? '', 800),
+        return ['parecer' => $parecer, 'parecer_rotulo' => self::pareceres()[$parecer], 'confianca' => (int)max(0, min(100, round($conf))), 'resumo' => $txt($s['resumo'] ?? '', 800),
             'criterios' => $criterios, 'acoes' => array_values($acoes), 'recorrencias' => $rec, 'falta_comprovar' => $lista($s['falta_comprovar'] ?? [], 8, 300),
             'verificacao_da_eficacia' => $txt($s['verificacao_da_eficacia'] ?? '', 4000), 'motivo_nao_eficaz' => $txt($s['motivo_nao_eficaz'] ?? '', 2000),
             'alertas' => $lista($s['alertas'] ?? [], 8, 300)];
@@ -299,7 +313,8 @@ final class NaoConformidadeEficaciaIa
             if ($pdo->inTransaction()) $pdo->rollBack();
             throw $x;
         }
-        return ['resultado' => in_array($parecer, ['EFICAZ', 'NAO_EFICAZ'], true) ? $parecer : '', 'gravado' => array_keys($grava), 'message' => $resumo];
+        return ['resultado' => in_array($parecer, ['EFICAZ', 'NAO_EFICAZ'], true) ? $parecer : '', 'gravado' => array_keys($grava),
+            'message' => NaoConformidadeTextos::t('iaef.resumo', ['parecer' => self::pareceres()[$parecer]]) . ' ' . NaoConformidadeTextos::t($grava ? 'iaef.resumo_levado' : 'iaef.resumo_nao_alterado') . ' ' . NaoConformidadeTextos::t('iaef.resumo_gestor')];
     }
 
     /** Preenchimento da tela depois de "Levar para a verificação" (?ia_ef=CODANALISE): resultado sugerido e motivo da devolução. */

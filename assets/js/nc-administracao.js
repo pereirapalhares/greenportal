@@ -7,6 +7,7 @@
  */
 (function (window, document) {
     'use strict';
+    function T(k, p) { return typeof window.greenT === 'function' ? window.greenT('naoconformidades.js.' + k, p) : p; }
     var host = window.top || window;
 
     function abrir(url, titulo) {
@@ -28,9 +29,9 @@
             headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': document.body.getAttribute('data-csrf') || '' },
             body: JSON.stringify(corpo)
         }).then(function (r) {
-            return r.json().catch(function () { return { ok: false, erro: 'Resposta inválida do servidor (' + r.status + ').' }; });
+            return r.json().catch(function () { return { ok: false, erro: T('resposta_invalida_cod', 'Resposta inválida do servidor ({status}).').replace('{status}', r.status) }; });
         }).then(function (j) {
-            if (!j || !j.ok) throw new Error((j && j.erro) || 'Não foi possível gravar.');
+            if (!j || !j.ok) throw new Error((j && j.erro) || T('nao_gravou', 'Não foi possível gravar.'));
             return j.resultado || {};
         });
     }

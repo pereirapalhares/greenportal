@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/ExportacaoTextos.php';
+
 require_once __DIR__ . '/MigracaoCrud.php';
 
 /**
@@ -20,7 +22,7 @@ final class HomologacaoDocumentosExportacao
         $layout = json_decode((string)($job['colunas'] ?? '{}'), true);
         $layout = is_array($layout) ? $layout : [];
         $fornecedor = (int)($pedido['CODFORNECEDOR'] ?? 0);
-        if ($fornecedor <= 0) throw new RuntimeException('Pedido sem fornecedor.');
+        if ($fornecedor <= 0) throw new RuntimeException(ExportacaoTextos::rotulo('Pedido sem fornecedor.'));
         $idioma = in_array((string)($pedido['idioma'] ?? 'pt'), ['pt', 'en', 'es'], true) ? (string)$pedido['idioma'] : 'pt';
         $mapas = is_array($layout['mapas'] ?? null) ? $layout['mapas'] : [];
         $mapa = static fn(string $n): array => is_array($mapas[$n] ?? null) ? $mapas[$n] : [];
@@ -62,9 +64,9 @@ final class HomologacaoDocumentosExportacao
         foreach ($docs as $r) {
             $l = [];
             foreach ($colunas as $c) $l[(string)($rotulos[$c] ?? $c)] = $valor($r, $c);
-            $l['Cor'] = (string)($cores[(string)($r['COR'] ?? '')] ?? ($r['COR'] ?? ''));
+            $l[ExportacaoTextos::rotulo('Cor')] = (string)($cores[(string)($r['COR'] ?? '')] ?? ($r['COR'] ?? ''));
             $linhas[] = $l;
         }
-        return $linhas ?: [['Informação' => 'Nenhum documento encontrado para os filtros escolhidos.']];
+        return $linhas ?: [[ExportacaoTextos::rotulo('Informação') => ExportacaoTextos::rotulo('Nenhum documento encontrado para os filtros escolhidos.')]];
     }
 }

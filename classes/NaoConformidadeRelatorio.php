@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/NaoConformidadeWorkflow.php';
+require_once __DIR__ . '/NaoConformidadeTextos.php';
 
 /**
  * Relatório completo de uma não conformidade (PDF da ocorrência, 22/10/2026 — pedido do usuário: "o PDF tem que vir completo com
@@ -87,9 +88,10 @@ final class NaoConformidadeRelatorio
             $x = trim($x);
             if ($x === '' || str_starts_with($x, '0000')) return '';
             $t = strtotime($x);
-            return $t ? date($hora && strlen($x) > 10 && substr($x, 11, 5) !== '00:00' ? 'd/m/Y H:i' : 'd/m/Y', $t) : $x;
+            $f = IdiomaService::idioma() === 'en' ? 'm/d/Y' : 'd/m/Y';
+            return $t ? date($hora && strlen($x) > 10 && substr($x, 11, 5) !== '00:00' ? $f . ' H:i' : $f, $t) : $x;
         };
-        $simNao = static fn(string $x): string => match (strtoupper(mb_substr($x, 0, 1))) { 'S' => 'Sim', 'N' => 'Não', default => $x };
+        $simNao = static fn(string $x): string => match (strtoupper(mb_substr($x, 0, 1))) { 'S' => NaoConformidadeTextos::t('rel.sim'), 'N' => NaoConformidadeTextos::t('rel.nao'), default => NaoConformidadeTextos::valor($x) };
         $lista = static function (?string $fonte, string $campo, string $valor) use ($op, $usuarios, $tipo, $data, $simNao, $R): string {
             if ($valor === '' || ($valor === '0' && $fonte !== null)) return '';
             return match ($fonte) {
@@ -113,26 +115,26 @@ final class NaoConformidadeRelatorio
             if ($tipo === 2 && $nome === 'PARADANALINHA') continue;
             $valor = $v($nome);
             if ($nome === 'DSCCLIENTE') $valor = trim($valor);
-            $ocorrencia[] = $c($rotulo, $lista($fonte, $nome, $valor), in_array($nome, self::LONGOS, true));
+            $ocorrencia[] = $c(self::l($rotulo), $lista($fonte, $nome, $valor), in_array($nome, self::LONGOS, true));
             $mostrados[$nome] = true;
         }
-        $secoes = [['titulo' => 'Ocorrência', 'campos' => $ocorrencia]];
+        $secoes = [['titulo' => self::l('Ocorrência'), 'campos' => $ocorrencia]];
 
         // Avaliação do gestor (não existe no Planejamento e na Assistência Técnica, que vão direto ao plano de ação)
         if (!$planejamento) {
-            $gestor = [$c('Ação imediata', $v('ANALISE_DA_PROVIDENCIA'), true), $c('Análise da abrangência', $v('ANALISE_ABRANGENCIA'), true),
-                $c('Atualizar relação de riscos e oportunidades?', $simNao($v('ATUALIZAR_RELACAO_DE_RISCOS_E_OPORTUNIDADES'))),
-                $c('Abrir nova avaliação de mudança?', $simNao($v('ABRIR_NOVA_AVALIACAO_DE_MUDANCA')))];
-            if ($tem('IMPROCEDENTE') || $v('IMPROCEDENTE') !== '') $gestor[] = $c('Improcedente?', $simNao($v('IMPROCEDENTE')));
-            $gestor[] = $c('Responsável pela análise da causa raiz e ação corretiva', $lista('USUARIO', '', $v('CODUSUARIO_RESPONSAVEL')) ?: $v('RESPONSAVEL'));
-            $secoes[] = ['titulo' => 'Avaliação do gestor', 'campos' => $gestor];
-            $secoes[] = ['titulo' => 'Análise da causa', 'campos' => [$c('Data prevista de conclusão', $data($v('DATA_DE_CONCLUSAO_PREVISTA'))), $c('Análise da causa', $v('ANALISE_DA_CAUSA'), true)]];
-            $secoes[] = ['titulo' => 'Causas', 'vazio' => 'Nenhuma causa cadastrada.', 'tabela' => ['colunas' => ['Tipo', 'Causa', 'Ações'], 'larguras' => [22, 70, 8],
+            $gestor = [$c(self::l('Ação imediata'), $v('ANALISE_DA_PROVIDENCIA'), true), $c(self::l('Análise da abrangência'), $v('ANALISE_ABRANGENCIA'), true),
+                $c(self::l('Atualizar relação de riscos e oportunidades?'), $simNao($v('ATUALIZAR_RELACAO_DE_RISCOS_E_OPORTUNIDADES'))),
+                $c(self::l('Abrir nova avaliação de mudança?'), $simNao($v('ABRIR_NOVA_AVALIACAO_DE_MUDANCA')))];
+            if ($tem('IMPROCEDENTE') || $v('IMPROCEDENTE') !== '') $gestor[] = $c(self::l('Improcedente?'), $simNao($v('IMPROCEDENTE')));
+            $gestor[] = $c(self::l('Responsável pela análise da causa raiz e ação corretiva'), $lista('USUARIO', '', $v('CODUSUARIO_RESPONSAVEL')) ?: $v('RESPONSAVEL'));
+            $secoes[] = ['titulo' => self::l('Avaliação do gestor'), 'campos' => $gestor];
+            $secoes[] = ['titulo' => self::l('Análise da causa'), 'campos' => [$c(self::l('Data prevista de conclusão'), $data($v('DATA_DE_CONCLUSAO_PREVISTA'))), $c(self::l('Análise da causa'), $v('ANALISE_DA_CAUSA'), true)]];
+            $secoes[] = ['titulo' => self::l('Causas'), 'vazio' => self::l('Nenhuma causa cadastrada.'), 'tabela' => ['colunas' => [self::l('Tipo'), self::l('Causa'), self::l('Ações')], 'larguras' => [22, 70, 8],
                 'linhas' => array_map(static fn($x) => [(string)($x['DSCTIPOCAUSA'] ?? ''), (string)($x['DSCAUSA'] ?? ''), (string)(int)($x['PLANOS'] ?? 0)], $causas)]];
         }
 
         // Plano de ação: todas as ações (com causa, sem causa, ligadas só pela causa no legado)
-        $colunas = array_merge($planejamento ? [] : ['Causa'], ['Ação', 'Prioridade', 'Responsável', 'Início', 'Fim', 'Status', 'Recursos', 'Observação', 'Reprogramação']);
+        $colunas = array_merge($planejamento ? [] : [self::l('Causa')], [self::l('Ação'), self::l('Prioridade'), self::l('Responsável'), self::l('Início'), self::l('Fim'), self::l('Status'), self::l('Recursos'), self::l('Observação'), self::l('Reprogramação')]);
         $linhas = [];
         foreach ($planos as $p) {
             $p = array_change_key_case($p, CASE_UPPER);
@@ -142,70 +144,74 @@ final class NaoConformidadeRelatorio
                 (string)(int)($p['STATUS'] ?? 0) . '%', (string)($p['RECURSOS'] ?? ''), (string)($p['OBS'] ?? ''), $repro]);
         }
         $larguras = array_merge($planejamento ? [] : [13], $planejamento ? [26, 7, 12, 8, 8, 6, 10, 13, 10] : [20, 7, 11, 8, 8, 6, 9, 10, 8]);
-        $secoes[] = ['titulo' => 'Plano de ação', 'vazio' => 'Nenhuma ação cadastrada.', 'tabela' => ['colunas' => $colunas, 'linhas' => $linhas, 'larguras' => $larguras]];
+        $secoes[] = ['titulo' => self::l('Plano de ação'), 'vazio' => self::l('Nenhuma ação cadastrada.'), 'tabela' => ['colunas' => $colunas, 'linhas' => $linhas, 'larguras' => $larguras]];
 
         // Verificação da eficácia
-        $eficacia = isset($mostrados['PASS_PELA_NANALISE_EFICACIA']) ? [] : [$c('Passa pela análise da eficácia?', $simNao($v('PASS_PELA_NANALISE_EFICACIA')))];
-        $eficacia = array_merge($eficacia, [$c('Verificação da eficácia', $v('VERIFICACAO_DA_EFICACIA'), true),
-            $c('Resultado', $etapa === 'Finalizado' ? $v('SITUACAO') : ''), $c('Data da análise da eficácia', $data($v('PRAZO_ANALIZE'))),
-            $c('Responsável por esta pendência', $lista('USUARIO', '', $v('CODUSUARIO_PRAZO_ANALISE')) ?: $v('RESPONSAVEL_PRAZO_ANALISE'))]);
-        $secoes[] = ['titulo' => 'Verificação da eficácia', 'campos' => $eficacia];
-        if ($v('RECUSA_DO_GESTOR') !== '') $secoes[] = ['titulo' => 'Recusa / devolução', 'campos' => [$c('Último motivo de recusa ou devolução', $v('RECUSA_DO_GESTOR'), true)]];
+        $eficacia = isset($mostrados['PASS_PELA_NANALISE_EFICACIA']) ? [] : [$c(self::l('Passa pela análise da eficácia?'), $simNao($v('PASS_PELA_NANALISE_EFICACIA')))];
+        $eficacia = array_merge($eficacia, [$c(self::l('Verificação da eficácia'), $v('VERIFICACAO_DA_EFICACIA'), true),
+            $c(self::l('Resultado'), $etapa === 'Finalizado' ? NaoConformidadeTextos::valor($v('SITUACAO')) : ''), $c(self::l('Data da análise da eficácia'), $data($v('PRAZO_ANALIZE'))),
+            $c(self::l('Responsável por esta pendência'), $lista('USUARIO', '', $v('CODUSUARIO_PRAZO_ANALISE')) ?: $v('RESPONSAVEL_PRAZO_ANALISE'))]);
+        $secoes[] = ['titulo' => self::l('Verificação da eficácia'), 'campos' => $eficacia];
+        if ($v('RECUSA_DO_GESTOR') !== '') $secoes[] = ['titulo' => self::l('Recusa / devolução'), 'campos' => [$c(self::l('Último motivo de recusa ou devolução'), $v('RECUSA_DO_GESTOR'), true)]];
 
         // Datas do fluxo (as que existirem no banco)
         $datas = [];
-        foreach (['DATA_DE_CRIACAO' => 'Criada em', 'DATA_DE_CONHECIMENTO_FORNECEDOR' => 'Conhecimento do fornecedor', 'DATA_DE_REPOSTA_DO_FORNECEDOR' => 'Resposta do fornecedor',
-            'DATA_DE_ENVIA_ANALISE_EFICACIA' => 'Enviada para a avaliação da eficácia', 'DATA_DE_FINALIZACAO' => 'Finalizada em', 'PRAZO_ANALISE' => 'Prazo de análise'] as $k => $rot)
+        foreach (['DATA_DE_CRIACAO' => self::l('Criada em'), 'DATA_DE_CONHECIMENTO_FORNECEDOR' => self::l('Conhecimento do fornecedor'), 'DATA_DE_REPOSTA_DO_FORNECEDOR' => self::l('Resposta do fornecedor'),
+            'DATA_DE_ENVIA_ANALISE_EFICACIA' => self::l('Enviada para a avaliação da eficácia'), 'DATA_DE_FINALIZACAO' => self::l('Finalizada em'), 'PRAZO_ANALISE' => self::l('Prazo de análise')] as $k => $rot)
             if (array_key_exists($k, $R) && ($d = $data((string)$R[$k], true)) !== '') $datas[] = $c($rot, $d);
-        if ($datas) $secoes[] = ['titulo' => 'Datas', 'campos' => $datas];
+        if ($datas) $secoes[] = ['titulo' => self::l('Datas'), 'campos' => $datas];
 
         // Anexos no GED (só os nomes; respeita a permissão de ver arquivos)
         $secoes[] = self::anexos($pdo, $env, $session, $codigo, $planos);
 
         // Histórico do fluxo (mesmos rótulos da aba Histórico; Planejamento e Assistência Técnica vão direto ao Plano de Ação)
-        $rotulos = self::ACOES_HISTORICO;
-        if ($tipo === 6) { $rotulos['ENVIO_GESTOR'] = 'Plano de ação enviado aos responsáveis'; $rotulos['REENVIO_GESTOR'] = 'Plano de ação reenviado'; }
-        elseif ($tipo === 5) $rotulos['ENVIO_GESTOR'] = 'Enviada ao plano de ação do gestor';
-        $secoes[] = ['titulo' => 'Histórico do fluxo', 'vazio' => 'Sem registros no greenportal. As alterações feitas no sistema anterior não têm histórico.', 'tabela' => ['colunas' => ['Data', 'Usuário', 'Ação', 'De', 'Para', 'Detalhe'], 'larguras' => [12, 14, 18, 14, 14, 28],
+        $rotulos = array_map(static fn(string $r): string => self::l($r), self::ACOES_HISTORICO);
+        if ($tipo === 6) { $rotulos['ENVIO_GESTOR'] = self::l('Plano de ação enviado aos responsáveis'); $rotulos['REENVIO_GESTOR'] = self::l('Plano de ação reenviado'); }
+        elseif ($tipo === 5) $rotulos['ENVIO_GESTOR'] = self::l('Enviada ao plano de ação do gestor');
+        $secoes[] = ['titulo' => self::l('Histórico do fluxo'), 'vazio' => self::l('Sem registros no greenportal. As alterações feitas no sistema anterior não têm histórico.'), 'tabela' => ['colunas' => [self::l('Data'), self::l('Usuário'), self::l('Ação'), self::l('De'), self::l('Para'), self::l('Detalhe')], 'larguras' => [12, 14, 18, 14, 14, 28],
             'linhas' => array_map(static fn($h) => [$data((string)($h['CRIADO_EM'] ?? ''), true), (string)($h['USUARIO'] ?? ''),
                 $rotulos[(string)($h['ACAO'] ?? '')] ?? ucfirst(strtolower(str_replace('_', ' ', (string)($h['ACAO'] ?? '')))),
-                (string)($h['ETAPA_ANTERIOR'] ?? ''), (string)($h['ETAPA_NOVA'] ?? ''), (string)($h['MOTIVO'] ?? '')], $historico)]];
-        if ($histPlanos) $secoes[] = ['titulo' => 'Histórico das ações', 'tabela' => ['colunas' => ['Data', 'Ação', 'Tipo', 'Responsável', 'Status', 'Período', 'Observação'], 'larguras' => [12, 24, 10, 13, 7, 14, 20],
+                NaoConformidadeTextos::valor((string)($h['ETAPA_ANTERIOR'] ?? '')), NaoConformidadeTextos::valor((string)($h['ETAPA_NOVA'] ?? '')), (string)($h['MOTIVO'] ?? '')], $historico)]];
+        if ($histPlanos) $secoes[] = ['titulo' => self::l('Histórico das ações'), 'tabela' => ['colunas' => [self::l('Data'), self::l('Ação'), self::l('Tipo'), self::l('Responsável'), self::l('Status'), self::l('Período'), self::l('Observação')], 'larguras' => [12, 24, 10, 13, 7, 14, 20],
             'linhas' => array_map(static function ($h) use ($data) { $h = array_change_key_case($h, CASE_UPPER); return [$data((string)($h['DATA_DO_UPDATE'] ?? ''), true), (string)($h['ACAO'] ?? ''),
-                (string)($h['TIPO_DE_UPDATE'] ?? ''), (string)($h['RESPONSAVEL'] ?? ''), (string)($h['STATUS'] ?? '') !== '' ? (int)$h['STATUS'] . '%' : '', trim($data((string)($h['DATAINICIAL'] ?? '')) . ' a ' . $data((string)($h['DATAFINAL'] ?? '')), ' a'),
+                (string)($h['TIPO_DE_UPDATE'] ?? ''), (string)($h['RESPONSAVEL'] ?? ''), (string)($h['STATUS'] ?? '') !== '' ? (int)$h['STATUS'] . '%' : '', trim($data((string)($h['DATAINICIAL'] ?? '')) . ' – ' . $data((string)($h['DATAFINAL'] ?? '')), ' –'),
                 (string)($h['OBS'] ?? '')]; }, $histPlanos)]];
 
         $tenant = (array)($session['tenant'] ?? []);
-        $empresa = trim((string)($tenant['nome'] ?? $tenant['empresa_nome'] ?? '')) ?: (string)($tenant['banco_dados'] ?? '');
+        $empresa = trim((string)($tenant[self::l('nome')] ?? $tenant['empresa_nome'] ?? '')) ?: (string)($tenant['banco_dados'] ?? '');
         return ['empresa' => $empresa, 'codigo' => $codigo, 'numero' => $v('NRANO') ?: (string)$codigo, 'tipo' => $v('DSCTIPONAOCONFORMIDADE'), 'tipo_codigo' => $tipo,
-            'etapa' => $etapa, 'situacao' => $v('SITUACAO'),
-            'pessoas' => ['Emitente' => $v('EMISSOR'), 'Gestor' => $v('GESTOR'), 'Responsável' => $v('RESPONSAVEL')], 'secoes' => $secoes];
+            'etapa' => NaoConformidadeTextos::valor($etapa), 'situacao' => NaoConformidadeTextos::valor($v('SITUACAO')),
+            'pessoas' => [self::l('Emitente') => $v('EMISSOR'), self::l('Gestor') => $v('GESTOR'), self::l('Responsável') => $v('RESPONSAVEL')], 'secoes' => $secoes];
     }
+
+    /** Rótulo em português traduzido pelas chaves de NaoConformidadeTextos (Onda 2 de idiomas). */
+    private static function l(string $pt): string { return NaoConformidadeTextos::porTexto($pt); }
 
     /** Nomes dos anexos no GED (ocorrência, evidências da análise e arquivos de cada ação). */
     private static function anexos(PDO $pdo, array $env, array $session, int $codigo, array $planos): array
     {
-        $secao = ['titulo' => 'Anexos', 'vazio' => 'Nenhum anexo.', 'tabela' => ['colunas' => ['Onde', 'Arquivo', 'Data', 'Tamanho'], 'linhas' => [], 'larguras' => [28, 46, 15, 11]]];
+        $secao = ['anexos' => true, 'titulo' => self::l('Anexos'), 'vazio' => self::l('Nenhum anexo.'), 'tabela' => ['colunas' => [self::l('Onde'), self::l('Arquivo'), self::l('Data'), self::l('Tamanho')], 'linhas' => [], 'larguras' => [28, 46, 15, 11]]];
         try {
             require_once __DIR__ . '/GedPermissaoTipo.php';
             require_once __DIR__ . '/GedStorageService.php';
-            if (empty(GedPermissaoTipo::obter('ncocorrencia')['pode_visualizar'])) { $secao['vazio'] = 'Seu perfil não tem permissão para ver os anexos.'; return $secao; }
+            if (empty(GedPermissaoTipo::obter('ncocorrencia')['pode_visualizar'])) { $secao['vazio'] = self::l('Seu perfil não tem permissão para ver os anexos.'); return $secao; }
             $ged = new GedStorageService($pdo, $env, $session);
-            $alvos = [['Ocorrência', 'nc_indicacao_ocorrencia', $codigo], ['Evidência da análise', 'nc_analise_ocorrencia', $codigo]];
-            foreach ($planos as $p) $alvos[] = ['Ação: ' . mb_substr(trim((string)($p['ACAO'] ?? '')), 0, 60), 'nc_planodeacao', (int)($p['CODPLANOACAO'] ?? 0)];
+            $alvos = [[self::l('Ocorrência'), 'nc_indicacao_ocorrencia', $codigo], [self::l('Evidência da análise'), 'nc_analise_ocorrencia', $codigo]];
+            foreach ($planos as $p) $alvos[] = [self::l('Ação: ') . mb_substr(trim((string)($p['ACAO'] ?? '')), 0, 60), 'nc_planodeacao', (int)($p['CODPLANOACAO'] ?? 0)];
             foreach ($alvos as [$onde, $pasta, $id]) {
                 if ($id < 1) continue;
                 foreach ($ged->list($pasta, $id, '') as $f) $secao['tabela']['linhas'][] = [$onde, (string)$f['name'],
-                    date('d/m/Y H:i', strtotime((string)$f['created_at'])), self::tamanho((int)$f['size'])];
+                    date((IdiomaService::idioma() === 'en' ? 'm/d/Y' : 'd/m/Y') . ' H:i', strtotime((string)$f['created_at'])), self::tamanho((int)$f['size'])];
             }
         } catch (Throwable $e) {
-            $secao['vazio'] = 'Não foi possível listar os anexos: ' . mb_substr($e->getMessage(), 0, 120);
+            $secao['vazio'] = self::l('Não foi possível listar os anexos: ') . mb_substr($e->getMessage(), 0, 120); $secao['erro'] = true;
         }
         return $secao;
     }
 
     private static function tamanho(int $b): string
     {
-        return $b >= 1048576 ? number_format($b / 1048576, 1, ',', '.') . ' MB' : ($b >= 1024 ? number_format($b / 1024, 0, ',', '.') . ' KB' : $b . ' B');
+        $en = IdiomaService::idioma() === 'en';
+        return $b >= 1048576 ? number_format($b / 1048576, 1, $en ? '.' : ',', $en ? ',' : '.') . ' MB' : ($b >= 1024 ? number_format($b / 1024, 0, $en ? '.' : ',', $en ? ',' : '.') . ' KB' : $b . ' B');
     }
 }

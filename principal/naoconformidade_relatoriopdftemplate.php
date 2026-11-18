@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once dirname(__DIR__) . '/classes/NaoConformidadeTextos.php';
+
 /**
  * HTML do PDF completo da não conformidade (c526). Recebe o relatório de NaoConformidadeRelatorio::montar (não consulta o banco).
  * Layout em tabelas (o Dompdf não suporta grid/flex). Campos sem valor aparecem com "—", para o PDF mostrar tudo o que a tela mostra.
@@ -11,9 +13,11 @@ if (!function_exists('renderNaoConformidadeRelatorioPdf')) {
         $e = static fn($v): string => htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $txt = static fn($v): string => trim((string)$v) === '' ? '<span class="vazio">—</span>' : nl2br($e(trim((string)$v)));
         $tipo = (string)($rel['tipo'] ?? '');
-        $titulo = 'Não conformidade ' . (string)($rel['numero'] ?? '');
+        $T = static fn(string $k, array $v = []): string => NaoConformidadeTextos::t('rel.' . $k, $v);
+        $titulo = $T('nc_numero', ['numero' => (string)($rel['numero'] ?? '')]);
+        $lang = ['en' => 'en', 'es' => 'es'][IdiomaService::idioma()] ?? 'pt-BR';
         ob_start(); ?>
-<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><title><?= $e($titulo . ($tipo !== '' ? ' - ' . $tipo : '')) ?></title>
+<!doctype html><html lang="<?= $lang ?>"><head><meta charset="UTF-8"><title><?= $e($titulo . ($tipo !== '' ? ' - ' . $tipo : '')) ?></title>
 <style>
 @page{size:A4;margin:14mm 12mm 16mm}body{margin:0;color:#24332a;font:9.5px/1.4 DejaVu Sans,Arial,Helvetica,sans-serif}
 .cab{width:100%;border-collapse:collapse;background:#1f5638;color:#fff}.cab td{padding:10px 12px;vertical-align:middle}.marca{font-size:15px;font-weight:bold}.sub{font-size:9px;color:#d9ebdf}
@@ -27,11 +31,11 @@ table.grade td{padding:3px 4px;border:1px solid #d8e2da;vertical-align:top;font-
 thead{display:table-header-group}.vazio{color:#9aa69e}.aviso{padding:7px;color:#69766d;border:1px dashed #cbd8ce;background:#fbfcfb}
 .rodape{margin-top:16px;padding-top:6px;color:#718077;border-top:1px solid #dbe5dd;font-size:7.5px}
 </style></head><body>
-<table class="cab"><tr><td><div class="marca"><?= $e(($rel['empresa'] ?? '') !== '' ? $rel['empresa'] : 'Green Portal') ?></div><div class="sub">Green Portal · Relatório completo da não conformidade</div></td>
+<table class="cab"><tr><td><div class="marca"><?= $e(($rel['empresa'] ?? '') !== '' ? $rel['empresa'] : 'Green Portal') ?></div><div class="sub">Green Portal · <?= $e($T('relatorio_completo')) ?></div></td>
 <td class="dir"><b><?= $e(mb_strtoupper($tipo, 'UTF-8')) ?></b><?= $e($titulo) ?></td></tr></table>
 <table class="resumo"><tr>
-<td><b>Etapa:</b> <?= $txt($rel['etapa'] ?? '') ?></td><td><b>Situação:</b> <?= $txt($rel['situacao'] ?? '') ?></td>
-<?php foreach ((array)($rel['pessoas'] ?? []) as $rot => $nome): ?><td><b><?= $e($rot) ?>:</b> <?= $txt($nome) ?></td><?php endforeach; ?>
+<td><b><?= $e($T('etapa')) ?>:</b> <?= $txt($rel['etapa'] ?? '') ?></td><td><b><?= $e($T('situacao')) ?>:</b> <?= $txt($rel['situacao'] ?? '') ?></td>
+<?php foreach ((array)($rel['pessoas'] ?? []) as $rot => $nome): ?><td><b><?= $e(NaoConformidadeTextos::porTexto((string)$rot)) ?>:</b> <?= $txt($nome) ?></td><?php endforeach; ?>
 </tr></table>
 <?php foreach ((array)($rel['secoes'] ?? []) as $s): ?>
 <h2><?= $e($s['titulo'] ?? '') ?></h2>
@@ -56,14 +60,14 @@ thead{display:table-header-group}.vazio{color:#9aa69e}.aviso{padding:7px;color:#
     }
     if ($linha) echo $saida($linha); ?></table>
 <?php elseif (isset($s['tabela'])): $t = $s['tabela']; ?>
-<?php if (!$t['linhas']): ?><div class="aviso"><?= $e($s['vazio'] ?? 'Nenhum registro.') ?></div>
+<?php if (!$t['linhas']): ?><div class="aviso"><?= $e($s['vazio'] ?? $T('nenhum_registro')) ?></div>
 <?php else: $lg = (array)($t['larguras'] ?? []); ?><table class="grade"><thead><tr><?php foreach ($t['colunas'] as $i => $col): ?><th<?= isset($lg[$i]) ? ' style="width:' . (int)$lg[$i] . '%"' : '' ?>><?= $e($col) ?></th><?php endforeach; ?></tr></thead><tbody>
 <?php foreach ($t['linhas'] as $l): ?><tr><?php foreach ($l as $cel): ?><td><?= $txt($cel) ?></td><?php endforeach; ?></tr><?php endforeach; ?>
 </tbody></table><?php endif; ?>
-<?php if (!empty($s['vazio']) && $t['linhas'] && ($s['titulo'] ?? '') === 'Anexos' && str_starts_with((string)$s['vazio'], 'Não foi')): ?><div class="aviso"><?= $e($s['vazio']) ?></div><?php endif; ?>
+<?php if (!empty($s['vazio']) && $t['linhas'] && !empty($s['anexos']) && !empty($s['erro'])): ?><div class="aviso"><?= $e($s['vazio']) ?></div><?php endif; ?>
 <?php endif; ?>
 <?php endforeach; ?>
-<div class="rodape"><?= $e($rel['empresa'] ?? '') ?> · Green Portal · Não conformidade <?= $e($rel['numero'] ?? '') ?> (código <?= (int)($rel['codigo'] ?? 0) ?>) · gerado em <?= date('d/m/Y H:i') ?></div>
+<div class="rodape"><?= $e($T('rodape', ['empresa' => (string)($rel['empresa'] ?? ''), 'numero' => (string)($rel['numero'] ?? ''), 'codigo' => (int)($rel['codigo'] ?? 0), 'data' => date((IdiomaService::idioma() === 'en' ? 'm/d/Y' : 'd/m/Y') . ' H:i')])) ?></div>
 </body></html>
 <?php return (string)ob_get_clean();
     }

@@ -79,7 +79,7 @@ $chamar = static function (string $sql, array $p) use ($pdo): array {
 };
 $documento = static function (int $cod) use ($pdo, $codfornecedor): array {
     $d = MigracaoCrud::primeiro($pdo, 'vw_homologacao_fornecedor_documentos', ['CODFORNECEDORXCRITERIOS' => $cod]);
-    if (!$d || (int)$d['CODFORNECEDOR'] !== (int)$codfornecedor) throw new RuntimeException('Documento não encontrado neste fornecedor.');
+    if (!$d || (int)$d['CODFORNECEDOR'] !== (int)$codfornecedor) throw new RuntimeException($t('erro.doc_nao_encontrado', ['pt' => 'Documento não encontrado neste fornecedor.', 'en' => 'Document not found for this supplier.', 'es' => 'Documento no encontrado en este proveedor.']));
     return $d;
 };
 $listar = static function () use ($pdo, $codfornecedor): array {
@@ -170,11 +170,11 @@ if ($ajax) {
             $codigos = array_slice(array_values(array_unique(array_filter(array_map('intval', (array)($corpo['codigos'] ?? [])), static fn($n) => $n > 0))), 0, 5000);
             $colunasExp = array_values(array_filter((array)($corpo['colunas'] ?? []), static fn($c) => is_string($c) && preg_match('/^[A-Z_]{1,40}$/', $c) && $c !== 'ARQUIVOS'));
             require_once dirname(__DIR__) . '/classes/ExportacaoSolicitacao.php';
-            $pedido = ExportacaoSolicitacao::solicitar($pdo, $usuario, DOC_TRANSACAO, 'Documentos do fornecedor ' . trim((string)($fornecedor['RAZAOSOCIAL'] ?? '')), [
+            $pedido = ExportacaoSolicitacao::solicitar($pdo, $usuario, DOC_TRANSACAO, $t('exportacao.nome', ['pt' => 'Documentos do fornecedor', 'en' => 'Supplier documents', 'es' => 'Documentos del proveedor']) . ' ' . trim((string)($fornecedor['RAZAOSOCIAL'] ?? '')), [
                 'filtros' => ['CODFORNECEDOR' => (int)$codfornecedor, 'codigos' => $codigos, 'idioma' => in_array((string)($_SESSION['idioma'] ?? 'pt'), ['pt', 'en', 'es'], true) ? (string)$_SESSION['idioma'] : 'pt'],
                 'busca' => '', 'colunas' => ['colunas' => $colunasExp, 'mapas' => $mapas]]);
             AuditService::record($pdo, DOC_TRANSACAO, 'EXPORTAR', $pedido > 0 ? 'SUCESSO' : 'ERRO', 'exportacoes_grid', (string)$codfornecedor, ['pedido' => $pedido, 'documentos' => count($codigos)]);
-            if ($pedido <= 0) throw new RuntimeException('Não foi possível solicitar a exportação.');
+            if ($pedido <= 0) throw new RuntimeException(IdiomaService::t('comum.erro.exportacao', ['pt' => 'Não foi possível solicitar a exportação.', 'en' => 'The export could not be requested.', 'es' => 'No fue posible solicitar la exportación.']));
             echo json_encode(['ok' => true, 'message' => ExportacaoSolicitacao::mensagem()], JSON_UNESCAPED_UNICODE); exit;
         }
         $falhar(400, $t('erro.acao', ['pt' => 'Ação inválida.', 'en' => 'Invalid action.', 'es' => 'Acción inválida.']));

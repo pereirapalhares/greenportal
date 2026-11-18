@@ -30,12 +30,16 @@
         var $table = $(this), id = $table.attr('id'), columns = id === 'menuBatchGrid' ? ['codmenu_pai', 'modulo', 'nivel'] : id === 'formularioBatchGrid' ? ['tipo'] : [];
         function process($rows) {
             columns.forEach(function (column) {
-                var options = enumOptions[column] || optionsFromTable($table, column);
+                var pais = column === 'codmenu_pai' ? $table.data('pais') : null;
+                var options = enumOptions[column] || (pais && typeof pais === 'object' ? pais : optionsFromTable($table, column));
                 $rows.each(function () { convert($table, $(this), column, options); });
             });
         }
         process($table.find('tbody tr'));
-        var body = $table.find('tbody')[0];
-        if (body && window.MutationObserver) new MutationObserver(function (mutations) { mutations.forEach(function (mutation) { $(mutation.addedNodes).filter('tr').each(function () { process($(this)); }); }); }).observe(body, { childList: true });
+        var observer = window.MutationObserver ? new MutationObserver(function (mutations) { mutations.forEach(function (mutation) { $(mutation.addedNodes).filter('tr').each(function () { process($(this)); }); }); }) : null;
+        function observar() { var body = $table.find('tbody')[0]; if (body && observer) { observer.disconnect(); observer.observe(body, { childList: true }); } }
+        observar();
+        // grid-pagination troca o tbody inteiro ao filtrar/paginar: converte as linhas novas e passa a observar o tbody novo
+        $table.closest('.menu-grid-fragment').on('gridPageLoaded', function () { process($table.find('tbody tr')); observar(); });
     });
 }(jQuery));

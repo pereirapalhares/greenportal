@@ -74,32 +74,44 @@
         return String(value || '').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
 
-    $('#menuSearch').on('input', function () {
-        var term = normalizeMenuText($(this).val());
-        if (!term) { restoreExpandedMenus(); return; }
-        $('.portal-menu > .portal-menu-item').each(function () {
-            var $item = $(this);
-            var $submenu = $item.next('[data-submenu]');
-            if (!$submenu.length) {
-                $item.toggle(!term || normalizeMenuText($item.text()).indexOf(term) !== -1);
+    // Busca no menu (18/11/2026): procura em todos os níveis; abre os grupos que têm resultado e,
+    // ao limpar a busca, mostra todos os itens de novo (antes ficavam escondidos e o menu parecia travado).
+    function menuTextoProprio($item) { return normalizeMenuText($item.children('span').first().text() || $item.text()); }
+    function filtrarMenu($container, term) {
+        var algum = false;
+        $container.children('.portal-menu-item, .portal-submenu-item').each(function () {
+            var $item = $(this), $submenu = $item.is('[data-menu-parent]') ? $item.next('[data-submenu]') : $();
+            var proprio = menuTextoProprio($item).indexOf(term) !== -1, visivel = proprio;
+            if ($submenu.length) {
+                if (proprio) { $submenu.find('.portal-menu-item, .portal-submenu-item').css('display', ''); $submenu.find('[data-submenu]').stop(true, true).hide(); $submenu.find('[data-menu-parent]').removeClass('expanded').attr('aria-expanded', 'false'); }
+                else visivel = filtrarMenu($submenu, term);
+                $item.toggleClass('expanded', visivel).attr('aria-expanded', visivel ? 'true' : 'false');
+                $submenu.stop(true, true).css('display', visivel ? 'block' : 'none');
+            }
+            $item.css('display', visivel ? '' : 'none');
+            algum = algum || visivel;
+        });
+        return algum;
+    }
+    var menuBuscaTimer = 0;
+    $('#menuSearch').on('input search', function () {
+        var campo = this;
+        window.clearTimeout(menuBuscaTimer);
+        menuBuscaTimer = window.setTimeout(function () {
+            var term = normalizeMenuText(campo.value).trim(), $menu = $('.portal-menu').first();
+            if (!term) {
+                $menu.find('.portal-menu-item, .portal-submenu-item').css('display', '');
+                $menu.find('[data-submenu]').stop(true, true).css('display', '');
+                restoreExpandedMenus();
                 return;
             }
-            var parentMatch = normalizeMenuText($item.text()).indexOf(term) !== -1;
-            var childMatch = false;
-            $submenu.find('.portal-submenu-item').each(function () {
-                var match = !term || parentMatch || normalizeMenuText($(this).text()).indexOf(term) !== -1;
-                $(this).toggle(match);
-                childMatch = childMatch || match;
-            });
-            $item.toggle(!term || parentMatch || childMatch);
-            $submenu.toggle(!term || parentMatch || childMatch);
-            if (childMatch) {
-                $submenu.parents('[data-submenu]').each(function () {
-                    var $parentSubmenu = $(this), $parent = $parentSubmenu.prev('[data-menu-parent]');
-                    if ($parent.length) setMenuState($parent, true, false);
-                });
-            }
-        });
+            expandSidebarFromItem();
+            filtrarMenu($menu, term);
+        }, 120);
+    });
+    $('#menuSearch').on('keydown', function (ev) {
+        if (ev.key === 'Escape') { this.value = ''; $(this).trigger('input'); }
+        if (ev.key === 'Enter') { var $primeiro = $('.portal-menu').find('[data-open-tab]').filter(function () { return $(this).is(':visible'); }).first(); if ($primeiro.length) { ev.preventDefault(); $primeiro.trigger('click'); } }
     });
 
     $('[data-menu-parent]').on('click', function () {

@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/classes/TransactionSecurity.php';
 require_once dirname(__DIR__) . '/classes/NaoConformidadeAdministracao.php';
+require_once dirname(__DIR__) . '/classes/NaoConformidadeTextos.php';
 require_once dirname(__DIR__) . '/components/grid_local.php';
 
 $pdo = TransactionSecurity::connect(NaoConformidadeAdministracao::MENU_PARTICIPANTES);
@@ -28,22 +29,22 @@ try {
                 'CODUSUARIO' => ['text' => (string)$cod, 'sort' => str_pad((string)$cod, 10, '0', STR_PAD_LEFT)],
                 'NOME' => ['text' => (string)$p['NOME'], 'title' => (string)$p['NOME']],
                 'EMAIL' => ['text' => (string)$p['EMAIL'], 'title' => (string)$p['EMAIL']],
-                'ATIVO' => ['text' => $ativo ? 'Ativo' : 'Desativado', 'html' => $ativo ? 'Ativo' : '<span class="badge text-bg-warning">Desativado</span>'],
+                'ATIVO' => ['text' => $ativo ? ncT('ld.ativo') : ncT('ld.desativado'), 'html' => $ativo ? $e(ncT('ld.ativo')) : '<span class="badge text-bg-warning">' . $e(ncT('ld.desativado')) . '</span>'],
                 'QTD_LISTAS' => ['text' => (string)(int)$p['QTD_LISTAS'], 'sort' => str_pad((string)(int)$p['QTD_LISTAS'], 5, '0', STR_PAD_LEFT)],
-                'ORIGEM' => ['text' => (string)$p['ORIGEM'] === 'LEGADO' ? 'Sistema anterior' : 'Greenportal'],
+                'ORIGEM' => ['text' => (string)$p['ORIGEM'] === 'LEGADO' ? ncT('cor.sistema_anterior') : 'Greenportal'],
             ],
-            'attrs' => 'data-nc-url="naoconformidades_participante.php?codigo=' . $cod . '" data-nc-titulo="' . $e('Participante externo — ' . $p['NOME']) . '"',
+            'attrs' => 'data-nc-url="naoconformidades_participante.php?codigo=' . $cod . '" data-nc-titulo="' . $e(ncT('pa.titulo_nome', ['nome' => $p['NOME']])) . '"',
         ];
     }
 } catch (Throwable $ex) {
-    $aviso = 'Participantes não disponíveis neste banco: aplique a migração 333 (scripts/aplicar-migracao-333-nc-administracao.php).';
+    $aviso = ncT('pa.sem_migracao2');
     error_log('[nc participantes] ' . $ex->getMessage());
 }
-$extras = '<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-nc-abrir-selecionado disabled title="Abrir o participante selecionado" aria-label="Abrir o participante selecionado"><i class="bi bi-box-arrow-up-right"></i></button>';
-if (!empty($perm['pode_incluir'])) $extras = '<button type="button" class="btn btn-sm btn-outline-success grid-crud-button" data-nc-abrir="naoconformidades_participante.php?codigo=0" data-nc-titulo="Novo participante externo" title="Novo participante" aria-label="Novo participante"><i class="bi bi-plus-lg"></i></button>' . $extras;
+$extras = '<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-nc-abrir-selecionado disabled title="' . $e(ncT('pa.abrir_sel')) . '" aria-label="' . $e(ncT('pa.abrir_sel')) . '"><i class="bi bi-box-arrow-up-right"></i></button>';
+if (!empty($perm['pode_incluir'])) $extras = '<button type="button" class="btn btn-sm btn-outline-success grid-crud-button" data-nc-abrir="naoconformidades_participante.php?codigo=0" data-nc-titulo="' . $e(ncT('pa.novo')) . '" title="' . $e(ncT('pa.novo_curto')) . '" aria-label="' . $e(ncT('pa.novo_curto')) . '"><i class="bi bi-plus-lg"></i></button>' . $extras;
 ?>
 <!doctype html><html lang="<?= $idioma === 'pt' ? 'pt-BR' : $e($idioma) ?>"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Participantes externos</title>
+<title><?= $e(ncT('pa.titulo')) ?></title>
 <link href="../assets/vendor/bootstrap/css/bootstrap.min.css?v=2" rel="stylesheet"><link href="../assets/vendor/bootstrap-icons/font/bootstrap-icons.min.css?v=2" rel="stylesheet">
 <?php greenPortalGridLocalHead(); ?>
 <style>.nc-participantes-grid-fragment th[data-column="CODUSUARIO"]{width:100px}.nc-participantes-grid-fragment th[data-column="NOME"]{width:32%}
@@ -52,18 +53,19 @@ if (!empty($perm['pode_incluir'])) $extras = '<button type="button" class="btn b
 <?php greenPortalGridLocal([
     'transaction' => 'naoconformidades_participantes', 'fragment_class' => 'nc-participantes-grid-fragment', 'id' => 'ncParticipantesGrid',
     'columns' => [
-        'CODUSUARIO' => ['label' => 'Código'],
-        'NOME' => ['label' => 'Nome'],
-        'EMAIL' => ['label' => 'E-mail'],
-        'ATIVO' => ['label' => 'Situação', 'filter' => 'select'],
-        'QTD_LISTAS' => ['label' => 'Listas', 'filter' => 'none'],
-        'ORIGEM' => ['label' => 'Origem', 'filter' => 'select'],
+        'CODUSUARIO' => ['label' => ncT('col.codigo')],
+        'NOME' => ['label' => ncT('ld.nome')],
+        'EMAIL' => ['label' => ncT('col.email')],
+        'ATIVO' => ['label' => ncT('oc.situacao'), 'filter' => 'select'],
+        'QTD_LISTAS' => ['label' => ncT('col.listas'), 'filter' => 'none'],
+        'ORIGEM' => ['label' => ncT('col.origem'), 'filter' => 'select'],
     ],
     'cell_boxes' => true, 'buttons' => ['columns' => true], 'extras' => $extras,
     'rows' => $rows, 'default_sort' => ['NOME', 'asc'],
-    'empty' => 'Nenhum participante externo.',
+    'empty' => ncT('pa.nenhum'),
     'notice' => $aviso,
 ]); ?>
 <?php greenPortalGridLocalScripts(); ?>
-<script src="../assets/js/nc-administracao.js?v=1"></script>
+<?= NaoConformidadeTextos::script() ?>
+<script src="../assets/js/nc-administracao.js?v=2"></script>
 </body></html>

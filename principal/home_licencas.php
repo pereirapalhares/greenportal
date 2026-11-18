@@ -22,7 +22,7 @@ require_once dirname(__DIR__) . '/classes/UsuarioSessao.php';
 require_once dirname(__DIR__) . '/classes/PermissaoTransacao.php';
 require_once dirname(__DIR__) . '/classes/HomeModulo.php';
 $pdo = GreenPortalDatabase::connect(GreenPortalDatabase::env(), (string)$_SESSION['tenant']['banco_dados'], 'GPT');
-if (!UsuarioSessao::atualizar($pdo, $_SESSION)) $sair(401, 'Sessão expirada.');
+if (!UsuarioSessao::atualizar($pdo, $_SESSION)) $sair(401, IdiomaService::t('home.erro.sessao', ['pt' => 'Sessão expirada.', 'en' => 'Your session has expired.', 'es' => 'Su sesión expiró.']));
 $idioma = IdiomaService::idioma();
 $T = static fn(string $c, string $pt, string $en, string $es): string => HomeModulo::t('lic.' . $c, $pt, $en, $es);
 $e = static fn(mixed $v): string => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');

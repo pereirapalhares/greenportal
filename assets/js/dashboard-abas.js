@@ -1,3 +1,5 @@
+// Onda 3 de idiomas: textos fixos traduzidos por window.greenTxt (AdministracaoTextos::script()).
+var _tx = window._tx || function (s) { return typeof window.greenTxt === 'function' ? window.greenTxt(s) : s; };
 /*
  * Dashboards em abas (empresa: dashboard_admin.php; pessoal: dashboard.php).
  * Configuração no <main class="admin-dashboard">:
@@ -115,7 +117,7 @@
         txt.textContent = (T.filtro || 'Filtro') + ': ' + (rotulo || valor) + ' (' + n + (tabela.getAttribute('data-limite') && n >= +tabela.getAttribute('data-limite') ? '+' : '') + ')';
         var bt = document.createElement('button');
         bt.type = 'button'; bt.className = 'btn btn-link btn-sm p-0 ms-2';
-        bt.textContent = T.limpar_filtro || 'Mostrar como antes';
+        bt.textContent = T.limpar_filtro || _tx('Mostrar como antes');
         bt.addEventListener('click', function () { filtrarTabela(id, '', ''); });
         aviso.appendChild(txt); aviso.appendChild(bt);
         if (!n && tabela.getAttribute('data-vazio')) { var v = document.createElement('div'); v.className = 'dash-nota'; v.textContent = tabela.getAttribute('data-vazio'); aviso.appendChild(v); }

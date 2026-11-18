@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/ExportacaoTextos.php';
+
 require_once __DIR__ . '/HomologacaoRelatorios.php';
 
 /**
@@ -22,7 +24,7 @@ final class HomologacaoRelatoriosExportacao
         $modo = isset($dados['modo']) ? HomologacaoRelatorios::modoAcesso((int)$dados['modo']) : ($externo ? 1 : 0);
         $idioma = in_array((string)($dados['idioma'] ?? 'pt'), ['pt', 'en', 'es'], true) ? (string)$dados['idioma'] : 'pt';
         $usuario = (int)($job['codusuario'] ?? 0);
-        if ($usuario <= 0) throw new RuntimeException('Pedido sem usuário.');
+        if ($usuario <= 0) throw new RuntimeException(ExportacaoTextos::rotulo('Pedido sem usuário.'));
         $R = new HomologacaoRelatorios($idioma);
         $pedido = HomologacaoRelatorios::normalizarPedido(is_array($dados['pedido'] ?? null) ? $dados['pedido'] : [], $externo);
         $res = $R->executar($pdo, $usuario, $modo, $pedido);
@@ -33,22 +35,22 @@ final class HomologacaoRelatoriosExportacao
             foreach ($res['linhas'] as $l) {
                 if ($portaria) {
                     if ($l['situacao'] !== 'lib') continue;
-                    $saida[] = ['Unidade' => $l['unidade'], 'Fornecedor' => $l['fornecedor'], 'CNPJ/CPF' => $l['cnpj'], 'Funcionário' => $l['nome'], 'Nº do registro' => $l['nrregistro'],
-                        'Tipo de funcionário' => $l['tipofunc'], 'Setor' => $l['setor'], 'Integração válida até' => $l['integracao'], 'Itens em dia' => $l['emdia']];
+                    $saida[] = [ExportacaoTextos::rotulo('Unidade') => $l['unidade'], ExportacaoTextos::rotulo('Fornecedor') => $l['fornecedor'], ExportacaoTextos::rotulo('CNPJ/CPF') => $l['cnpj'], ExportacaoTextos::rotulo('Funcionário') => $l['nome'], ExportacaoTextos::rotulo('Nº do registro') => $l['nrregistro'],
+                        ExportacaoTextos::rotulo('Tipo de funcionário') => $l['tipofunc'], ExportacaoTextos::rotulo('Setor') => $l['setor'], ExportacaoTextos::rotulo('Integração válida até') => $l['integracao'], ExportacaoTextos::rotulo('Itens em dia') => $l['emdia']];
                     continue;
                 }
-                $linha = ['Unidade' => $l['unidade'], 'Fornecedor' => $l['fornecedor'], 'Funcionário' => $l['nome'], 'Nº do registro' => $l['nrregistro'], 'Setor' => $l['setor'],
-                    'Tipo de funcionário' => $l['tipofunc'], 'Data de início' => $l['datainicio'], 'Situação' => $l['situacao_rotulo'], 'Em dia' => $l['emdia']];
+                $linha = [ExportacaoTextos::rotulo('Unidade') => $l['unidade'], ExportacaoTextos::rotulo('Fornecedor') => $l['fornecedor'], ExportacaoTextos::rotulo('Funcionário') => $l['nome'], ExportacaoTextos::rotulo('Nº do registro') => $l['nrregistro'], ExportacaoTextos::rotulo('Setor') => $l['setor'],
+                    ExportacaoTextos::rotulo('Tipo de funcionário') => $l['tipofunc'], ExportacaoTextos::rotulo('Data de início') => $l['datainicio'], ExportacaoTextos::rotulo('Situação') => $l['situacao_rotulo'], ExportacaoTextos::rotulo('Em dia') => $l['emdia']];
                 foreach ($res['colunas'] as $i => $c) {
                     $cel = $l['celulas'][$i] ?? ['s' => 'X', 't' => '—'];
                     $rot = $c['grupo'] . ': ' . $c['nome'];
                     while (isset($linha[$rot])) $rot .= ' ';
                     $linha[$rot] = $cel['s'] === 'X' || $cel['s'] === 'N' ? '—' : $cel['t'];
                 }
-                $linha['Pendências'] = $l['pendencias'];
+                $linha[ExportacaoTextos::rotulo('Pendências')] = $l['pendencias'];
                 $saida[] = $linha;
             }
-            return $saida ?: [['Informação' => $portaria ? 'Nenhum funcionário liberado para os filtros escolhidos.' : 'Nenhum funcionário encontrado para os filtros escolhidos.']];
+            return $saida ?: [[ExportacaoTextos::rotulo('Informação') => $portaria ? ExportacaoTextos::rotulo('Nenhum funcionário liberado para os filtros escolhidos.') : ExportacaoTextos::rotulo('Nenhum funcionário encontrado para os filtros escolhidos.')]];
         }
 
         $def = HomologacaoRelatorios::relatorios()[$pedido['relatorio']];
@@ -63,28 +65,28 @@ final class HomologacaoRelatoriosExportacao
                 HomologacaoRelatorios::contarEvidencias($linhas, new GedStorageService($pdo, GreenPortalDatabase::env(), ['tenant' => ['banco_dados' => $banco]]));
             } catch (Throwable) { /* sem GED, a coluna fica vazia */ }
         }
-        $cores = ['VERMELHO' => 'Vermelho', 'AMARELO' => 'Amarelo', 'VERDE' => 'Verde', 'NEUTRO' => 'Cinza', 'BRANCO' => 'Branco'];
+        $cores = array_map(static fn(string $c): string => ExportacaoTextos::rotulo($c), ['VERMELHO' => 'Vermelho', 'AMARELO' => 'Amarelo', 'VERDE' => 'Verde', 'NEUTRO' => 'Cinza', 'BRANCO' => 'Branco']);
         $saida = [];
         foreach ($linhas as $l) {
             $linha = [];
-            if ($res['agrupar'] !== '') $linha['Grupo'] = (string)$l[$res['agrupar']];
-            $linha['Cor'] = $cores[$l['cor']] ?? $l['cor'];
+            if ($res['agrupar'] !== '') $linha[ExportacaoTextos::rotulo('Grupo')] = (string)$l[$res['agrupar']];
+            $linha[ExportacaoTextos::rotulo('Cor')] = $cores[$l['cor']] ?? $l['cor'];
             foreach ($def['colunas'] as [$k, $r]) {
                 $titulo = $R->L($rot[$r] ?? ['pt' => $r]);
                 $linha[$titulo] = $k === 'evidencia' ? ($temEvidencia ? (int)$l['evidencia'] : '') : (string)$l[$k];
-                if ($k === 'fornecedor' && !in_array('cnpj', array_column($def['colunas'], 0), true)) $linha['CNPJ/CPF'] = (string)$l['cnpj'];
+                if ($k === 'fornecedor' && !in_array('cnpj', array_column($def['colunas'], 0), true)) $linha[ExportacaoTextos::rotulo('CNPJ/CPF')] = (string)$l['cnpj'];
                 // Migração 318: documentos do fornecedor com as colunas do Excel "Fornecedores + Critérios" do legado.
-                if ($k === 'fornecedor' && $def['categoria'] === 'DOCUMENTO') { $linha['Nome fantasia'] = (string)($l['_fantasia'] ?? ''); $linha['Responsável pelo fornecedor (cadastro)'] = (string)($l['_resp_cadastro'] ?? ''); }
+                if ($k === 'fornecedor' && $def['categoria'] === 'DOCUMENTO') { $linha[ExportacaoTextos::rotulo('Nome fantasia')] = (string)($l['_fantasia'] ?? ''); $linha[ExportacaoTextos::rotulo('Responsável pelo fornecedor (cadastro)')] = (string)($l['_resp_cadastro'] ?? ''); }
             }
             if ($def['categoria'] === 'DOCUMENTO') {
-                $linha['Responsável pelo critério'] = (string)($l['_resp_empresa'] ?? '');
-                $linha['Responsável do fornecedor'] = (string)($l['_resp_fornecedor'] ?? '');
-                $linha['Observação da empresa'] = (string)($l['_obs_empresa'] ?? '');
-                $linha['Observação do fornecedor'] = (string)($l['_obs_fornecedor'] ?? '');
-                $linha['Data de cobrança do protocolo'] = (string)($l['_cobranca'] ?? '');
+                $linha[ExportacaoTextos::rotulo('Responsável pelo critério')] = (string)($l['_resp_empresa'] ?? '');
+                $linha[ExportacaoTextos::rotulo('Responsável do fornecedor')] = (string)($l['_resp_fornecedor'] ?? '');
+                $linha[ExportacaoTextos::rotulo('Observação da empresa')] = (string)($l['_obs_empresa'] ?? '');
+                $linha[ExportacaoTextos::rotulo('Observação do fornecedor')] = (string)($l['_obs_fornecedor'] ?? '');
+                $linha[ExportacaoTextos::rotulo('Data de cobrança do protocolo')] = (string)($l['_cobranca'] ?? '');
             }
             $saida[] = $linha;
         }
-        return $saida ?: [['Informação' => 'Nenhum item encontrado para o relatório e os filtros escolhidos.']];
+        return $saida ?: [[ExportacaoTextos::rotulo('Informação') => ExportacaoTextos::rotulo('Nenhum item encontrado para o relatório e os filtros escolhidos.')]];
     }
 }

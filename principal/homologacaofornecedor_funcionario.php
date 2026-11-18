@@ -31,9 +31,9 @@ if (($fuExterno || $fuUnidade) && !empty($_SESSION['autenticado'])) {
         else echo htmlspecialchars($msg, ENT_QUOTES, 'UTF-8');
         exit;
     };
-    try { $fuAcessoPdo = TenantContext::connect(GreenPortalDatabase::env(), $_SESSION); } catch (Throwable) { http_response_code(401); exit('Sessão expirada.'); }
+    try { $fuAcessoPdo = TenantContext::connect(GreenPortalDatabase::env(), $_SESSION); } catch (Throwable) { http_response_code(401); exit(htmlspecialchars(IdiomaService::t('comum.erro.sessao_expirada', ['pt' => 'Sessão expirada.', 'en' => 'Your session has expired.', 'es' => 'Su sesión expiró.']), ENT_QUOTES, 'UTF-8')); }
     $fuVazia = $fuExterno && (int)$fuAcessoPdo->query("SELECT COUNT(*) FROM information_schema.VIEWS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'vw_homologacao_funcionarios_usuario_grid'")->fetchColumn() === 0;
-    if ($fuVazia) { http_response_code(503); exit('Tela indisponível: falta aplicar a migração 297.'); }
+    if ($fuVazia) { http_response_code(503); exit(htmlspecialchars(IdiomaService::t('homologacaofornecedor_funcionario.erro.migracao', ['pt' => 'Tela indisponível: falta aplicar a migração 297.', 'en' => 'Screen unavailable: migration 297 has not been applied.', 'es' => 'Pantalla no disponible: falta aplicar la migración 297.']), ENT_QUOTES, 'UTF-8')); }
     $fuAcao = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' ? (string)($_POST['action'] ?? '') : '';
     if ($fuAcao === 'delete_row') {
         if ($fuComum) $fuNegar(IdiomaService::t('comum.permissao.negada', ['pt' => 'Perfil sem permissão de acesso!', 'en' => 'Profile does not have access permission!', 'es' => '¡El perfil no tiene permiso de acceso!']));

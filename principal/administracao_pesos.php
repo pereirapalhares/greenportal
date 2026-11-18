@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once dirname(__DIR__) . '/classes/AdministracaoTextos.php';
 /*
  * Administração › Pesos do ranking de fornecedores (menu ADMINISTRACAO_PESOS, migração 289).
  *   Pesos dos componentes da nota (soma 100), faixas A/B/C/D, penalidades das não conformidades e "Recalcular agora";
@@ -71,7 +72,7 @@ usort($histCfg, static fn($a, $b) => (int)$b['CODHISTORICO'] <=> (int)$a['CODHIS
 $data = static fn($v): string => $v ? date('d/m/Y H:i', strtotime((string)$v)) : '–';
 $v = static fn(string $c): string => $cfg ? rtrim(rtrim(number_format((float)$cfg[$c], 2, '.', ''), '0'), '.') : '';
 $bloqueados = count(array_filter($fornecedores, static fn($f) => $f['BLOQUEADO'] === 'Sim'));
-$acao = ['BLOQUEADO' => ['Bloqueado', 'danger'], 'ALTERADO' => ['Motivo alterado', 'warning'], 'DESBLOQUEADO' => ['Desbloqueado', 'success']];
+$acao = ['BLOQUEADO' => ['Bloqueado', 'danger'], 'ALTERADO' => [adm_t('Motivo alterado'), 'warning'], 'DESBLOQUEADO' => ['Desbloqueado', 'success']];
 ?>
 <!doctype html><html lang="<?= IdiomaService::idioma() === 'pt' ? 'pt-BR' : $e(IdiomaService::idioma()) ?>"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><?= $e($T('titulo', ['pt' => 'Pesos do ranking de fornecedores', 'en' => 'Supplier ranking weights', 'es' => 'Pesos del ranking de proveedores'])) ?></title>
 <link rel="stylesheet" href="../assets/vendor/bootstrap/css/bootstrap.min.css?v=2"><link rel="stylesheet" href="../assets/vendor/bootstrap-icons/font/bootstrap-icons.min.css?v=2"><link rel="stylesheet" href="../assets/css/app.css?v=3"><link rel="stylesheet" href="../assets/css/main.css?v=15"><?php DashboardGrid::head(); ?>

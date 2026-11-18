@@ -1,0 +1,1452 @@
+[
+ {
+  "pt": "A NC já está finalizada.",
+  "en": "The NC is already closed.",
+  "es": "La NC ya está finalizada."
+ },
+ {
+  "pt": "A NC não está finalizada.",
+  "en": "The NC is not closed.",
+  "es": "La NC no está finalizada."
+ },
+ {
+  "pt": "A análise ainda não terminou.",
+  "en": "The analysis has not finished yet.",
+  "es": "El análisis aún no terminó."
+ },
+ {
+  "pt": "A ciência já foi registrada.",
+  "en": "The acknowledgement has already been recorded.",
+  "es": "La toma de conocimiento ya fue registrada."
+ },
+ {
+  "pt": "A data da cotação não pode ser futura.",
+  "en": "The quotation date cannot be in the future.",
+  "es": "La fecha de la cotización no puede ser futura."
+ },
+ {
+  "pt": "A data final nao pode ser anterior a data inicial.",
+  "en": "The end date cannot be earlier than the start date.",
+  "es": "La fecha final no puede ser anterior a la fecha inicial."
+ },
+ {
+  "pt": "A data inicial da vigencia e obrigatoria.",
+  "en": "The validity start date is required.",
+  "es": "La fecha inicial de vigencia es obligatoria."
+ },
+ {
+  "pt": "A eficácia só é avaliada com a ação a 100%.",
+  "en": "Effectiveness is only assessed when the action is at 100%.",
+  "es": "La eficacia solo se evalúa con la acción al 100%."
+ },
+ {
+  "pt": "A empresa está sem limite: defina o limite mensal antes de dar crédito extra.",
+  "en": "The company has no limit: set the monthly limit before granting extra credit.",
+  "es": "La empresa no tiene límite: defina el límite mensual antes de otorgar crédito extra."
+ },
+ {
+  "pt": "A escolha do destino vale para potenciais de licenca e de documento de controle.",
+  "en": "The destination choice applies to license and control document potentials.",
+  "es": "La elección del destino vale para potenciales de licencia y de documento de control."
+ },
+ {
+  "pt": "A folga vai de 0 a 100%.",
+  "en": "The margin ranges from 0 to 100%.",
+  "es": "La holgura va de 0 a 100%."
+ },
+ {
+  "pt": "A ocorrência já foi enviada ao gestor e não pode mais ser alterada nesta aba.",
+  "en": "The occurrence has already been sent to the manager and can no longer be changed on this tab.",
+  "es": "La ocurrencia ya fue enviada al gestor y ya no puede modificarse en esta pestaña."
+ },
+ {
+  "pt": "A ocorrência não está aguardando a avaliação da eficácia.",
+  "en": "The occurrence is not waiting for the effectiveness assessment.",
+  "es": "La ocurrencia no está esperando la evaluación de la eficacia."
+ },
+ {
+  "pt": "A ocorrência não está aguardando a avaliação do gestor.",
+  "en": "The occurrence is not waiting for the manager's assessment.",
+  "es": "La ocurrencia no está esperando la evaluación del gestor."
+ },
+ {
+  "pt": "A ocorrência não está na etapa de análise da causa e plano de ação.",
+  "en": "The occurrence is not at the cause analysis and action plan stage.",
+  "es": "La ocurrencia no está en la etapa de análisis de la causa y plan de acción."
+ },
+ {
+  "pt": "A ocorrência não está na etapa de plano de ação.",
+  "en": "The occurrence is not at the action plan stage.",
+  "es": "La ocurrencia no está en la etapa de plan de acción."
+ },
+ {
+  "pt": "A solicitação foi alterada por outra pessoa. Recarregue e tente novamente.",
+  "en": "The request was changed by someone else. Reload and try again.",
+  "es": "La solicitud fue modificada por otra persona. Recargue e intente de nuevo."
+ },
+ {
+  "pt": "A tarefa já foi concluída ou cancelada.",
+  "en": "The task has already been completed or canceled.",
+  "es": "La tarea ya fue concluida o cancelada."
+ },
+ {
+  "pt": "Análise de IA não encontrada.",
+  "en": "AI analysis not found.",
+  "es": "Análisis de IA no encontrado."
+ },
+ {
+  "pt": "Análise não localizada.",
+  "en": "Analysis not found.",
+  "es": "Análisis no encontrado."
+ },
+ {
+  "pt": "Auditoria não encontrada (fornecedor × tipo).",
+  "en": "Audit not found (supplier × type).",
+  "es": "Auditoría no encontrada (proveedor × tipo)."
+ },
+ {
+  "pt": "Ação de etapa inválida.",
+  "en": "Invalid stage action.",
+  "es": "Acción de etapa no válida."
+ },
+ {
+  "pt": "Ação não encontrada nesta ocorrência.",
+  "en": "Action not found in this occurrence.",
+  "es": "Acción no encontrada en esta ocurrencia."
+ },
+ {
+  "pt": "Ação não permitida",
+  "en": "Action not allowed",
+  "es": "Acción no permitida"
+ },
+ {
+  "pt": "Ação não pertence a esta não conformidade.",
+  "en": "The action does not belong to this nonconformity.",
+  "es": "La acción no pertenece a esta no conformidad."
+ },
+ {
+  "pt": "Backups diários: de 1 a 90",
+  "en": "Daily backups: from 1 to 90",
+  "es": "Copias diarias: de 1 a 90"
+ },
+ {
+  "pt": "Backups semanais: de 0 a 52",
+  "en": "Weekly backups: from 0 to 52",
+  "es": "Copias semanales: de 0 a 52"
+ },
+ {
+  "pt": "Banco de origem sem a tabela fo_criteriofornecedores",
+  "en": "Source database without the fo_criteriofornecedores table",
+  "es": "Base de origen sin la tabla fo_criteriofornecedores"
+ },
+ {
+  "pt": "Banco de origem sem a tabela fo_criteriofuncionarios",
+  "en": "Source database without the fo_criteriofuncionarios table",
+  "es": "Base de origen sin la tabla fo_criteriofuncionarios"
+ },
+ {
+  "pt": "Banco de origem sem a tabela fo_tipofornecedores",
+  "en": "Source database without the fo_tipofornecedores table",
+  "es": "Base de origen sin la tabla fo_tipofornecedores"
+ },
+ {
+  "pt": "Banco de origem sem a tabela fo_tipofuncionarios",
+  "en": "Source database without the fo_tipofuncionarios table",
+  "es": "Base de origen sin la tabla fo_tipofuncionarios"
+ },
+ {
+  "pt": "Banco de origem sem a tabela fo_tipotreinamentos",
+  "en": "Source database without the fo_tipotreinamentos table",
+  "es": "Base de origen sin la tabla fo_tipotreinamentos"
+ },
+ {
+  "pt": "Banco novo invalido",
+  "en": "Invalid new database",
+  "es": "Base nueva no válida"
+ },
+ {
+  "pt": "Cadastre pelo menos uma ação antes de enviar o plano de ação.",
+  "en": "Register at least one action before sending the action plan.",
+  "es": "Registre al menos una acción antes de enviar el plan de acción."
+ },
+ {
+  "pt": "Campo da taxa não pode ser limpo",
+  "en": "The fee field cannot be cleared",
+  "es": "El campo de la tasa no puede vaciarse"
+ },
+ {
+  "pt": "Campo inválido na lista de obrigatórios.",
+  "en": "Invalid field in the required list.",
+  "es": "Campo no válido en la lista de obligatorios."
+ },
+ {
+  "pt": "Campo nao autorizado na operacao de alteracao",
+  "en": "Field not allowed in the update operation",
+  "es": "Campo no autorizado en la operación de modificación"
+ },
+ {
+  "pt": "Campo nao autorizado na operacao de inclusao",
+  "en": "Field not allowed in the insert operation",
+  "es": "Campo no autorizado en la operación de inclusión"
+ },
+ {
+  "pt": "Categoria inexistente.",
+  "en": "Category does not exist.",
+  "es": "Categoría inexistente."
+ },
+ {
+  "pt": "Categorias inválidas.",
+  "en": "Invalid categories.",
+  "es": "Categorías no válidas."
+ },
+ {
+  "pt": "Causa não encontrada nesta ocorrência.",
+  "en": "Cause not found in this occurrence.",
+  "es": "Causa no encontrada en esta ocurrencia."
+ },
+ {
+  "pt": "Chave de texto inválida.",
+  "en": "Invalid text key.",
+  "es": "Clave de texto no válida."
+ },
+ {
+  "pt": "Chave insuficiente para exclusao",
+  "en": "Insufficient key for deletion",
+  "es": "Clave insuficiente para la eliminación"
+ },
+ {
+  "pt": "Chave obrigatoria para exclusao",
+  "en": "A key is required for deletion",
+  "es": "Clave obligatoria para la eliminación"
+ },
+ {
+  "pt": "Classificação do fornecedor em uso em não conformidades, não pode ser excluído.",
+  "en": "Supplier classification in use in nonconformities; it cannot be deleted.",
+  "es": "Clasificación del proveedor en uso en no conformidades; no puede eliminarse."
+ },
+ {
+  "pt": "Classificação em uso em não conformidades, não pode ser excluído.",
+  "en": "Classification in use in nonconformities; it cannot be deleted.",
+  "es": "Clasificación en uso en no conformidades; no puede eliminarse."
+ },
+ {
+  "pt": "Cliente em uso em não conformidades, não pode ser excluído.",
+  "en": "Customer in use in nonconformities; it cannot be deleted.",
+  "es": "Cliente en uso en no conformidades; no puede eliminarse."
+ },
+ {
+  "pt": "Cliente não cadastrado (Administração › Clientes).",
+  "en": "Customer not registered (Administration › Customers).",
+  "es": "Cliente no registrado (Administración › Clientes)."
+ },
+ {
+  "pt": "Conteúdo do guia inválido.",
+  "en": "Invalid guide content.",
+  "es": "Contenido de la guía no válido."
+ },
+ {
+  "pt": "Conteúdo inicial do guia inválido.",
+  "en": "Invalid initial guide content.",
+  "es": "Contenido inicial de la guía no válido."
+ },
+ {
+  "pt": "Conversa não encontrada",
+  "en": "Conversation not found",
+  "es": "Conversación no encontrada"
+ },
+ {
+  "pt": "Dados e chave sao obrigatorios para alteracao",
+  "en": "Data and key are required for the update",
+  "es": "Datos y clave son obligatorios para la modificación"
+ },
+ {
+  "pt": "Dados insuficientes para alteracao",
+  "en": "Insufficient data for the update",
+  "es": "Datos insuficientes para la modificación"
+ },
+ {
+  "pt": "Dados inválidos.",
+  "en": "Invalid data.",
+  "es": "Datos no válidos."
+ },
+ {
+  "pt": "Data da ocorrência inválida (não pode ser futura).",
+  "en": "Invalid occurrence date (it cannot be in the future).",
+  "es": "Fecha de la ocurrencia no válida (no puede ser futura)."
+ },
+ {
+  "pt": "Data de validade inválida.",
+  "en": "Invalid expiry date.",
+  "es": "Fecha de validez no válida."
+ },
+ {
+  "pt": "Data inválida (use AAAA-MM-DD ou deixe vazio).",
+  "en": "Invalid date (use YYYY-MM-DD or leave it empty).",
+  "es": "Fecha no válida (use AAAA-MM-DD o déjela vacía)."
+ },
+ {
+  "pt": "Decisão inválida.",
+  "en": "Invalid decision.",
+  "es": "Decisión no válida."
+ },
+ {
+  "pt": "Decisão inválida: use ACEITAR, MANTER ou LIMPAR.",
+  "en": "Invalid decision: use ACEITAR, MANTER or LIMPAR.",
+  "es": "Decisión no válida: use ACEITAR, MANTER o LIMPAR."
+ },
+ {
+  "pt": "Descreva a ação.",
+  "en": "Describe the action.",
+  "es": "Describa la acción."
+ },
+ {
+  "pt": "Descreva a causa.",
+  "en": "Describe the cause.",
+  "es": "Describa la causa."
+ },
+ {
+  "pt": "Descreva a verificação da eficácia.",
+  "en": "Describe the effectiveness verification.",
+  "es": "Describa la verificación de la eficacia."
+ },
+ {
+  "pt": "Destino ou caminho GED invalido",
+  "en": "Invalid GED destination or path",
+  "es": "Destino o ruta GED no válidos"
+ },
+ {
+  "pt": "Dias de reação inválidos (use um número de 0 a 9999).",
+  "en": "Invalid reaction days (use a number from 0 to 9999).",
+  "es": "Días de reacción no válidos (use un número de 0 a 9999)."
+ },
+ {
+  "pt": "Dias, repetição ou aviso ao superior fora do limite.",
+  "en": "Days, repetition or superior notice out of range.",
+  "es": "Días, repetición o aviso al superior fuera del límite."
+ },
+ {
+  "pt": "Dias: números de 1 (segunda) a 7 (domingo) separados por vírgula",
+  "en": "Days: numbers from 1 (Monday) to 7 (Sunday) separated by commas",
+  "es": "Días: números de 1 (lunes) a 7 (domingo) separados por coma"
+ },
+ {
+  "pt": "Documento de controle escolhido nao encontrado.",
+  "en": "Chosen control document not found.",
+  "es": "Documento de control elegido no encontrado."
+ },
+ {
+  "pt": "Documento de origem não encontrado.",
+  "en": "Source document not found.",
+  "es": "Documento de origen no encontrado."
+ },
+ {
+  "pt": "Documento não encontrado.",
+  "en": "Document not found.",
+  "es": "Documento no encontrado."
+ },
+ {
+  "pt": "Documento ou arquivo inválido.",
+  "en": "Invalid document or file.",
+  "es": "Documento o archivo no válido."
+ },
+ {
+  "pt": "Dê um nome à regra.",
+  "en": "Give the rule a name.",
+  "es": "Dé un nombre a la regla."
+ },
+ {
+  "pt": "E-mail inválido (para mais de um, separe com ponto e vírgula).",
+  "en": "Invalid e-mail (for more than one, separate them with a semicolon).",
+  "es": "E-mail no válido (para más de uno, sepárelos con punto y coma)."
+ },
+ {
+  "pt": "Eficácia inválida: use Eficaz ou Não eficaz.",
+  "en": "Invalid effectiveness: use Eficaz or Não eficaz.",
+  "es": "Eficacia no válida: use Eficaz o Não eficaz."
+ },
+ {
+  "pt": "Em protocolo: use Sim, Não ou Renovar.",
+  "en": "In protocol: use Sim, Não or Renovar.",
+  "es": "En protocolo: use Sim, Não o Renovar."
+ },
+ {
+  "pt": "Emitente: escolha um usuário ativo.",
+  "en": "Issuer: choose an active user.",
+  "es": "Emisor: elija un usuario activo."
+ },
+ {
+  "pt": "Empresa fora do sincronismo (sem migração concluída)",
+  "en": "Company out of synchronization (no completed migration)",
+  "es": "Empresa fuera de la sincronización (sin migración concluida)"
+ },
+ {
+  "pt": "Enviado o documento: use Sim ou Não.",
+  "en": "Document sent: use Sim or Não.",
+  "es": "Documento enviado: use Sim o Não."
+ },
+ {
+  "pt": "Escolha a causa da ação.",
+  "en": "Choose the cause of the action.",
+  "es": "Elija la causa de la acción."
+ },
+ {
+  "pt": "Escolha as ações.",
+  "en": "Choose the actions.",
+  "es": "Elija las acciones."
+ },
+ {
+  "pt": "Escolha as não conformidades.",
+  "en": "Choose the nonconformities.",
+  "es": "Elija las no conformidades."
+ },
+ {
+  "pt": "Escolha criar um novo registro ou vincular a um existente.",
+  "en": "Choose to create a new record or link to an existing one.",
+  "es": "Elija crear un registro nuevo o vincular uno existente."
+ },
+ {
+  "pt": "Escolha o fornecedor antes de enviar.",
+  "en": "Choose the supplier before sending.",
+  "es": "Elija el proveedor antes de enviar."
+ },
+ {
+  "pt": "Escolha o que transferir.",
+  "en": "Choose what to transfer.",
+  "es": "Elija qué transferir."
+ },
+ {
+  "pt": "Escolha o responsável pela ação.",
+  "en": "Choose the owner of the action.",
+  "es": "Elija el responsable de la acción."
+ },
+ {
+  "pt": "Escolha o resultado: eficaz, encerrada sem verificação ou não eficaz.",
+  "en": "Choose the result: effective, closed without verification or not effective.",
+  "es": "Elija el resultado: eficaz, cerrada sin verificación o no eficaz."
+ },
+ {
+  "pt": "Escolha pelo menos um registro existente para vincular.",
+  "en": "Choose at least one existing record to link.",
+  "es": "Elija al menos un registro existente para vincular."
+ },
+ {
+  "pt": "Escolha um gestor ativo antes de enviar.",
+  "en": "Choose an active manager before sending.",
+  "es": "Elija un gestor activo antes de enviar."
+ },
+ {
+  "pt": "Escolha um gestor ativo.",
+  "en": "Choose an active manager.",
+  "es": "Elija un gestor activo."
+ },
+ {
+  "pt": "Escolha usuários de origem e de destino diferentes.",
+  "en": "Choose different source and destination users.",
+  "es": "Elija usuarios de origen y de destino diferentes."
+ },
+ {
+  "pt": "Escopo inválido (use FORNECEDOR ou FUNCIONARIO).",
+  "en": "Invalid scope (use FORNECEDOR or FUNCIONARIO).",
+  "es": "Alcance no válido (use FORNECEDOR o FUNCIONARIO)."
+ },
+ {
+  "pt": "Escopo inválido.",
+  "en": "Invalid scope.",
+  "es": "Alcance no válido."
+ },
+ {
+  "pt": "Escreva o motivo (pelo menos 10 caracteres): por que o documento pode ser aceito apesar dos indícios.",
+  "en": "Write the reason (at least 10 characters): why the document can be accepted despite the signs.",
+  "es": "Escriba el motivo (al menos 10 caracteres): por qué el documento puede aceptarse a pesar de los indicios."
+ },
+ {
+  "pt": "Esta sugestão da IA já foi encerrada ou não é sua. Peça uma nova sugestão.",
+  "en": "This AI suggestion has already been closed or is not yours. Request a new suggestion.",
+  "es": "Esta sugerencia de la IA ya fue cerrada o no es suya. Pida una nueva sugerencia."
+ },
+ {
+  "pt": "Esta sugestão já foi decidida ou foi substituída por uma mais nova.",
+  "en": "This suggestion has already been decided or was replaced by a newer one.",
+  "es": "Esta sugerencia ya fue decidida o fue sustituida por una más reciente."
+ },
+ {
+  "pt": "Esta sugestão já foi registrada.",
+  "en": "This suggestion has already been recorded.",
+  "es": "Esta sugerencia ya fue registrada."
+ },
+ {
+  "pt": "Este tipo de NC não tem cliente.",
+  "en": "This NC type has no customer.",
+  "es": "Este tipo de NC no tiene cliente."
+ },
+ {
+  "pt": "Este tipo de NC não tem fornecedor.",
+  "en": "This NC type has no supplier.",
+  "es": "Este tipo de NC no tiene proveedor."
+ },
+ {
+  "pt": "Este tipo de NC não tem quantidade devolvida.",
+  "en": "This NC type has no returned quantity.",
+  "es": "Este tipo de NC no tiene cantidad devuelta."
+ },
+ {
+  "pt": "Este tipo de NC não tem quantidade envolvida.",
+  "en": "This NC type has no quantity involved.",
+  "es": "Este tipo de NC no tiene cantidad involucrada."
+ },
+ {
+  "pt": "Este tipo de fornecedor não exige auditoria: não há cronograma.",
+  "en": "This supplier type does not require an audit: there is no schedule.",
+  "es": "Este tipo de proveedor no exige auditoría: no hay cronograma."
+ },
+ {
+  "pt": "Faixa de códigos de participantes ocupada por um usuário: avise o suporte.",
+  "en": "Participant code range used by a user: contact support.",
+  "es": "Rango de códigos de participantes ocupado por un usuario: avise al soporte."
+ },
+ {
+  "pt": "Fornecedor bloqueado no ranking: os documentos do funcionário não podem ser aprovados.",
+  "en": "Supplier blocked in the ranking: the employee's documents cannot be approved.",
+  "es": "Proveedor bloqueado en el ranking: los documentos del empleado no pueden aprobarse."
+ },
+ {
+  "pt": "Fornecedor bloqueado no ranking: os documentos não podem ser aprovados enquanto o bloqueio durar.",
+  "en": "Supplier blocked in the ranking: documents cannot be approved while the block lasts.",
+  "es": "Proveedor bloqueado en el ranking: los documentos no pueden aprobarse mientras dure el bloqueo."
+ },
+ {
+  "pt": "Fornecedor inexistente.",
+  "en": "Supplier does not exist.",
+  "es": "Proveedor inexistente."
+ },
+ {
+  "pt": "Fornecedor não encontrado.",
+  "en": "Supplier not found.",
+  "es": "Proveedor no encontrado."
+ },
+ {
+  "pt": "Frequência: de 1 a 10080 minutos",
+  "en": "Frequency: from 1 to 10080 minutes",
+  "es": "Frecuencia: de 1 a 10080 minutos"
+ },
+ {
+  "pt": "Funcionário com documentos ou treinamentos preenchidos: em vez de excluir, marque como Desligado.",
+  "en": "Employee with documents or trainings filled in: instead of deleting, mark as Dismissed.",
+  "es": "Empleado con documentos o capacitaciones completados: en lugar de eliminar, márquelo como Desvinculado."
+ },
+ {
+  "pt": "Gestor: escolha um usuário ativo.",
+  "en": "Manager: choose an active user.",
+  "es": "Gestor: elija un usuario activo."
+ },
+ {
+  "pt": "Grave a lista antes de incluir pessoas.",
+  "en": "Save the list before adding people.",
+  "es": "Guarde la lista antes de incluir personas."
+ },
+ {
+  "pt": "Grupo de textos inválido.",
+  "en": "Invalid text group.",
+  "es": "Grupo de textos no válido."
+ },
+ {
+  "pt": "Grupo inexistente ou inativo.",
+  "en": "Group does not exist or is inactive.",
+  "es": "Grupo inexistente o inactivo."
+ },
+ {
+  "pt": "Horário inválido (use HH:MM)",
+  "en": "Invalid time (use HH:MM)",
+  "es": "Horario no válido (use HH:MM)"
+ },
+ {
+  "pt": "Há itens que não existem mais no cadastro. Atualize a tela e tente novamente.",
+  "en": "Some items no longer exist in the register. Refresh the screen and try again.",
+  "es": "Hay ítems que ya no existen en el registro. Actualice la pantalla e intente de nuevo."
+ },
+ {
+  "pt": "Há textos sem a versão em português.",
+  "en": "Some texts have no Portuguese version.",
+  "es": "Hay textos sin la versión en portugués."
+ },
+ {
+  "pt": "Há tipos que não existem mais no cadastro. Atualize a tela e tente novamente.",
+  "en": "Some types no longer exist in the register. Refresh the screen and try again.",
+  "es": "Hay tipos que ya no existen en el registro. Actualice la pantalla e intente de nuevo."
+ },
+ {
+  "pt": "Há usuários que não existem mais. Atualize a tela e tente novamente.",
+  "en": "Some users no longer exist. Refresh the screen and try again.",
+  "es": "Hay usuarios que ya no existen. Actualice la pantalla e intente de nuevo."
+ },
+ {
+  "pt": "Incluído no contrato: use Sim ou Não.",
+  "en": "Included in contract: use Sim or Não.",
+  "es": "Incluido en el contrato: use Sim o Não."
+ },
+ {
+  "pt": "Informe a data a partir da qual o preço vale.",
+  "en": "Enter the date from which the price applies.",
+  "es": "Informe la fecha a partir de la cual vale el precio."
+ },
+ {
+  "pt": "Informe a data da análise da eficácia e o responsável pela pendência.",
+  "en": "Enter the effectiveness assessment date and the owner of the pending item.",
+  "es": "Informe la fecha del análisis de la eficacia y el responsable de la pendencia."
+ },
+ {
+  "pt": "Informe a data e a cotação do dólar (R$ por US$).",
+  "en": "Enter the date and the dollar rate (R$ per US$).",
+  "es": "Informe la fecha y la cotización del dólar (R$ por US$)."
+ },
+ {
+  "pt": "Informe a probabilidade (1 a 4).",
+  "en": "Enter the probability (1 to 4).",
+  "es": "Informe la probabilidad (1 a 4)."
+ },
+ {
+  "pt": "Informe a severidade (1 a 4).",
+  "en": "Enter the severity (1 to 4).",
+  "es": "Informe la severidad (1 a 4)."
+ },
+ {
+  "pt": "Informe ao menos um banco de origem",
+  "en": "Enter at least one source database",
+  "es": "Informe al menos una base de origen"
+ },
+ {
+  "pt": "Informe descrição e um período válido.",
+  "en": "Enter a description and a valid period.",
+  "es": "Informe descripción y un período válido."
+ },
+ {
+  "pt": "Informe na observação da empresa o motivo da reprovação do documento.",
+  "en": "Enter in the company note the reason for rejecting the document.",
+  "es": "Informe en la observación de la empresa el motivo del rechazo del documento."
+ },
+ {
+  "pt": "Informe o modelo (ex.: gpt-4o-mini; * = preço padrão).",
+  "en": "Enter the model (e.g. gpt-4o-mini; * = default price).",
+  "es": "Informe el modelo (ej.: gpt-4o-mini; * = precio predeterminado)."
+ },
+ {
+  "pt": "Informe o motivo (obrigatório).",
+  "en": "Enter the reason (required).",
+  "es": "Informe el motivo (obligatorio)."
+ },
+ {
+  "pt": "Informe o motivo da alteração do limite (ex.: negociação com a empresa).",
+  "en": "Enter the reason for changing the limit (e.g. negotiation with the company).",
+  "es": "Informe el motivo del cambio del límite (ej.: negociación con la empresa)."
+ },
+ {
+  "pt": "Informe o motivo da recusa.",
+  "en": "Enter the reason for the rejection.",
+  "es": "Informe el motivo del rechazo."
+ },
+ {
+  "pt": "Informe o motivo do crédito extra (ex.: negociação com a empresa).",
+  "en": "Enter the reason for the extra credit (e.g. negotiation with the company).",
+  "es": "Informe el motivo del crédito extra (ej.: negociación con la empresa)."
+ },
+ {
+  "pt": "Informe o nome da lista.",
+  "en": "Enter the list name.",
+  "es": "Informe el nombre de la lista."
+ },
+ {
+  "pt": "Informe o nome do participante.",
+  "en": "Enter the participant's name.",
+  "es": "Informe el nombre del participante."
+ },
+ {
+  "pt": "Informe o nome do relatório.",
+  "en": "Enter the report name.",
+  "es": "Informe el nombre del informe."
+ },
+ {
+  "pt": "Informe o nome do tipo de palavra-chave.",
+  "en": "Enter the keyword type name.",
+  "es": "Informe el nombre del tipo de palabra clave."
+ },
+ {
+  "pt": "Informe o nome.",
+  "en": "Enter the name.",
+  "es": "Informe el nombre."
+ },
+ {
+  "pt": "Informe o número da solicitação que já trata deste assunto.",
+  "en": "Enter the number of the request that already covers this subject.",
+  "es": "Informe el número de la solicitud que ya trata este asunto."
+ },
+ {
+  "pt": "Informe o percentual.",
+  "en": "Enter the percentage.",
+  "es": "Informe el porcentaje."
+ },
+ {
+  "pt": "Informe o título e a descrição da solicitação.",
+  "en": "Enter the title and description of the request.",
+  "es": "Informe el título y la descripción de la solicitud."
+ },
+ {
+  "pt": "Informe o valor do crédito extra (maior que zero).",
+  "en": "Enter the extra credit amount (greater than zero).",
+  "es": "Informe el valor del crédito extra (mayor que cero)."
+ },
+ {
+  "pt": "Informe os preços de entrada e de saída (US$ por 1 milhão de tokens).",
+  "en": "Enter the input and output prices (US$ per 1 million tokens).",
+  "es": "Informe los precios de entrada y de salida (US$ por 1 millón de tokens)."
+ },
+ {
+  "pt": "Informe por que o item não se aplica a este requisito (pelo menos 10 caracteres).",
+  "en": "Explain why the item does not apply to this requirement (at least 10 characters).",
+  "es": "Informe por qué el ítem no se aplica a este requisito (al menos 10 caracteres)."
+ },
+ {
+  "pt": "Informe se a ocorrência vai passar pela análise da eficácia.",
+  "en": "State whether the occurrence will go through the effectiveness assessment.",
+  "es": "Informe si la ocurrencia pasará por el análisis de la eficacia."
+ },
+ {
+  "pt": "Informe somente um grupo ativo.",
+  "en": "Enter only one active group.",
+  "es": "Informe solo un grupo activo."
+ },
+ {
+  "pt": "Informe somente um usuario ativo.",
+  "en": "Enter only one active user.",
+  "es": "Informe solo un usuario activo."
+ },
+ {
+  "pt": "Informe um menu universal ativo para validar",
+  "en": "Enter an active universal menu to validate",
+  "es": "Informe un menú universal activo para validar"
+ },
+ {
+  "pt": "Informe um número (até 2 casas decimais).",
+  "en": "Enter a number (up to 2 decimal places).",
+  "es": "Informe un número (hasta 2 decimales)."
+ },
+ {
+  "pt": "Item não informado.",
+  "en": "Item not provided.",
+  "es": "Ítem no informado."
+ },
+ {
+  "pt": "Ja existe vinculo ativo com vigencia sobreposta.",
+  "en": "There is already an active link with an overlapping validity.",
+  "es": "Ya existe un vínculo activo con vigencia superpuesta."
+ },
+ {
+  "pt": "Justificativa obrigatória",
+  "en": "Justification required",
+  "es": "Justificación obligatoria"
+ },
+ {
+  "pt": "Já existe um backup na fila ou em execução",
+  "en": "There is already a backup queued or running",
+  "es": "Ya existe una copia en la cola o en ejecución"
+ },
+ {
+  "pt": "Já existe um item com este nome neste cadastro.",
+  "en": "There is already an item with this name in this register.",
+  "es": "Ya existe un ítem con este nombre en este registro."
+ },
+ {
+  "pt": "Já existe um participante ativo com este e-mail.",
+  "en": "There is already an active participant with this e-mail.",
+  "es": "Ya existe un participante activo con este e-mail."
+ },
+ {
+  "pt": "Já existe um pedido igual na fila",
+  "en": "There is already an identical request in the queue",
+  "es": "Ya existe un pedido igual en la cola"
+ },
+ {
+  "pt": "Já existe um preço deste modelo com esta data: altere aquele.",
+  "en": "There is already a price for this model on this date: change that one.",
+  "es": "Ya existe un precio de este modelo con esta fecha: modifique ese."
+ },
+ {
+  "pt": "Já existe uma lista com este nome.",
+  "en": "There is already a list with this name.",
+  "es": "Ya existe una lista con este nombre."
+ },
+ {
+  "pt": "Licenca escolhida nao encontrada.",
+  "en": "Chosen license not found.",
+  "es": "Licencia elegida no encontrada."
+ },
+ {
+  "pt": "Licença válida não informada",
+  "en": "Valid license not provided",
+  "es": "Licencia válida no informada"
+ },
+ {
+  "pt": "Limite de 50 relatórios salvos por usuário.",
+  "en": "Limit of 50 saved reports per user.",
+  "es": "Límite de 50 informes guardados por usuario."
+ },
+ {
+  "pt": "Lista de arquivos inválida.",
+  "en": "Invalid file list.",
+  "es": "Lista de archivos no válida."
+ },
+ {
+  "pt": "Lista de campos inválida.",
+  "en": "Invalid field list.",
+  "es": "Lista de campos no válida."
+ },
+ {
+  "pt": "Lista de distribuição inexistente.",
+  "en": "Distribution list does not exist.",
+  "es": "Lista de distribución inexistente."
+ },
+ {
+  "pt": "Lista de documentos inválida.",
+  "en": "Invalid document list.",
+  "es": "Lista de documentos no válida."
+ },
+ {
+  "pt": "Lista de itens inválida.",
+  "en": "Invalid item list.",
+  "es": "Lista de ítems no válida."
+ },
+ {
+  "pt": "Lista de origem não encontrada.",
+  "en": "Source list not found.",
+  "es": "Lista de origen no encontrada."
+ },
+ {
+  "pt": "Lista de textos inválida.",
+  "en": "Invalid text list.",
+  "es": "Lista de textos no válida."
+ },
+ {
+  "pt": "Lista do sistema anterior: até a virada só consulta. Use \"Copiar como nova lista\" para criar uma lista no greenportal.",
+  "en": "List from the previous system: view only until the switchover. Use \"Copy as new list\" to create a list in greenportal.",
+  "es": "Lista del sistema anterior: solo consulta hasta el cambio. Use \"Copiar como nueva lista\" para crear una lista en greenportal."
+ },
+ {
+  "pt": "Lista não encontrada.",
+  "en": "List not found.",
+  "es": "Lista no encontrada."
+ },
+ {
+  "pt": "Marque \"Avaliar eficácia?\" = Sim para registrar a eficácia.",
+  "en": "Set \"Assess effectiveness?\" = Yes to record the effectiveness.",
+  "es": "Marque \"¿Evaluar eficacia?\" = Sí para registrar la eficacia."
+ },
+ {
+  "pt": "Modo inválido",
+  "en": "Invalid mode",
+  "es": "Modo no válido"
+ },
+ {
+  "pt": "Modo inválido (SIMULAR ou EXECUTAR)",
+  "en": "Invalid mode (SIMULAR or EXECUTAR)",
+  "es": "Modo no válido (SIMULAR o EXECUTAR)"
+ },
+ {
+  "pt": "Módulo de responsabilidade não encontrado",
+  "en": "Responsibility module not found",
+  "es": "Módulo de responsabilidad no encontrado"
+ },
+ {
+  "pt": "NC do sistema anterior: até a virada, corrija no sistema anterior (as alterações chegam pelo sincronismo).",
+  "en": "NC from the previous system: until the switchover, correct it in the previous system (changes arrive through synchronization).",
+  "es": "NC del sistema anterior: hasta el cambio, corríjala en el sistema anterior (los cambios llegan por la sincronización)."
+ },
+ {
+  "pt": "Nao foi possivel aprovar: requisito legal ou unidade nao identificados.",
+  "en": "Could not approve: legal requirement or unit not identified.",
+  "es": "No fue posible aprobar: requisito legal o unidad no identificados."
+ },
+ {
+  "pt": "Nao foi possivel converter a infraestrutura: requisito legal ou unidade nao identificados.",
+  "en": "Could not convert the infrastructure: legal requirement or unit not identified.",
+  "es": "No fue posible convertir la infraestructura: requisito legal o unidad no identificados."
+ },
+ {
+  "pt": "Nao foi possivel converter a licenca: requisito legal ou unidade nao identificados.",
+  "en": "Could not convert the license: legal requirement or unit not identified.",
+  "es": "No fue posible convertir la licencia: requisito legal o unidad no identificados."
+ },
+ {
+  "pt": "Nao foi possivel converter o documento: requisito legal ou unidade nao identificados.",
+  "en": "Could not convert the document: legal requirement or unit not identified.",
+  "es": "No fue posible convertir el documento: requisito legal o unidad no identificados."
+ },
+ {
+  "pt": "Nao foi possivel converter o monitoramento: requisito legal ou unidade nao identificados.",
+  "en": "Could not convert the monitoring: legal requirement or unit not identified.",
+  "es": "No fue posible convertir el monitoreo: requisito legal o unidad no identificados."
+ },
+ {
+  "pt": "Nao foi possivel converter o treinamento: requisito legal ou unidade nao identificados.",
+  "en": "Could not convert the training: legal requirement or unit not identified.",
+  "es": "No fue posible convertir la capacitación: requisito legal o unidad no identificados."
+ },
+ {
+  "pt": "Nenhum campo autorizado para inclusao",
+  "en": "No field allowed for insertion",
+  "es": "Ningún campo autorizado para la inclusión"
+ },
+ {
+  "pt": "Nenhum campo informado para inclusao",
+  "en": "No field provided for insertion",
+  "es": "Ningún campo informado para la inclusión"
+ },
+ {
+  "pt": "Nenhuma alteração para gravar.",
+  "en": "No changes to save.",
+  "es": "Ningún cambio para guardar."
+ },
+ {
+  "pt": "Nenhuma alteração recebida.",
+  "en": "No changes received.",
+  "es": "Ningún cambio recibido."
+ },
+ {
+  "pt": "Nomes de menu podem ter no máximo 150 caracteres.",
+  "en": "Menu names can have at most 150 characters.",
+  "es": "Los nombres de menú pueden tener como máximo 150 caracteres."
+ },
+ {
+  "pt": "Não conformidade não encontrada.",
+  "en": "Nonconformity not found.",
+  "es": "No conformidad no encontrada."
+ },
+ {
+  "pt": "Nível de exigência inválido.",
+  "en": "Invalid requirement level.",
+  "es": "Nivel de exigencia no válido."
+ },
+ {
+  "pt": "O acréscimo (IOF/spread) vai de 0 a 50%.",
+  "en": "The surcharge (IOF/spread) ranges from 0 to 50%.",
+  "es": "El recargo (IOF/spread) va de 0 a 50%."
+ },
+ {
+  "pt": "O aviso vai de 1 a 100% do limite.",
+  "en": "The notice ranges from 1 to 100% of the limit.",
+  "es": "El aviso va de 1 a 100% del límite."
+ },
+ {
+  "pt": "O evento não pertence a esta auditoria.",
+  "en": "The event does not belong to this audit.",
+  "es": "El evento no pertenece a esta auditoría."
+ },
+ {
+  "pt": "O limite deve ser maior que zero (vazio = sem limite).",
+  "en": "The limit must be greater than zero (empty = no limit).",
+  "es": "El límite debe ser mayor que cero (vacío = sin límite)."
+ },
+ {
+  "pt": "O plano de ação deve ser realizado antes de enviar para a análise da eficácia.",
+  "en": "The action plan must be carried out before sending for the effectiveness assessment.",
+  "es": "El plan de acción debe realizarse antes de enviar al análisis de la eficacia."
+ },
+ {
+  "pt": "O potencial nao esta disponivel para validacao.",
+  "en": "The potential is not available for validation.",
+  "es": "El potencial no está disponible para validación."
+ },
+ {
+  "pt": "O responsável do fornecedor precisa estar ligado ao fornecedor (Fornecedor x Usuários).",
+  "en": "The supplier's owner must be linked to the supplier (Supplier x Users).",
+  "es": "El responsable del proveedor debe estar vinculado al proveedor (Proveedor x Usuarios)."
+ },
+ {
+  "pt": "O status da ação deve ser 0, 25, 50, 75 ou 100%.",
+  "en": "The action status must be 0, 25, 50, 75 or 100%.",
+  "es": "El estado de la acción debe ser 0, 25, 50, 75 o 100%."
+ },
+ {
+  "pt": "O sumário não pode ficar vazio.",
+  "en": "The summary cannot be empty.",
+  "es": "El resumen no puede quedar vacío."
+ },
+ {
+  "pt": "O texto em português é obrigatório.",
+  "en": "The Portuguese text is required.",
+  "es": "El texto en portugués es obligatorio."
+ },
+ {
+  "pt": "O usuário de destino precisa estar ativo.",
+  "en": "The destination user must be active.",
+  "es": "El usuario de destino debe estar activo."
+ },
+ {
+  "pt": "Obrigatório cadastrar pelo menos 1 causa.",
+  "en": "At least 1 cause must be registered.",
+  "es": "Es obligatorio registrar al menos 1 causa."
+ },
+ {
+  "pt": "Obrigatório cadastrar pelo menos 1 plano de ação para cada causa.",
+  "en": "At least 1 action plan must be registered for each cause.",
+  "es": "Es obligatorio registrar al menos 1 plan de acción para cada causa."
+ },
+ {
+  "pt": "Ocorrência não encontrada.",
+  "en": "Occurrence not found.",
+  "es": "Ocurrencia no encontrada."
+ },
+ {
+  "pt": "Opção inválida.",
+  "en": "Invalid option.",
+  "es": "Opción no válida."
+ },
+ {
+  "pt": "Origem da ocorrência em uso em não conformidades, não pode ser excluído.",
+  "en": "Occurrence origin in use in nonconformities; it cannot be deleted.",
+  "es": "Origen de la ocurrencia en uso en no conformidades; no puede eliminarse."
+ },
+ {
+  "pt": "Origens invalidas",
+  "en": "Invalid origins",
+  "es": "Orígenes no válidos"
+ },
+ {
+  "pt": "Os prompts PT, EN e ES sao obrigatorios.",
+  "en": "The PT, EN and ES prompts are required.",
+  "es": "Los prompts PT, EN y ES son obligatorios."
+ },
+ {
+  "pt": "Os prompts devem manter o contrato de resposta com potenciais.",
+  "en": "The prompts must keep the response contract with potentials.",
+  "es": "Los prompts deben mantener el contrato de respuesta con potenciales."
+ },
+ {
+  "pt": "Papel da mensagem inválido",
+  "en": "Invalid message role",
+  "es": "Rol del mensaje no válido"
+ },
+ {
+  "pt": "Para ajustar, informe a severidade e a probabilidade (1 a 4).",
+  "en": "To adjust, enter the severity and the probability (1 to 4).",
+  "es": "Para ajustar, informe la severidad y la probabilidad (1 a 4)."
+ },
+ {
+  "pt": "Para aplicar, selecione uma simulação concluída nas últimas 24 horas e ainda não aplicada",
+  "en": "To apply, select a simulation completed in the last 24 hours and not yet applied",
+  "es": "Para aplicar, seleccione una simulación concluida en las últimas 24 horas y aún no aplicada"
+ },
+ {
+  "pt": "Para enviar ao responsável, preencha a ação imediata, a análise da abrangência e escolha o responsável.",
+  "en": "To send to the owner, fill in the immediate action and the scope analysis and choose the owner.",
+  "es": "Para enviar al responsable, complete la acción inmediata y el análisis del alcance y elija el responsable."
+ },
+ {
+  "pt": "Para manter a avaliação, informe a justificativa (pelo menos 10 caracteres).",
+  "en": "To keep the assessment, enter the justification (at least 10 characters).",
+  "es": "Para mantener la evaluación, informe la justificación (al menos 10 caracteres)."
+ },
+ {
+  "pt": "Participante não encontrado.",
+  "en": "Participant not found.",
+  "es": "Participante no encontrado."
+ },
+ {
+  "pt": "Parâmetro desconhecido.",
+  "en": "Unknown parameter.",
+  "es": "Parámetro desconocido."
+ },
+ {
+  "pt": "Parâmetro do limite inválido.",
+  "en": "Invalid limit parameter.",
+  "es": "Parámetro del límite no válido."
+ },
+ {
+  "pt": "Pessoas inválidas.",
+  "en": "Invalid people.",
+  "es": "Personas no válidas."
+ },
+ {
+  "pt": "Preencha a análise da causa e a data prevista de conclusão.",
+  "en": "Fill in the cause analysis and the planned completion date.",
+  "es": "Complete el análisis de la causa y la fecha prevista de conclusión."
+ },
+ {
+  "pt": "Preencha cliente, unidade do cliente, produto, documento, reclamação, procedência e segurança de alimentos.",
+  "en": "Fill in customer, customer unit, product, document, complaint, validity and food safety.",
+  "es": "Complete cliente, unidad del cliente, producto, documento, reclamo, procedencia y seguridad alimentaria."
+ },
+ {
+  "pt": "Preencha unidade, sumário e descrição antes de enviar.",
+  "en": "Fill in unit, summary and description before sending.",
+  "es": "Complete unidad, resumen y descripción antes de enviar."
+ },
+ {
+  "pt": "Produto em uso em não conformidades, não pode ser excluído.",
+  "en": "Product in use in nonconformities; it cannot be deleted.",
+  "es": "Producto en uso en no conformidades; no puede eliminarse."
+ },
+ {
+  "pt": "Prompt nao encontrado.",
+  "en": "Prompt not found.",
+  "es": "Prompt no encontrado."
+ },
+ {
+  "pt": "Rascunho do guia não inicializado.",
+  "en": "Guide draft not initialized.",
+  "es": "Borrador de la guía no inicializado."
+ },
+ {
+  "pt": "Registro de menu nao encontrado",
+  "en": "Menu record not found",
+  "es": "Registro de menú no encontrado"
+ },
+ {
+  "pt": "Regra não encontrada.",
+  "en": "Rule not found.",
+  "es": "Regla no encontrada."
+ },
+ {
+  "pt": "Relatório inválido.",
+  "en": "Invalid report.",
+  "es": "Informe no válido."
+ },
+ {
+  "pt": "Relatório salvo não encontrado.",
+  "en": "Saved report not found.",
+  "es": "Informe guardado no encontrado."
+ },
+ {
+  "pt": "Relação inválida.",
+  "en": "Invalid relation.",
+  "es": "Relación no válida."
+ },
+ {
+  "pt": "Requisito ou item não informado.",
+  "en": "Requirement or item not provided.",
+  "es": "Requisito o ítem no informado."
+ },
+ {
+  "pt": "Responsável da empresa não encontrado.",
+  "en": "Company owner not found.",
+  "es": "Responsable de la empresa no encontrado."
+ },
+ {
+  "pt": "Responsável: escolha um usuário ativo.",
+  "en": "Owner: choose an active user.",
+  "es": "Responsable: elija un usuario activo."
+ },
+ {
+  "pt": "Risco alto de adulteração: para Atende = Sim, registre a ciência com o motivo nos Arquivos do documento (aba Adulteração).",
+  "en": "High risk of tampering: for Complies = Yes, record the acknowledgement with the reason in the document Files (Tampering tab).",
+  "es": "Riesgo alto de adulteración: para Atiende = Sí, registre la toma de conocimiento con el motivo en los Archivos del documento (pestaña Adulteración)."
+ },
+ {
+  "pt": "Risco alto de adulteração: para aprovar, registre a ciência com o motivo nos Arquivos do documento (aba Adulteração).",
+  "en": "High risk of tampering: to approve, record the acknowledgement with the reason in the document Files (Tampering tab).",
+  "es": "Riesgo alto de adulteración: para aprobar, registre la toma de conocimiento con el motivo en los Archivos del documento (pestaña Adulteración)."
+ },
+ {
+  "pt": "Risco inválido.",
+  "en": "Invalid risk.",
+  "es": "Riesgo no válido."
+ },
+ {
+  "pt": "Sem histórico da finalização: não há etapa para onde reabrir.",
+  "en": "No closing history: there is no stage to reopen to.",
+  "es": "Sin historial de la finalización: no hay etapa a la cual reabrir."
+ },
+ {
+  "pt": "Sem histórico de como a NC chegou a esta etapa: não há para onde devolver.",
+  "en": "No history of how the NC reached this stage: there is nowhere to send it back.",
+  "es": "Sin historial de cómo la NC llegó a esta etapa: no hay a dónde devolver."
+ },
+ {
+  "pt": "Serviço não encontrado",
+  "en": "Service not found",
+  "es": "Servicio no encontrado"
+ },
+ {
+  "pt": "Setor em uso em não conformidades, não pode ser excluído.",
+  "en": "Department in use in nonconformities; it cannot be deleted.",
+  "es": "Sector en uso en no conformidades; no puede eliminarse."
+ },
+ {
+  "pt": "Sistema de gestão em uso em não conformidades, não pode ser excluído.",
+  "en": "Management system in use in nonconformities; it cannot be deleted.",
+  "es": "Sistema de gestión en uso en no conformidades; no puede eliminarse."
+ },
+ {
+  "pt": "Situação do lembrete inválida.",
+  "en": "Invalid reminder situation.",
+  "es": "Situación del recordatorio no válida."
+ },
+ {
+  "pt": "Situação inválida para a análise de IA.",
+  "en": "Invalid status for the AI analysis.",
+  "es": "Situación no válida para el análisis de IA."
+ },
+ {
+  "pt": "Situação inválida.",
+  "en": "Invalid status.",
+  "es": "Situación no válida."
+ },
+ {
+  "pt": "Solicitacao de IA sem usuario autenticado.",
+  "en": "AI request without an authenticated user.",
+  "es": "Solicitud de IA sin usuario autenticado."
+ },
+ {
+  "pt": "Solicitacao nao esta em construcao",
+  "en": "The request is not being drafted",
+  "es": "La solicitud no está en construcción"
+ },
+ {
+  "pt": "Somente solicitacoes em construcao podem ser alteradas",
+  "en": "Only requests being drafted can be changed",
+  "es": "Solo las solicitudes en construcción pueden modificarse"
+ },
+ {
+  "pt": "Somente solicitacoes em construcao podem ser excluidas",
+  "en": "Only requests being drafted can be deleted",
+  "es": "Solo las solicitudes en construcción pueden eliminarse"
+ },
+ {
+  "pt": "Somente solicitacoes em erro podem ser reprocessadas",
+  "en": "Only requests with errors can be reprocessed",
+  "es": "Solo las solicitudes con error pueden reprocesarse"
+ },
+ {
+  "pt": "Somente solicitacoes em erro podem ter as origens corrigidas",
+  "en": "Only requests with errors can have their origins corrected",
+  "es": "Solo las solicitudes con error pueden tener los orígenes corregidos"
+ },
+ {
+  "pt": "Status de validacao invalido",
+  "en": "Invalid validation status",
+  "es": "Estado de validación no válido"
+ },
+ {
+  "pt": "Status de validacao nao permitido.",
+  "en": "Validation status not allowed.",
+  "es": "Estado de validación no permitido."
+ },
+ {
+  "pt": "Sugestão não encontrada.",
+  "en": "Suggestion not found.",
+  "es": "Sugerencia no encontrada."
+ },
+ {
+  "pt": "Só NCs em andamento podem ser devolvidas (finalizada: use Reabrir).",
+  "en": "Only NCs in progress can be sent back (closed: use Reopen).",
+  "es": "Solo las NC en curso pueden devolverse (finalizada: use Reabrir)."
+ },
+ {
+  "pt": "Só análises de risco médio ou alto pedem ciência.",
+  "en": "Only medium or high risk analyses require acknowledgement.",
+  "es": "Solo los análisis de riesgo medio o alto piden toma de conocimiento."
+ },
+ {
+  "pt": "Só o avaliador da ação registra a eficácia.",
+  "en": "Only the action's assessor records the effectiveness.",
+  "es": "Solo el evaluador de la acción registra la eficacia."
+ },
+ {
+  "pt": "Só o emitente e o gestor montam o plano de ação; o responsável de cada ação atualiza o status dela.",
+  "en": "Only the issuer and the manager set up the action plan; the owner of each action updates its status.",
+  "es": "Solo el emisor y el gestor arman el plan de acción; el responsable de cada acción actualiza su estado."
+ },
+ {
+  "pt": "Só o emitente pode alterar a ocorrência.",
+  "en": "Only the issuer can change the occurrence.",
+  "es": "Solo el emisor puede modificar la ocurrencia."
+ },
+ {
+  "pt": "Só o gestor (e, na Assistência Técnica, o emitente) pode excluir ações do plano.",
+  "en": "Only the manager (and, in Technical Assistance, the issuer) can delete actions from the plan.",
+  "es": "Solo el gestor (y, en Asistencia Técnica, el emisor) puede eliminar acciones del plan."
+ },
+ {
+  "pt": "Só o gestor da ocorrência pode avaliar a eficácia.",
+  "en": "Only the manager of the occurrence can assess the effectiveness.",
+  "es": "Solo el gestor de la ocurrencia puede evaluar la eficacia."
+ },
+ {
+  "pt": "Só o gestor da ocorrência pode avaliá-la.",
+  "en": "Only the manager of the occurrence can assess it.",
+  "es": "Solo el gestor de la ocurrencia puede evaluarla."
+ },
+ {
+  "pt": "Só o gestor monta o plano de ação; o responsável de cada ação atualiza o status dela.",
+  "en": "Only the manager sets up the action plan; the owner of each action updates its status.",
+  "es": "Solo el gestor arma el plan de acción; el responsable de cada acción actualiza su estado."
+ },
+ {
+  "pt": "Só o responsável pela análise pode alterar causas e plano de ação.",
+  "en": "Only the analysis owner can change causes and the action plan.",
+  "es": "Solo el responsable del análisis puede modificar causas y plan de acción."
+ },
+ {
+  "pt": "Só o responsável pela tarefa pode concluí-la.",
+  "en": "Only the task owner can complete it.",
+  "es": "Solo el responsable de la tarea puede concluirla."
+ },
+ {
+  "pt": "Só é possível cancelar backup na fila ou em execução",
+  "en": "Only a queued or running backup can be canceled",
+  "es": "Solo es posible cancelar una copia en la cola o en ejecución"
+ },
+ {
+  "pt": "Só é possível cancelar pedido que ainda está na fila",
+  "en": "Only a request still in the queue can be canceled",
+  "es": "Solo es posible cancelar un pedido que aún está en la cola"
+ },
+ {
+  "pt": "Só é possível colar em documentos do mesmo fornecedor.",
+  "en": "You can only paste into documents of the same supplier.",
+  "es": "Solo es posible pegar en documentos del mismo proveedor."
+ },
+ {
+  "pt": "Tabela nao autorizada ou inexistente",
+  "en": "Table not allowed or does not exist",
+  "es": "Tabla no autorizada o inexistente"
+ },
+ {
+  "pt": "Tabela ou view nao autorizada ou inexistente",
+  "en": "Table or view not allowed or does not exist",
+  "es": "Tabla o vista no autorizada o inexistente"
+ },
+ {
+  "pt": "Tamanho da lata em uso em não conformidades, não pode ser excluído.",
+  "en": "Can size in use in nonconformities; it cannot be deleted.",
+  "es": "Tamaño de la lata en uso en no conformidades; no puede eliminarse."
+ },
+ {
+  "pt": "Tarefa não encontrada.",
+  "en": "Task not found.",
+  "es": "Tarea no encontrada."
+ },
+ {
+  "pt": "Tempo máximo: de 30 segundos a 72 horas",
+  "en": "Maximum time: from 30 seconds to 72 hours",
+  "es": "Tiempo máximo: de 30 segundos a 72 horas"
+ },
+ {
+  "pt": "Texto ou idioma não encontrado.",
+  "en": "Text or language not found.",
+  "es": "Texto o idioma no encontrado."
+ },
+ {
+  "pt": "Tipo de análise de IA inválido.",
+  "en": "Invalid AI analysis type.",
+  "es": "Tipo de análisis de IA no válido."
+ },
+ {
+  "pt": "Tipo de causa em uso em não conformidades, não pode ser excluído.",
+  "en": "Cause type in use in nonconformities; it cannot be deleted.",
+  "es": "Tipo de causa en uso en no conformidades; no puede eliminarse."
+ },
+ {
+  "pt": "Tipo de destino invalido.",
+  "en": "Invalid destination type.",
+  "es": "Tipo de destino no válido."
+ },
+ {
+  "pt": "Tipo de documento em uso em não conformidades, não pode ser excluído.",
+  "en": "Document type in use in nonconformities; it cannot be deleted.",
+  "es": "Tipo de documento en uso en no conformidades; no puede eliminarse."
+ },
+ {
+  "pt": "Tipo de fornecedor não encontrado.",
+  "en": "Supplier type not found.",
+  "es": "Tipo de proveedor no encontrado."
+ },
+ {
+  "pt": "Tipo de funcionário não encontrado.",
+  "en": "Employee type not found.",
+  "es": "Tipo de empleado no encontrado."
+ },
+ {
+  "pt": "Tipo de não conformidade inválido.",
+  "en": "Invalid nonconformity type.",
+  "es": "Tipo de no conformidad no válido."
+ },
+ {
+  "pt": "Tipo de ocorrência em uso em não conformidades, não pode ser excluído.",
+  "en": "Occurrence type in use in nonconformities; it cannot be deleted.",
+  "es": "Tipo de ocurrencia en uso en no conformidades; no puede eliminarse."
+ },
+ {
+  "pt": "Tipo de reclamação em uso em não conformidades, não pode ser excluído.",
+  "en": "Complaint type in use in nonconformities; it cannot be deleted.",
+  "es": "Tipo de reclamo en uso en no conformidades; no puede eliminarse."
+ },
+ {
+  "pt": "Tipo de tampa em uso em não conformidades, não pode ser excluído.",
+  "en": "Lid type in use in nonconformities; it cannot be deleted.",
+  "es": "Tipo de tapa en uso en no conformidades; no puede eliminarse."
+ },
+ {
+  "pt": "Tipos de NC inválidos.",
+  "en": "Invalid NC types.",
+  "es": "Tipos de NC no válidos."
+ },
+ {
+  "pt": "Toda ação precisa de descrição e responsável.",
+  "en": "Every action needs a description and an owner.",
+  "es": "Toda acción necesita descripción y responsable."
+ },
+ {
+  "pt": "Trilha: 1, 2 ou 3",
+  "en": "Track: 1, 2 or 3",
+  "es": "Ruta: 1, 2 o 3"
+ },
+ {
+  "pt": "Unidade do cliente em uso em não conformidades, não pode ser excluído.",
+  "en": "Customer unit in use in nonconformities; it cannot be deleted.",
+  "es": "Unidad del cliente en uso en no conformidades; no puede eliminarse."
+ },
+ {
+  "pt": "Unidade inexistente.",
+  "en": "Unit does not exist.",
+  "es": "Unidad inexistente."
+ },
+ {
+  "pt": "Use S (sim) ou N (não).",
+  "en": "Use S (yes) or N (no).",
+  "es": "Use S (sí) o N (no)."
+ },
+ {
+  "pt": "Usuario inexistente ou inativo.",
+  "en": "User does not exist or is inactive.",
+  "es": "Usuario inexistente o inactivo."
+ },
+ {
+  "pt": "Usuário ativo não informado",
+  "en": "Active user not provided",
+  "es": "Usuario activo no informado"
+ },
+ {
+  "pt": "Usuário inválido",
+  "en": "Invalid user",
+  "es": "Usuario no válido"
+ },
+ {
+  "pt": "Usuário inválido.",
+  "en": "Invalid user.",
+  "es": "Usuario no válido."
+ },
+ {
+  "pt": "Usuário não informado.",
+  "en": "User not provided.",
+  "es": "Usuario no informado."
+ },
+ {
+  "pt": "Versão do guia não encontrada.",
+  "en": "Guide version not found.",
+  "es": "Versión de la guía no encontrada."
+ },
+ {
+  "pt": "Área do item inválida.",
+  "en": "Invalid item area.",
+  "es": "Área del ítem no válida."
+ }
+]

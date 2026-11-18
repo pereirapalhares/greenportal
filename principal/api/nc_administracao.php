@@ -10,17 +10,18 @@ declare(strict_types=1);
 require_once dirname(__DIR__, 2) . '/classes/TransactionSecurity.php';
 require_once dirname(__DIR__, 2) . '/classes/NaoConformidadeAdministracao.php';
 require_once dirname(__DIR__, 2) . '/classes/NaoConformidadeConfig.php';
+require_once dirname(__DIR__, 2) . '/classes/NaoConformidadeTextos.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 $responder = static function (array $r, int $http = 200): never { http_response_code($http); echo json_encode($r, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); exit; };
-if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') $responder(['ok' => false, 'erro' => 'Método não permitido.'], 405);
+if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') $responder(['ok' => false, 'erro' => ncT('api.metodo')], 405);
 if (session_status() !== PHP_SESSION_ACTIVE) session_start();
-if (empty($_SESSION['autenticado'])) $responder(['ok' => false, 'erro' => 'Sessão expirada.'], 401);
-if (!NaoConformidadeAdministracao::csrfValido($_SERVER['HTTP_X_CSRF_TOKEN'] ?? null)) $responder(['ok' => false, 'erro' => 'Sessão da tela expirou: recarregue a página.'], 403);
+if (empty($_SESSION['autenticado'])) $responder(['ok' => false, 'erro' => ncT('api.sessao')], 401);
+if (!NaoConformidadeAdministracao::csrfValido($_SERVER['HTTP_X_CSRF_TOKEN'] ?? null)) $responder(['ok' => false, 'erro' => ncT('api.csrf')], 403);
 
 $d = json_decode((string)file_get_contents('php://input'), true);
-if (!is_array($d)) $responder(['ok' => false, 'erro' => 'Requisição inválida.'], 400);
+if (!is_array($d)) $responder(['ok' => false, 'erro' => ncT('comum.req_invalida')], 400);
 $acao = (string)($d['acao'] ?? '');
 $inteiros = static fn(mixed $v): array => array_values(array_unique(array_filter(array_map('intval', is_array($v) ? $v : []), static fn(int $x) => $x > 0)));
 
@@ -47,11 +48,11 @@ $regras = [
 // Campos que a Correção de ocorrência pode enviar (a procedure valida cada um)
 $camposCorrecao = ['CODUSUARIO_EMISSOR', 'CODUSUARIO_GESTOR', 'CODUSUARIO_RESPONSAVEL', 'DATA_OCORRENCIA', 'codunidade', 'listadedistribuicao', 'IDENTIFICACAO',
     'DESCRICAO', 'PROVIDENCIA', 'ANALISE_ABRANGENCIA', 'CODFORNECEDOR', 'QTDENVOLVIDA', 'QTDDEVOLVIDA', 'DSCCLIENTE'];
-if (!isset($regras[$acao])) $responder(['ok' => false, 'erro' => 'Ação inválida.'], 400);
+if (!isset($regras[$acao])) $responder(['ok' => false, 'erro' => ncT('comum.acao_invalida')], 400);
 [$menu, $permissao] = $regras[$acao];
 $pdo = TenantContext::connect(GreenPortalDatabase::env(), $_SESSION);
-if (!UsuarioSessao::atualizar($pdo, $_SESSION)) $responder(['ok' => false, 'erro' => 'Sessão inválida.'], 401);
-if (empty(PermissaoTransacao::obter($menu)[$permissao])) $responder(['ok' => false, 'erro' => 'Seu perfil não tem permissão para esta operação.'], 403);
+if (!UsuarioSessao::atualizar($pdo, $_SESSION)) $responder(['ok' => false, 'erro' => ncT('api.sessao_invalida')], 401);
+if (empty(PermissaoTransacao::obter($menu)[$permissao])) $responder(['ok' => false, 'erro' => ncT('api.sem_permissao')], 403);
 $usuario = (int)($_SESSION['usuario']['codusuario'] ?? 0);
 $p = static fn(string $sp, array $a): array => NaoConformidadeAdministracao::proc($pdo, $sp, $a);
 
@@ -89,5 +90,5 @@ try {
     $responder(['ok' => false, 'erro' => $e->getMessage()], 422);
 } catch (Throwable $e) {
     error_log('[nc_administracao] ' . $acao . ': ' . $e->getMessage());
-    $responder(['ok' => false, 'erro' => 'Não foi possível gravar (erro registrado no log do servidor).'], 500);
+    $responder(['ok' => false, 'erro' => ncT('api.erro_log')], 500);
 }

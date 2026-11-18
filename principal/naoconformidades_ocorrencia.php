@@ -23,6 +23,7 @@ require_once dirname(__DIR__) . '/classes/AuditService.php';
 require_once dirname(__DIR__) . '/classes/NaoConformidadeAnaliseIa.php';
 require_once dirname(__DIR__) . '/classes/NaoConformidadeEficaciaIa.php';
 require_once dirname(__DIR__) . '/classes/NaoConformidadeConfig.php';
+require_once dirname(__DIR__) . '/classes/NaoConformidadeTextos.php';
 
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 [$pdo, $uid, $permissoes] = NaoConformidadeWorkflow::iniciar();
@@ -39,13 +40,13 @@ $tipoNovo = filter_var($_GET['tipo'] ?? null, FILTER_VALIDATE_INT, ['options' =>
 $row = [];
 if ($codigo) {
     $row = $W::ocorrencia($pdo, $codigo);
-    if (!$row) $W::falhar(404, 'Ocorrência não encontrada.');
-    if (!$W::podeVer($pdo, $uid, $codigo, $permissoes)) $W::falhar(403, 'Você não participa desta ocorrência e seu perfil não vê a lista geral.');
+    if (!$row) $W::falhar(404, ncT('oc.nao_encontrada'));
+    if (!$W::podeVer($pdo, $uid, $codigo, $permissoes)) $W::falhar(403, ncT('oc.nao_participa'));
 } else {
     if (!$tipoNovo) $tipoNovo = 3;
     $menuNova = $W::MENU_NOVA[$tipoNovo] ?? '';
     // Assistência Técnica: o fornecedor externo também cria (como no legado; decisão do usuário 22/10/2026)
-    if (($externo && $tipoNovo !== 6) || !in_array($tipoNovo, $tiposComFluxo, true) || $menuNova === '' || empty($permissoes[$menuNova]['pode_incluir'])) $W::falhar(403, 'Seu perfil não pode incluir este tipo de ocorrência.');
+    if (($externo && $tipoNovo !== 6) || !in_array($tipoNovo, $tiposComFluxo, true) || $menuNova === '' || empty($permissoes[$menuNova]['pode_incluir'])) $W::falhar(403, ncT('oc.nao_inclui_tipo'));
 }
 $R = array_change_key_case($row, CASE_UPPER);
 $tipo = $codigo ? (int)($R['CODTIPONAOCONFORMIDADE'] ?? 0) : $tipoNovo;
@@ -82,20 +83,20 @@ if (isset($_GET['acao'])) {
     header('Content-Type: application/json; charset=utf-8');
     $acao = (string)$_GET['acao'];
     try {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new RuntimeException('Use POST.');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new RuntimeException(ncT('comum.use_post'));
         $W::exigirCsrf();
         $req = json_decode((string)file_get_contents('php://input'), true);
-        if (!is_array($req)) throw new RuntimeException('Requisição inválida.');
+        if (!is_array($req)) throw new RuntimeException(ncT('comum.req_invalida'));
         $dados = is_array($req['dados'] ?? null) ? $req['dados'] : [];
         $sub = (string)($req['sub'] ?? 'salvar');
         $json = json_encode($dados, JSON_UNESCAPED_UNICODE);
         $ad = $admin ? 1 : 0;
-        $exigir = static function (string $aba) use ($pode): void { if (!$pode[$aba]) throw new RuntimeException('Você não pode alterar esta aba nesta etapa da ocorrência.'); };
+        $exigir = static function (string $aba) use ($pode): void { if (!$pode[$aba]) throw new RuntimeException(ncT('oc.nao_altera_aba')); };
         // Migração 336: análise da causa com IA (só sugere; "aplicar" grava pelas procedures da tela, numa transação)
         if ($acao === 'ia') {
             $exigir('analise');
-            if ($planejamento) throw new RuntimeException('A sugestão da IA é para a análise da causa; este tipo de não conformidade não tem causas.');
-            if (!NaoConformidadeConfig::sim($pdo, 'IA_ANALISE_CAUSA')) throw new RuntimeException('A IA na análise da causa está desligada na Configuração do módulo.');
+            if ($planejamento) throw new RuntimeException(ncT('oc.ia_sem_causas'));
+            if (!NaoConformidadeConfig::sim($pdo, 'IA_ANALISE_CAUSA')) throw new RuntimeException(ncT('oc.ia_desligada'));
             $IA = NaoConformidadeAnaliseIa::class;
             $tiposCausa = $W::opcoes($pdo)['TIPOCAUSA'] ?? [];
             $causasAtuais = $W::listar($pdo, 'vw_nc_causas', $codigo, 'CODCAUSA');
@@ -107,20 +108,20 @@ if (isset($_GET['acao'])) {
                 case 'solicitar':
                     $idioma = in_array($_SESSION['idioma'] ?? 'pt', ['pt', 'en', 'es'], true) ? (string)$_SESSION['idioma'] : 'pt';
                     $out = $IA::solicitar($pdo, $uid, $idioma, $codigo, $R, $causasAtuais, $planosAtuais, $tiposCausa, $permissoes);
-                    $out['message'] = 'Seu pedido de análise da causa foi cadastrado e está na fila da IA. Quando a resposta chegar, você será avisado nos Alertas: clique no alerta para revisar a sugestão.';
+                    $out['message'] = ncT('oc.ia_pedido');
                     AuditService::record($pdo, 'naoconformidades_ocorrencia', 'IA_SOLICITAR', 'SUCESSO', 'nc_ia_analises', (string)$codigo);
                     break;
                 case 'consultar': $out = $IA::consultar($pdo, $uid, $codigo, $codanalise, $tiposCausa, $responsaveis, $causasAtuais); break;
                 case 'aplicar':
                     $out = $IA::aplicar($pdo, $uid, $admin, $codigo, $codanalise, is_array($dados['itens'] ?? null) ? $dados['itens'] : [], $R, $causasAtuais, $tiposCausa, $responsaveis);
                     AuditService::record($pdo, 'naoconformidades_ocorrencia', 'IA_APLICAR', 'SUCESSO', 'nc_ia_analises.' . $codanalise, (string)$codigo);
-                    $out['message'] = 'Sugestão da IA aplicada: ' . $out['resumo'] . '.';
+                    $out['message'] = ncT('oc.ia_aplicada', ['resumo' => $out['resumo']]);
                     break;
                 case 'descartar':
                     $IA::descartar($pdo, $uid, $codigo, $codanalise);
-                    $out = ['message' => 'Sugestão da IA descartada; nada foi gravado na ocorrência.'];
+                    $out = ['message' => ncT('oc.ia_descartada')];
                     break;
-                default: throw new RuntimeException('Ação inválida.');
+                default: throw new RuntimeException(ncT('comum.acao_invalida'));
             }
             echo json_encode(['ok' => true, 'codigo' => $codigo] + $out, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
             exit;
@@ -128,7 +129,7 @@ if (isset($_GET['acao'])) {
         // Migração 337: avaliação da eficácia com IA (parecer em segundo plano; o resultado continua sendo aplicado pelo gestor)
         if ($acao === 'iaeficacia') {
             $exigir('eficacia');
-            if (!NaoConformidadeConfig::sim($pdo, 'IA_EFICACIA')) throw new RuntimeException('A IA na avaliação da eficácia está desligada na Configuração do módulo.');
+            if (!NaoConformidadeConfig::sim($pdo, 'IA_EFICACIA')) throw new RuntimeException(ncT('oc.iaef_desligada'));
             $EF = NaoConformidadeEficaciaIa::class;
             $planosAtuais = $W::listar($pdo, 'vw_nc_planodeacao', $codigo, 'CODPLANOACAO');
             $codanalise = (int)($dados['codanalise'] ?? 0);
@@ -136,9 +137,9 @@ if (isset($_GET['acao'])) {
                 case 'solicitar':
                     $idioma = in_array($_SESSION['idioma'] ?? 'pt', ['pt', 'en', 'es'], true) ? (string)$_SESSION['idioma'] : 'pt';
                     $out = $EF::solicitar($pdo, $uid, $idioma, $codigo, $R, $W::listar($pdo, 'vw_nc_causas', $codigo, 'CODCAUSA'), $planosAtuais, $permissoes);
-                    $out['message'] = 'Seu pedido de parecer da IA sobre a eficácia foi cadastrado e está na fila.'
-                        . (!empty($out['arquivos']) ? ' Antes, a IA vai ler o conteúdo de ' . $out['arquivos'] . ' arquivo(s) de evidência (pode levar alguns minutos a mais).' : '')
-                        . ' Quando a resposta chegar, você será avisado nos Alertas: clique no alerta para revisar o parecer.';
+                    $out['message'] = ncT('oc.iaef_pedido')
+                        . (!empty($out['arquivos']) ? ' ' . ncT('oc.iaef_arquivos', ['n' => $out['arquivos']]) : '')
+                        . ' ' . ncT('oc.iaef_aviso');
                     AuditService::record($pdo, 'naoconformidades_ocorrencia', 'IA_EFICACIA_SOLICITAR', 'SUCESSO', 'nc_ia_analises', (string)$codigo);
                     break;
                 case 'consultar': $out = $EF::consultar($pdo, $uid, $codigo, $codanalise, $planosAtuais); break;
@@ -148,9 +149,9 @@ if (isset($_GET['acao'])) {
                     break;
                 case 'descartar':
                     $EF::descartar($pdo, $uid, $codigo, $codanalise);
-                    $out = ['message' => 'Parecer da IA descartado; nada foi gravado na ocorrência.'];
+                    $out = ['message' => ncT('oc.iaef_descartado')];
                     break;
-                default: throw new RuntimeException('Ação inválida.');
+                default: throw new RuntimeException(ncT('comum.acao_invalida'));
             }
             echo json_encode(['ok' => true, 'codigo' => $codigo] + $out, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
             exit;
@@ -165,41 +166,41 @@ if (isset($_GET['acao'])) {
                     $r = $W::chamar($pdo, 'sp_nc_ocorrencia_salvar', [$codigo ?: null, $tipo, $json, $uid, $sub === 'enviar' ? 1 : 0, $ad]);
                     if ($validarConfig) { $W::chamar($pdo, 'sp_nc_config_validar_envio', [(int)($r['CODOCORRENCIA'] ?? $codigo)]); $pdo->commit(); }
                 } catch (Throwable $x) { if ($validarConfig && $pdo->inTransaction()) $pdo->rollBack(); throw $x; }
-                $msg = $sub === 'enviar' ? ($tipo === 6 ? 'Plano de ação enviado aos responsáveis das ações.' : ($tipo === 5 ? 'Ocorrência enviada ao plano de ação do gestor.' : 'Ocorrência enviada ao gestor.')) : 'Ocorrência gravada.'; break;
+                $msg = $sub === 'enviar' ? ($tipo === 6 ? ncT('oc.msg_plano_enviado') : ($tipo === 5 ? ncT('oc.msg_enviada_plano_gestor') : ncT('oc.msg_enviada_gestor'))) : ncT('oc.msg_gravada'); break;
             case 'gestor':
                 $exigir('gestor');
-                if (!in_array($sub, ['salvar', 'enviar', 'recusar', 'improcedente'], true)) throw new RuntimeException('Ação inválida.');
+                if (!in_array($sub, ['salvar', 'enviar', 'recusar', 'improcedente'], true)) throw new RuntimeException(ncT('comum.acao_invalida'));
                 $r = $W::chamar($pdo, 'sp_nc_gestor_salvar', [$codigo, $json, $uid, $sub, $ad]);
-                $msg = ['salvar' => 'Avaliação gravada.', 'enviar' => 'Ocorrência enviada ao responsável pela análise da causa.', 'recusar' => 'Ocorrência devolvida ao emitente.', 'improcedente' => 'Ocorrência finalizada como improcedente.'][$sub]; break;
+                $msg = ['salvar' => ncT('oc.msg_avaliacao_gravada'), 'enviar' => ncT('oc.msg_enviada_resp'), 'recusar' => ncT('oc.msg_devolvida_emitente'), 'improcedente' => ncT('oc.msg_improcedente')][$sub]; break;
             case 'causa':
                 $exigir('analise');
                 $r = $sub === 'excluir'
                     ? $W::chamar($pdo, 'sp_nc_causa_excluir', [(int)($dados['CODCAUSA'] ?? 0), $codigo, $uid, $ad])
                     : $W::chamar($pdo, 'sp_nc_causa_salvar', [(int)($dados['CODCAUSA'] ?? 0) ?: null, $codigo, (int)($dados['CODTIPOCAUSA'] ?? 0), (string)($dados['DSCAUSA'] ?? ''), $uid, $ad]);
-                $msg = $sub === 'excluir' ? 'Causa excluída (com as ações dela).' : 'Causa gravada.'; break;
+                $msg = $sub === 'excluir' ? ncT('oc.msg_causa_excluida') : ncT('oc.msg_causa_gravada'); break;
             case 'plano':
                 if (!$pode['analise'] && !($acaoPropria && $sub !== 'excluir' && in_array((int)($dados['CODPLANOACAO'] ?? 0), $minhasAcoes, true))) $exigir('analise');
                 if (!$pode['analise']) $dados = ['CODPLANOACAO' => $dados['CODPLANOACAO'] ?? 0, 'STATUS' => $dados['STATUS'] ?? '0', 'OBS' => $dados['OBS'] ?? ''];
                 // Fornecedor externo (c519): responsável da ação só entre os usuários do próprio fornecedor e os da empresa que participam da NC
                 elseif ($externo && $sub !== 'excluir' && (int)($dados['CODUSUARIO'] ?? 0) > 0) {
                     $permitidos = $W::responsaveisAcaoExterno($pdo, $uid, $codigo, $W::usuarios($pdo), array_column($W::listar($pdo, 'vw_nc_planodeacao', $codigo, 'CODPLANOACAO'), 'CODUSUARIO'));
-                    if (!isset($permitidos[(string)(int)$dados['CODUSUARIO']])) throw new RuntimeException('Escolha como responsável um usuário do seu fornecedor ou da empresa que já participa desta não conformidade.');
+                    if (!isset($permitidos[(string)(int)$dados['CODUSUARIO']])) throw new RuntimeException(ncT('oc.resp_externo'));
                 }
                 $json = json_encode($dados, JSON_UNESCAPED_UNICODE);
                 $r = $sub === 'excluir'
                     ? $W::chamar($pdo, 'sp_nc_plano_excluir', [(int)($dados['CODPLANOACAO'] ?? 0), $codigo, $uid, $ad])
                     : $W::chamar($pdo, 'sp_nc_plano_salvar', [(int)($dados['CODPLANOACAO'] ?? 0) ?: null, $codigo, $json, $uid, $ad]);
-                $msg = $sub === 'excluir' ? 'Ação excluída.' : 'Ação gravada.'; break;
+                $msg = $sub === 'excluir' ? ncT('oc.msg_acao_excluida') : ncT('oc.msg_acao_gravada'); break;
             case 'analise':
                 $exigir('analise');
                 $r = $W::chamar($pdo, 'sp_nc_analise_salvar', [$codigo, $json, $uid, $sub === 'enviar' ? 1 : 0, $ad]);
-                $msg = $sub === 'enviar' ? 'Enviada ao gestor para a avaliação da eficácia.' : 'Análise gravada.'; break;
+                $msg = $sub === 'enviar' ? ncT('oc.msg_enviada_eficacia') : ncT('oc.msg_analise_gravada'); break;
             case 'eficacia':
                 $exigir('eficacia');
-                if (!in_array($sub, ['salvar', 'finalizar', 'recusar'], true)) throw new RuntimeException('Ação inválida.');
+                if (!in_array($sub, ['salvar', 'finalizar', 'recusar'], true)) throw new RuntimeException(ncT('comum.acao_invalida'));
                 $r = $W::chamar($pdo, 'sp_nc_eficacia_salvar', [$codigo, $json, $uid, $sub, $exigePrazo ? 1 : 0, $ad]);
-                $msg = ['salvar' => 'Verificação gravada.', 'finalizar' => 'Resultado da eficácia aplicado.', 'recusar' => 'Devolvida ao responsável.'][$sub]; break;
-            default: throw new RuntimeException('Ação inválida.');
+                $msg = ['salvar' => ncT('oc.msg_verif_gravada'), 'finalizar' => ncT('oc.msg_resultado_aplicado'), 'recusar' => ncT('oc.msg_devolvida_resp')][$sub]; break;
+            default: throw new RuntimeException(ncT('comum.acao_invalida'));
         }
         AuditService::record($pdo, 'naoconformidades_ocorrencia', 'SALVAR', 'SUCESSO', 'nc_indicacao_ocorrencia.' . $acao . '.' . $sub, (string)($r['CODOCORRENCIA'] ?? $codigo));
         echo json_encode(['ok' => true, 'message' => $msg, 'codigo' => (int)($r['CODOCORRENCIA'] ?? $codigo)], JSON_UNESCAPED_UNICODE);
@@ -231,12 +232,12 @@ $opcoesHtml = static function (array $lista, string $atual, bool $vazio = true) 
     foreach ($lista as $k => $t) $h .= '<option value="' . $e($k) . '"' . ((string)$k === $atual ? ' selected' : '') . '>' . $e($t) . '</option>';
     return $h;
 };
-$simNao = ['S' => 'Sim', 'N' => 'Não'];
-$simNaoLongo = ['SIM' => 'Sim', 'NÃO' => 'Não'];
+$simNao = ['S' => ncT('comum.sim'), 'N' => ncT('comum.nao')];
+$simNaoLongo = ['SIM' => ncT('comum.sim'), 'NÃO' => ncT('comum.nao')];
 // Campos da aba Ocorrência: [rótulo, tipo, lista/opções, sempre (independe do tipo de NC), coluna da view]
 $fornecedores = $op['FORNECEDOR'] ?? [];
 $codForn = (string)($R['CODFORNECEDOR'] ?? '');
-if ($codForn !== '' && $codForn !== '0' && !isset($fornecedores[$codForn])) $fornecedores[$codForn] = trim((string)($R['RAZAOSOCIAL'] ?? '') ?: '#' . $codForn) . ' (desativado)';
+if ($codForn !== '' && $codForn !== '0' && !isset($fornecedores[$codForn])) $fornecedores[$codForn] = trim((string)($R['RAZAOSOCIAL'] ?? '') ?: '#' . $codForn) . ' ' . ncT('comum.desativado');
 // Listas de distribuição: na Crown a NC de Fornecedor só oferece as da categoria Fornecedores e os outros tipos as demais (legado)
 $listas = $op['LISTA'] ?? [];
 if ($W::separaListasFornecedor($pdo)) {
@@ -245,39 +246,39 @@ if ($W::separaListasFornecedor($pdo)) {
     $listas = array_filter($listas, static fn($nome, $cod) => ((string)$cod === $listaAtual) || ($tipo === 1 ? isset($daCategoria[(string)$cod]) : !isset($daCategoria[(string)$cod])), ARRAY_FILTER_USE_BOTH);
 }
 $camposOcorrencia = [
-    'CODUNIDADE' => ['Unidade', 'select', $op['UNIDADE'] ?? [], true],
-    'LISTADEDISTRIBUICAO' => ['Lista de distribuição', 'select', $listas, true],
-    'CODUSUARIO_GESTOR' => ['Gestor', 'select', $usuarios, true],
-    'DATA_OCORRENCIA' => ['Data da ocorrência', 'datetime', null, true],
-    'CODSETOR' => ['Setor', 'select', $op['SETOR'] ?? [], false],
-    'CODAREA' => ['Área', 'select', $op['AREA'] ?? [], false],
-    'CODTIPOOCORRENCIA' => ['Classificação', 'select', $tipo === 1 ? ($op['CLASSIF_FORN'] ?? []) : ($op['CLASSIFICACAO'] ?? []), false],
-    'PARADANALINHA' => ['Ocorreu parada de linha?', 'select', $simNao, false, 'CODTIPOOCORRENCIA'],
-    'CODTIPOACAO' => ['Tipo de ocorrência', 'select', $op['TIPOACAO'] ?? [], false],
-    'CODORIGEMACAO' => ['Origem da ocorrência', 'select', $op['ORIGEM'] ?? [], false],
-    'CODSIGLAGESTAO' => ['Sistema de gestão', 'select', $op['SISTEMA'] ?? [], false],
+    'CODUNIDADE' => [ncT('campo.codunidade'), 'select', $op['UNIDADE'] ?? [], true],
+    'LISTADEDISTRIBUICAO' => [ncT('campo.listadedistribuicao'), 'select', $listas, true],
+    'CODUSUARIO_GESTOR' => [ncT('campo.codusuario_gestor'), 'select', $usuarios, true],
+    'DATA_OCORRENCIA' => [ncT('campo.data_ocorrencia'), 'datetime', null, true],
+    'CODSETOR' => [ncT('campo.codsetor'), 'select', $op['SETOR'] ?? [], false],
+    'CODAREA' => [ncT('campo.codarea'), 'select', $op['AREA'] ?? [], false],
+    'CODTIPOOCORRENCIA' => [ncT('campo.codtipoocorrencia'), 'select', $tipo === 1 ? ($op['CLASSIF_FORN'] ?? []) : ($op['CLASSIFICACAO'] ?? []), false],
+    'PARADANALINHA' => [ncT('campo.paradanalinha'), 'select', $simNao, false, 'CODTIPOOCORRENCIA'],
+    'CODTIPOACAO' => [ncT('campo.codtipoacao'), 'select', $op['TIPOACAO'] ?? [], false],
+    'CODORIGEMACAO' => [ncT('campo.codorigemacao'), 'select', $op['ORIGEM'] ?? [], false],
+    'CODSIGLAGESTAO' => [ncT('campo.codsiglagestao'), 'select', $op['SISTEMA'] ?? [], false],
     // Tipo Fornecedor (campos de nc_tipo_de_naoconformidadexcampos, como no legado formulario/nc_indicacao_ocorrencia.php)
-    'CODFORNECEDOR' => ['Fornecedor', 'select', $fornecedores, false],
-    'QTDENVOLVIDA' => ['Quantidade envolvida', 'short', null, false],
-    'TAMANHOLOTEENVOLVIDO' => ['Lote envolvido', 'short', null, false],
-    'HOUVE_RETENCAO_PRODUTO' => ['Houve retenção de produto?', 'select', $simNao, false],
-    'HAVERA_DEVOLUCAO_MATERIAL' => ['Haverá devolução de material?', 'select', $simNao, false],
+    'CODFORNECEDOR' => [ncT('campo.codfornecedor'), 'select', $fornecedores, false],
+    'QTDENVOLVIDA' => [ncT('campo.qtdenvolvida'), 'short', null, false],
+    'TAMANHOLOTEENVOLVIDO' => [ncT('campo.tamanholoteenvolvido'), 'short', null, false],
+    'HOUVE_RETENCAO_PRODUTO' => [ncT('campo.houve_retencao_produto'), 'select', $simNao, false],
+    'HAVERA_DEVOLUCAO_MATERIAL' => [ncT('campo.havera_devolucao_material'), 'select', $simNao, false],
     // Tipo Cliente (legado nc_cliente/nc_indicacao_ocorrencia.php; cadastros em Não Conformidades › Cadastros)
-    'DSCCLIENTE' => ['Cliente', 'select', $op['CLIENTE'] ?? [], false],
-    'CODUNIDADE_CLIENTE' => ['Unidade do cliente', 'select', $op['UNIDADE_CLIENTE'] ?? [], false],
-    'CODIGODOPRODUTO' => ['Produto', 'select', $op['PRODUTO'] ?? [], false],
-    'CODTIPODEDOCUMENTO' => ['Tipo de documento', 'select', $op['TIPODOC'] ?? [], false],
-    'NRNDOCUMENTO' => ['Nº do documento', 'short', null, false],
-    'CODTIPODERECLAMACAO' => ['Tipo de reclamação', 'select', $op['RECLAMACAO'] ?? [], false],
-    'CODTIPODETAMPA' => ['Tipo de tampa', 'select', $op['TAMPA'] ?? [], false],
-    'CODTAMANHODALATA' => ['Tamanho da lata', 'select', $op['LATA'] ?? [], false],
-    'PROCEDENCIA_CLIENTE' => ['Procedência', 'select', ['Procedente' => 'Procedente', 'Improcedente' => 'Improcedente'], false],
-    'AFETASEGURANCAALIMENTOS' => ['Afeta a segurança de alimentos?', 'select', $simNaoLongo, false],
-    'QTDDEVOLVIDA' => ['Quantidade devolvida', 'short', null, false],
-    'PASS_PELA_NANALISE_EFICACIA' => ['Passar pela análise da eficácia?', 'select', $simNao, false],
-    'IDENTIFICACAO' => ['Sumário da ocorrência', 'text', null, false],
-    'DESCRICAO' => ['Descrição da ocorrência', 'textarea', null, false],
-    'PROVIDENCIA' => ['Dados complementares', 'textarea', null, false],
+    'DSCCLIENTE' => [ncT('campo.dsccliente'), 'select', $op['CLIENTE'] ?? [], false],
+    'CODUNIDADE_CLIENTE' => [ncT('campo.codunidade_cliente'), 'select', $op['UNIDADE_CLIENTE'] ?? [], false],
+    'CODIGODOPRODUTO' => [ncT('campo.codigodoproduto'), 'select', $op['PRODUTO'] ?? [], false],
+    'CODTIPODEDOCUMENTO' => [ncT('campo.codtipodedocumento'), 'select', $op['TIPODOC'] ?? [], false],
+    'NRNDOCUMENTO' => [ncT('campo.nrndocumento'), 'short', null, false],
+    'CODTIPODERECLAMACAO' => [ncT('campo.codtipodereclamacao'), 'select', $op['RECLAMACAO'] ?? [], false],
+    'CODTIPODETAMPA' => [ncT('campo.codtipodetampa'), 'select', $op['TAMPA'] ?? [], false],
+    'CODTAMANHODALATA' => [ncT('campo.codtamanhodalata'), 'select', $op['LATA'] ?? [], false],
+    'PROCEDENCIA_CLIENTE' => [ncT('campo.procedencia_cliente'), 'select', ['Procedente' => ncT('valor.procedente'), 'Improcedente' => ncT('valor.improcedente')], false],
+    'AFETASEGURANCAALIMENTOS' => [ncT('campo.afetasegurancaalimentos'), 'select', $simNaoLongo, false],
+    'QTDDEVOLVIDA' => [ncT('campo.qtddevolvida'), 'short', null, false],
+    'PASS_PELA_NANALISE_EFICACIA' => [ncT('campo.pass_pela_nanalise_eficacia'), 'select', $simNao, false],
+    'IDENTIFICACAO' => [ncT('campo.identificacao'), 'text', null, false],
+    'DESCRICAO' => [ncT('campo.descricao'), 'textarea', null, false],
+    'PROVIDENCIA' => [ncT('campo.providencia'), 'textarea', null, false],
 ];
 // Migração 339: campos que a Configuração do módulo exige no envio deste tipo ganham * no rótulo
 try {
@@ -315,11 +316,11 @@ foreach ($listaDoCampo as $campoLista => $nomeLista) {
     if (!isset($camposOcorrencia[$campoLista]) || !is_array($camposOcorrencia[$campoLista][2])) continue;
     $atualLista = $valorCampo($campoLista);
     if ($atualLista !== '' && !isset($camposOcorrencia[$campoLista][2][$atualLista]) && isset($opTodos[$nomeLista][$atualLista]))
-        $camposOcorrencia[$campoLista][2][$atualLista] = $opTodos[$nomeLista][$atualLista] . ' (desativado)';
+        $camposOcorrencia[$campoLista][2][$atualLista] = $opTodos[$nomeLista][$atualLista] . ' ' . ncT('comum.desativado');
 }
 foreach ($causas as $causaAtual) {
     $tc = (string)($causaAtual['CODTIPOCAUSA'] ?? '');
-    if ($tc !== '' && !isset($op['TIPOCAUSA'][$tc]) && isset($opTodos['TIPOCAUSA'][$tc])) $op['TIPOCAUSA'][$tc] = $opTodos['TIPOCAUSA'][$tc] . ' (desativado)';
+    if ($tc !== '' && !isset($op['TIPOCAUSA'][$tc]) && isset($opTodos['TIPOCAUSA'][$tc])) $op['TIPOCAUSA'][$tc] = $opTodos['TIPOCAUSA'][$tc] . ' ' . ncT('comum.desativado');
 }
 $abaInicial = (string)($_GET['aba'] ?? '');
 if (!in_array($abaInicial, ['ocorrencia', 'gestor', 'analise', 'eficacia', 'historico'], true)) {
@@ -330,25 +331,25 @@ if (!in_array($abaInicial, ['ocorrencia', 'gestor', 'analise', 'eficacia', 'hist
 }
 $badge = match (true) { $etapa === 'Finalizado' => 'text-bg-success', str_starts_with($etapa, 'Recusado') => 'text-bg-danger', $etapa === '' => 'text-bg-secondary', default => 'text-bg-warning' };
 $status = [0 => '0%', 25 => '25%', 50 => '50%', 75 => '75%', 100 => '100%'];
-$dataBR = static fn(?string $d): string => $d && !str_starts_with($d, '0000') ? date('d/m/Y', strtotime($d)) : '';
-$acoesHistorico = ['CRIACAO' => 'Criação', 'ALTERACAO' => 'Ocorrência alterada', 'ENVIO_GESTOR' => 'Enviada ao gestor', 'REENVIO_GESTOR' => 'Reenviada ao gestor',
-    'CORRECAO_EMITENTE' => 'Correção do emitente', 'APROVACAO_GESTOR' => 'Aprovada pelo gestor', 'RECUSA_GESTOR' => 'Recusada pelo gestor', 'ALTERACAO_GESTOR' => 'Avaliação do gestor alterada',
-    'ENVIO_RESPONSAVEL' => 'Enviada ao responsável', 'IMPROCEDENTE' => 'Finalizada como improcedente', 'ALTERACAO_ANALISE' => 'Análise alterada',
-    'CAUSA_INCLUIDA' => 'Causa incluída', 'CAUSA_ALTERADA' => 'Causa alterada', 'CAUSA_EXCLUIDA' => 'Causa excluída', 'PLANO_INCLUIDO' => 'Ação incluída',
-    'PLANO_ALTERADO' => 'Ação alterada', 'PLANO_EXCLUIDO' => 'Ação excluída', 'ENVIO_EFICACIA' => 'Enviada para a avaliação da eficácia',
-    'ALTERACAO_EFICACIA' => 'Verificação da eficácia alterada', 'FINALIZADA_EFICAZ' => 'Finalizada: eficaz', 'FINALIZADA_ENCERRADA' => 'Finalizada sem a verificação da eficácia',
-    'NAO_EFICAZ' => 'Não eficaz: devolvida ao responsável', 'RECUSA_EFICACIA' => 'Recusada na eficácia: devolvida ao responsável', 'MUDANCA_ETAPA' => 'Mudança de etapa', 'PLANO_DE_ACAO' => 'Passou para Plano de Ação',
-    'PLANO_STATUS' => 'Status da ação atualizado', 'FINALIZADA_SEM_EFICACIA' => 'Finalizada sem verificação da eficácia (plano concluído)',
+$dataBR = static fn(?string $d): string => $d && !str_starts_with($d, '0000') ? date(IdiomaService::idioma() === 'en' ? 'm/d/Y' : 'd/m/Y', strtotime($d)) : '';
+$acoesHistorico = ['CRIACAO' => ncT('hist.criacao'), 'ALTERACAO' => ncT('hist.alteracao'), 'ENVIO_GESTOR' => ncT('hist.envio_gestor'), 'REENVIO_GESTOR' => ncT('hist.reenvio_gestor'),
+    'CORRECAO_EMITENTE' => ncT('hist.correcao_emitente'), 'APROVACAO_GESTOR' => ncT('hist.aprovacao_gestor'), 'RECUSA_GESTOR' => ncT('hist.recusa_gestor'), 'ALTERACAO_GESTOR' => ncT('hist.alteracao_gestor'),
+    'ENVIO_RESPONSAVEL' => ncT('hist.envio_responsavel'), 'IMPROCEDENTE' => ncT('hist.improcedente'), 'ALTERACAO_ANALISE' => ncT('hist.alteracao_analise'),
+    'CAUSA_INCLUIDA' => ncT('hist.causa_incluida'), 'CAUSA_ALTERADA' => ncT('hist.causa_alterada'), 'CAUSA_EXCLUIDA' => ncT('hist.causa_excluida'), 'PLANO_INCLUIDO' => ncT('hist.plano_incluido'),
+    'PLANO_ALTERADO' => ncT('hist.plano_alterado'), 'PLANO_EXCLUIDO' => ncT('hist.plano_excluido'), 'ENVIO_EFICACIA' => ncT('hist.envio_eficacia'),
+    'ALTERACAO_EFICACIA' => ncT('hist.alteracao_eficacia'), 'FINALIZADA_EFICAZ' => ncT('hist.finalizada_eficaz'), 'FINALIZADA_ENCERRADA' => ncT('hist.finalizada_encerrada'),
+    'NAO_EFICAZ' => ncT('hist.nao_eficaz'), 'RECUSA_EFICACIA' => ncT('hist.recusa_eficacia'), 'MUDANCA_ETAPA' => ncT('hist.mudanca_etapa'), 'PLANO_DE_ACAO' => ncT('hist.plano_de_acao'),
+    'PLANO_STATUS' => ncT('hist.plano_status'), 'FINALIZADA_SEM_EFICACIA' => ncT('hist.finalizada_sem_eficacia'),
     // Migração 334: ações da Administração de NC (Correção de ocorrência, Transferência, Painel de saneamento)
-    'CORRECAO_ADMIN' => 'Corrigida pela administração', 'ADMIN_REABRIR' => 'Reaberta pela administração', 'ADMIN_DEVOLVER' => 'Devolvida uma etapa pela administração',
-    'ADMIN_ENCERRAR' => 'Encerrada administrativamente', 'TRANSFERENCIA_ADMIN' => 'Responsabilidade transferida pela administração', 'GESTOR_ATRIBUIDO_ADMIN' => 'Gestor atribuído pela administração',
+    'CORRECAO_ADMIN' => ncT('hist.correcao_admin'), 'ADMIN_REABRIR' => ncT('hist.admin_reabrir'), 'ADMIN_DEVOLVER' => ncT('hist.admin_devolver'),
+    'ADMIN_ENCERRAR' => ncT('hist.admin_encerrar'), 'TRANSFERENCIA_ADMIN' => ncT('hist.transferencia_admin'), 'GESTOR_ATRIBUIDO_ADMIN' => ncT('hist.gestor_atribuido_admin'),
     // Migração 336: análise da causa com IA
-    'IA_ANALISE_APLICADA' => 'Sugestão da IA aplicada', 'IA_ANALISE_DESCARTADA' => 'Sugestão da IA descartada',
+    'IA_ANALISE_APLICADA' => ncT('hist.ia_analise_aplicada'), 'IA_ANALISE_DESCARTADA' => ncT('hist.ia_analise_descartada'),
     // Migração 337: avaliação da eficácia com IA
-    'IA_EFICACIA_APLICADA' => 'Parecer da IA sobre a eficácia revisado', 'IA_EFICACIA_DESCARTADA' => 'Parecer da IA sobre a eficácia descartado'];
+    'IA_EFICACIA_APLICADA' => ncT('hist.ia_eficacia_aplicada'), 'IA_EFICACIA_DESCARTADA' => ncT('hist.ia_eficacia_descartada')];
 // Planejamento e Assistência Técnica vão direto ao Plano de Ação no envio (não passam pelo gestor)
-if ($assistencia) { $acoesHistorico['ENVIO_GESTOR'] = 'Plano de ação enviado aos responsáveis'; $acoesHistorico['REENVIO_GESTOR'] = 'Plano de ação reenviado'; }
-elseif ($planejamento) { $acoesHistorico['ENVIO_GESTOR'] = 'Enviada ao plano de ação do gestor'; }
+if ($assistencia) { $acoesHistorico['ENVIO_GESTOR'] = ncT('hist.envio_assist'); $acoesHistorico['REENVIO_GESTOR'] = ncT('hist.reenvio_assist'); }
+elseif ($planejamento) { $acoesHistorico['ENVIO_GESTOR'] = ncT('hist.envio_planej'); }
 $cfg = ['codigo' => $codigo, 'tipo' => $tipo, 'csrf' => $W::csrf(), 'url' => basename(__FILE__)];
 // Migração 336: análise da causa com IA (listas como pares [código, nome] para manter a ordem alfabética no navegador)
 $iaAtiva = $codigo && $pode['analise'] && !$planejamento && NaoConformidadeConfig::sim($pdo, 'IA_ANALISE_CAUSA'); // 339: parâmetro
@@ -360,7 +361,7 @@ if ($iaAtiva) {
     $iaDoAlerta = ($abaInicial === 'analise' ? filter_var($_GET['ia'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) : 0) ?: 0;
     $respNc = (string)($R['CODUSUARIO_RESPONSAVEL'] ?? '');
     $cfg['ia'] = ['pronta' => $iaSituacao['pronta'], 'abrir' => $iaDoAlerta && $iaDoAlerta === $iaSituacao['pronta'] ? $iaDoAlerta : 0, 'pendente' => (bool)$iaPendente, 'tipos' => $pares($op['TIPOCAUSA'] ?? []), 'responsaveis' => $pares($usuariosAcao),
-        'responsavel_padrao' => isset($usuariosAcao[$respNc]) ? $respNc : '', 'prioridades' => NaoConformidadeAnaliseIa::PRIORIDADES,
+        'responsavel_padrao' => isset($usuariosAcao[$respNc]) ? $respNc : '', 'prioridades' => NaoConformidadeAnaliseIa::PRIORIDADES, 'prioridades_rotulos' => NaoConformidadeAnaliseIa::prioridadesRotulos(),
         'causas' => array_map(static fn($c) => [(string)(int)$c['CODCAUSA'], mb_strimwidth((string)$c['DSCAUSA'], 0, 90, '…')], $causas),
         'analise_atual' => $v('ANALISE_DA_CAUSA') !== '', 'prevista' => $data('DATA_DE_CONCLUSAO_PREVISTA'), 'hoje' => date('Y-m-d')];
 }
@@ -372,16 +373,16 @@ if ($iaEfAtiva) {
     $iaEfPendente = $iaEfSituacao['pendente'];
     $iaEfDoAlerta = ($abaInicial === 'eficacia' ? filter_var($_GET['ia'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) : 0) ?: 0;
     $cfg['iaef'] = ['pronta' => $iaEfSituacao['pronta'], 'abrir' => $iaEfDoAlerta && $iaEfDoAlerta === $iaEfSituacao['pronta'] ? $iaEfDoAlerta : 0, 'pendente' => (bool)$iaEfPendente,
-        'verificacao_atual' => $v('VERIFICACAO_DA_EFICACIA') !== '', 'pareceres' => NaoConformidadeEficaciaIa::PARECERES, 'avaliacoes' => NaoConformidadeEficaciaIa::AVALIACOES];
+        'verificacao_atual' => $v('VERIFICACAO_DA_EFICACIA') !== '', 'pareceres' => NaoConformidadeEficaciaIa::pareceres(), 'avaliacoes' => NaoConformidadeEficaciaIa::avaliacoes()];
     // Depois de "Levar para a verificação": resultado sugerido e motivo da devolução já preenchidos (o gestor aplica)
     $iaEf = filter_var($_GET['ia_ef'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 0;
     if ($iaEf) $iaEfPreenche = NaoConformidadeEficaciaIa::preenchimento($pdo, $uid, $codigo, $iaEf);
 }
 ?><!doctype html>
-<html lang="pt-BR">
+<html lang="<?= $e(IdiomaService::idioma() === 'pt' ? 'pt-BR' : IdiomaService::idioma()) ?>">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= $codigo ? 'Não conformidade ' . $e($v('NRANO') ?: $codigo) : 'Nova não conformidade ' . $e($tipoNome) ?></title>
+<title><?= $codigo ? $e(ncT('oc.titulo_nc', ['n' => $v('NRANO') ?: $codigo])) : $e(ncT('oc.titulo_nova') . ' ' . $tipoNome) ?></title>
 <link rel="stylesheet" href="../assets/vendor/bootstrap/css/bootstrap.min.css?v=2">
 <link rel="stylesheet" href="../assets/vendor/bootstrap-icons/font/bootstrap-icons.min.css?v=2">
 <link rel="stylesheet" href="../assets/css/app.css?v=5">
@@ -405,40 +406,40 @@ body{background:var(--bs-body-bg,#fff)}.nc-main{padding:.75rem 1rem}.nc-cab{disp
   <span hidden data-help-transaction="nc_ocorrencia_<?= $e($abaInicial) ?>" data-nc-ajuda-aba></span><?php /* migração 356: chave da Ajuda (F1) da aba aberta */ ?>
   <header class="nc-cab">
     <div>
-      <h5 class="mb-1"><i class="bi bi-exclamation-diamond me-2"></i><?= $codigo ? 'Não conformidade ' . $e($v('NRANO') ?: $codigo) : 'Nova não conformidade' ?> <span class="text-muted fs-6"><?= $e($tipoNome) ?></span><?php
+      <h5 class="mb-1"><i class="bi bi-exclamation-diamond me-2"></i><?= $codigo ? $e(ncT('oc.titulo_nc', ['n' => $v('NRANO') ?: $codigo])) : $e(ncT('oc.titulo_nova')) ?> <span class="text-muted fs-6"><?= $e($tipoNome) ?></span><?php
       // migração 364: demonstração animada (assets/js/ajuda.js, modo demonstração) de como criar a NC e enviar ao gestor
       // por fase: só para quem age na etapa atual (emitente, gestor, responsável pela análise, gestor na eficácia)
-      $demoNc = $tipo !== 3 ? null : ($pode['ocorrencia'] ? ['nc-demo-empresa', 'criar a não conformidade e enviar ao gestor']
-          : ($pode['gestor'] ? ['nc-demo-gestor', 'avaliar a não conformidade como gestor']
-          : ($pode['analise'] ? ['nc-demo-analise', 'fazer a análise da causa e o plano de ação']
-          : ($pode['eficacia'] ? ['nc-demo-eficacia', 'verificar a eficácia e encerrar a não conformidade'] : null))));
-      if ($demoNc): ?> <button type="button" class="btn btn-sm btn-link p-0 ms-2 align-baseline text-decoration-none nc-demo" data-ajuda-demo="<?= $e($demoNc[0]) ?>" title="Ver uma demonstração de como <?= $e($demoNc[1]) ?>"><i class="bi bi-play-circle-fill me-1"></i><span class="small">Ver como fazer</span></button><?php endif; ?></h5>
-      <?php if ($codigo): ?><div class="nc-pessoas">Emitente <b><?= $e($v('EMISSOR') ?: '—') ?></b> · Gestor <b><?= $e($v('GESTOR') ?: '—') ?></b> · Responsável <b><?= $e($v('RESPONSAVEL') ?: '—') ?></b><?= $v('SITUACAO') !== '' ? ' · Situação <b>' . $e($v('SITUACAO')) . '</b>' : '' ?></div><?php endif; ?>
+      $demoNc = $tipo !== 3 ? null : ($pode['ocorrencia'] ? ['nc-demo-empresa', ncT('demo.empresa')]
+          : ($pode['gestor'] ? ['nc-demo-gestor', ncT('demo.gestor')]
+          : ($pode['analise'] ? ['nc-demo-analise', ncT('demo.analise')]
+          : ($pode['eficacia'] ? ['nc-demo-eficacia', ncT('demo.eficacia')] : null))));
+      if ($demoNc): ?> <button type="button" class="btn btn-sm btn-link p-0 ms-2 align-baseline text-decoration-none nc-demo" data-ajuda-demo="<?= $e($demoNc[0]) ?>" title="<?= $e(ncT('demo.ver_como', ['acao' => $demoNc[1]])) ?>"><i class="bi bi-play-circle-fill me-1"></i><span class="small"><?= $e(ncT('demo.botao')) ?></span></button><?php endif; ?></h5>
+      <?php if ($codigo): ?><div class="nc-pessoas"><?= $e(ncT('oc.emitente')) ?> <b><?= $e($v('EMISSOR') ?: '—') ?></b> · <?= $e(ncT('oc.gestor')) ?> <b><?= $e($v('GESTOR') ?: '—') ?></b> · <?= $e(ncT('oc.responsavel')) ?> <b><?= $e($v('RESPONSAVEL') ?: '—') ?></b><?= $v('SITUACAO') !== '' ? ' · ' . $e(ncT('oc.situacao')) . ' <b>' . $e(NaoConformidadeTextos::valor($v('SITUACAO'))) . '</b>' : '' ?></div><?php endif; ?>
     </div>
     <div class="d-flex gap-2 align-items-center">
-      <?php if ($etapa !== ''): ?><span class="badge <?= $badge ?>"><?= $e($etapa) ?></span><?php endif; ?>
-      <?php if (!$codigo && $pode['ocorrencia']): /* migração 364: o lugar dos Anexos já aparece na NC nova (ativa depois de salvar) */ ?><span class="d-inline-block" tabindex="0" title="Salve a não conformidade para anexar fotos e documentos"><button type="button" class="btn btn-sm btn-outline-secondary" data-nc-anexos-novo disabled style="pointer-events:none"><i class="bi bi-paperclip me-1"></i>Anexos</button></span><?php endif; ?>
-      <?php if ($codigo): ?><button type="button" class="btn btn-sm btn-outline-secondary" data-ged="ncocorrencia" data-chave="CODOCORRENCIA" data-valor="<?= (int)$codigo ?>" data-titulo="Anexos da não conformidade <?= $e($v('NRANO') ?: $codigo) ?>" title="Anexos da ocorrência"><i class="bi bi-paperclip me-1"></i>Anexos<span data-ged-qtd></span></button><?php endif; ?>
-      <?php if ($codigo): ?><a class="btn btn-sm btn-outline-secondary" href="naoconformidade_ocorrenciapdf.php?codigo=<?= (int)$codigo ?>" target="_blank" data-nc-pdf data-titulo="PDF da não conformidade <?= $e($v('NRANO') ?: $codigo) ?>" title="PDF da ocorrência"><i class="bi bi-file-earmark-pdf"></i></a><?php endif; ?>
+      <?php if ($etapa !== ''): ?><span class="badge <?= $badge ?>"><?= $e(NaoConformidadeTextos::valor($etapa)) ?></span><?php endif; ?>
+      <?php if (!$codigo && $pode['ocorrencia']): /* migração 364: o lugar dos Anexos já aparece na NC nova (ativa depois de salvar) */ ?><span class="d-inline-block" tabindex="0" title="<?= $e(ncT('oc.salve_para_anexar')) ?>"><button type="button" class="btn btn-sm btn-outline-secondary" data-nc-anexos-novo disabled style="pointer-events:none"><i class="bi bi-paperclip me-1"></i><?= $e(ncT('oc.anexos')) ?></button></span><?php endif; ?>
+      <?php if ($codigo): ?><button type="button" class="btn btn-sm btn-outline-secondary" data-ged="ncocorrencia" data-chave="CODOCORRENCIA" data-valor="<?= (int)$codigo ?>" data-titulo="<?= $e(ncT('oc.anexos_da_nc', ['n' => $v('NRANO') ?: $codigo])) ?>" title="<?= $e(ncT('oc.anexos_ocorrencia')) ?>"><i class="bi bi-paperclip me-1"></i><?= $e(ncT('oc.anexos')) ?><span data-ged-qtd></span></button><?php endif; ?>
+      <?php if ($codigo): ?><a class="btn btn-sm btn-outline-secondary" href="naoconformidade_ocorrenciapdf.php?codigo=<?= (int)$codigo ?>" target="_blank" data-nc-pdf data-titulo="<?= $e(ncT('oc.pdf_da_nc', ['n' => $v('NRANO') ?: $codigo])) ?>" title="<?= $e(ncT('oc.pdf_ocorrencia')) ?>"><i class="bi bi-file-earmark-pdf"></i></a><?php endif; ?>
     </div>
   </header>
-  <?php if ($codigo && !in_array($tipo, $tiposComFluxo, true)): ?><div class="alert alert-info py-2 my-2 small">Este tipo de não conformidade abre só para consulta no greenportal por enquanto: o fluxo dele está sendo reconstruído (continua no sistema anterior).</div><?php endif; ?>
-  <?php if (!$podeGravar): ?><div class="alert alert-secondary py-2 my-2 small">Consulta: seu perfil não altera ocorrências.</div><?php endif; ?>
+  <?php if ($codigo && !in_array($tipo, $tiposComFluxo, true)): ?><div class="alert alert-info py-2 my-2 small"><?= $e(ncT('oc.so_consulta_tipo')) ?></div><?php endif; ?>
+  <?php if (!$podeGravar): ?><div class="alert alert-secondary py-2 my-2 small"><?= $e(ncT('oc.so_consulta_perfil')) ?></div><?php endif; ?>
   <div id="ncStatus" class="my-2" aria-live="polite"></div>
 
   <ul class="nav nav-tabs mt-2" role="tablist">
-    <?php foreach (['ocorrencia' => 'Ocorrência', 'gestor' => 'Avaliação do gestor', 'analise' => $planejamento ? 'Plano de ação' : 'Análise da causa e plano de ação', 'eficacia' => 'Verificação da eficácia', 'historico' => 'Histórico'] as $k => $t): if ((!$codigo && $k !== 'ocorrencia') || ($planejamento && $k === 'gestor')) continue; ?>
-    <li class="nav-item"><button class="nav-link<?= $k === $abaInicial ? ' active' : '' ?>" data-bs-toggle="tab" data-bs-target="#aba-<?= $k ?>" type="button"><?= $e($t) ?><?= (!empty($pode[$k]) || ($k === 'analise' && $acaoPropria)) ? ' <i class="bi bi-pencil-square text-success" title="Você age nesta etapa"></i>' : '' ?></button></li>
+    <?php foreach (['ocorrencia' => ncT('aba.ocorrencia'), 'gestor' => ncT('aba.gestor'), 'analise' => $planejamento ? ncT('aba.plano') : ncT('aba.analise'), 'eficacia' => ncT('aba.eficacia'), 'historico' => ncT('aba.historico')] as $k => $t): if ((!$codigo && $k !== 'ocorrencia') || ($planejamento && $k === 'gestor')) continue; ?>
+    <li class="nav-item"><button class="nav-link<?= $k === $abaInicial ? ' active' : '' ?>" data-bs-toggle="tab" data-bs-target="#aba-<?= $k ?>" type="button"><?= $e($t) ?><?= (!empty($pode[$k]) || ($k === 'analise' && $acaoPropria)) ? ' <i class="bi bi-pencil-square text-success" title="' . $e(ncT('oc.voce_age')) . '"></i>' : '' ?></button></li>
     <?php endforeach; ?>
   </ul>
   <div class="tab-content">
     <!-- Ocorrência -->
     <section class="tab-pane fade nc-aba<?= $abaInicial === 'ocorrencia' ? ' show active' : '' ?>" id="aba-ocorrencia">
       <?php if ($pode['ocorrencia']): ?>
-      <?php if ($assistencia): ?><div class="small text-muted mt-2">Grave a ocorrência, cadastre as ações (com responsável) na aba Plano de ação e depois envie o plano: cada responsável recebe o aviso.</div><?php endif; ?>
+      <?php if ($assistencia): ?><div class="small text-muted mt-2"><?= $e(ncT('oc.dica_assistencia')) ?></div><?php endif; ?>
       <div class="nc-barra-frag"><div class="crud-toolbar menu-grid-toolbar"><div class="crud-actions crud-actions-standard">
-        <?= $ncBotao('bi-check2', 'Salvar', 'btn-success', 'data-enviar="ocorrencia" data-sub="salvar"') ?>
-        <?= $ncBotao('bi-send', $assistencia ? 'Salvar e enviar o plano de ação' : ($etapa === 'Recusado pelo Gestor' ? 'Reenviar ao gestor' : 'Salvar e enviar ao gestor'), 'btn-outline-primary', 'data-enviar="ocorrencia" data-sub="enviar"') ?>
+        <?= $ncBotao('bi-check2', ncT('comum.salvar'), 'btn-success', 'data-enviar="ocorrencia" data-sub="salvar"') ?>
+        <?= $ncBotao('bi-send', $assistencia ? ncT('oc.btn_enviar_plano') : ($etapa === 'Recusado pelo Gestor' ? ncT('oc.btn_reenviar_gestor') : ncT('oc.btn_enviar_gestor')), 'btn-outline-primary', 'data-enviar="ocorrencia" data-sub="enviar"') ?>
       </div></div></div>
       <?php endif; ?>
       <form data-form="ocorrencia" class="row g-2">
@@ -449,7 +450,7 @@ body{background:var(--bs-body-bg,#fff)}.nc-main{padding:.75rem 1rem}.nc-cab{disp
             echo $campoHtml($nome, $def, $valorCampo($nome), $pode['ocorrencia']);
         } ?>
       </form>
-      <?php if ($v('RECUSA_DO_GESTOR') !== '' && $etapa === 'Recusado pelo Gestor'): ?><div class="alert alert-warning py-2 mt-2 small"><b>Motivo da recusa do gestor:</b> <?= nl2br($e($v('RECUSA_DO_GESTOR'))) ?></div><?php endif; ?>
+      <?php if ($v('RECUSA_DO_GESTOR') !== '' && $etapa === 'Recusado pelo Gestor'): ?><div class="alert alert-warning py-2 mt-2 small"><b><?= $e(ncT('oc.motivo_recusa_gestor')) ?></b> <?= nl2br($e($v('RECUSA_DO_GESTOR'))) ?></div><?php endif; ?>
     </section>
 
     <?php if ($codigo): ?>
@@ -457,57 +458,57 @@ body{background:var(--bs-body-bg,#fff)}.nc-main{padding:.75rem 1rem}.nc-cab{disp
     <section class="tab-pane fade nc-aba<?= $abaInicial === 'gestor' ? ' show active' : '' ?>" id="aba-gestor">
       <?php if ($pode['gestor']): ?>
       <div class="nc-barra-frag"><div class="crud-toolbar menu-grid-toolbar"><div class="crud-actions crud-actions-standard">
-        <?= $ncBotao('bi-check2', 'Salvar', 'btn-success', 'data-enviar="gestor" data-sub="salvar"') ?>
-        <?= $ncBotao('bi-send', 'Enviar ao responsável', 'btn-outline-primary', 'data-enviar="gestor" data-sub="enviar"') ?>
-        <?= $ncBotao('bi-arrow-return-left', 'Recusar e devolver ao emitente', 'btn-outline-danger', 'data-enviar="gestor" data-sub="recusar"') ?>
-        <?php if ($tem('IMPROCEDENTE')) echo $ncBotao('bi-x-octagon', 'Finalizar como improcedente', 'btn-outline-secondary', 'data-enviar="gestor" data-sub="improcedente" data-confirmar="Finalizar a ocorrência como improcedente?"'); ?>
+        <?= $ncBotao('bi-check2', ncT('comum.salvar'), 'btn-success', 'data-enviar="gestor" data-sub="salvar"') ?>
+        <?= $ncBotao('bi-send', ncT('oc.btn_enviar_resp'), 'btn-outline-primary', 'data-enviar="gestor" data-sub="enviar"') ?>
+        <?= $ncBotao('bi-arrow-return-left', ncT('oc.btn_recusar_emitente'), 'btn-outline-danger', 'data-enviar="gestor" data-sub="recusar"') ?>
+        <?php if ($tem('IMPROCEDENTE')) echo $ncBotao('bi-x-octagon', ncT('oc.btn_improcedente'), 'btn-outline-secondary', 'data-enviar="gestor" data-sub="improcedente" data-confirmar="' . $e(ncT('oc.conf_improcedente')) . '"'); ?>
       </div></div></div>
       <?php endif; ?>
       <form data-form="gestor" class="row g-2">
-        <?= $campoHtml('ANALISE_DA_PROVIDENCIA', ['Ação imediata', 'textarea', null], $v('ANALISE_DA_PROVIDENCIA'), $pode['gestor']) ?>
-        <?= $campoHtml('ANALISE_ABRANGENCIA', ['Análise da abrangência', 'textarea', null], $v('ANALISE_ABRANGENCIA'), $pode['gestor']) ?>
-        <?= $campoHtml('ATUALIZAR_RISCOS', ['Atualizar relação de riscos e oportunidades?', 'select', $simNao], $v('ATUALIZAR_RELACAO_DE_RISCOS_E_OPORTUNIDADES'), $pode['gestor']) ?>
-        <?= $campoHtml('ABRIR_MUDANCA', ['Abrir nova avaliação de mudança?', 'select', $simNao], $v('ABRIR_NOVA_AVALIACAO_DE_MUDANCA'), $pode['gestor']) ?>
-        <?php if ($tem('IMPROCEDENTE')) echo $campoHtml('IMPROCEDENTE', ['Improcedente?', 'select', $simNaoLongo], $v('IMPROCEDENTE'), $pode['gestor']); ?>
-        <?= $campoHtml('CODUSUARIO_RESPONSAVEL', ['Responsável pela análise da causa raiz e ação corretiva', 'select', $usuarios], $v('CODUSUARIO_RESPONSAVEL'), $pode['gestor']) ?>
-        <?= $campoHtml('RECUSA_DO_GESTOR', ['Motivo da recusa (para devolver ao emitente)', 'textarea', null], $etapa === 'Com o Gestor' ? '' : $v('RECUSA_DO_GESTOR'), $pode['gestor']) ?>
+        <?= $campoHtml('ANALISE_DA_PROVIDENCIA', [ncT('campo.analise_da_providencia'), 'textarea', null], $v('ANALISE_DA_PROVIDENCIA'), $pode['gestor']) ?>
+        <?= $campoHtml('ANALISE_ABRANGENCIA', [ncT('campo.analise_abrangencia'), 'textarea', null], $v('ANALISE_ABRANGENCIA'), $pode['gestor']) ?>
+        <?= $campoHtml('ATUALIZAR_RISCOS', [ncT('campo.atualizar_riscos'), 'select', $simNao], $v('ATUALIZAR_RELACAO_DE_RISCOS_E_OPORTUNIDADES'), $pode['gestor']) ?>
+        <?= $campoHtml('ABRIR_MUDANCA', [ncT('campo.abrir_mudanca'), 'select', $simNao], $v('ABRIR_NOVA_AVALIACAO_DE_MUDANCA'), $pode['gestor']) ?>
+        <?php if ($tem('IMPROCEDENTE')) echo $campoHtml('IMPROCEDENTE', [ncT('campo.improcedente'), 'select', $simNaoLongo], $v('IMPROCEDENTE'), $pode['gestor']); ?>
+        <?= $campoHtml('CODUSUARIO_RESPONSAVEL', [ncT('campo.codusuario_responsavel'), 'select', $usuarios], $v('CODUSUARIO_RESPONSAVEL'), $pode['gestor']) ?>
+        <?= $campoHtml('RECUSA_DO_GESTOR', [ncT('campo.recusa_emitente'), 'textarea', null], $etapa === 'Com o Gestor' ? '' : $v('RECUSA_DO_GESTOR'), $pode['gestor']) ?>
       </form>
     </section>
 
     <!-- Análise da causa e plano de ação -->
     <section class="tab-pane fade nc-aba<?= $abaInicial === 'analise' ? ' show active' : '' ?>" id="aba-analise">
-      <?php if ($etapa === 'Recusado pela Avaliacao da Eficacia' && $v('RECUSA_DO_GESTOR') !== ''): ?><div class="alert alert-warning py-2 small"><b>Devolvida pelo gestor na avaliação da eficácia:</b> <?= nl2br($e($v('RECUSA_DO_GESTOR'))) ?></div><?php endif; ?>
+      <?php if ($etapa === 'Recusado pela Avaliacao da Eficacia' && $v('RECUSA_DO_GESTOR') !== ''): ?><div class="alert alert-warning py-2 small"><b><?= $e(ncT('oc.devolvida_eficacia')) ?></b> <?= nl2br($e($v('RECUSA_DO_GESTOR'))) ?></div><?php endif; ?>
       <?php if ($pode['analise'] && !$planejamento): ?>
       <div class="nc-barra-frag"><div class="crud-toolbar menu-grid-toolbar"><div class="crud-actions crud-actions-standard">
-        <?= $ncBotao('bi-check2', 'Salvar', 'btn-success', 'data-enviar="analise" data-sub="salvar"') ?>
-        <?= $ncBotao('bi-send', 'Enviar para a avaliação da eficácia (precisa de pelo menos 1 causa, 1 ação para cada causa e o plano de ação realizado)', 'btn-outline-primary', 'data-enviar="analise" data-sub="enviar"') ?>
+        <?= $ncBotao('bi-check2', ncT('comum.salvar'), 'btn-success', 'data-enviar="analise" data-sub="salvar"') ?>
+        <?= $ncBotao('bi-send', ncT('oc.btn_enviar_eficacia'), 'btn-outline-primary', 'data-enviar="analise" data-sub="enviar"') ?>
       </div></div></div>
       <?php endif; ?>
       <?php if ($planejamento): ?>
-      <?php if ($W::etapaAnalise($etapa) && $v('RECUSA_DO_GESTOR') !== '' && $v('VERIFICACAO_DA_EFICACIA') !== ''): ?><div class="alert alert-warning py-2 small"><b>Devolvida pelo gestor na avaliação da eficácia:</b> <?= nl2br($e($v('RECUSA_DO_GESTOR'))) ?></div><?php endif; ?>
-      <div class="small text-muted mb-1"><?= $assistencia ? 'Na Assistência Técnica o emitente monta as ações antes de enviar o plano; depois, emitente e gestor mantêm as ações e cada responsável atualiza o status da sua.' : 'No Planejamento o gestor monta as ações (sem causas) e cada responsável atualiza o status da sua.' ?> Com todas a 100%, a ocorrência segue sozinha para a avaliação da eficácia<?= $v('PASS_PELA_NANALISE_EFICACIA') === 'N' ? ' — nesta, que não passa pela eficácia, ela será finalizada' : '' ?>.</div>
+      <?php if ($W::etapaAnalise($etapa) && $v('RECUSA_DO_GESTOR') !== '' && $v('VERIFICACAO_DA_EFICACIA') !== ''): ?><div class="alert alert-warning py-2 small"><b><?= $e(ncT('oc.devolvida_eficacia')) ?></b> <?= nl2br($e($v('RECUSA_DO_GESTOR'))) ?></div><?php endif; ?>
+      <div class="small text-muted mb-1"><?= $assistencia ? ncT('oc.dica_assist_plano') : ncT('oc.dica_planej') ?> <?= $e(ncT('oc.dica_100')) ?><?= $v('PASS_PELA_NANALISE_EFICACIA') === 'N' ? ' — ' . $e(ncT('oc.dica_100_sem')) : '' ?>.</div>
       <?php else:
       // Sub-abas (pedido do usuário 23/10/2026): Análise | Causas | Plano de ação, em vez de formulário + 2 grids empilhados
       $subAba = in_array($_GET['sub'] ?? '', ['analise', 'causas', 'plano'], true) ? (string)$_GET['sub'] : 'analise';
       $semAcao = count(array_filter($causas, static fn($c) => (int)$c['PLANOS'] === 0)); ?>
       <ul class="nav nav-pills nc-subabas mb-2" role="tablist">
-        <?php foreach (['analise' => ['Análise', 'bi-journal-text', ''], 'causas' => ['Causas', 'bi-diagram-3', (string)count($causas)], 'plano' => ['Plano de ação', 'bi-list-check', (string)count($planos)]] as $k => [$rot, $ic, $qtd]): ?>
-        <li class="nav-item" role="presentation"><button type="button" class="nav-link<?= $subAba === $k ? ' active' : '' ?>" data-bs-toggle="tab" data-bs-target="#sub-<?= $k ?>" data-nc-sub="<?= $k ?>" role="tab"><i class="bi <?= $ic ?> me-1"></i><?= $rot ?><?php if ($qtd !== ''): ?> <span class="badge <?= $qtd === '0' ? 'text-bg-secondary' : 'text-bg-light border' ?>"><?= $qtd ?></span><?php endif; ?><?php if ($k === 'causas' && $semAcao): ?> <i class="bi bi-exclamation-triangle-fill text-warning" title="<?= $semAcao ?> causa(s) sem ação no plano"></i><?php endif; ?></button></li>
+        <?php foreach (['analise' => [ncT('sub.analise'), 'bi-journal-text', ''], 'causas' => [ncT('sub.causas'), 'bi-diagram-3', (string)count($causas)], 'plano' => [ncT('aba.plano'), 'bi-list-check', (string)count($planos)]] as $k => [$rot, $ic, $qtd]): ?>
+        <li class="nav-item" role="presentation"><button type="button" class="nav-link<?= $subAba === $k ? ' active' : '' ?>" data-bs-toggle="tab" data-bs-target="#sub-<?= $k ?>" data-nc-sub="<?= $k ?>" role="tab"><i class="bi <?= $ic ?> me-1"></i><?= $e($rot) ?><?php if ($qtd !== ''): ?> <span class="badge <?= $qtd === '0' ? 'text-bg-secondary' : 'text-bg-light border' ?>"><?= $qtd ?></span><?php endif; ?><?php if ($k === 'causas' && $semAcao): ?> <i class="bi bi-exclamation-triangle-fill text-warning" title="<?= $e(ncT('oc.causas_sem_acao', ['n' => $semAcao])) ?>"></i><?php endif; ?></button></li>
         <?php endforeach; ?>
       </ul>
       <div class="tab-content">
       <div class="tab-pane fade<?= $subAba === 'analise' ? ' show active' : '' ?>" id="sub-analise" role="tabpanel">
       <div class="nc-barra-frag"><div class="crud-toolbar menu-grid-toolbar"><div class="crud-actions crud-actions-standard">
-        <?= $ncBotao('bi-paperclip', 'Evidências da análise', 'btn-outline-secondary', 'data-ged="ncanalise" data-chave="CODOCORRENCIA" data-valor="' . (int)$codigo . '" data-titulo="' . $e('Evidências da análise da causa ' . ($v('NRANO') ?: $codigo)) . '"', '<span data-ged-qtd></span>') ?>
+        <?= $ncBotao('bi-paperclip', ncT('oc.evidencias'), 'btn-outline-secondary', 'data-ged="ncanalise" data-chave="CODOCORRENCIA" data-valor="' . (int)$codigo . '" data-titulo="' . $e(ncT('oc.evidencias_titulo', ['n' => $v('NRANO') ?: $codigo])) . '"', '<span data-ged-qtd></span>') ?>
         <?php if ($iaAtiva):
-          $iaTitulo = $iaPendente ? 'Pedida por ' . $iaPendente['usuario'] . ' em ' . date('d/m/Y H:i', strtotime($iaPendente['criado_em']) ?: time()) . '. A resposta chega nos Alertas; até lá não é possível pedir outra.'
-              : ($cfg['ia']['pronta'] ? 'A resposta da IA chegou: abra para revisar e aplicar o que quiser' : 'A IA sugere causas, ações e o texto da análise com base na ocorrência e nas NCs semelhantes já tratadas; o pedido roda em segundo plano e a resposta chega nos Alertas');
-          $iaRotulo = $iaPendente ? 'Análise da IA em processamento' : ($cfg['ia']['pronta'] ? 'Ver sugestão da IA' : 'Sugerir com IA'); ?>
+          $iaTitulo = $iaPendente ? ncT('ia.pedida_por', ['usuario' => $iaPendente['usuario'], 'data' => date(IdiomaService::idioma() === 'en' ? 'm/d/Y H:i' : 'd/m/Y H:i', strtotime($iaPendente['criado_em']) ?: time())])
+              : ($cfg['ia']['pronta'] ? ncT('ia.chegou') : ncT('ia.explica'));
+          $iaRotulo = $iaPendente ? ncT('ia.processando') : ($cfg['ia']['pronta'] ? ncT('ia.ver') : ncT('ia.sugerir')); ?>
           <span data-disabled-tooltip-wrapper title="<?= $e($iaRotulo . ' — ' . $iaTitulo) ?>"><?= $ncBotao($iaPendente ? 'bi-hourglass-split' : 'bi-stars', $iaRotulo, 'btn-outline-primary', 'data-nc-ia' . ($iaPendente ? ' disabled' : '')) ?></span><?php endif; ?>
       </div></div></div>
       <form data-form="analise" class="row g-2">
-        <?= $campoHtml('DATA_DE_CONCLUSAO_PREVISTA', ['Data prevista de conclusão', 'date', null], $data('DATA_DE_CONCLUSAO_PREVISTA'), $pode['analise']) ?>
-        <?= $campoHtml('ANALISE_DA_CAUSA', ['Análise da causa', 'textarea', null], $v('ANALISE_DA_CAUSA'), $pode['analise']) ?>
+        <?= $campoHtml('DATA_DE_CONCLUSAO_PREVISTA', [ncT('campo.data_conclusao'), 'date', null], $data('DATA_DE_CONCLUSAO_PREVISTA'), $pode['analise']) ?>
+        <?= $campoHtml('ANALISE_DA_CAUSA', [ncT('campo.analise_da_causa'), 'textarea', null], $v('ANALISE_DA_CAUSA'), $pode['analise']) ?>
       </form>
       </div>
       <div class="tab-pane fade<?= $subAba === 'causas' ? ' show active' : '' ?>" id="sub-causas" role="tabpanel">
@@ -525,17 +526,17 @@ body{background:var(--bs-body-bg,#fff)}.nc-main{padding:.75rem 1rem}.nc-cab{disp
       }
       greenPortalGridLocal([
           'transaction' => 'naoconformidades_ocorrencia_causas', 'fragment_class' => 'nc-grid-causas', 'id' => 'ncCausasGrid', 'page_size' => 10,
-          'columns' => ['DSCTIPOCAUSA' => ['label' => 'Tipo de causa', 'filter' => 'select', 'width' => '220px'], 'DSCAUSA' => ['label' => 'Causa'], 'PLANOS' => ['label' => 'Ações', 'filter' => 'none', 'width' => '80px']],
-          'cell_boxes' => true, 'rows' => $linhasCausas, 'empty' => 'Nenhuma causa cadastrada.', 'double_click_action' => 'editar',
+          'columns' => ['DSCTIPOCAUSA' => ['label' => ncT('col.tipo_causa'), 'filter' => 'select', 'width' => '220px'], 'DSCAUSA' => ['label' => ncT('col.causa')], 'PLANOS' => ['label' => ncT('col.acoes'), 'filter' => 'none', 'width' => '80px']],
+          'cell_boxes' => true, 'rows' => $linhasCausas, 'empty' => ncT('oc.nenhuma_causa'), 'double_click_action' => 'editar',
           'buttons' => ['reload' => false, 'new' => (bool)$pode['analise'], 'new_attribute' => 'data-causa-nova', 'delete' => (bool)$pode['analise'], 'delete_attribute' => 'data-grid-acao-linha="excluir"'],
-          'extras' => $pode['analise'] ? '<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-grid-acao-linha="editar" disabled title="Editar a causa selecionada" aria-label="Editar a causa selecionada"><i class="bi bi-pencil"></i></button>' : '',
+          'extras' => $pode['analise'] ? '<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-grid-acao-linha="editar" disabled title="' . $e(ncT('oc.editar_causa')) . '" aria-label="' . $e(ncT('oc.editar_causa')) . '"><i class="bi bi-pencil"></i></button>' : '',
       ]);
       ?>
-      <?php if ($semAcao): ?><div class="small text-warning mt-1"><i class="bi bi-exclamation-triangle me-1"></i><?= $semAcao ?> causa(s) ainda sem ação: para enviar à avaliação da eficácia, cada causa precisa de pelo menos 1 ação no Plano de ação.</div><?php endif; ?>
+      <?php if ($semAcao): ?><div class="small text-warning mt-1"><i class="bi bi-exclamation-triangle me-1"></i><?= $e(ncT('oc.causas_sem_acao_aviso', ['n' => $semAcao])) ?></div><?php endif; ?>
       </div>
       <div class="tab-pane fade<?= $subAba === 'plano' ? ' show active' : '' ?>" id="sub-plano" role="tabpanel">
       <?php endif; ?>
-      <?php if ($planejamento): ?><h6 class="mt-3 mb-1">Plano de ação</h6><?php endif; ?>
+      <?php if ($planejamento): ?><h6 class="mt-3 mb-1"><?= $e(ncT('aba.plano')) ?></h6><?php endif; ?>
       <?php
       // c537: grid no padrão do portal: Nova/Editar/Excluir na barra (linha selecionada); Arquivos da ação na coluna, como os
       // Relacionamentos do grid padrão
@@ -562,50 +563,50 @@ body{background:var(--bs-body-bg,#fff)}.nc-main{padding:.75rem 1rem}.nc-cab{disp
               'STATUS' => ['text' => (int)$p['STATUS'] . '%', 'sort' => str_pad((string)(int)$p['STATUS'], 3, '0', STR_PAD_LEFT)],
               'OBS' => ['text' => (string)$p['OBS'], 'title' => (string)$p['OBS']],
           ];
-          $linhasPlanos[] = ['cells' => $celulas, 'actions' => '<button type="button" class="btn btn-sm btn-outline-secondary grid-crud-button" data-ged="ncplano" data-chave="CODPLANOACAO" data-valor="' . (int)$p['CODPLANOACAO'] . '" data-titulo="' . $e('Arquivos da ação - ' . mb_substr((string)$p['ACAO'], 0, 80)) . '" title="Arquivos da ação" aria-label="Arquivos da ação"><i class="bi bi-paperclip"></i><span data-ged-qtd></span></button>'];
+          $linhasPlanos[] = ['cells' => $celulas, 'actions' => '<button type="button" class="btn btn-sm btn-outline-secondary grid-crud-button" data-ged="ncplano" data-chave="CODPLANOACAO" data-valor="' . (int)$p['CODPLANOACAO'] . '" data-titulo="' . $e(ncT('oc.arquivos_acao') . ' - ' . mb_substr((string)$p['ACAO'], 0, 80)) . '" title="' . $e(ncT('oc.arquivos_acao')) . '" aria-label="' . $e(ncT('oc.arquivos_acao')) . '"><i class="bi bi-paperclip"></i><span data-ged-qtd></span></button>'];
       }
-      $colunasPlano = $planejamento ? [] : ['DSCAUSA' => ['label' => 'Causa', 'width' => '18%']];
-      $colunasPlano += ['ACAO' => ['label' => 'Ação', 'width' => '24%'], 'PRIORIDADE' => ['label' => 'Prioridade', 'filter' => 'select', 'width' => '100px'], 'RESPONSAVEL' => ['label' => 'Responsável', 'filter' => 'select'],
-          'DATAINICIAL' => ['label' => 'Início', 'filter' => 'none', 'width' => '96px'], 'DATAFINAL' => ['label' => 'Fim', 'filter' => 'none', 'width' => '96px'],
-          'STATUS' => ['label' => 'Status', 'filter' => 'select', 'width' => '80px'], 'OBS' => ['label' => 'Observação']];
+      $colunasPlano = $planejamento ? [] : ['DSCAUSA' => ['label' => ncT('col.causa'), 'width' => '18%']];
+      $colunasPlano += ['ACAO' => ['label' => ncT('col.acao'), 'width' => '24%'], 'PRIORIDADE' => ['label' => ncT('col.prioridade'), 'filter' => 'select', 'width' => '100px'], 'RESPONSAVEL' => ['label' => ncT('col.responsavel'), 'filter' => 'select'],
+          'DATAINICIAL' => ['label' => ncT('col.inicio'), 'filter' => 'none', 'width' => '96px'], 'DATAFINAL' => ['label' => ncT('col.fim'), 'filter' => 'none', 'width' => '96px'],
+          'STATUS' => ['label' => ncT('col.status'), 'filter' => 'select', 'width' => '80px'], 'OBS' => ['label' => ncT('col.obs')]];
       $novaAcao = $pode['analise'] && ($causas || $planejamento);
       greenPortalGridLocal([
           'transaction' => 'naoconformidades_ocorrencia_plano', 'fragment_class' => 'nc-grid-plano', 'id' => 'ncPlanoGrid', 'page_size' => 10,
-          'columns' => $colunasPlano, 'actions_label' => 'Arquivos', 'cell_boxes' => true, 'rows' => $linhasPlanos, 'empty' => 'Nenhuma ação cadastrada.',
+          'columns' => $colunasPlano, 'actions_label' => ncT('col.arquivos'), 'cell_boxes' => true, 'rows' => $linhasPlanos, 'empty' => ncT('oc.nenhuma_acao'),
           'double_click_action' => 'editar',
           'buttons' => ['reload' => false, 'columns' => true, 'new' => (bool)$novaAcao, 'new_attribute' => 'data-plano-novo', 'delete' => (bool)$pode['analise'], 'delete_attribute' => 'data-grid-acao-linha="excluir"'],
-          'extras' => $editaAlguma ? '<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-grid-acao-linha="editar" disabled title="' . ($pode['analise'] ? 'Editar a ação selecionada' : 'Atualizar o status da sua ação') . '" aria-label="Editar a ação selecionada"><i class="bi bi-pencil"></i></button>' : '',
+          'extras' => $editaAlguma ? '<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-grid-acao-linha="editar" disabled title="' . $e($pode['analise'] ? ncT('oc.editar_acao') : ncT('oc.atualizar_status')) . '" aria-label="' . $e(ncT('oc.editar_acao')) . '"><i class="bi bi-pencil"></i></button>' : '',
       ]);
       ?>
-      <?php if (!$planejamento): ?><?php if (!$causas && $pode['analise']): ?><div class="small text-muted mt-1">Cadastre as causas na aba Causas para incluir ações.</div><?php endif; ?></div></div><?php endif; ?>
+      <?php if (!$planejamento): ?><?php if (!$causas && $pode['analise']): ?><div class="small text-muted mt-1"><?= $e(ncT('oc.cadastre_causas')) ?></div><?php endif; ?></div></div><?php endif; ?>
     </section>
 
     <!-- Verificação da eficácia -->
     <section class="tab-pane fade nc-aba<?= $abaInicial === 'eficacia' ? ' show active' : '' ?>" id="aba-eficacia">
       <?php if ($pode['eficacia']): ?>
       <div class="nc-barra-frag"><div class="crud-toolbar menu-grid-toolbar"><div class="crud-actions crud-actions-standard">
-        <?= $ncBotao('bi-check2', 'Salvar', 'btn-success', 'data-enviar="eficacia" data-sub="salvar"') ?>
-        <?= $ncBotao('bi-check2-circle', 'Aplicar o resultado', 'btn-outline-primary', 'data-enviar="eficacia" data-sub="finalizar"') ?>
-        <?= $ncBotao('bi-arrow-return-left', 'Recusar e devolver ao responsável', 'btn-outline-danger', 'data-enviar="eficacia" data-sub="recusar"') ?>
+        <?= $ncBotao('bi-check2', ncT('comum.salvar'), 'btn-success', 'data-enviar="eficacia" data-sub="salvar"') ?>
+        <?= $ncBotao('bi-check2-circle', ncT('oc.btn_aplicar_resultado'), 'btn-outline-primary', 'data-enviar="eficacia" data-sub="finalizar"') ?>
+        <?= $ncBotao('bi-arrow-return-left', ncT('oc.btn_recusar_resp'), 'btn-outline-danger', 'data-enviar="eficacia" data-sub="recusar"') ?>
         <?php if ($iaEfAtiva):
-          $iaEfTitulo = $iaEfPendente ? 'Pedido por ' . $iaEfPendente['usuario'] . ' em ' . date('d/m/Y H:i', strtotime($iaEfPendente['criado_em']) ?: time()) . '. A resposta chega nos Alertas; até lá não é possível pedir outro.'
-              : ($cfg['iaef']['pronta'] ? 'A resposta da IA chegou: abra para revisar o parecer' : 'A IA avalia se as ações atacaram a causa, se há evidências e se a NC voltou a ocorrer; o pedido roda em segundo plano e a resposta chega nos Alertas');
-          $iaEfRotulo = $iaEfPendente ? 'Parecer da IA em processamento' : ($cfg['iaef']['pronta'] ? 'Ver parecer da IA' : 'Avaliar com IA'); ?>
+          $iaEfTitulo = $iaEfPendente ? ncT('iaef.pedido_por', ['usuario' => $iaEfPendente['usuario'], 'data' => date(IdiomaService::idioma() === 'en' ? 'm/d/Y H:i' : 'd/m/Y H:i', strtotime($iaEfPendente['criado_em']) ?: time())])
+              : ($cfg['iaef']['pronta'] ? ncT('iaef.chegou') : ncT('iaef.explica'));
+          $iaEfRotulo = $iaEfPendente ? ncT('iaef.processando') : ($cfg['iaef']['pronta'] ? ncT('iaef.ver') : ncT('iaef.avaliar')); ?>
           <span data-disabled-tooltip-wrapper title="<?= $e($iaEfRotulo . ' — ' . $iaEfTitulo) ?>"><?= $ncBotao($iaEfPendente ? 'bi-hourglass-split' : 'bi-stars', $iaEfRotulo, 'btn-outline-primary', 'data-nc-iaef' . ($iaEfPendente ? ' disabled' : '')) ?></span><?php endif; ?>
       </div></div></div>
       <?php endif; ?>
       <form data-form="eficacia" class="row g-2">
-        <?= $campoHtml('VERIFICACAO_DA_EFICACIA', ['Verificação da eficácia', 'textarea', null], $v('VERIFICACAO_DA_EFICACIA'), $pode['eficacia']) ?>
-        <?php $resultado = ['EFICAZ' => 'Eficaz', 'ENCERRADO' => 'Encerrada sem a verificação da eficácia', 'NAO_EFICAZ' => 'Não eficaz (volta ao responsável)'];
-        if ($etapa === 'Finalizado' || !$pode['eficacia']): ?><div class="col-md-4"><label class="form-label">Resultado</label><div class="nc-leitura"><?= $e($etapa === 'Finalizado' ? $v('SITUACAO') : '—') ?></div></div>
-        <?php else: echo $campoHtml('RESULTADO', ['Resultado', 'select', $resultado], (string)($iaEfPreenche['RESULTADO'] ?? ''), true); endif; ?>
+        <?= $campoHtml('VERIFICACAO_DA_EFICACIA', [ncT('campo.verificacao'), 'textarea', null], $v('VERIFICACAO_DA_EFICACIA'), $pode['eficacia']) ?>
+        <?php $resultado = ['EFICAZ' => ncT('valor.eficaz'), 'ENCERRADO' => ncT('valor.encerrada_sem'), 'NAO_EFICAZ' => ncT('oc.nao_eficaz_volta')];
+        if ($etapa === 'Finalizado' || !$pode['eficacia']): ?><div class="col-md-4"><label class="form-label"><?= $e(ncT('campo.resultado')) ?></label><div class="nc-leitura"><?= $e($etapa === 'Finalizado' ? NaoConformidadeTextos::valor($v('SITUACAO')) : '—') ?></div></div>
+        <?php else: echo $campoHtml('RESULTADO', [ncT('campo.resultado'), 'select', $resultado], (string)($iaEfPreenche['RESULTADO'] ?? ''), true); endif; ?>
         <?php if ($exigePrazo || $v('PRAZO_ANALIZE') !== ''): ?>
-          <?= $campoHtml('PRAZO_ANALIZE', ['Data da análise da eficácia', 'date', null], $data('PRAZO_ANALIZE'), $pode['eficacia']) ?>
-          <?= $campoHtml('CODUSUARIO_PRAZO_ANALISE', ['Responsável por esta pendência', 'select', $usuarios], $v('CODUSUARIO_PRAZO_ANALISE'), $pode['eficacia']) ?>
+          <?= $campoHtml('PRAZO_ANALIZE', [ncT('campo.prazo_analize'), 'date', null], $data('PRAZO_ANALIZE'), $pode['eficacia']) ?>
+          <?= $campoHtml('CODUSUARIO_PRAZO_ANALISE', [ncT('campo.resp_pendencia'), 'select', $usuarios], $v('CODUSUARIO_PRAZO_ANALISE'), $pode['eficacia']) ?>
         <?php endif; ?>
-        <?= $campoHtml('RECUSA_DO_GESTOR', ['Motivo da recusa (para devolver ao responsável)', 'textarea', null], (string)($iaEfPreenche['RECUSA_DO_GESTOR'] ?? ''), $pode['eficacia']) ?>
+        <?= $campoHtml('RECUSA_DO_GESTOR', [ncT('campo.recusa_resp'), 'textarea', null], (string)($iaEfPreenche['RECUSA_DO_GESTOR'] ?? ''), $pode['eficacia']) ?>
       </form>
-      <?php if (!empty($iaEfPreenche['RESULTADO'])): ?><div class="alert alert-info py-2 small mt-2 mb-0"><i class="bi bi-stars me-1"></i>Resultado e motivo preenchidos pelo parecer da IA. Confira e clique em <b>Aplicar o resultado</b> para concluir — a decisão é sua.</div><?php endif; ?>
+      <?php if (!empty($iaEfPreenche['RESULTADO'])): ?><div class="alert alert-info py-2 small mt-2 mb-0"><i class="bi bi-stars me-1"></i><?= ncT('iaef.preenchido') ?></div><?php endif; ?>
     </section>
 
     <!-- Histórico -->
@@ -616,21 +617,21 @@ body{background:var(--bs-body-bg,#fff)}.nc-main{padding:.75rem 1rem}.nc-cab{disp
       foreach ($historico as $h) {
           $quando = strtotime((string)$h['CRIADO_EM']);
           $linhasHist[] = ['cells' => [
-              'CRIADO_EM' => ['text' => $quando ? date('d/m/Y H:i', $quando) : '', 'sort' => $quando ? date('Y-m-d H:i:s', $quando) : ''],
+              'CRIADO_EM' => ['text' => $quando ? date(IdiomaService::idioma() === 'en' ? 'm/d/Y H:i' : 'd/m/Y H:i', $quando) : '', 'sort' => $quando ? date('Y-m-d H:i:s', $quando) : ''],
               'USUARIO' => ['text' => (string)$h['USUARIO']],
               'ACAO' => ['text' => $acoesHistorico[(string)$h['ACAO']] ?? ucfirst(strtolower(str_replace('_', ' ', (string)$h['ACAO'])))],
-              'ETAPA_ANTERIOR' => ['text' => (string)$h['ETAPA_ANTERIOR']],
-              'ETAPA_NOVA' => ['text' => (string)$h['ETAPA_NOVA']],
+              'ETAPA_ANTERIOR' => ['text' => NaoConformidadeTextos::valor((string)$h['ETAPA_ANTERIOR'])],
+              'ETAPA_NOVA' => ['text' => NaoConformidadeTextos::valor((string)$h['ETAPA_NOVA'])],
               'MOTIVO' => ['text' => (string)$h['MOTIVO'], 'title' => (string)$h['MOTIVO']],
           ]];
       }
       greenPortalGridLocal([
           'transaction' => 'naoconformidades_ocorrencia_historico', 'fragment_class' => 'nc-grid-historico', 'id' => 'ncHistoricoGrid',
-          'columns' => ['CRIADO_EM' => ['label' => 'Data', 'filter' => 'none', 'width' => '130px'], 'USUARIO' => ['label' => 'Usuário', 'filter' => 'select', 'width' => '170px'],
-              'ACAO' => ['label' => 'Ação', 'filter' => 'select', 'width' => '210px'], 'ETAPA_ANTERIOR' => ['label' => 'De', 'filter' => 'select', 'width' => '150px'],
-              'ETAPA_NOVA' => ['label' => 'Para', 'filter' => 'select', 'width' => '150px'], 'MOTIVO' => ['label' => 'Detalhe']],
+          'columns' => ['CRIADO_EM' => ['label' => ncT('col.data'), 'filter' => 'none', 'width' => '130px'], 'USUARIO' => ['label' => ncT('col.usuario'), 'filter' => 'select', 'width' => '170px'],
+              'ACAO' => ['label' => ncT('col.acao'), 'filter' => 'select', 'width' => '210px'], 'ETAPA_ANTERIOR' => ['label' => ncT('col.de'), 'filter' => 'select', 'width' => '150px'],
+              'ETAPA_NOVA' => ['label' => ncT('col.para'), 'filter' => 'select', 'width' => '150px'], 'MOTIVO' => ['label' => ncT('col.detalhe')]],
           'cell_boxes' => true, 'rows' => $linhasHist, 'default_sort' => ['CRIADO_EM', 'desc'], 'buttons' => ['reload' => false, 'columns' => true],
-          'empty' => 'Sem registros no greenportal. As alterações feitas no sistema anterior não têm histórico.',
+          'empty' => ncT('oc.hist_vazio'),
       ]);
       ?>
     </section>
@@ -641,66 +642,68 @@ body{background:var(--bs-body-bg,#fff)}.nc-main{padding:.75rem 1rem}.nc-cab{disp
 <?php if ($codigo && ($pode['analise'] || $acaoPropria)): ?>
 <?php if (!$planejamento): ?>
 <div class="modal fade" id="ncCausa" tabindex="-1"><div class="modal-dialog"><form class="modal-content" data-modal-form="causa">
-  <div class="modal-header py-2"><h6 class="modal-title">Causa</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-header py-2"><h6 class="modal-title"><?= $e(ncT('col.causa')) ?></h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
   <div class="modal-body row g-2"><input type="hidden" name="CODCAUSA">
-    <div class="col-12"><label class="form-label">Tipo de causa</label><select class="form-select form-select-sm" name="CODTIPOCAUSA"><?= $opcoesHtml($op['TIPOCAUSA'] ?? [], '') ?></select></div>
-    <div class="col-12"><label class="form-label">Causa</label><textarea class="form-control form-control-sm" name="DSCAUSA" rows="3" maxlength="500" required></textarea></div></div>
-  <div class="modal-footer py-2"><button class="btn btn-sm btn-success" type="submit"><i class="bi bi-floppy me-1"></i>Salvar</button></div></form></div></div>
+    <div class="col-12"><label class="form-label"><?= $e(ncT('col.tipo_causa')) ?></label><select class="form-select form-select-sm" name="CODTIPOCAUSA"><?= $opcoesHtml($op['TIPOCAUSA'] ?? [], '') ?></select></div>
+    <div class="col-12"><label class="form-label"><?= $e(ncT('col.causa')) ?></label><textarea class="form-control form-control-sm" name="DSCAUSA" rows="3" maxlength="500" required></textarea></div></div>
+  <div class="modal-footer py-2"><button class="btn btn-sm btn-success" type="submit"><i class="bi bi-floppy me-1"></i><?= $e(ncT('comum.salvar')) ?></button></div></form></div></div>
 <?php endif; ?>
 <div class="modal fade" id="ncPlano" tabindex="-1"><div class="modal-dialog modal-lg"><form class="modal-content" data-modal-form="plano">
-  <div class="modal-header py-2"><h6 class="modal-title">Ação do plano</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-header py-2"><h6 class="modal-title"><?= $e(ncT('oc.acao_do_plano')) ?></h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
   <div class="modal-body row g-2"><input type="hidden" name="CODPLANOACAO">
-    <?php if (!$planejamento): ?><div class="col-md-6"><label class="form-label">Causa</label><select class="form-select form-select-sm" name="CODCAUSA" required><?php foreach ($causas as $c) echo '<option value="' . (int)$c['CODCAUSA'] . '">' . $e(mb_strimwidth((string)$c['DSCAUSA'], 0, 80, '…')) . '</option>'; ?></select></div><?php endif; ?>
-    <div class="col-md-6"><label class="form-label">Responsável</label><select class="form-select form-select-sm" name="CODUSUARIO"><?= $opcoesHtml($usuariosAcao, '') ?></select></div>
-    <div class="col-12"><label class="form-label">Ação</label><textarea class="form-control form-control-sm" name="ACAO" rows="3" required></textarea></div>
-    <div class="col-md-3"><label class="form-label">Prioridade</label><input class="form-control form-control-sm" name="PRIORIDADE" maxlength="500"></div>
-    <div class="col-md-3"><label class="form-label">Início</label><input type="date" class="form-control form-control-sm" name="DATAINICIAL"></div>
-    <div class="col-md-3"><label class="form-label">Fim</label><input type="date" class="form-control form-control-sm" name="DATAFINAL"></div>
-    <div class="col-md-3"><label class="form-label">Status</label><select class="form-select form-select-sm" name="STATUS"><?= $opcoesHtml($status, '0', false) ?></select></div>
-    <div class="col-md-6"><label class="form-label">Recursos</label><textarea class="form-control form-control-sm" name="RECURSOS" rows="2"></textarea></div>
-    <div class="col-md-6"><label class="form-label">Observação</label><textarea class="form-control form-control-sm" name="OBS" rows="2"></textarea></div></div>
-  <div class="modal-footer py-2"><button class="btn btn-sm btn-success" type="submit"><i class="bi bi-floppy me-1"></i>Salvar</button></div></form></div></div>
+    <?php if (!$planejamento): ?><div class="col-md-6"><label class="form-label"><?= $e(ncT('col.causa')) ?></label><select class="form-select form-select-sm" name="CODCAUSA" required><?php foreach ($causas as $c) echo '<option value="' . (int)$c['CODCAUSA'] . '">' . $e(mb_strimwidth((string)$c['DSCAUSA'], 0, 80, '…')) . '</option>'; ?></select></div><?php endif; ?>
+    <div class="col-md-6"><label class="form-label"><?= $e(ncT('col.responsavel')) ?></label><select class="form-select form-select-sm" name="CODUSUARIO"><?= $opcoesHtml($usuariosAcao, '') ?></select></div>
+    <div class="col-12"><label class="form-label"><?= $e(ncT('col.acao')) ?></label><textarea class="form-control form-control-sm" name="ACAO" rows="3" required></textarea></div>
+    <div class="col-md-3"><label class="form-label"><?= $e(ncT('col.prioridade')) ?></label><input class="form-control form-control-sm" name="PRIORIDADE" maxlength="500"></div>
+    <div class="col-md-3"><label class="form-label"><?= $e(ncT('col.inicio')) ?></label><input type="date" class="form-control form-control-sm" name="DATAINICIAL"></div>
+    <div class="col-md-3"><label class="form-label"><?= $e(ncT('col.fim')) ?></label><input type="date" class="form-control form-control-sm" name="DATAFINAL"></div>
+    <div class="col-md-3"><label class="form-label"><?= $e(ncT('col.status')) ?></label><select class="form-select form-select-sm" name="STATUS"><?= $opcoesHtml($status, '0', false) ?></select></div>
+    <div class="col-md-6"><label class="form-label"><?= $e(ncT('col.recursos')) ?></label><textarea class="form-control form-control-sm" name="RECURSOS" rows="2"></textarea></div>
+    <div class="col-md-6"><label class="form-label"><?= $e(ncT('col.obs')) ?></label><textarea class="form-control form-control-sm" name="OBS" rows="2"></textarea></div></div>
+  <div class="modal-footer py-2"><button class="btn btn-sm btn-success" type="submit"><i class="bi bi-floppy me-1"></i><?= $e(ncT('comum.salvar')) ?></button></div></form></div></div>
 <?php endif; ?>
 
 <?php if ($iaEfAtiva): ?>
 <!-- Migração 337: parecer da IA sobre a eficácia (preenchido por assets/js/nc-eficacia-ia.js) -->
 <div class="modal fade" id="ncIaEf" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
-  <div class="modal-header py-2"><h6 class="modal-title"><i class="bi bi-stars me-1"></i>Parecer da IA — avaliação da eficácia</h6><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <div class="modal-header py-2"><h6 class="modal-title"><i class="bi bi-stars me-1"></i><?= $e(ncT('iaef.titulo')) ?></h6><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= $e(ncT('comum.fechar')) ?>"></button></div>
   <div class="modal-body" data-iaef-corpo style="min-height:60vh"></div>
   <div class="modal-footer py-2 justify-content-between">
-    <span class="small text-muted">A IA só dá o parecer: o resultado é aplicado por você. Prompt <?= $e(NaoConformidadeEficaciaIa::PROMPT) ?> em Setup › Prompts de IA.</span>
-    <div class="d-flex gap-2"><button type="button" class="btn btn-sm btn-outline-secondary" data-iaef-nova><i class="bi bi-arrow-repeat me-1"></i>Pedir outro parecer</button>
-      <button type="button" class="btn btn-sm btn-outline-danger" data-iaef-descartar><i class="bi bi-x-circle me-1"></i>Descartar</button>
-      <button type="button" class="btn btn-sm btn-success" data-iaef-aplicar><i class="bi bi-box-arrow-in-down me-1"></i>Levar para a verificação</button></div>
+    <span class="small text-muted"><?= $e(ncT('iaef.rodape', ['prompt' => NaoConformidadeEficaciaIa::PROMPT])) ?></span>
+    <div class="d-flex gap-2"><button type="button" class="btn btn-sm btn-outline-secondary" data-iaef-nova><i class="bi bi-arrow-repeat me-1"></i><?= $e(ncT('iaef.pedir_outro')) ?></button>
+      <button type="button" class="btn btn-sm btn-outline-danger" data-iaef-descartar><i class="bi bi-x-circle me-1"></i><?= $e(ncT('comum.descartar')) ?></button>
+      <button type="button" class="btn btn-sm btn-success" data-iaef-aplicar><i class="bi bi-box-arrow-in-down me-1"></i><?= $e(ncT('iaef.levar')) ?></button></div>
   </div>
 </div></div></div>
 <?php endif; ?>
 <?php if ($iaAtiva): ?>
 <!-- Migração 336: sugestão da IA para a análise da causa (preenchida por assets/js/nc-analise-ia.js) -->
 <div class="modal fade" id="ncIa" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
-  <div class="modal-header py-2"><h6 class="modal-title"><i class="bi bi-stars me-1"></i>Sugestão da IA — análise da causa</h6><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
+  <div class="modal-header py-2"><h6 class="modal-title"><i class="bi bi-stars me-1"></i><?= $e(ncT('ia.titulo')) ?></h6><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= $e(ncT('comum.fechar')) ?>"></button></div>
   <div class="modal-body" data-ia-corpo style="min-height:60vh"></div>
   <div class="modal-footer py-2 justify-content-between">
-    <span class="small text-muted">A IA só sugere: nada é gravado até você aplicar. Prompt <?= $e(NaoConformidadeAnaliseIa::PROMPT) ?> em Setup › Prompts de IA.</span>
-    <div class="d-flex gap-2"><button type="button" class="btn btn-sm btn-outline-secondary" data-ia-nova><i class="bi bi-arrow-repeat me-1"></i>Gerar outra sugestão</button>
-      <button type="button" class="btn btn-sm btn-outline-danger" data-ia-descartar><i class="bi bi-x-circle me-1"></i>Descartar</button>
-      <button type="button" class="btn btn-sm btn-success" data-ia-aplicar><i class="bi bi-check2-circle me-1"></i>Aplicar o que está marcado</button></div>
+    <span class="small text-muted"><?= $e(ncT('ia.rodape', ['prompt' => NaoConformidadeAnaliseIa::PROMPT])) ?></span>
+    <div class="d-flex gap-2"><button type="button" class="btn btn-sm btn-outline-secondary" data-ia-nova><i class="bi bi-arrow-repeat me-1"></i><?= $e(ncT('ia.gerar_outra')) ?></button>
+      <button type="button" class="btn btn-sm btn-outline-danger" data-ia-descartar><i class="bi bi-x-circle me-1"></i><?= $e(ncT('comum.descartar')) ?></button>
+      <button type="button" class="btn btn-sm btn-success" data-ia-aplicar><i class="bi bi-check2-circle me-1"></i><?= $e(ncT('ia.aplicar_marcado')) ?></button></div>
   </div>
 </div></div></div>
 <?php endif; ?>
+<?= NaoConformidadeTextos::script() /* textos do JavaScript (greenT) */ ?>
 <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js?v=2"></script>
 <script src="../assets/vendor/jquery/jquery-3.7.1.min.js?v=2"></script><script src="../assets/js/grid-local.js?v=5"></script>
 <?php require_once dirname(__DIR__) . '/components/toolbar_grupos.php'; $ncRot = greenPortalToolbarGruposRotulos();
 greenPortalToolbarGruposEmitir(['fragmento' => '.nc-barra-frag', 'auto' => false, 'rotuloOutros' => $ncRot['outros'], 'grupos' => [
     ['id' => 'operacoes', 'rotulo' => $ncRot['operacoes'], 'botoes' => ['[data-sub="salvar"]']],
-    ['id' => 'fluxo', 'rotulo' => 'Fluxo', 'botoes' => ['[data-sub="enviar"]', '[data-sub="finalizar"]', '[data-sub="recusar"]', '[data-sub="improcedente"]']],
+    ['id' => 'fluxo', 'rotulo' => ncT('oc.grupo_fluxo'), 'botoes' => ['[data-sub="enviar"]', '[data-sub="finalizar"]', '[data-sub="recusar"]', '[data-sub="improcedente"]']],
     ['id' => 'outros', 'rotulo' => $ncRot['outros'], 'botoes' => ['[data-ged]', '[data-nc-ia]', '[data-nc-iaef]']],
 ]]); ?>
-<?php if ($iaAtiva): ?><script src="../assets/js/nc-analise-ia.js?v=4"></script><?php endif; ?>
-<?php if ($iaEfAtiva): ?><script src="../assets/js/nc-eficacia-ia.js?v=2"></script><?php endif; ?>
+<?php if ($iaAtiva): ?><script src="../assets/js/nc-analise-ia.js?v=5"></script><?php endif; ?>
+<?php if ($iaEfAtiva): ?><script src="../assets/js/nc-eficacia-ia.js?v=3"></script><?php endif; ?>
 <script>
 (function () {
   'use strict';
+  function N(k, p) { return typeof window.greenT === 'function' ? window.greenT('naoconformidades.js.' + k, p) : p; }
   var C = <?= json_encode($cfg, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>, statusEl = document.getElementById('ncStatus'), ocupado = false;
   function aviso(texto, tipo) { statusEl.innerHTML = ''; if (!texto) return; var d = document.createElement('div'); d.className = 'alert py-2 small mb-0 alert-' + (tipo || 'info'); d.textContent = texto; statusEl.appendChild(d); }
   function dadosDe(form) {
@@ -709,12 +712,12 @@ greenPortalToolbarGruposEmitir(['fragmento' => '.nc-barra-frag', 'auto' => false
     return o;
   }
   function enviar(acao, sub, dados) {
-    if (ocupado) return Promise.reject(new Error('Aguarde.')); ocupado = true; aviso('Gravando...', 'secondary');
+    if (ocupado) return Promise.reject(new Error(N('aguarde', 'Aguarde.'))); ocupado = true; aviso(N('gravando', 'Gravando...'), 'secondary');
     return fetch(C.url + '?' + (C.codigo ? 'codigo=' + C.codigo : 'tipo=' + C.tipo) + '&acao=' + acao, {
       method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': C.csrf, 'X-Requested-With': 'XMLHttpRequest' },
       body: JSON.stringify({ sub: sub, dados: dados || {} })
-    }).then(function (r) { return r.json().catch(function () { return { ok: false, message: 'Resposta inválida do servidor.' }; }); })
-      .then(function (res) { ocupado = false; if (!res.ok) throw new Error(res.message || 'Não foi possível concluir.'); return res; })
+    }).then(function (r) { return r.json().catch(function () { return { ok: false, message: N('resposta_invalida', 'Resposta inválida do servidor.') }; }); })
+      .then(function (res) { ocupado = false; if (!res.ok) throw new Error(res.message || N('nao_concluiu', 'Não foi possível concluir.')); return res; })
       .catch(function (e) { ocupado = false; throw e; });
   }
   // Migração 336: análise da causa com IA (o texto da análise que está na tela é gravado antes de aplicar, como nas janelas)
@@ -736,7 +739,7 @@ greenPortalToolbarGruposEmitir(['fragmento' => '.nc-barra-frag', 'auto' => false
     b.addEventListener('click', function (ev) {
       ev.preventDefault();
       var acao = b.getAttribute('data-enviar'), sub = b.getAttribute('data-sub'), conf = b.getAttribute('data-confirmar');
-      if (conf && !b.hasAttribute('data-armado')) { b.setAttribute('data-armado', '1'); aviso(conf + ' Clique de novo para confirmar.', 'warning'); setTimeout(function () { b.removeAttribute('data-armado'); }, 6000); return; }
+      if (conf && !b.hasAttribute('data-armado')) { b.setAttribute('data-armado', '1'); aviso(conf + ' ' + N('clique_confirmar', 'Clique de novo para confirmar.'), 'warning'); setTimeout(function () { b.removeAttribute('data-armado'); }, 6000); return; }
       var dados = dadosDe(document.querySelector('[data-form="' + acao + '"]'));
       enviar(acao, sub, dados).then(function (res) { recarregar(res, sub === 'salvar' ? acao : ''); }).catch(function (e) { aviso(e.message, 'danger'); });
     });
@@ -772,11 +775,11 @@ greenPortalToolbarGruposEmitir(['fragmento' => '.nc-barra-frag', 'auto' => false
       var host = window.top || window;
       try {
         if (host.GreenPortalPopups && typeof host.GreenPortalPopups.mensagem === 'function' && host.document.getElementById('greenPortalMensagemModal')) {
-          host.GreenPortalPopups.mensagem({ titulo: 'Excluir', mensagem: tipo === 'causa' ? 'Excluir a causa selecionada? As ações dela também serão excluídas.' : 'Excluir a ação selecionada?', icone: 'bi-exclamation-triangle', confirmar: excluir });
+          host.GreenPortalPopups.mensagem({ titulo: N('excluir', 'Excluir'), mensagem: tipo === 'causa' ? N('excluir_causa', 'Excluir a causa selecionada? As ações dela também serão excluídas.') : N('excluir_acao', 'Excluir a ação selecionada?'), icone: 'bi-exclamation-triangle', confirmar: excluir });
           return;
         }
       } catch (e) { }
-      if (window.confirm(tipo === 'causa' ? 'Excluir a causa selecionada? As ações dela também serão excluídas.' : 'Excluir a ação selecionada?')) excluir();
+      if (window.confirm(tipo === 'causa' ? N('excluir_causa', 'Excluir a causa selecionada? As ações dela também serão excluídas.') : N('excluir_acao', 'Excluir a ação selecionada?'))) excluir();
     });
   });
 
@@ -801,7 +804,7 @@ greenPortalToolbarGruposEmitir(['fragmento' => '.nc-barra-frag', 'auto' => false
       if (host.GreenPortalPopups && host.jQuery) {
         var frame = host.jQuery('<iframe>', { src: url, style: 'width:100%;height:100%;border:0;display:block;' });
         frame.on('load', contarGed);
-        var opcoes = { titulo: b.dataset.titulo || 'Arquivos', conteudo: frame, compacto: true, redimensionavel: true };
+        var opcoes = { titulo: b.dataset.titulo || N('arquivos', 'Arquivos'), conteudo: frame, compacto: true, redimensionavel: true };
         if (typeof host.GreenPortalPopups.transacaoIndependente === 'function') host.GreenPortalPopups.transacaoIndependente(opcoes); else host.GreenPortalPopups.transacao(opcoes);
       } else window.open(url, '_blank');
     });
@@ -813,7 +816,7 @@ greenPortalToolbarGruposEmitir(['fragmento' => '.nc-barra-frag', 'auto' => false
       var host = null; try { host = window.top && window.top.GreenPortalPopups && window.top.jQuery ? window.top : null; } catch (x) { host = null; }
       if (!host) return;
       ev.preventDefault();
-      var url = new URL(a.getAttribute('href'), window.location.href).toString(), titulo = a.dataset.titulo || 'PDF da não conformidade';
+      var url = new URL(a.getAttribute('href'), window.location.href).toString(), titulo = a.dataset.titulo || N('pdf_nc', 'PDF da não conformidade');
       host.GreenPortalPopups.transacaoIndependente({ titulo: titulo, conteudo: host.jQuery('<iframe>', { src: url, title: titulo, style: 'width:100%;height:100%;border:0;display:block;' }), redimensionavel: true });
     });
   });

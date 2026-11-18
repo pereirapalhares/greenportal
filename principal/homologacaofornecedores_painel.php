@@ -144,7 +144,7 @@ if ($acao !== '') {
             $consulta = (string)($entrada['consulta'] ?? 'todos');
             if (!preg_match('/^[a-z0-9:]{1,40}$/', $consulta) || !$filtroConsulta($consulta)['fn']) $consulta = 'todos';
             require_once dirname(__DIR__) . '/classes/ExportacaoSolicitacao.php';
-            $pedido = ExportacaoSolicitacao::solicitar($pdo, $usuario, PAINEL_TRANSACAO, 'Painel de Homologação (' . $filtroConsulta($consulta)['label'] . ')', [
+            $pedido = ExportacaoSolicitacao::solicitar($pdo, $usuario, PAINEL_TRANSACAO, IdiomaService::t('homologacaofornecedores_painel.exportacao.nome', ['pt' => 'Painel de Homologação', 'en' => 'Approval panel', 'es' => 'Panel de Homologación']) . ' (' . $filtroConsulta($consulta)['label'] . ')', [
                 'filtros' => ['filtros' => $filtros, 'consulta' => $consulta, 'externo' => $externo ? 1 : 0, 'modo' => $modoAcesso, 'idioma' => $idioma], 'busca' => $filtros['busca']]);
             AuditService::record($pdo, PAINEL_TRANSACAO, 'EXPORTAR', $pedido > 0 ? 'SUCESSO' : 'ERRO', 'exportacoes_grid', $consulta, ['pedido' => $pedido, 'filtros' => $filtros]);
             if ($pedido <= 0) $falhar(500, IdiomaService::t('comum.erro.exportacao', ['pt' => 'Não foi possível solicitar a exportação.', 'en' => 'The export could not be requested.', 'es' => 'No fue posible solicitar la exportación.']));
@@ -218,7 +218,7 @@ $cfg = [
 <link rel="stylesheet" href="../assets/css/homologacao-painel.css?v=5">
 <?php require_once dirname(__DIR__) . '/components/pagina_padrao.php'; greenPortalEstiloPagina(); ?><style>.dash-subabas-nav{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid #d9e6df;margin-bottom:8px}.dash-subaba{border:1px solid transparent;border-bottom:0;background:none;padding:6px 12px;border-radius:8px 8px 0 0;color:#4f675d;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:5px;margin-bottom:-1px}.dash-subaba:hover{color:#1f4d3a;background:#f2f8f5}.dash-subaba.active{background:#fff;border-color:#d9e6df;color:#1f4d3a}.painel-subabas .painel-graficos{margin-top:0}.painel-subabas .painel-cartao-matriz{margin:0}</style></head>
 <body class="painel-body">
-<?php greenPortalCabecalhoImpressao('Painel de homologação de fornecedores'); ?>
+<?php greenPortalCabecalhoImpressao(IdiomaService::t('homologacaofornecedores_painel.impressao.titulo', ['pt' => 'Painel de homologação de fornecedores', 'en' => 'Supplier approval panel', 'es' => 'Panel de homologación de proveedores'])); ?>
 <main class="painel" data-painel>
   <header class="painel-cab">
     <div>

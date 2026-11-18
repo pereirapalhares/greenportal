@@ -50,13 +50,13 @@ if (($leg = HomologacaoBancos::legado((string)($_SESSION['tenant']['banco_dados'
 // ------------------------------------------------------------------ certificado (PDF)
 if (isset($_GET['certificado'])) {
     $i = $disponivel ? $integracao((int)$_GET['certificado']) : null;
-    if (!$i || !$podeFuncionario((int)$i['CODFUNCIONARIO'])) { http_response_code(404); exit('Certificado não encontrado.'); }
+    if (!$i || !$podeFuncionario((int)$i['CODFUNCIONARIO'])) { http_response_code(404); exit(htmlspecialchars(IdiomaService::t('homologacaofornecedores_integracao.erro.certificado', ['pt' => 'Certificado não encontrado.', 'en' => 'Certificate not found.', 'es' => 'Certificado no encontrado.']), ENT_QUOTES, 'UTF-8')); }
     $arq = IntegracaoFuncionario::arquivoCertificado($pdo, $env, $sessaoGed, $i);
     if ($arq === null && (string)$i['STATUS'] === 'APROVADA' && $podeEditar) {
         try { IntegracaoFuncionario::certificado($pdo, $env, $sessaoGed, (int)$i['CODINTEGRACAO'], $empresaNome); $i = $integracao((int)$i['CODINTEGRACAO']); $arq = IntegracaoFuncionario::arquivoCertificado($pdo, $env, $sessaoGed, $i); }
         catch (Throwable $x) { error_log('[integração] certificado: ' . $x->getMessage()); }
     }
-    if ($arq === null) { http_response_code(404); exit('Certificado não encontrado.'); }
+    if ($arq === null) { http_response_code(404); exit(htmlspecialchars(IdiomaService::t('homologacaofornecedores_integracao.erro.certificado', ['pt' => 'Certificado não encontrado.', 'en' => 'Certificate not found.', 'es' => 'Certificado no encontrado.']), ENT_QUOTES, 'UTF-8')); }
     header('Content-Type: application/pdf'); header('Content-Disposition: inline; filename="' . basename($arq) . '"'); header('Content-Length: ' . filesize($arq));
     readfile($arq); exit;
 }
@@ -202,7 +202,7 @@ if (isset($_GET['config'])) {
     usort($cfgs, static fn($a, $b) => [$a['CODTIPOFUNCIONARIO'] !== null, (string)$a['DSCTIPO']] <=> [$b['CODTIPOFUNCIONARIO'] !== null, (string)$b['DSCTIPO']]);
     $dis = $podeEditar ? '' : ' disabled';
     $optTipos = static function ($sel) use ($tipos, $e, $T): string { $h = '<option value="">' . $e($T('config.padrao', ['pt' => '(Padrão da empresa — todos os tipos sem questionário próprio)', 'en' => '(Company default)', 'es' => '(Estándar de la empresa)'])) . '</option>'; foreach ($tipos as $t) $h .= '<option value="' . (int)$t['CODTIPOFUNCIONARIO'] . '"' . ((string)$sel === (string)$t['CODTIPOFUNCIONARIO'] ? ' selected' : '') . '>' . $e($t['DSCTIPO']) . '</option>'; return $h; };
-    $optQ = static function ($sel) use ($quests, $e): string { $h = '<option value=""></option>'; $achou = false; foreach ($quests as $q) { $s = strcasecmp((string)$sel, (string)$q['CODIGO_QUESTIONARIO']) === 0; $achou = $achou || $s; $h .= '<option value="' . $e($q['CODIGO_QUESTIONARIO']) . '"' . ($s ? ' selected' : '') . '>' . $e($q['NOME'] . ' (' . $q['CODIGO_QUESTIONARIO'] . ')') . '</option>'; } if (!$achou && (string)$sel !== '') $h .= '<option value="' . $e($sel) . '" selected>' . $e($sel) . ' — não publicado</option>'; return $h; };
+    $optQ = static function ($sel) use ($quests, $e): string { $h = '<option value=""></option>'; $achou = false; foreach ($quests as $q) { $s = strcasecmp((string)$sel, (string)$q['CODIGO_QUESTIONARIO']) === 0; $achou = $achou || $s; $h .= '<option value="' . $e($q['CODIGO_QUESTIONARIO']) . '"' . ($s ? ' selected' : '') . '>' . $e($q['NOME'] . ' (' . $q['CODIGO_QUESTIONARIO'] . ')') . '</option>'; } if (!$achou && (string)$sel !== '') $h .= '<option value="' . $e($sel) . '" selected>' . $e($sel) . ' — ' . $e(IdiomaService::t('homologacaofornecedores_integracao.st.nao_publicado', ['pt' => 'não publicado', 'en' => 'not published', 'es' => 'no publicado'])) . '</option>'; return $h; };
     $linha = static function (array $c) use ($e, $optTipos, $optQ, $dis, $T): string {
         return '<tr data-ifn-cfg="' . (int)($c['CODCONFIG'] ?? 0) . '"><td><select class="form-select form-select-sm" data-c="tipo"' . $dis . '>' . $optTipos($c['CODTIPOFUNCIONARIO'] ?? '') . '</select></td>'
             . '<td><select class="form-select form-select-sm" data-c="questionario"' . $dis . '>' . $optQ($c['CODIGO_QUESTIONARIO'] ?? '') . '</select></td>'
@@ -267,7 +267,7 @@ foreach ($linhas as $l) {
     $rows[] = ['attrs' => 'data-integracao="' . (int)($l['CODINTEGRACAO'] ?? 0) . '"', 'cells' => [
         'FORNECEDOR' => ['text' => (string)$l['RAZAOSOCIAL']], 'FUNCIONARIO' => ['text' => (string)$l['FUNCIONARIO'], 'html' => $e($l['FUNCIONARIO']) . greenPortalGridLocalLinha($acoes)],
         'TIPO' => ['text' => (string)$l['DSCTIPO']], 'UNIDADE' => ['text' => (string)$l['DSCUNIDADE']],
-        'QUESTIONARIO' => ['text' => $l['CODIGO_QUESTIONARIO'] ? (string)($l['QUESTIONARIO'] ?: $l['CODIGO_QUESTIONARIO']) . ((int)$l['QUESTIONARIO_PUBLICADO'] ? '' : ' (não publicado)') : $rot['sem_q']],
+        'QUESTIONARIO' => ['text' => $l['CODIGO_QUESTIONARIO'] ? (string)($l['QUESTIONARIO'] ?: $l['CODIGO_QUESTIONARIO']) . ((int)$l['QUESTIONARIO_PUBLICADO'] ? '' : ' (' . IdiomaService::t('homologacaofornecedores_integracao.st.nao_publicado', ['pt' => 'não publicado', 'en' => 'not published', 'es' => 'no publicado']) . ')') : $rot['sem_q']],
         'SITUACAO' => ['text' => $sit, 'sort' => ['RESPONDIDA' => '1', 'AGUARDANDO' => '2', 'REPROVADA' => '3', 'APROVADA' => '4'][$st] ?? '5'],
         'REALIZACAO' => ['text' => $dt($real), 'sort' => $real],
         'VALIDADE' => ['text' => $dt($val), 'html' => greenPortalGridLocalPrazo($dt($val), $sinal), 'sort' => $val],

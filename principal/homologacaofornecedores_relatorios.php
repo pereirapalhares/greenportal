@@ -144,7 +144,7 @@ if ($acao !== '') {
             $p = HomologacaoRelatorios::normalizarPedido(is_array($entrada['pedido'] ?? null) ? $entrada['pedido'] : $entrada, $externo);
             $portaria = !empty($entrada['portaria']) && $p['relatorio'] === 'unificado';
             $nome = $portaria ? $t('portaria', ['pt' => 'Lista para a portaria', 'en' => 'Gatehouse list', 'es' => 'Lista para la portería']) : $R->nome($p['relatorio']);
-            $pedido = ExportacaoSolicitacao::solicitar($pdo, $usuario, REL_TRANSACAO, 'Relatórios de Homologação (' . $nome . ')', [
+            $pedido = ExportacaoSolicitacao::solicitar($pdo, $usuario, REL_TRANSACAO, IdiomaService::t('homologacaofornecedores_relatorios.exportacao.nome', ['pt' => 'Relatórios de Homologação', 'en' => 'Approval reports', 'es' => 'Informes de Homologación']) . ' (' . $nome . ')', [
                 'filtros' => ['pedido' => $p, 'externo' => $externo ? 1 : 0, 'modo' => $modoAcesso, 'idioma' => $idioma, 'portaria' => $portaria ? 1 : 0], 'busca' => $p['filtros']['busca']]);
             AuditService::record($pdo, REL_TRANSACAO, 'EXPORTAR', $pedido > 0 ? 'SUCESSO' : 'ERRO', 'exportacoes_grid', $p['relatorio'], ['pedido' => $pedido, 'portaria' => $portaria]);
             if ($pedido <= 0) $falhar(500, IdiomaService::t('comum.erro.exportacao', ['pt' => 'Não foi possível solicitar a exportação.', 'en' => 'The export could not be requested.', 'es' => 'No fue posible solicitar la exportación.']));
@@ -249,7 +249,7 @@ $paginacao = static fn(string $sufixo): string => '<nav class="grid-pagination" 
 <link rel="stylesheet" href="../assets/css/homologacao-relatorios.css?v=1">
 <?php require_once dirname(__DIR__) . '/components/pagina_padrao.php'; greenPortalEstiloPagina(); ?></head>
 <body class="painel-body">
-<?php greenPortalCabecalhoImpressao('Relatórios de homologação de fornecedores'); ?>
+<?php greenPortalCabecalhoImpressao(IdiomaService::t('homologacaofornecedores_relatorios.impressao.titulo', ['pt' => 'Relatórios de homologação de fornecedores', 'en' => 'Supplier approval reports', 'es' => 'Informes de homologación de proveedores'])); ?>
 <main class="painel rel" data-relatorios>
   <header class="painel-cab">
     <div>

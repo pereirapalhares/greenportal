@@ -1,3 +1,5 @@
+// Onda 3 de idiomas: textos fixos traduzidos por window.greenTxt (AdministracaoTextos::script()).
+var _tx = window._tx || function (s) { return typeof window.greenTxt === 'function' ? window.greenTxt(s) : s; };
 (function ($) {
     'use strict';
 
@@ -71,7 +73,7 @@
         var showing = !$value.prop('hidden');
         $value.prop('hidden', showing);
         $mask.prop('hidden', !showing);
-        $button.attr('aria-label', showing ? 'Mostrar senha' : 'Ocultar senha').attr('title', showing ? 'Mostrar senha' : 'Ocultar senha');
+        $button.attr('aria-label', showing ? 'Mostrar senha' : _tx('Ocultar senha')).attr('title', showing ? 'Mostrar senha' : _tx('Ocultar senha'));
         $button.find('i').toggleClass('bi-eye', showing).toggleClass('bi-eye-slash', !showing);
     });
 
@@ -97,7 +99,7 @@
         var $modal = $('#userColumnsModal');
         if (!$modal.length) {
             $modal = $('<div id="userColumnsModal" class="columns-modal"><div class="columns-modal-content">' +
-                '<h3>Colunas visíveis</h3><div class="columns-list"></div>' +
+                '<h3>' + _tx("Colunas visíveis") + '</h3><div class="columns-list"></div>' +
                 '<div class="columns-actions"><button type="button" data-close-columns>Cancelar</button>' +
                 '<button type="button" id="saveUserColumns">Salvar</button></div></div></div>');
             $('body').append($modal);

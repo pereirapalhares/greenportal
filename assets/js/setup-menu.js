@@ -6,6 +6,8 @@
     function applyPreferences() { reorderColumns(); columns.forEach(function (column) { var p = preferences[column] || {}; var defaultVisible = column !== 'codmenu'; var visible = p.visivel === undefined ? defaultVisible : !!Number(p.visivel); var width = Math.max(60, Number(p.largura || 120)); $('[data-column="' + column + '"]').css('width', width + 'px').toggle(visible); }); }
     function savePreferences() { var payload = columns.map(function (column, index) { var p = preferences[column] || {}; return { coluna: column, ordem: index, visivel: $('[data-column="' + column + '"]:first').is(':visible') ? 1 : 0, largura: Math.max(60, Math.round($table.find('th[data-column="' + column + '"]').outerWidth() || p.largura || 120)) }; }); $.post(window.location.href, { action: 'save_preferences', preferences: JSON.stringify(payload) }); }
     applyPreferences();
+    // grid-pagination troca o tbody ao filtrar/paginar: reaplica ordem e colunas visíveis nas linhas novas
+    $fragment.on('gridPageLoaded', function () { applyPreferences(); });
     function normalize(value) { return String(value || '').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
     function rowValue($row, column) { var $cell = $row.find('[data-column="' + column + '"]'); return $cell.find('input, textarea, select').val() || $cell.text() || ''; }
     function applyGridFilters() {

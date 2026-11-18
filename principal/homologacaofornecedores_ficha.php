@@ -136,7 +136,7 @@ body.ficha-pagina{margin:0;background:var(--gp-surface,#f4f8f6)}
 </style>
 </head>
 <body class="ficha-pagina" data-transacao="homologacaofornecedores_ficha">
-<?php greenPortalCabecalhoImpressao('Ficha do fornecedor'); ?>
+<?php greenPortalCabecalhoImpressao(IdiomaService::t('homologacaofornecedores_ficha.impressao.titulo', ['pt' => 'Ficha do fornecedor', 'en' => 'Supplier record', 'es' => 'Ficha del proveedor'])); ?>
 <main class="ficha" data-ficha data-codfornecedor="<?= (int)$cod ?>" data-nome="<?= $e($nome) ?>">
   <div class="ficha-cab">
     <div class="ficha-info">

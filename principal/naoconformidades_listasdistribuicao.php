@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/classes/TransactionSecurity.php';
 require_once dirname(__DIR__) . '/classes/NaoConformidadeAdministracao.php';
+require_once dirname(__DIR__) . '/classes/NaoConformidadeTextos.php';
 require_once dirname(__DIR__) . '/components/grid_local.php';
 
 $pdo = TransactionSecurity::connect(NaoConformidadeAdministracao::MENU_LISTAS);
@@ -33,23 +34,23 @@ try {
                 'CATEGORIAS' => ['text' => (string)($l['CATEGORIAS'] ?? ''), 'title' => (string)($l['CATEGORIAS'] ?? '')],
                 'QTD_MEMBROS' => ['text' => (string)(int)$l['QTD_MEMBROS'], 'sort' => str_pad((string)(int)$l['QTD_MEMBROS'], 6, '0', STR_PAD_LEFT)],
                 'QTD_PARTICIPANTES' => ['text' => (string)(int)$l['QTD_PARTICIPANTES'], 'sort' => str_pad((string)(int)$l['QTD_PARTICIPANTES'], 6, '0', STR_PAD_LEFT)],
-                'QTD_INATIVOS' => ['text' => (string)$inativos, 'html' => $inativos > 0 ? '<span class="badge text-bg-warning" title="Pessoas desativadas ou não cadastradas: não recebem os avisos">' . $inativos . '</span>' : '0', 'sort' => str_pad((string)$inativos, 6, '0', STR_PAD_LEFT)],
-                'QTD_NCS' => ['text' => (string)(int)$l['QTD_NCS'], 'sort' => str_pad((string)(int)$l['QTD_NCS'], 7, '0', STR_PAD_LEFT), 'title' => (int)$l['QTD_ABERTAS'] . ' em aberto'],
+                'QTD_INATIVOS' => ['text' => (string)$inativos, 'html' => $inativos > 0 ? '<span class="badge text-bg-warning" title="' . $e(ncT('ld.inativos_dica')) . '">' . $inativos . '</span>' : '0', 'sort' => str_pad((string)$inativos, 6, '0', STR_PAD_LEFT)],
+                'QTD_NCS' => ['text' => (string)(int)$l['QTD_NCS'], 'sort' => str_pad((string)(int)$l['QTD_NCS'], 7, '0', STR_PAD_LEFT), 'title' => ncT('ld.em_aberto', ['n' => (int)$l['QTD_ABERTAS']])],
                 'ULTIMO_USO' => ['text' => NaoConformidadeAdministracao::data($l['ULTIMO_USO'] ?? ''), 'sort' => NaoConformidadeAdministracao::ordenacao($l['ULTIMO_USO'] ?? '')],
-                'ORIGEM' => ['text' => $legado ? 'Sistema anterior' : 'Greenportal', 'title' => $legado ? 'Só consulta até a virada; para mudar, abra a lista e use "Copiar como nova lista"' : 'Lista criada no greenportal'],
+                'ORIGEM' => ['text' => $legado ? ncT('cor.sistema_anterior') : 'Greenportal', 'title' => $legado ? ncT('ld.legado_dica') : ncT('ld.criada_gp')],
             ],
-            'attrs' => 'data-nc-url="naoconformidades_listadistribuicao.php?codigo=' . $cod . '" data-nc-titulo="' . $e('Lista de distribuição ' . $cod . ' — ' . $l['DSCLISTA']) . '"',
+            'attrs' => 'data-nc-url="naoconformidades_listadistribuicao.php?codigo=' . $cod . '" data-nc-titulo="' . $e(ncT('ld.titulo_nome', ['n' => $cod, 'nome' => $l['DSCLISTA']])) . '"',
         ];
     }
 } catch (Throwable $ex) {
-    $aviso = 'Listas não disponíveis neste banco: aplique a migração 333 (scripts/aplicar-migracao-333-nc-administracao.php).';
+    $aviso = ncT('ld.sem_migracao2');
     error_log('[nc listas] ' . $ex->getMessage());
 }
-$extras = '<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-nc-abrir-selecionado disabled title="Abrir a lista selecionada" aria-label="Abrir a lista selecionada"><i class="bi bi-box-arrow-up-right"></i></button>';
-if (!empty($perm['pode_incluir'])) $extras = '<button type="button" class="btn btn-sm btn-outline-success grid-crud-button" data-nc-abrir="naoconformidades_listadistribuicao.php?codigo=0" data-nc-titulo="Nova lista de distribuição" title="Nova lista" aria-label="Nova lista"><i class="bi bi-plus-lg"></i></button>' . $extras;
+$extras = '<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-nc-abrir-selecionado disabled title="' . $e(ncT('ld.abrir_sel')) . '" aria-label="' . $e(ncT('ld.abrir_sel')) . '"><i class="bi bi-box-arrow-up-right"></i></button>';
+if (!empty($perm['pode_incluir'])) $extras = '<button type="button" class="btn btn-sm btn-outline-success grid-crud-button" data-nc-abrir="naoconformidades_listadistribuicao.php?codigo=0" data-nc-titulo="' . $e(ncT('ld.nova')) . '" title="' . $e(ncT('ld.nova_curta')) . '" aria-label="' . $e(ncT('ld.nova_curta')) . '"><i class="bi bi-plus-lg"></i></button>' . $extras;
 ?>
 <!doctype html><html lang="<?= $idioma === 'pt' ? 'pt-BR' : $e($idioma) ?>"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Listas de distribuição</title>
+<title><?= $e(ncT('san.listas')) ?></title>
 <link href="../assets/vendor/bootstrap/css/bootstrap.min.css?v=2" rel="stylesheet"><link href="../assets/vendor/bootstrap-icons/font/bootstrap-icons.min.css?v=2" rel="stylesheet">
 <?php greenPortalGridLocalHead(); ?>
 <style>.nc-listas-grid-fragment th[data-column="CODLISTA"]{width:80px}.nc-listas-grid-fragment th[data-column="DSCLISTA"]{width:30%}
@@ -59,22 +60,23 @@ if (!empty($perm['pode_incluir'])) $extras = '<button type="button" class="btn b
 <?php greenPortalGridLocal([
     'transaction' => 'naoconformidades_listasdistribuicao', 'fragment_class' => 'nc-listas-grid-fragment', 'id' => 'ncListasGrid',
     'columns' => [
-        'CODLISTA' => ['label' => 'Código'],
-        'DSCLISTA' => ['label' => 'Lista'],
-        'CATEGORIAS' => ['label' => 'Categorias'],
-        'QTD_MEMBROS' => ['label' => 'Pessoas', 'filter' => 'none'],
-        'QTD_PARTICIPANTES' => ['label' => 'Externos', 'filter' => 'none'],
-        'QTD_INATIVOS' => ['label' => 'Inativos', 'filter' => 'none'],
-        'QTD_NCS' => ['label' => 'NCs', 'filter' => 'none'],
-        'ULTIMO_USO' => ['label' => 'Último uso', 'filter' => 'none'],
-        'ORIGEM' => ['label' => 'Origem', 'filter' => 'select'],
+        'CODLISTA' => ['label' => ncT('col.codigo')],
+        'DSCLISTA' => ['label' => ncT('col.lista')],
+        'CATEGORIAS' => ['label' => ncT('ld.categorias')],
+        'QTD_MEMBROS' => ['label' => ncT('col.pessoas'), 'filter' => 'none'],
+        'QTD_PARTICIPANTES' => ['label' => ncT('col.externos'), 'filter' => 'none'],
+        'QTD_INATIVOS' => ['label' => ncT('col.inativos'), 'filter' => 'none'],
+        'QTD_NCS' => ['label' => ncT('col.ncs'), 'filter' => 'none'],
+        'ULTIMO_USO' => ['label' => ncT('col.ultimo_uso'), 'filter' => 'none'],
+        'ORIGEM' => ['label' => ncT('col.origem'), 'filter' => 'select'],
     ],
     'cell_boxes' => true, 'buttons' => ['columns' => true], 'extras' => $extras,
     'rows' => $rows, 'default_sort' => ['DSCLISTA', 'asc'],
-    'empty' => 'Nenhuma lista de distribuição.',
+    'empty' => ncT('ld.nenhuma'),
     // c537: sem faixa de aviso permanente (padrão do grid); a regra do sistema anterior aparece na própria lista e na dica da coluna Origem
     'notice' => $aviso,
 ]); ?>
 <?php greenPortalGridLocalScripts(); ?>
-<script src="../assets/js/nc-administracao.js?v=1"></script>
+<?= NaoConformidadeTextos::script() ?>
+<script src="../assets/js/nc-administracao.js?v=2"></script>
 </body></html>

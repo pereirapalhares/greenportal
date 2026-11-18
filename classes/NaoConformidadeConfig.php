@@ -61,6 +61,38 @@ final class NaoConformidadeConfig
     /** Sumário e descrição: exigidos pelo envio quando o tipo usa o campo. */
     public const FIXOS_SE_USA = ['IDENTIFICACAO', 'DESCRICAO'];
 
+    /** CAMPOS no idioma do usuário (mesmos rótulos da tela da ocorrência: chaves campo.* de NaoConformidadeTextos). */
+    public static function campos(): array
+    {
+        require_once __DIR__ . '/NaoConformidadeTextos.php';
+        $out = [];
+        foreach (self::CAMPOS as $k => [$rotulo, $sempre]) $out[$k] = [NaoConformidadeTextos::t('campo.' . strtolower($k)), $sempre];
+        return $out;
+    }
+
+    /** PARAMETROS no idioma do usuário: [rótulo, ajuda, tipo]. */
+    public static function parametros(): array
+    {
+        require_once __DIR__ . '/NaoConformidadeTextos.php';
+        $out = [];
+        foreach (self::PARAMETROS as $k => $d) $out[$k] = [NaoConformidadeTextos::t('param.' . strtolower($k)), NaoConformidadeTextos::t('param.' . strtolower($k) . '.ajuda'), $d[2]];
+        return $out;
+    }
+
+    /** EVENTOS no idioma do usuário: [rótulo, destinatário, o que os dias medem, dias, repetir, superior]. */
+    public static function eventos(): array
+    {
+        require_once __DIR__ . '/NaoConformidadeTextos.php';
+        $out = [];
+        foreach (self::EVENTOS as $k => $d) $out[$k] = [NaoConformidadeTextos::t('evento.' . strtolower($k)), NaoConformidadeTextos::t('destino.' . self::chave($d[1])), NaoConformidadeTextos::t('medida.' . self::chave($d[2]))] + $d;
+        return $out;
+    }
+
+    private static function chave(string $t): string
+    {
+        return trim((string)preg_replace('/[^a-z0-9]+/', '_', strtolower(strtr($t, ['á' => 'a', 'é' => 'e', 'ê' => 'e', 'í' => 'i', 'ó' => 'o', 'ç' => 'c', 'ã' => 'a', 'õ' => 'o', 'ú' => 'u']))), '_');
+    }
+
     private static array $cache = [];
 
     /** Valor do parâmetro (S/N ou data), com o padrão da empresa quando não gravado ou antes da migração 339. */

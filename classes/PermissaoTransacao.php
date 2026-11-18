@@ -6,7 +6,9 @@ final class PermissaoTransacao
     private static array $modulosPermitidos = [];
 
     /** Migração 384: grupo Manutenção Legal (cadastros compartilhados de legislação) só para o perfil ADMINISTRADOR. */
-    public const MENUS_SO_ADMIN = ['MANUTENCAO_LEGAL', 'LEGISLACAO', 'LEGISLACAO_X_EMPRESAS', 'LEGISLACAO_X_PODER', 'TIPOS', 'AMBITOS', 'PERIGOS', 'RISCOS', 'ASSUNTOS'];
+    public const MENUS_SO_ADMIN = ['MANUTENCAO_LEGAL', 'LEGISLACAO', 'LEGISLACAO_X_EMPRESAS', 'LEGISLACAO_X_PODER', 'TIPOS', 'AMBITOS', 'PERIGOS', 'RISCOS', 'ASSUNTOS',
+        // migração 394
+        'TIPOS_PALAVRAS_CHAVE', 'TIPOS_X_PALAVRAS_CHAVE'];
 
     public static function obter(string $codigo): array
     {

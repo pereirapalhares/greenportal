@@ -22,7 +22,9 @@
             if ($catalog.length) { $filter.replaceWith($catalog.clone().removeAttr('data-permission-filter').attr('data-column-filter', column).addClass('column-filter form-select form-select-sm')); return; }
             if (booleanField) { values['1'] = 'Sim'; values['0'] = 'Não'; }
             if (fixedOptions[column]) Object.keys(fixedOptions[column]).forEach(function (value) { values[value] = fixedOptions[column][value]; });
-            $table.find('tbody tr').each(function () { var $cell = $(this).find('[data-column="' + column + '"]'), value = cellValue($cell), label = booleanField ? (value === '1' ? 'Sim' : 'Não') : cellLabel($cell); if (value !== '') values[value] = label || value; });
+            var presetOptions = $filter.data('filter-options'); // opções completas vindas do servidor (ex.: Pai em Setup › Menu)
+            if (presetOptions && typeof presetOptions === 'object') { Object.keys(presetOptions).forEach(function (value) { values[value] = presetOptions[value]; }); }
+            $table.find('tbody tr').each(function () { var $cell = $(this).find('[data-column="' + column + '"]'), value = cellValue($cell), label = booleanField ? (value === '1' ? 'Sim' : 'Não') : cellLabel($cell); if (value !== '' && !(value in values && (fixedOptions[column] || presetOptions))) values[value] = label || value; });
             var $select = $('<select class="column-filter form-select form-select-sm" data-column-filter="' + column + '" aria-label="Filtrar ' + column + '"><option value="">Todos</option></select>');
             Object.keys(values).sort(function (a, b) { return String(values[a]).localeCompare(String(values[b]), 'pt-BR', { numeric: true, sensitivity: 'base' }); }).forEach(function (value) { $select.append($('<option>', { value: value, text: values[value] })); });
             $filter.replaceWith($select);

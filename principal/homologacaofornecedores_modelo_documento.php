@@ -59,7 +59,7 @@ if (($_GET['action'] ?? '') === 'exemplo') {
     $m = $modeloAtual();
     $nome = (string)($m['ARQUIVO_EXEMPLO'] ?? '');
     $arquivo = $m && $nome !== '' ? (new GedStorageService($pdo, GreenPortalDatabase::env(), $_SESSION))->resolve(DMO_PASTA, (int)$m['CODMODELO'], $nome) : null;
-    if ($arquivo === null) { http_response_code(404); exit('Arquivo não encontrado.'); }
+    if ($arquivo === null) { http_response_code(404); exit(htmlspecialchars(IdiomaService::t('comum.erro.arquivo_nao_encontrado', ['pt' => 'Arquivo não encontrado.', 'en' => 'File not found.', 'es' => 'Archivo no encontrado.']), ENT_QUOTES, 'UTF-8')); }
     $ext = strtolower(pathinfo($arquivo, PATHINFO_EXTENSION));
     $mime = ['pdf' => 'application/pdf', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'bmp' => 'image/bmp', 'tif' => 'image/tiff', 'tiff' => 'image/tiff'][$ext] ?? 'application/octet-stream';
     header('Content-Type: ' . $mime);

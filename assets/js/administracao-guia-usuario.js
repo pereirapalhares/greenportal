@@ -1,3 +1,5 @@
+// Onda 3 de idiomas: textos fixos traduzidos por window.greenTxt (AdministracaoTextos::script()).
+var _tx = window._tx || function (s) { return typeof window.greenTxt === 'function' ? window.greenTxt(s) : s; };
 /* Administração › Guia do usuário — editor do conteúdo universal do guia. */
 (function () {
   'use strict';
@@ -101,18 +103,18 @@
   // Ajuda interativa (migração 309): guias passo a passo e "Sobre esta tela" de cada aba.
   function garantir(mod) { if (mod) { if (!Array.isArray(mod.guias)) mod.guias = []; if (!Array.isArray(mod.telas)) mod.telas = []; } return mod; }
   var TG = {
-    guias: T.guias_interativos || 'Guias passo a passo (ajuda ?)', guia: T.guia_interativo || 'Guia passo a passo', novo_guia: T.novo_guia || 'Novo guia passo a passo',
-    passo: T.passo_guia || 'Passo', novo_passo: T.novo_passo_guia || 'Novo passo', telas: T.telas_ajuda || 'Sobre esta tela (ajuda ?)', tela: T.tela_ajuda || 'Tela', nova_tela: T.nova_tela_ajuda || 'Novo texto de tela',
-    id: T.f_id_guia || 'Código do guia', id_ajuda: T.f_id_guia_ajuda || 'Letras minúsculas, números e hífen (ex.: ml-avaliar-requisito). Não mude depois de publicado: guias em andamento usam este código.',
-    resumo: T.f_resumo || 'Resumo', antes: T.f_antes || 'Antes de começar', depois: T.f_depois || 'O que acontece depois', perfis: T.f_perfis_guia || 'Para quais perfis (nenhum = todos)',
-    telas_campo: T.f_telas_guia || 'Telas onde aparece', telas_ajuda: T.f_telas_guia_ajuda || 'Separe por vírgula. Use o código do menu (ex.: REQUISITOS_LEGAIS), a transação do botão ? da tela (ex.: manutencaolegal_licencas_condicionantes) ou arquivo:nome.php.',
-    quem: T.f_quem || 'Quem faz este passo', qualquer: T.f_qualquer || '(quem estiver usando)', texto: T.f_texto_passo || 'O que fazer (uma ação)',
-    texto_ajuda: T.f_texto_passo_ajuda || 'Escreva o nome do botão ou campo entre **dois asteriscos**, exatamente como aparece na tela. Ex.: No grupo **Avaliação**, clique em **Situação**.',
-    ver: T.f_ver || 'Você deve ver', ver_ajuda: T.f_ver_ajuda || 'O resultado esperado, para a pessoa saber que deu certo.',
-    alvo: T.f_alvo || 'Mostre-me (onde está o item)', alvo_ajuda: T.f_alvo_ajuda || 'Vazio = procura o último nome em negrito. Ou: menu:CODIGO · acao:new|save|delete|export|reload|columns · texto:Nome do botão · campo:COLUNA · coluna:COLUNA · filtro:COLUNA · aba:Nome · linha · busca · css:seletor',
-    tela_passo: T.f_tela_passo || 'Ir para a tela', auto: T.f_auto || 'Avançar sozinho quando a pessoa clicar no item', chaves: T.f_chaves || 'Telas (códigos)',
-    oque: T.f_oque || 'O que é esta tela', pode: T.f_pode || 'O que você pode fazer aqui (uma linha por item: texto | onde)', pode_ajuda: T.f_pode_ajuda || 'Ex.: Avaliar a situação de um requisito | texto:Situação',
-    duvidas: T.f_duvidas || 'Dúvidas comuns (uma por linha: pergunta | resposta)'
+    guias: T.guias_interativos || 'Guias passo a passo (ajuda ?)', guia: T.guia_interativo || _tx('Guia passo a passo'), novo_guia: T.novo_guia || _tx('Novo guia passo a passo'),
+    passo: T.passo_guia || 'Passo', novo_passo: T.novo_passo_guia || _tx('Novo passo'), telas: T.telas_ajuda || _tx('Sobre esta tela (ajuda ?)'), tela: T.tela_ajuda || 'Tela', nova_tela: T.nova_tela_ajuda || _tx('Novo texto de tela'),
+    id: T.f_id_guia || _tx('Código do guia'), id_ajuda: T.f_id_guia_ajuda || _tx('Letras minúsculas, números e hífen (ex.: ml-avaliar-requisito). Não mude depois de publicado: guias em andamento usam este código.'),
+    resumo: T.f_resumo || 'Resumo', antes: T.f_antes || _tx('Antes de começar'), depois: T.f_depois || _tx('O que acontece depois'), perfis: T.f_perfis_guia || _tx('Para quais perfis (nenhum = todos)'),
+    telas_campo: T.f_telas_guia || _tx('Telas onde aparece'), telas_ajuda: T.f_telas_guia_ajuda || 'Separe por vírgula. Use o código do menu (ex.: REQUISITOS_LEGAIS), a transação do botão ? da tela (ex.: manutencaolegal_licencas_condicionantes) ou arquivo:nome.php.',
+    quem: T.f_quem || _tx('Quem faz este passo'), qualquer: T.f_qualquer || '(quem estiver usando)', texto: T.f_texto_passo || _tx('O que fazer (uma ação)'),
+    texto_ajuda: T.f_texto_passo_ajuda || _tx('Escreva o nome do botão ou campo entre **dois asteriscos**, exatamente como aparece na tela. Ex.: No grupo **Avaliação**, clique em **Situação**.'),
+    ver: T.f_ver || _tx('Você deve ver'), ver_ajuda: T.f_ver_ajuda || _tx('O resultado esperado, para a pessoa saber que deu certo.'),
+    alvo: T.f_alvo || _tx('Mostre-me (onde está o item)'), alvo_ajuda: T.f_alvo_ajuda || _tx('Vazio = procura o último nome em negrito. Ou: menu:CODIGO · acao:new|save|delete|export|reload|columns · texto:Nome do botão · campo:COLUNA · coluna:COLUNA · filtro:COLUNA · aba:Nome · linha · busca · css:seletor'),
+    tela_passo: T.f_tela_passo || _tx('Ir para a tela'), auto: T.f_auto || _tx('Avançar sozinho quando a pessoa clicar no item'), chaves: T.f_chaves || _tx('Telas (códigos)'),
+    oque: T.f_oque || _tx('O que é esta tela'), pode: T.f_pode || _tx('O que você pode fazer aqui (uma linha por item: texto | onde)'), pode_ajuda: T.f_pode_ajuda || 'Ex.: Avaliar a situação de um requisito | texto:Situação',
+    duvidas: T.f_duvidas || _tx('Dúvidas comuns (uma por linha: pergunta | resposta)')
   };
   function linhasDe(lista, campoTexto, campoExtra, lang) { return (lista || []).map(function (it) { var a = txt(it[campoTexto], lang); var b = campoExtra === 'alvo' ? (it.alvo || '') : txt(it[campoExtra], lang); return b ? a + ' | ' + b : a; }).join('\n'); }
   function aplicarLinhas(lista, valor, campoTexto, campoExtra, lang) {
@@ -455,7 +457,7 @@
         h += '<div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="gfDica" data-campo="dica"' + (o.dica ? ' checked' : '') + '><label class="form-check-label" for="gfDica">' + esc(T.f_dica) + '</label></div>';
         break;
       case 'guias':
-        h += cabecalho(s, nomeMod, TG.guias) + '<p class="text-muted small">' + esc(T.guias_explica || 'Aparecem no painel de Ajuda (botão ? ou F1) das telas indicadas e no modo guiado, com "Mostre-me" e "Ir para a tela".') + '</p>' + resumoLista(o, 'guia', s.m, 'titulo', TG.novo_guia, 'guia');
+        h += cabecalho(s, nomeMod, TG.guias) + '<p class="text-muted small">' + esc(T.guias_explica || _tx('Aparecem no painel de Ajuda (botão ? ou F1) das telas indicadas e no modo guiado, com "Mostre-me" e "Ir para a tela".')) + '</p>' + resumoLista(o, 'guia', s.m, 'titulo', TG.novo_guia, 'guia');
         break;
       case 'telas':
         h += cabecalho(s, nomeMod, TG.telas) + '<div class="gf-summary">' + o.map(function (tl, i) { return '<button type="button" data-ir=\'' + esc(JSON.stringify({ tipo: 'tela', m: s.m, i: i })) + '\'><b>' + (i + 1) + '</b><span>' + esc((tl.chaves || []).join(', ') || T.sem_titulo) + '</span></button>'; }).join('') + '</div>'

@@ -1,3 +1,5 @@
+// Onda 3 de idiomas: textos fixos traduzidos por window.greenTxt (AdministracaoTextos::script()).
+var _tx = window._tx || function (s) { return typeof window.greenTxt === 'function' ? window.greenTxt(s) : s; };
 /* Meu perfil de atribuições (principal/perfil_atribuicoes.php): coleta as respostas, envia para aprovação do gestor
    (api/perfil_atribuicoes.php action=salvar) e, no popup do login, "Lembrar depois" (action=adiar). No popup, avisa a página
    principal para fechar (postMessage greenportal-perfil-atribuicoes). */
@@ -48,7 +50,7 @@
         e.preventDefault();
         var falta = faltando();
         if (falta.length) {
-            mensagem(T.obrigatorias || 'Responda as perguntas obrigatórias:', 'erro', falta);
+            mensagem(T.obrigatorias || _tx('Responda as perguntas obrigatórias:'), 'erro', falta);
             mostrandoFalta = true;
             var $p = $f.find('.pa-falta').first(); if ($p.length) $p[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
@@ -67,7 +69,7 @@
     $f.on('click', '[data-pa-depois]', function () {
         $.ajax({ url: api, method: 'POST', dataType: 'json', data: { action: 'adiar', csrf: csrf } }).always(function () { avisarPrincipal('adiado'); });
     });
-    $f.on('click', '[data-pa-todas]', function () {
+    $f.on('click', _tx('[data-pa-todas]'), function () {
         var $c = $(this).closest('.pa-chips').find('input[type=checkbox]'), todas = $c.length === $c.filter(':checked').length;
         $c.prop('checked', !todas);
     });
@@ -75,7 +77,7 @@
         $(this).closest('[data-pa-pergunta]').removeClass('pa-falta');
         if (!mostrandoFalta) return;
         var falta = faltando();
-        if (falta.length) { mensagem(T.obrigatorias || 'Responda as perguntas obrigatórias:', 'erro', falta); mostrandoFalta = true; }
+        if (falta.length) { mensagem(T.obrigatorias || _tx('Responda as perguntas obrigatórias:'), 'erro', falta); mostrandoFalta = true; }
         else mensagem('');
     });
 

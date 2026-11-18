@@ -1,3 +1,5 @@
+// Onda 3 de idiomas: textos fixos traduzidos por window.greenTxt (AdministracaoTextos::script()).
+var _tx = window._tx || function (s) { return typeof window.greenTxt === 'function' ? window.greenTxt(s) : s; };
 (function ($) {
     'use strict';
     var $fragment = $('.lista-grid-fragment'), $table = $('#listaBatchGrid');
@@ -13,7 +15,7 @@
     }
     function showModal() {
         var $modal = $('#listaColumnsModal');
-        if (!$modal.length) { $modal = $('<div class="modal fade" id="listaColumnsModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Colunas do grid</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="listaColumnsList"></div><div class="modal-footer"><button type="button" class="btn btn-sm btn-success" data-save-lista-columns>Salvar colunas</button></div></div></div></div>').appendTo('body'); }
+        if (!$modal.length) { $modal = $('<div class="modal fade" id="listaColumnsModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">' + _tx("Colunas do grid") + '</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="listaColumnsList"></div><div class="modal-footer"><button type="button" class="btn btn-sm btn-success" data-save-lista-columns>' + _tx("Salvar colunas") + '</button></div></div></div></div>').appendTo('body'); }
         $('#listaColumnsList').html(columns.map(function (column) { var label = $table.find('th[data-column="' + column + '"] span').text(), checked = $table.find('[data-column="' + column + '"]:first').is(':visible'); return '<label class="column-option"><input type="checkbox" data-lista-column-toggle="' + column + '"' + (checked ? ' checked' : '') + '> ' + $('<div>').text(label).html() + '</label>'; }).join(''));
         bootstrap.Modal.getOrCreateInstance($modal[0]).show();
     }

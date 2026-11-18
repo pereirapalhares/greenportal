@@ -198,7 +198,7 @@ if ($auditMode && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } catch (Throwable $exception) {
         $msg = $exception->getMessage();
-        if (preg_match('/1644\s+(.*)$/s', $msg, $m)) $msg = trim($m[1]); // mensagem do procedimento (SIGNAL)
+        if (preg_match('/1644\s+(.*)$/s', $msg, $m)) $msg = IdiomaService::mensagemBanco(trim($m[1])); // mensagem do procedimento (SIGNAL)
         $error = $msg; $initialTab = 'form';
     }
 }

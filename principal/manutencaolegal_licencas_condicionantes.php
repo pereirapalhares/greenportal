@@ -7,8 +7,12 @@
  */
 require_once dirname(__DIR__) . '/classes/ManutencaoLegalCadastroGrid.php';
 // Frequências do legado (cadastros/li_licencas_c.php); valores já gravados fora da lista também aparecem (options_sources)
-$frequencias = ['' => '', 'Diario' => 'Diário', 'Semanal' => 'Semanal', 'Quinzenal' => 'Quinzenal', 'Mensal' => 'Mensal', 'Bimestral' => 'Bimestral',
-    'Trimestral' => 'Trimestral', 'Semestral' => 'Semestral', 'Anual' => 'Anual', 'Bienal' => 'Bienal', 'Trienal' => 'Trienal', 'Quadrienal' => 'Quadrienal'];
+// valor gravado (português) => rótulo nos três idiomas
+$frequencias = ['' => '', 'Diario' => ['pt' => 'Diário', 'en' => 'Daily', 'es' => 'Diario'], 'Semanal' => ['pt' => 'Semanal', 'en' => 'Weekly', 'es' => 'Semanal'],
+    'Quinzenal' => ['pt' => 'Quinzenal', 'en' => 'Fortnightly', 'es' => 'Quincenal'], 'Mensal' => ['pt' => 'Mensal', 'en' => 'Monthly', 'es' => 'Mensual'],
+    'Bimestral' => ['pt' => 'Bimestral', 'en' => 'Bimonthly', 'es' => 'Bimestral'], 'Trimestral' => ['pt' => 'Trimestral', 'en' => 'Quarterly', 'es' => 'Trimestral'],
+    'Semestral' => ['pt' => 'Semestral', 'en' => 'Semiannual', 'es' => 'Semestral'], 'Anual' => ['pt' => 'Anual', 'en' => 'Annual', 'es' => 'Anual'],
+    'Bienal' => ['pt' => 'Bienal', 'en' => 'Biennial', 'es' => 'Bienal'], 'Trienal' => ['pt' => 'Trienal', 'en' => 'Triennial', 'es' => 'Trienal'], 'Quadrienal' => ['pt' => 'Quadrienal', 'en' => 'Quadrennial', 'es' => 'Cuatrienal']];
 ManutencaoLegalCadastroGrid::render([
     'menu' => 'LICENCAS', 'title' => ['pt' => 'Condicionantes da licença', 'en' => 'License conditions', 'es' => 'Condicionantes de la licencia'],
     'transaction' => 'manutencaolegal_licencas_condicionantes', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT',
@@ -24,7 +28,7 @@ ManutencaoLegalCadastroGrid::render([
         'QTD_PLANOS_ACAO'=>['label'=>['pt'=>'Total de ações','en'=>'Total actions','es'=>'Total de acciones'],'readonly'=>true,'hidden'=>true,'filter'=>'none'],
         'DSCCONDICIONANTE'=>['label'=>['pt'=>'Descrição','en'=>'Description','es'=>'Descripción'],'type'=>'textarea','filter'=>'text','width'=>360],
         'FREQUENCIA'=>['label'=>['pt'=>'Frequência de medição','en'=>'Measurement frequency','es'=>'Frecuencia de medición'],'filter'=>'select','width'=>150,'options'=>$frequencias,'options_sources'=>[['table'=>'li_condicionantes','field'=>'FREQUENCIA']]],
-        'ATENDIDO'=>['label'=>['pt'=>'Atende?','en'=>'Attended?','es'=>'¿Atiende?'],'filter'=>'select','width'=>100,'options'=>['' => '', 'Sim' => 'Sim', 'Não' => 'Não'],'options_sources'=>[['table'=>'li_condicionantes','field'=>'ATENDIDO']]],
+        'ATENDIDO'=>['label'=>['pt'=>'Atende?','en'=>'Attended?','es'=>'¿Atiende?'],'filter'=>'select','width'=>100,'options'=>['' => '', 'Sim' => ['pt' => 'Sim', 'en' => 'Yes', 'es' => 'Sí'], 'Não' => ['pt' => 'Não', 'en' => 'No', 'es' => 'No']],'options_sources'=>[['table'=>'li_condicionantes','field'=>'ATENDIDO']]],
         'CODUSUARIO'=>['label'=>['pt'=>'Responsável','en'=>'Responsible','es'=>'Responsable'],'filter'=>'select','width'=>200,'allow_empty'=>true,'display_from'=>'RESPONSAVEL','foreign'=>['view'=>'vw_usuarios_grid','value'=>'codusuario','label'=>'nome','filters'=>[],'description'=>'nome']],
         'OBS'=>['label'=>['pt'=>'Observação','en'=>'Notes','es'=>'Observación'],'type'=>'textarea','filter'=>'text','width'=>260],
     ],

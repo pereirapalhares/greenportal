@@ -1,3 +1,5 @@
+// Onda 3 de idiomas: textos fixos traduzidos por window.greenTxt (AdministracaoTextos::script()).
+var _tx = window._tx || function (s) { return typeof window.greenTxt === 'function' ? window.greenTxt(s) : s; };
 (function ($) {
     'use strict';
     var $form = $('#userGridForm'), $grid = $('.user-grid-fragment');
@@ -14,7 +16,7 @@
         var $currentForm = $(this), action = $currentForm.find('input[name="action"]').val();
         $currentForm.removeData('confirmed');
         $.ajax({ url: window.location.href, method: 'POST', data: $currentForm.serialize(), dataType: 'json' }).done(function (response) {
-            if (!response || !response.ok) return message(response && response.message ? response.message : 'Não foi possível concluir a operação. Revise os dados informados e tente novamente.', 'danger');
+            if (!response || !response.ok) return message(response && response.message ? response.message : _tx('Não foi possível concluir a operação. Revise os dados informados e tente novamente.'), 'danger');
             if (action === 'delete_row') {
                 var key = $currentForm.find('input[name="codusuario"]').val();
                 $grid.find('tbody tr[data-key="' + key + '"]').remove();
@@ -30,7 +32,7 @@
                 });
             }
             if ($currentForm.data('set-grid-save-state')) $currentForm.data('set-grid-save-state')(false);
-            message(response.message || 'Operação concluída.');
-        }).fail(function (xhr) { message(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Não foi possível concluir a operação. Revise os dados informados e tente novamente. Se o problema continuar, solicite apoio ao administrador do sistema.', 'danger'); });
+            message(response.message || _tx('Operação concluída.'));
+        }).fail(function (xhr) { message(xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : _tx('Não foi possível concluir a operação. Revise os dados informados e tente novamente. Se o problema continuar, solicite apoio ao administrador do sistema.'), 'danger'); });
     });
 }(jQuery));

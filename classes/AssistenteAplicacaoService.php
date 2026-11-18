@@ -512,7 +512,7 @@ final class AssistenteAplicacaoService
             $q->closeCursor();
             return $linhas;
         } catch (PDOException $e) {
-            if (preg_match('/1644\s+(.+)$/su', $e->getMessage(), $m)) throw new RuntimeException(trim($m[1]), 1644, $e);
+            if (preg_match('/1644\s+(.+)$/su', $e->getMessage(), $m)) throw new RuntimeException(IdiomaService::mensagemBanco(trim($m[1])), 1644, $e);
             throw $e;
         }
     }

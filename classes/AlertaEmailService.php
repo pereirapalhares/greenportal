@@ -4,6 +4,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/SmtpCliente.php';
 require_once __DIR__ . '/EmailFilaService.php';
 require_once __DIR__ . '/GreenPortalDatabase.php';
+require_once __DIR__ . '/AlertaTextos.php';
+require_once __DIR__ . '/UsuarioImagem.php';
 
 /**
  * Alertas do portal por e-mail (migração 343). Roda no serviço de e-mail do Agendador (windows-service.php --service=email),
@@ -50,29 +52,42 @@ final class AlertaEmailService
         return $n;
     }
 
-    /** Um e-mail para a pessoa com um ou mais alertas. */
+    /** Um e-mail para a pessoa com um ou mais alertas — no idioma do cadastro dela (Minha conta / cabeçalho › Idioma). */
     private function enfileirar(array $lista, bool $resumo): void
     {
+        $idioma = 'pt';
+        try { $idioma = UsuarioImagem::idioma($this->pdo, (int)$lista[0]['CODUSUARIO']) ?? 'pt'; } catch (Throwable) {}
+        if (!in_array($idioma, IdiomaService::IDIOMAS, true)) $idioma = 'pt';
+        AlertaTextos::comIdioma($idioma, fn() => $this->montar($lista, $resumo, $idioma));
+    }
+
+    private function montar(array $lista, bool $resumo, string $idioma): void
+    {
+        $T = static fn(string $k, array $p, array $v = []): string => IdiomaService::f('alertas.email_' . $k, $p, $v);
+        foreach ($lista as $i => $a) { $lista[$i]['TITULO'] = AlertaTextos::traduzir((string)$a['TITULO'], $idioma); $lista[$i]['MENSAGEM'] = AlertaTextos::traduzir((string)$a['MENSAGEM'], $idioma); }
         $p = $lista[0];
         $qtd = count($lista);
-        $assunto = $resumo ? 'Resumo do dia: ' . $qtd . ($qtd === 1 ? ' alerta não lido' : ' alertas não lidos') . ' no portal'
-            : ($qtd === 1 ? (string)$p['TITULO'] : $qtd . ' novos alertas no portal');
+        $assunto = $resumo ? ($qtd === 1 ? $T('resumo_um', ['pt' => 'Resumo do dia: 1 alerta não lido no portal', 'en' => 'Daily summary: 1 unread alert in the portal', 'es' => 'Resumen del día: 1 alerta no leída en el portal'])
+                : $T('resumo_varios', ['pt' => 'Resumo do dia: {n} alertas não lidos no portal', 'en' => 'Daily summary: {n} unread alerts in the portal', 'es' => 'Resumen del día: {n} alertas no leídas en el portal'], ['n' => $qtd]))
+            : ($qtd === 1 ? (string)$p['TITULO'] : $T('novos', ['pt' => '{n} novos alertas no portal', 'en' => '{n} new alerts in the portal', 'es' => '{n} alertas nuevas en el portal'], ['n' => $qtd]));
         $nome = trim((string)$p['NOME']);
-        $t = 'Olá' . ($nome !== '' ? ', ' . strtok($nome, ' ') : '') . ".\n\n";
-        $t .= $resumo ? "Estes alertas do portal ainda não foram lidos:\n\n" : ($qtd === 1 ? '' : "Você tem novos alertas no portal:\n\n");
+        // marca de idioma para o rodapé e o lang do HTML (EmailFilaService tira a marca antes de enviar)
+        $t = ($idioma !== 'pt' ? '{{idioma:' . $idioma . "}}\n" : '') . $T('ola', ['pt' => 'Olá', 'en' => 'Hello', 'es' => 'Hola']) . ($nome !== '' ? ', ' . strtok($nome, ' ') : '') . ".\n\n";
+        $t .= $resumo ? $T('nao_lidos', ['pt' => 'Estes alertas do portal ainda não foram lidos:', 'en' => 'These portal alerts have not been read yet:', 'es' => 'Estas alertas del portal aún no fueron leídas:']) . "\n\n"
+            : ($qtd === 1 ? '' : $T('tem_novos', ['pt' => 'Você tem novos alertas no portal:', 'en' => 'You have new alerts in the portal:', 'es' => 'Tiene alertas nuevas en el portal:']) . "\n\n");
         foreach (array_slice($lista, 0, 30) as $a) {
-            $quando = $a['CRIADO_EM'] ? date('d/m/Y H:i', strtotime((string)$a['CRIADO_EM']) ?: time()) : '';
+            $quando = $a['CRIADO_EM'] ? date($idioma === 'en' ? 'm/d/Y H:i' : 'd/m/Y H:i', strtotime((string)$a['CRIADO_EM']) ?: time()) : '';
             $t .= ($qtd > 1 ? '• ' : '') . trim((string)$a['TITULO']) . ($quando !== '' && $qtd > 1 ? ' (' . $quando . ')' : '') . "\n";
             $msg = trim(EmailFilaService::textoPlano((string)$a['MENSAGEM']));
             if ($msg !== '') $t .= mb_substr($msg, 0, 1500) . "\n";
             $url = $this->link((int)$a['CODALERTA']);
-            if ($url !== '') $t .= '{{botao:Abrir no portal|' . $url . "}}\n";
+            if ($url !== '') $t .= '{{botao:' . $T('abrir', ['pt' => 'Abrir no portal', 'en' => 'Open in the portal', 'es' => 'Abrir en el portal']) . '|' . $url . "}}\n";
             $t .= "\n";
         }
-        if ($qtd > 30) $t .= '… e mais ' . ($qtd - 30) . " alerta(s): veja todos em Home › Alertas.\n\n";
-        if ($this->base() === '') $t .= "Entre no portal para ver os detalhes (Home › Alertas).\n\n";
-        $t .= $resumo ? 'Você recebe um resumo por dia porque escolheu essa opção' : 'Você recebe os alertas por e-mail na hora';
-        $t .= ' em Minha conta › Alertas por e-mail (lá dá para mudar para ' . ($resumo ? '"na hora" ou "não receber"' : '"resumo diário" ou "não receber"') . ').';
+        if ($qtd > 30) $t .= $T('mais', ['pt' => '… e mais {n} alerta(s): veja todos em Home › Alertas.', 'en' => '… and {n} more alert(s): see them all in Home › Alerts.', 'es' => '… y {n} alerta(s) más: véalas todas en Inicio › Alertas.'], ['n' => $qtd - 30]) . "\n\n";
+        if ($this->base() === '') $t .= $T('entre', ['pt' => 'Entre no portal para ver os detalhes (Home › Alertas).', 'en' => 'Sign in to the portal to see the details (Home › Alerts).', 'es' => 'Ingrese al portal para ver los detalles (Inicio › Alertas).']) . "\n\n";
+        $t .= $resumo ? $T('rodape_resumo', ['pt' => 'Você recebe um resumo por dia porque escolheu essa opção em Minha conta › Alertas por e-mail (lá dá para mudar para "na hora" ou "não receber").', 'en' => 'You receive one summary a day because you chose this option in My account › E-mail alerts (you can change it there to "immediately" or "do not receive").', 'es' => 'Recibe un resumen por día porque eligió esta opción en Mi cuenta › Alertas por e-mail (allí puede cambiar a "en el momento" o "no recibir").'])
+            : $T('rodape_hora', ['pt' => 'Você recebe os alertas por e-mail na hora em Minha conta › Alertas por e-mail (lá dá para mudar para "resumo diário" ou "não receber").', 'en' => 'You receive alerts by e-mail immediately, as set in My account › E-mail alerts (you can change it there to "daily summary" or "do not receive").', 'es' => 'Recibe las alertas por e-mail en el momento, según Mi cuenta › Alertas por e-mail (allí puede cambiar a "resumen diario" o "no recibir").']);
         $this->executar('CALL sp_email_enfileirar(?, ?, ?, ?, ?, ?)', [trim((string)$p['EMAIL']), $nome, mb_substr($assunto, 0, 255), $t,
             $resumo ? 'ALERTA_RESUMO' : 'ALERTA', 'ALERTA:' . (int)end($lista)['CODALERTA']]);
     }

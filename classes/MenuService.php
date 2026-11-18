@@ -12,7 +12,7 @@ final class MenuService
         'SETUP_MAIN' => 'bi-window', 'SETUP_LAYOUT' => 'bi-palette', 'SETUP_GRID' => 'bi-table',
         'SETUP_FORMULARIO' => 'bi-ui-checks-grid', 'SETUP_IA_PROMPT' => 'bi-stars', 'SEGURANCA' => 'bi-shield-lock-fill',
         'SEGURANCA_GRUPOS' => 'bi-people', 'SEGURANCA_USUARIOS' => 'bi-person-lines-fill',
-        'SEGURANCA_PERFIL' => 'bi-person-badge', 'SEGURANCA_PERMISSOES' => 'bi-key',
+        'SEGURANCA_PERFIL' => 'bi-person-badge', 'SEGURANCA_PERMISSOES' => 'bi-key', 'SEGURANCA_PERFIS_PERMISSOES' => 'bi-shield-check', 'MANUTENCAOLEGAL_TIPOS_PALAVRAS' => 'bi-tags',
         'SEGURANCA_FORMULARIO' => 'bi-ui-checks', 'SEGURANCA_LISTA' => 'bi-list-check',
         'ADMINISTRACAO' => 'bi-building-gear', 'ADMINISTRACAO_EMPRESAS_MIGRACAO' => 'bi-database-gear', 'ADMINISTRACAO_UNIDADES' => 'bi-buildings', 'ADMINISTRACAO_AREAS' => 'bi-diagram-3', 'ADMINISTRACAO_ATIVIDADES' => 'bi-list-task', 'ADMINISTRACAO_SERVICOS' => 'bi-gear-wide-connected', 'ADMINISTRACAO_EMAILS_ENVIADOS' => 'bi-envelope-check', 'ADMINISTRACAO_HELPDESK' => 'bi-headset', 'PORTARIA' => 'bi-person-badge', 'PORTARIA_DOCUMENTACAO_FORNECEDOR' => 'bi-file-earmark-person', 'PORTARIA_DOCUMENTACAO_FUNCIONARIO' => 'bi-person-vcard',
         'MANUTENCAO_LEGAL' => 'bi-clipboard-check', 'LEGISLACAO' => 'bi-journal-text', 'LEGISLACAO_X_EMPRESAS' => 'bi-building-gear', 'LEGISLACAO_X_PODER' => 'bi-diagram-3',

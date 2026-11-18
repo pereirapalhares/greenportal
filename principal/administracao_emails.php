@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once dirname(__DIR__) . '/classes/AdministracaoTextos.php';
 
 /*
  * Administração › Configuração de e-mail (migração 360, 12/11/2026; item 4 da análise do 01_Mudancas_Gerais, parte SMTP).
@@ -24,11 +25,11 @@ require_once dirname(__DIR__) . '/classes/EmailFilaService.php';
 $post = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
 $json = static function (array $d, int $c = 200): never { http_response_code($c); header('Content-Type: application/json; charset=utf-8'); echo json_encode($d, JSON_UNESCAPED_UNICODE); exit; };
 $negar = static function (string $m, int $c) use ($post, $json): never { if ($post) $json(['ok' => false, 'message' => $m], $c); http_response_code($c); exit(htmlspecialchars($m, ENT_QUOTES, 'UTF-8')); };
-if (empty($_SESSION['autenticado']) || empty($_SESSION['tenant']['banco_dados'])) $negar('Sessão expirada. Entre novamente no portal.', 401);
+if (empty($_SESSION['autenticado']) || empty($_SESSION['tenant']['banco_dados'])) $negar(adm_t('Sessão expirada. Entre novamente no portal.'), 401);
 $env = GreenPortalDatabase::env();
 $pdo = TenantContext::connect($env, $_SESSION);
-if (!UsuarioSessao::atualizar($pdo, $_SESSION)) $negar('Sessão expirada. Entre novamente no portal.', 401);
-if (strtoupper(trim((string)($_SESSION['usuario']['codigo_perfil'] ?? ''))) !== 'ADMINISTRADOR') $negar('Somente o ADMINISTRADOR configura o servidor de e-mail.', 403);
+if (!UsuarioSessao::atualizar($pdo, $_SESSION)) $negar(adm_t('Sessão expirada. Entre novamente no portal.'), 401);
+if (strtoupper(trim((string)($_SESSION['usuario']['codigo_perfil'] ?? ''))) !== 'ADMINISTRADOR') $negar(adm_t('Somente o ADMINISTRADOR configura o servidor de e-mail.'), 403);
 $quem = trim((string)($_SESSION['usuario']['nome'] ?? '')) ?: (string)($_SESSION['usuario']['userid'] ?? '');
 $_SESSION['smtp_cfg_csrf'] ??= bin2hex(random_bytes(16));
 $csrf = (string)$_SESSION['smtp_cfg_csrf'];
@@ -36,7 +37,7 @@ $auditar = static function (string $acao, string $res, array $det = []) use ($pd
 
 $tabelaOk = true;
 try { $u = SmtpConfiguracao::universal($env); $tabelaOk = (int)$u->query("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'smtp_configuracao'")->fetchColumn() > 0; }
-catch (Throwable $e) { $negar('Banco universal indisponível.', 503); }
+catch (Throwable $e) { $negar(adm_t('Banco universal indisponível.'), 503); }
 $linha = $tabelaOk ? SmtpConfiguracao::linha($env, true) : null;
 
 $crud = static function (string $proc, array $args) use ($u): void { $s = $u->prepare('CALL ' . $proc . '(' . implode(',', array_fill(0, count($args), '?')) . ')'); $s->execute($args); $s->closeCursor(); };
@@ -55,19 +56,19 @@ $ler = static function (array $p): array {
     ];
     $erros = [];
     if ($v['host'] === '' || !preg_match('/^[A-Za-z0-9.\-]+$/', $v['host'])) $erros[] = 'Informe o servidor SMTP (nome ou IP, sem "http://").';
-    if ($v['porta'] < 1 || $v['porta'] > 65535) $erros[] = 'Porta inválida (comum: 587 para TLS, 465 para SSL, 25 sem segurança).';
-    if (filter_var($v['remetente'], FILTER_VALIDATE_EMAIL) === false) $erros[] = 'Informe o e-mail do remetente.';
-    if ($v['timeout'] < 5 || $v['timeout'] > 120) $erros[] = 'Tempo limite entre 5 e 120 segundos.';
+    if ($v['porta'] < 1 || $v['porta'] > 65535) $erros[] = adm_t('Porta inválida (comum: 587 para TLS, 465 para SSL, 25 sem segurança).');
+    if (filter_var($v['remetente'], FILTER_VALIDATE_EMAIL) === false) $erros[] = adm_t('Informe o e-mail do remetente.');
+    if ($v['timeout'] < 5 || $v['timeout'] > 120) $erros[] = adm_t('Tempo limite entre 5 e 120 segundos.');
     if ($v['url_portal'] !== '' && !preg_match('#^https?://[^\s]+$#i', $v['url_portal'])) $erros[] = 'Endereço do portal deve começar com http:// ou https://.';
-    if ($v['ehlo'] !== '' && !preg_match('/^[A-Za-z0-9.\-]+$/', $v['ehlo'])) $erros[] = 'Nome EHLO inválido.';
-    if (mb_strlen($v['remetente_nome']) > 150) $erros[] = 'Nome do remetente muito longo.';
+    if ($v['ehlo'] !== '' && !preg_match('/^[A-Za-z0-9.\-]+$/', $v['ehlo'])) $erros[] = adm_t('Nome EHLO inválido.');
+    if (mb_strlen($v['remetente_nome']) > 150) $erros[] = adm_t('Nome do remetente muito longo.');
     if ($v['remetente_nome'] === '') $v['remetente_nome'] = 'GreenSolutions';
     return [$v, $erros];
 };
 
 if ($post) {
     if (!hash_equals($csrf, (string)($_POST['csrf'] ?? ''))) $json(['ok' => false, 'message' => 'A tela ficou desatualizada. Recarregue (F5).'], 419);
-    if (!$tabelaOk) $json(['ok' => false, 'message' => 'Falta aplicar a migração 360 (tabela smtp_configuracao).'], 503);
+    if (!$tabelaOk) $json(['ok' => false, 'message' => adm_t('Falta aplicar a migração 360 (tabela smtp_configuracao).')], 503);
     $acao = (string)($_POST['acao'] ?? '');
     try {
         if ($acao === 'salvar') {
@@ -82,19 +83,19 @@ if ($post) {
             $gravar($v);
             $det = $v; unset($det['senha_cifrada']); $det['senha'] = array_key_exists('senha_cifrada', $v) ? ($v['senha_cifrada'] === '' ? 'removida' : 'alterada') : 'mantida';
             $auditar('SALVAR', 'SUCESSO', $det);
-            $json(['ok' => true, 'message' => 'Configuração salva.' . ($linha ? '' : ' O envio continua DESLIGADO: use "Ligar envio" depois de testar.'), 'recarregar' => true]);
+            $json(['ok' => true, 'message' => adm_t('Configuração salva.') . ($linha ? '' : adm_t(' O envio continua DESLIGADO: use "Ligar envio" depois de testar.')), 'recarregar' => true]);
         }
         if ($acao === 'ligar' || $acao === 'desligar') {
-            if (!$linha) $json(['ok' => false, 'message' => 'Salve a configuração antes de ligar o envio.'], 422);
+            if (!$linha) $json(['ok' => false, 'message' => adm_t('Salve a configuração antes de ligar o envio.')], 422);
             $ligar = $acao === 'ligar';
-            if ($ligar && !SmtpCliente::parametrosOk(SmtpConfiguracao::aplicar($env))) $json(['ok' => false, 'message' => 'Preencha e salve o servidor e o remetente antes de ligar.'], 422);
+            if ($ligar && !SmtpCliente::parametrosOk(SmtpConfiguracao::aplicar($env))) $json(['ok' => false, 'message' => adm_t('Preencha e salve o servidor e o remetente antes de ligar.')], 422);
             $gravar(['ativo' => $ligar ? 1 : 0, 'ligado_desligado_em' => date('Y-m-d H:i:s'), 'ligado_desligado_por' => $quem]);
             $auditar($ligar ? 'LIGAR' : 'DESLIGAR', 'SUCESSO');
-            $json(['ok' => true, 'message' => $ligar ? 'Envio de e-mails LIGADO. Vale a partir do próximo ciclo do serviço (até 2 minutos).' : 'Envio de e-mails DESLIGADO. No próximo ciclo (até 2 minutos) os e-mails pendentes da fila são cancelados.', 'recarregar' => true]);
+            $json(['ok' => true, 'message' => $ligar ? adm_t('Envio de e-mails LIGADO. Vale a partir do próximo ciclo do serviço (até 2 minutos).') : adm_t('Envio de e-mails DESLIGADO. No próximo ciclo (até 2 minutos) os e-mails pendentes da fila são cancelados.'), 'recarregar' => true]);
         }
         if ($acao === 'testar') {
             $destino = trim((string)($_POST['destino'] ?? ''));
-            if (filter_var($destino, FILTER_VALIDATE_EMAIL) === false) $json(['ok' => false, 'message' => 'Informe um e-mail válido para o teste.'], 422);
+            if (filter_var($destino, FILTER_VALIDATE_EMAIL) === false) $json(['ok' => false, 'message' => adm_t('Informe um e-mail válido para o teste.')], 422);
             [$v, $erros] = $ler($_POST);
             if ($erros) $json(['ok' => false, 'message' => implode(' ', $erros)], 422);
             $senha = (string)($_POST['senha'] ?? '');
@@ -107,19 +108,19 @@ if ($post) {
             try {
                 $smtp = new SmtpCliente($envTeste, false);
                 $smtp->conectar();
-                $smtp->enviar([$destino], '', 'Teste de e-mail do GreenPortal', EmailFilaService::html('GreenPortal', 'Teste de e-mail do GreenPortal', $texto), $texto);
+                $smtp->enviar([$destino], '', adm_t('Teste de e-mail do GreenPortal'), EmailFilaService::html('GreenPortal', adm_t('Teste de e-mail do GreenPortal'), $texto), $texto);
                 $smtp->fechar();
                 $resultado = 'OK: enviado para ' . $destino;
             } catch (Throwable $e) { $resultado = 'FALHOU: ' . mb_substr($e->getMessage(), 0, 900); }
             if ($linha) $gravar(['ultimo_teste_em' => date('Y-m-d H:i:s'), 'ultimo_teste_resultado' => $resultado]);
             $auditar('TESTE', str_starts_with($resultado, 'OK') ? 'SUCESSO' : 'ERRO', ['destino' => $destino, 'resultado' => $resultado]);
-            $json(['ok' => str_starts_with($resultado, 'OK'), 'message' => str_starts_with($resultado, 'OK') ? 'E-mail de teste enviado para ' . $destino . '. Confira a caixa de entrada (e o spam).' : $resultado]);
+            $json(['ok' => str_starts_with($resultado, 'OK'), 'message' => str_starts_with($resultado, 'OK') ? adm_t('E-mail de teste enviado para ') . $destino . adm_t('. Confira a caixa de entrada (e o spam).') : $resultado]);
         }
-        $json(['ok' => false, 'message' => 'Ação inválida.'], 400);
+        $json(['ok' => false, 'message' => adm_t('Ação inválida.')], 400);
     } catch (Throwable $e) {
         error_log('administracao_emails: ' . $e->getMessage());
         $auditar(strtoupper($acao ?: 'ACAO'), 'ERRO', ['mensagem' => mb_substr($e->getMessage(), 0, 300)]);
-        $json(['ok' => false, 'message' => 'Não foi possível concluir: ' . mb_substr($e->getMessage(), 0, 300)], 500);
+        $json(['ok' => false, 'message' => adm_t('Não foi possível concluir: ') . mb_substr($e->getMessage(), 0, 300)], 500);
     }
 }
 
@@ -143,7 +144,7 @@ $e = static fn(mixed $v): string => htmlspecialchars((string)$v, ENT_QUOTES, 'UT
 $fmt = static fn(?string $d): string => $d ? date('d/m/Y H:i', strtotime($d) ?: time()) : '';
 ?><!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Configuração de e-mail</title>
+<title><?= adm_h('Configuração de e-mail') ?></title>
 <link href="../assets/vendor/bootstrap/css/bootstrap.min.css?v=2" rel="stylesheet"><link href="../assets/vendor/bootstrap-icons/font/bootstrap-icons.min.css?v=2" rel="stylesheet">
 <link href="../assets/css/app.css?v=5" rel="stylesheet"><link href="../assets/css/main.css?v=18" rel="stylesheet"><link href="../assets/css/design-system.css?v=3" rel="stylesheet"><link href="../assets/css/botoes-crud.css?v=4" rel="stylesheet">
 <style>
@@ -157,11 +158,11 @@ $fmt = static fn(?string $d): string => $d ? date('d/m/Y H:i', strtotime($d) ?: 
 <body data-transacao="administracao_emails">
 <section class="setup-fragment">
   <div class="crud-toolbar menu-grid-toolbar"><div class="crud-actions crud-actions-standard">
-    <button class="btn btn-sm btn-success grid-crud-button grid-icon-button" type="submit" form="smForm" data-crud-action="save" title="Salvar configuração" aria-label="Salvar configuração"><i class="bi bi-check2"></i></button>
-    <?php if ($linha): ?><button class="btn btn-sm <?= $ativo ? 'btn-outline-danger' : 'btn-outline-success' ?> grid-crud-button grid-icon-button" type="button" data-sm-acao="<?= $ativo ? 'desligar' : 'ligar' ?>" title="<?= $ativo ? 'Desligar o envio de e-mails' : 'Ligar o envio de e-mails' ?>" aria-label="<?= $ativo ? 'Desligar o envio de e-mails' : 'Ligar o envio de e-mails' ?>"><i class="bi <?= $ativo ? 'bi-pause-circle' : 'bi-play-circle' ?>"></i></button><?php endif; ?>
-    <button class="btn btn-sm btn-outline-primary grid-crud-button grid-icon-button" type="button" data-sm-acao="testar" title="Enviar e-mail de teste (para o endereço do campo E-mail para teste)" aria-label="Enviar e-mail de teste"><i class="bi bi-send"></i></button>
-    <button class="btn btn-sm btn-outline-secondary grid-crud-button grid-icon-button" type="button" data-crud-action="reload" onclick="window.location.reload()" title="Recarregar" aria-label="Recarregar"><i class="bi bi-arrow-clockwise"></i></button>
-    <button class="btn btn-sm btn-outline-info grid-crud-button grid-icon-button" type="button" data-open-transacao-ajuda data-help-transaction="administracao_emails" title="Ajuda" aria-label="Ajuda"><i class="bi bi-question-circle"></i></button><script src="../assets/js/ajuda-transacao.js?v=1"></script>
+    <button class="btn btn-sm btn-success grid-crud-button grid-icon-button" type="submit" form="smForm" data-crud-action="save" title="<?= adm_a('Salvar configuração') ?>" aria-label="<?= adm_a('Salvar configuração') ?>"><i class="bi bi-check2"></i></button>
+    <?php if ($linha): ?><button class="btn btn-sm <?= $ativo ? 'btn-outline-danger' : 'btn-outline-success' ?> grid-crud-button grid-icon-button" type="button" data-sm-acao="<?= $ativo ? 'desligar' : 'ligar' ?>" title="<?= $ativo ? adm_t('Desligar o envio de e-mails') : adm_t('Ligar o envio de e-mails') ?>" aria-label="<?= $ativo ? adm_t('Desligar o envio de e-mails') : adm_t('Ligar o envio de e-mails') ?>"><i class="bi <?= $ativo ? 'bi-pause-circle' : 'bi-play-circle' ?>"></i></button><?php endif; ?>
+    <button class="btn btn-sm btn-outline-primary grid-crud-button grid-icon-button" type="button" data-sm-acao="testar" title="<?= adm_a('Enviar e-mail de teste (para o endereço do campo E-mail para teste)') ?>" aria-label="<?= adm_a('Enviar e-mail de teste') ?>"><i class="bi bi-send"></i></button>
+    <button class="btn btn-sm btn-outline-secondary grid-crud-button grid-icon-button" type="button" data-crud-action="reload" onclick="window.location.reload()" title="<?= adm_a('Recarregar') ?>" aria-label="<?= adm_a('Recarregar') ?>"><i class="bi bi-arrow-clockwise"></i></button>
+    <button class="btn btn-sm btn-outline-info grid-crud-button grid-icon-button" type="button" data-open-transacao-ajuda data-help-transaction="administracao_emails" title="<?= adm_a('Ajuda') ?>" aria-label="<?= adm_a('Ajuda') ?>"><i class="bi bi-question-circle"></i></button><script src="../assets/js/ajuda-transacao.js?v=1"></script>
   </div></div>
   <?php if (!$tabelaOk): ?><div class="alert alert-warning py-2" role="alert">Falta aplicar a migração 360 (scripts\aplicar-migracao-360-smtp.php). Até lá, a configuração vem do .env do servidor.</div><?php endif; ?>
   <div id="smMsg" role="status"></div>
@@ -169,31 +170,31 @@ $fmt = static fn(?string $d): string => $d ? date('d/m/Y H:i', strtotime($d) ?: 
     <input type="hidden" name="csrf" value="<?= $e($csrf) ?>">
     <div class="setup-card">
       <div class="sm-status">
-        <span class="sm-pill <?= $ativo ? 'on' : 'off' ?>"><i class="bi <?= $ativo ? 'bi-send-check' : 'bi-send-slash' ?> me-1"></i>Envio de e-mails <?= $ativo ? 'LIGADO' : 'DESLIGADO' ?></span>
-        <span class="sm-ajuda"><?php if ($linha && $linha['ligado_desligado_em']): ?><?= $ativo ? 'Ligado' : 'Desligado' ?> em <?= $e($fmt($linha['ligado_desligado_em'])) ?> por <?= $e($linha['ligado_desligado_por']) ?>.<?php elseif (!$linha): ?>Ainda não gravada: os valores abaixo vêm do .env do servidor. Salve para a tela passar a valer; o envio começa desligado.<?php endif; ?></span>
+        <span class="sm-pill <?= $ativo ? 'on' : 'off' ?>"><i class="bi <?= $ativo ? 'bi-send-check' : 'bi-send-slash' ?> me-1"></i><?= adm_h('Envio de e-mails') ?> <?= $ativo ? 'LIGADO' : 'DESLIGADO' ?></span>
+        <span class="sm-ajuda"><?php if ($linha && $linha['ligado_desligado_em']): ?><?= $ativo ? 'Ligado' : 'Desligado' ?> em <?= $e($fmt($linha['ligado_desligado_em'])) ?> por <?= $e($linha['ligado_desligado_por']) ?>.<?php elseif (!$linha): ?><?= adm_h('Ainda não gravada: os valores abaixo vêm do .env do servidor. Salve para a tela passar a valer; o envio começa desligado.') ?><?php endif; ?></span>
       </div>
-      <div class="sm-ajuda mt-1">Desligado: os alertas não viram e-mail e os e-mails pendentes da fila são cancelados no próximo ciclo do serviço (até 2 min), em todas as empresas. Ao religar, nada do período desligado é enviado.</div>
-      <?php if (is_array($fila)): ?><div class="sm-fila sm-ajuda mt-1"><b>Fila desta empresa (30 dias):</b> <span>Pendentes: <?= (int)($fila['PENDENTE'] ?? 0) + (int)($fila['PROCESSANDO'] ?? 0) ?></span><span>Enviados: <?= (int)($fila['CONCLUIDA'] ?? 0) ?></span><span>Com erro: <?= (int)($fila['ERRO'] ?? 0) ?></span><span>Cancelados: <?= (int)($fila['CANCELADA'] ?? 0) ?></span></div><?php endif; ?>
+      <div class="sm-ajuda mt-1"><?= adm_h('Desligado: os alertas não viram e-mail e os e-mails pendentes da fila são cancelados no próximo ciclo do serviço (até 2 min), em todas as empresas. Ao religar, nada do período desligado é enviado.') ?></div>
+      <?php if (is_array($fila)): ?><div class="sm-fila sm-ajuda mt-1"><b>Fila desta empresa (30 dias):</b> <span>Pendentes: <?= (int)($fila['PENDENTE'] ?? 0) + (int)($fila['PROCESSANDO'] ?? 0) ?></span><span>Enviados: <?= (int)($fila['CONCLUIDA'] ?? 0) ?></span><span><?= adm_h('Com erro:') ?> <?= (int)($fila['ERRO'] ?? 0) ?></span><span>Cancelados: <?= (int)($fila['CANCELADA'] ?? 0) ?></span></div><?php endif; ?>
     </div>
     <div class="setup-card"><div class="setup-fields">
       <div class="setup-field"><label for="host">Servidor SMTP (host)</label><input type="text" id="host" name="host" value="<?= $e($val['host']) ?>" placeholder="smtp.empresa.com.br"></div>
-      <div class="setup-field"><label for="porta">Porta</label><input type="number" id="porta" name="porta" min="1" max="65535" value="<?= (int)$val['porta'] ?>"></div>
-      <div class="setup-field"><label for="seguranca">Segurança</label><select id="seguranca" name="seguranca">
-        <?php foreach (['tls' => 'TLS (STARTTLS) — porta 587', 'ssl' => 'SSL — porta 465', 'nenhuma' => 'Nenhuma — porta 25 (só rede interna)'] as $k => $r): ?><option value="<?= $e($k) ?>"<?= $val['seguranca'] === $k ? ' selected' : '' ?>><?= $e($r) ?></option><?php endforeach; ?>
+      <div class="setup-field"><label for="porta"><?= adm_h('Porta') ?></label><input type="number" id="porta" name="porta" min="1" max="65535" value="<?= (int)$val['porta'] ?>"></div>
+      <div class="setup-field"><label for="seguranca"><?= adm_h('Segurança') ?></label><select id="seguranca" name="seguranca">
+        <?php foreach (['tls' => 'TLS (STARTTLS) — porta 587', 'ssl' => adm_t('SSL — porta 465'), 'nenhuma' => adm_t('Nenhuma — porta 25 (só rede interna)')] as $k => $r): ?><option value="<?= $e($k) ?>"<?= $val['seguranca'] === $k ? ' selected' : '' ?>><?= $e($r) ?></option><?php endforeach; ?>
       </select></div>
-      <div class="setup-field"><label for="usuario">Usuário (login no servidor)</label><input type="text" id="usuario" name="usuario" value="<?= $e($val['usuario']) ?>" placeholder="em branco = sem autenticação"></div>
-      <div class="setup-field"><label for="senha">Senha</label><input type="password" id="senha" name="senha" autocomplete="new-password" placeholder="<?= $temSenha ? '•••••• (gravada — em branco mantém)' : 'sem senha gravada' ?>">
-        <?php if ($temSenha): ?><div class="form-check"><input class="form-check-input" type="checkbox" id="remover_senha" name="remover_senha" value="1"><label class="form-check-label sm-ajuda" for="remover_senha">Remover a senha gravada</label></div><?php endif; ?>
+      <div class="setup-field"><label for="usuario"><?= adm_h('Usuário (login no servidor)') ?></label><input type="text" id="usuario" name="usuario" value="<?= $e($val['usuario']) ?>" placeholder="<?= adm_a('em branco = sem autenticação') ?>"></div>
+      <div class="setup-field"><label for="senha"><?= adm_h('Senha') ?></label><input type="password" id="senha" name="senha" autocomplete="new-password" placeholder="<?= $temSenha ? adm_t('•••••• (gravada — em branco mantém)') : adm_t('sem senha gravada') ?>">
+        <?php if ($temSenha): ?><div class="form-check"><input class="form-check-input" type="checkbox" id="remover_senha" name="remover_senha" value="1"><label class="form-check-label sm-ajuda" for="remover_senha"><?= adm_h('Remover a senha gravada') ?></label></div><?php endif; ?>
         <span class="sm-ajuda">Gravada cifrada; a tela nunca mostra a senha.</span></div>
-      <div class="setup-field"><label for="remetente">E-mail do remetente</label><input type="email" id="remetente" name="remetente" value="<?= $e($val['remetente']) ?>" placeholder="naoresponda@empresa.com.br"><span class="sm-ajuda">Normalmente uma conta (ou alias) do próprio servidor.</span></div>
-      <div class="setup-field"><label for="remetente_nome">Nome do remetente</label><input type="text" id="remetente_nome" name="remetente_nome" value="<?= $e($val['remetente_nome']) ?>"></div>
-      <div class="setup-field"><label for="url_portal">Endereço do portal (botão "Abrir no portal")</label><input type="text" id="url_portal" name="url_portal" value="<?= $e($val['url_portal']) ?>" placeholder="http://187.191.99.180/greenportal"><span class="sm-ajuda">Sem ele, os alertas por e-mail saem sem o botão.</span></div>
+      <div class="setup-field"><label for="remetente"><?= adm_h('E-mail do remetente') ?></label><input type="email" id="remetente" name="remetente" value="<?= $e($val['remetente']) ?>" placeholder="<?= adm_a('naoresponda@empresa.com.br') ?>"><span class="sm-ajuda"><?= adm_h('Normalmente uma conta (ou alias) do próprio servidor.') ?></span></div>
+      <div class="setup-field"><label for="remetente_nome"><?= adm_h('Nome do remetente') ?></label><input type="text" id="remetente_nome" name="remetente_nome" value="<?= $e($val['remetente_nome']) ?>"></div>
+      <div class="setup-field"><label for="url_portal"><?= adm_h('Endereço do portal (botão "Abrir no portal")') ?></label><input type="text" id="url_portal" name="url_portal" value="<?= $e($val['url_portal']) ?>" placeholder="http://187.191.99.180/greenportal"><span class="sm-ajuda"><?= adm_h('Sem ele, os alertas por e-mail saem sem o botão.') ?></span></div>
       <div class="setup-field"><label for="timeout">Tempo limite (segundos)</label><input type="number" id="timeout" name="timeout" min="5" max="120" value="<?= (int)$val['timeout'] ?>"></div>
-      <div class="setup-field"><label for="ehlo">Nome EHLO (opcional)</label><input type="text" id="ehlo" name="ehlo" value="<?= $e($val['ehlo']) ?>" placeholder="nome do servidor"></div>
-      <div class="setup-field"><label for="verificar_certificado">Certificado do servidor</label><div class="form-check"><input class="form-check-input" type="checkbox" id="verificar_certificado" name="verificar_certificado" value="1"<?= (int)$val['verificar_certificado'] === 1 ? ' checked' : '' ?>><label class="form-check-label" for="verificar_certificado">Verificar (desmarque só para servidor interno com certificado próprio)</label></div></div>
-      <div class="setup-field"><label for="destino">E-mail para teste</label><input type="email" id="destino" value="<?= $e($emailUsuario) ?>" placeholder="seu e-mail"><span class="sm-ajuda">O botão <i class="bi bi-send"></i> envia só para este endereço, com os valores da tela (mesmo sem salvar e com o envio desligado).<?php if ($linha && $linha['ultimo_teste_em']): ?><br>Último teste em <?= $e($fmt($linha['ultimo_teste_em'])) ?>: <?= $e($linha['ultimo_teste_resultado']) ?><?php endif; ?></span></div>
+      <div class="setup-field"><label for="ehlo">Nome EHLO (opcional)</label><input type="text" id="ehlo" name="ehlo" value="<?= $e($val['ehlo']) ?>" placeholder="<?= adm_a('nome do servidor') ?>"></div>
+      <div class="setup-field"><label for="verificar_certificado"><?= adm_h('Certificado do servidor') ?></label><div class="form-check"><input class="form-check-input" type="checkbox" id="verificar_certificado" name="verificar_certificado" value="1"<?= (int)$val['verificar_certificado'] === 1 ? ' checked' : '' ?>><label class="form-check-label" for="verificar_certificado"><?= adm_h('Verificar (desmarque só para servidor interno com certificado próprio)') ?></label></div></div>
+      <div class="setup-field"><label for="destino"><?= adm_h('E-mail para teste') ?></label><input type="email" id="destino" value="<?= $e($emailUsuario) ?>" placeholder="<?= adm_a('seu e-mail') ?>"><span class="sm-ajuda"><?= adm_h('O botão') ?> <i class="bi bi-send"></i> <?= adm_h('envia só para este endereço, com os valores da tela (mesmo sem salvar e com o envio desligado).') ?><?php if ($linha && $linha['ultimo_teste_em']): ?><br><?= adm_h('Último teste em') ?> <?= $e($fmt($linha['ultimo_teste_em'])) ?>: <?= $e($linha['ultimo_teste_resultado']) ?><?php endif; ?></span></div>
     </div>
-    <?php if ($linha && $linha['alterado_em']): ?><div class="sm-ajuda mt-2">Última alteração em <?= $e($fmt($linha['alterado_em'])) ?> por <?= $e($linha['alterado_por']) ?>.</div><?php endif; ?>
+    <?php if ($linha && $linha['alterado_em']): ?><div class="sm-ajuda mt-2"><?= adm_h('Última alteração em') ?> <?= $e($fmt($linha['alterado_em'])) ?> por <?= $e($linha['alterado_por']) ?>.</div><?php endif; ?>
     </div>
   </form>
 </section>
@@ -204,7 +205,7 @@ $fmt = static fn(?string $d): string => $d ? date('d/m/Y H:i', strtotime($d) ?: 
   function aviso(t, ok) { msg.className = 'alert py-2 ' + (ok ? 'alert-success' : 'alert-danger'); msg.textContent = t; msg.scrollIntoView({ block: 'nearest' }); }
   function perguntar(texto, seguir) {
     var host = window.top || window;
-    try { if (host.GreenPortalPopups && typeof host.GreenPortalPopups.mensagem === 'function') return host.GreenPortalPopups.mensagem({ titulo: 'Configuração de e-mail', mensagem: texto, icone: 'bi-question-circle', confirmar: seguir }); } catch (e) {}
+    try { if (host.GreenPortalPopups && typeof host.GreenPortalPopups.mensagem === 'function') return host.GreenPortalPopups.mensagem({ titulo: <?= adm_js('Configuração de e-mail') ?>, mensagem: texto, icone: 'bi-question-circle', confirmar: seguir }); } catch (e) {}
     if (window.confirm(texto)) seguir();
   }
   function enviar(acao, extra, botao) {
@@ -212,9 +213,9 @@ $fmt = static fn(?string $d): string => $d ? date('d/m/Y H:i', strtotime($d) ?: 
     if (botao) botao.disabled = true;
     msg.className = 'alert alert-secondary py-2'; msg.textContent = acao === 'testar' ? 'Enviando o e-mail de teste…' : 'Gravando…';
     fetch(window.location.pathname, { method: 'POST', body: d, credentials: 'same-origin' })
-      .then(function (r) { return r.json().catch(function () { return { ok: false, message: 'Resposta inválida do servidor.' }; }); })
+      .then(function (r) { return r.json().catch(function () { return { ok: false, message: <?= adm_js('Resposta inválida do servidor.') ?> }; }); })
       .then(function (j) { aviso(j.message || (j.ok ? 'Feito.' : 'Falhou.'), !!j.ok); if (j.ok && j.recarregar) setTimeout(function () { window.location.reload(); }, 1200); })
-      .catch(function () { aviso('Falha de comunicação com o servidor.', false); })
+      .catch(function () { aviso(<?= adm_js('Falha de comunicação com o servidor.') ?>, false); })
       .then(function () { if (botao) botao.disabled = false; });
   }
   form.addEventListener('submit', function (ev) { ev.preventDefault(); enviar('salvar', null, document.querySelector('[data-crud-action="save"]')); });
@@ -222,7 +223,7 @@ $fmt = static fn(?string $d): string => $d ? date('d/m/Y H:i', strtotime($d) ?: 
     b.addEventListener('click', function () {
       var a = b.getAttribute('data-sm-acao');
       if (a === 'testar') return enviar('testar', { destino: document.getElementById('destino').value }, b);
-      perguntar(a === 'ligar' ? 'Ligar o envio de e-mails para todas as empresas? Os alertas novos passam a ser enviados por e-mail.' : 'Desligar o envio de e-mails para todas as empresas? Os e-mails pendentes da fila serão cancelados.', function () { enviar(a, null, b); });
+      perguntar(a === 'ligar' ? 'Ligar o envio de e-mails para todas as empresas? Os alertas novos passam a ser enviados por e-mail.' : <?= adm_js('Desligar o envio de e-mails para todas as empresas? Os e-mails pendentes da fila serão cancelados.') ?>, function () { enviar(a, null, b); });
     });
   });
 }());

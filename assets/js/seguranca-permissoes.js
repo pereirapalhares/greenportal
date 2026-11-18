@@ -1,3 +1,5 @@
+// Onda 3 de idiomas: textos fixos traduzidos por window.greenTxt (AdministracaoTextos::script()).
+var _tx = window._tx || function (s) { return typeof window.greenTxt === 'function' ? window.greenTxt(s) : s; };
 (function ($) {
     'use strict';
 
@@ -7,7 +9,7 @@
 
     var preferences = $fragment.data('preferences') || {};
     var extraPermissionFields = ['pode_importar_arquivos', 'pode_visualizar_arquivos', 'pode_baixar_arquivos'];
-    var extraPermissionLabels = { pode_importar_arquivos: 'Importar Arquivos', pode_visualizar_arquivos: 'Visualizar Arquivos', pode_baixar_arquivos: 'Baixar/Imprimir Arquivos' };
+    var extraPermissionLabels = { pode_importar_arquivos: _tx('Importar Arquivos'), pode_visualizar_arquivos: _tx('Visualizar Arquivos'), pode_baixar_arquivos: _tx('Baixar/Imprimir Arquivos') };
     function ensureExtraPermissionFields() {
       extraPermissionFields.forEach(function (field) {
         if (!$table.find('thead th[data-column="' + field + '"]').length) {
@@ -65,7 +67,7 @@
         var $select = $template.clone().removeAttr('data-permission-filter');
         $select.addClass('form-select form-select-sm')
             .attr('data-grid-filter', 'codperfil')
-            .attr('aria-label', 'Filtrar Perfil');
+            .attr('aria-label', _tx('Filtrar Perfil'));
         var $holder = $('<label class="permission-profile-filter d-inline-flex align-items-center gap-1 mb-0" title="Filtrar por perfil"><span class="small text-muted">Perfil:</span></label>');
         $holder.append($select);
         var $pagination = $fragment.find('.grid-pagination').first();
@@ -122,7 +124,7 @@
         var $actions = $fragment.find('.crud-actions').first();
         var $managedButtons = $actions.find('[data-new-permission],[data-crud-duplicate],[data-delete-permission],[data-reload-grid],[data-columns],button[type="submit"][form="permissionGridForm"],button[name="action"][value="export_request"]');
         $managedButtons.prop('disabled', !selected).attr('aria-disabled', selected ? 'false' : 'true');
-        if (!selected) $managedButtons.attr('title', 'Selecione o perfil ao lado da busca');
+        if (!selected) $managedButtons.attr('title', _tx('Selecione o perfil ao lado da busca'));
         $('#permissionSearch').prop('disabled', !selected);
         $picker.toggleClass('is-empty', !selected);
         $picker.on('change', function () {
@@ -154,7 +156,7 @@
     }
 
     function confirmation(text, callback) {
-        var $modal = $('<div class="modal fade" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Confirmação</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"></div><div class="modal-footer"><button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-sm btn-success" data-confirm>Confirmar</button></div></div></div></div>').appendTo('body');
+        var $modal = $('<div class="modal fade" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">' + _tx("Confirmação") + '</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"></div><div class="modal-footer"><button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">' + _tx("Cancelar") + '</button><button type="button" class="btn btn-sm btn-success" data-confirm>' + _tx("Confirmar") + '</button></div></div></div></div>').appendTo('body');
         var instance = bootstrap.Modal.getOrCreateInstance($modal[0]);
         $modal.find('.modal-body').text(text);
         $modal.on('click', '[data-confirm]', function () { instance.hide(); if (callback) callback(); });
@@ -286,7 +288,7 @@
             var $th = $table.find('thead th[data-column="' + field + '"]');
             if (!$th.length || $th.find('input[data-check-column]').length) return;
             var label = String($th.find('.column-heading > span').first().text() || field).trim();
-            $('<input>', { type: 'checkbox', class: 'form-check-input permission-check-all', 'data-check-column': field, title: 'Marcar ou desmarcar "' + label + '" em todas as linhas visíveis', 'aria-label': 'Marcar ou desmarcar ' + label + ' em todas as linhas visíveis' })
+            $('<input>', { type: 'checkbox', class: 'form-check-input permission-check-all', 'data-check-column': field, title: _tx('Marcar ou desmarcar "') + label + _tx('" em todas as linhas visíveis'), 'aria-label': _tx('Marcar ou desmarcar ') + label + _tx(' em todas as linhas visíveis') })
                 .prependTo($th.find('.column-heading > span').first());
         });
         refreshColumnCheckAll();

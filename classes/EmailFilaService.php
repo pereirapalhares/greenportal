@@ -38,8 +38,9 @@ final class EmailFilaService
             try {
                 $para = SmtpCliente::destinatarios((string)$m['destinatario']);
                 if (!$para) throw new InvalidArgumentException('destinatário sem e-mail válido: ' . mb_substr((string)$m['destinatario'], 0, 120));
-                $texto = self::textoPlano((string)$m['corpo']);
-                $smtp->enviar($para, (string)($m['nome_destinatario'] ?? ''), ($empresa !== '' ? "[$empresa] " : '') . (string)$m['assunto'], self::html($empresa, (string)$m['assunto'], $texto), self::semMarcas($texto) . "\n\n-- \nMensagem automática do GreenSolutions" . ($empresa !== '' ? " — $empresa" : '') . '. Não responda.');
+                [$idioma, $corpo] = self::idiomaDoCorpo((string)$m['corpo']);
+                $texto = self::textoPlano($corpo);
+                $smtp->enviar($para, (string)($m['nome_destinatario'] ?? ''), ($empresa !== '' ? "[$empresa] " : '') . (string)$m['assunto'], self::html($empresa, (string)$m['assunto'], $texto, $idioma), self::semMarcas($texto) . "\n\n-- \n" . self::rodape($idioma, $empresa));
                 $ok = 1; $enviados++;
             } catch (Throwable $e) {
                 $erro = mb_substr($e->getMessage(), 0, 1000);
@@ -71,6 +72,21 @@ final class EmailFilaService
         return trim(preg_replace("/\n{3,}/", "\n\n", str_replace("\r", '', $t)) ?? $t);
     }
 
+    /** Onda 2 de idiomas: o corpo pode começar com {{idioma:en|es}} (e-mail no idioma do destinatário). */
+    public static function idiomaDoCorpo(string $corpo): array
+    {
+        if (preg_match('/^\{\{idioma:(pt|en|es)\}\}\r?\n?/', $corpo, $m)) return [$m[1], substr($corpo, strlen($m[0]))];
+        return ['pt', $corpo];
+    }
+
+    private const RODAPE = ['pt' => 'Mensagem automática do GreenSolutions. Não responda a este e-mail.', 'en' => 'Automatic message from GreenSolutions. Do not reply to this e-mail.', 'es' => 'Mensaje automático de GreenSolutions. No responda a este e-mail.'];
+
+    public static function rodape(string $idioma, string $empresa = ''): string
+    {
+        $r = self::RODAPE[$idioma] ?? self::RODAPE['pt'];
+        return $empresa !== '' ? str_replace('GreenSolutions.', 'GreenSolutions — ' . $empresa . '.', $r) : $r;
+    }
+
     /** Migração 343: marca {{botao:Texto|https://...}} vira botão no HTML e "Texto: endereço" no texto simples. */
     public const BOTAO = '/\{\{botao:([^|}]{1,80})\|(https?:\/\/[^}\s]{1,1000})\}\}/u';
 
@@ -79,8 +95,10 @@ final class EmailFilaService
         return (string)preg_replace(self::BOTAO, '$1: $2', $texto);
     }
 
-    public static function html(string $empresa, string $assunto, string $texto): string
+    public static function html(string $empresa, string $assunto, string $texto, string $idioma = 'pt'): string
     {
+        [$doCorpo, $texto] = self::idiomaDoCorpo($texto);
+        if ($idioma === 'pt') $idioma = $doCorpo;
         $e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
         $paragrafos = '';
         foreach (preg_split("/\n{2,}/", $texto) ?: [] as $p) {
@@ -92,13 +110,13 @@ final class EmailFilaService
             }
             $paragrafos .= '<p style="margin:0 0 12px">' . $h . '</p>';
         }
-        return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>' . $e($assunto) . '</title></head>'
+        return '<!doctype html><html lang="' . ($idioma === 'pt' ? 'pt-BR' : $idioma) . '"><head><meta charset="utf-8"><title>' . $e($assunto) . '</title></head>'
             . '<body style="margin:0;padding:0;background:#f3f7f5;font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#1f3a30">'
             . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f7f5;padding:24px 0"><tr><td align="center">'
             . '<table role="presentation" width="640" cellspacing="0" cellpadding="0" style="max-width:640px;width:100%;background:#ffffff;border:1px solid #dce9e2;border-radius:8px">'
             . '<tr><td style="padding:16px 24px;background:#1f6b4f;color:#ffffff;border-radius:8px 8px 0 0;font-size:16px;font-weight:600">' . $e($empresa !== '' ? $empresa : 'GreenSolutions') . '</td></tr>'
             . '<tr><td style="padding:20px 24px">' . $paragrafos . '</td></tr>'
-            . '<tr><td style="padding:12px 24px;border-top:1px solid #dce9e2;color:#71877d;font-size:12px">Mensagem automática do GreenSolutions. Não responda a este e-mail.</td></tr>'
+            . '<tr><td style="padding:12px 24px;border-top:1px solid #dce9e2;color:#71877d;font-size:12px">' . $e(self::RODAPE[$idioma] ?? self::RODAPE['pt']) . '</td></tr>'
             . '</table></td></tr></table></body></html>';
     }
 

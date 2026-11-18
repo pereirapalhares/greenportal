@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/AlertaTextos.php';
+
 final class AlertasService
 {
     public function __construct(private PDO $pdo, private int $codusuario)
@@ -31,7 +33,8 @@ final class AlertasService
                 ? $comparison
                 : ((int)($b['codalerta'] ?? 0) <=> (int)($a['codalerta'] ?? 0));
         });
-        return $alerts;
+        // Onda 2 de idiomas: título e mensagem no idioma do usuário (os alertas são gravados em português)
+        return array_map(static fn(array $a): array => AlertaTextos::linhaAlerta($a), $alerts);
     }
 
     /** Marca como lido um alerta do próprio usuário (abriu o link). */

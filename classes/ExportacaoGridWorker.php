@@ -13,7 +13,7 @@ function workerCall(PDO $pdo, string $sql, array $params): array { $s = $pdo->pr
 function excelColumn(int $number): string { $letters = ''; while ($number > 0) { $number--; $letters = chr(65 + ($number % 26)) . $letters; $number = intdiv($number, 26); } return $letters; }
 function filenamePart(string $value, string $fallback): string { $value = trim($value); /* Acentos removidos antes do iconv: no Windows ele troca "ã" por "'a" (Gest_ao). */ if (class_exists('Normalizer')) { $semAcento = preg_replace('/\p{Mn}/u', '', (string)Normalizer::normalize($value, Normalizer::FORM_D)); if (is_string($semAcento)) $value = $semAcento; } $value = strtr($value, ['ç' => 'c', 'Ç' => 'C', 'ã' => 'a', 'õ' => 'o', 'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'â' => 'a', 'ê' => 'e', 'ô' => 'o', 'à' => 'a', 'Ã' => 'A', 'Õ' => 'O', 'Á' => 'A', 'É' => 'E', 'Í' => 'I', 'Ó' => 'O', 'Ú' => 'U', 'Â' => 'A', 'Ê' => 'E', 'Ô' => 'O', 'À' => 'A', 'ñ' => 'n', 'Ñ' => 'N']); $converted = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value); if ($converted !== false) $value = $converted; $value = preg_replace('/[^a-zA-Z0-9]+/', '_', $value) ?? ''; $value = trim($value, '_'); return $value !== '' ? $value : $fallback; }
 function createProfessionalXlsx(string $file, array $rows, string $userName, string $requestedAt, string $informationType): void {
-    $columns = $rows ? array_keys($rows[0]) : ['Informação']; $lastColumn = excelColumn(count($columns)); $lastRow = 6 + max(1, count($rows));
+    $columns = $rows ? array_keys($rows[0]) : [ExportacaoTextos::t('informacao')]; $lastColumn = excelColumn(count($columns)); $lastRow = 6 + max(1, count($rows));
     $xml = static function (string $value): string {
         $value = preg_replace('/[^\x09\x0A\x0D\x20-\x{D7FF}\x{E000}-\x{FFFD}]/u', '', $value) ?? '';
         return htmlspecialchars($value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
@@ -21,9 +21,9 @@ function createProfessionalXlsx(string $file, array $rows, string $userName, str
     $cell = static function (string $ref, mixed $value, int $style = 0) use ($xml): string { return '<c r="' . $ref . '" t="inlineStr" s="' . $style . '"><is><t>' . $xml((string)$value) . '</t></is></c>'; };
     $sheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><dimension ref="A1:' . $lastColumn . $lastRow . '"/><sheetViews><sheetView workbookViewId="0"><pane ySplit="5" topLeftCell="A6" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>';
     for ($i = 1; $i <= count($columns); $i++) $sheet .= '<col min="' . $i . '" max="' . $i . '" width="18" customWidth="1"/>';
-    $sheet .= '</cols><sheetData><row r="1">' . $cell('A1', 'Green Portal', 1) . '</row><row r="2">' . $cell('A2', 'Relatório profissional de dados do portal', 2) . '</row><row r="3">' . $cell('A3', 'Tipo de informação: ' . $informationType) . '</row><row r="4">' . $cell('A4', 'Data da solicitação: ' . $requestedAt) . '</row><row r="5">' . $cell('A5', 'Usuário solicitante: ' . $userName) . '</row><row r="6">';
+    $sheet .= '</cols><sheetData><row r="1">' . $cell('A1', 'Green Portal', 1) . '</row><row r="2">' . $cell('A2', ExportacaoTextos::t('titulo'), 2) . '</row><row r="3">' . $cell('A3', ExportacaoTextos::t('tipo_info', ['tipo' => ExportacaoTextos::tipo($informationType)])) . '</row><row r="4">' . $cell('A4', ExportacaoTextos::t('data_pedido', ['data' => $requestedAt])) . '</row><row r="5">' . $cell('A5', ExportacaoTextos::t('usuario', ['nome' => $userName])) . '</row><row r="6">';
     foreach ($columns as $i => $column) $sheet .= $cell(excelColumn($i + 1) . '6', (string)$column, 6); $sheet .= '</row>';
-    if (!$rows) $rows = [['Informação' => 'Nenhum registro encontrado.']];
+    if (!$rows) $rows = [[ExportacaoTextos::t('informacao') => ExportacaoTextos::t('nenhum')]];
     foreach ($rows as $rowIndex => $row) { $excelRow = $rowIndex + 7; $sheet .= '<row r="' . $excelRow . '" s="' . (($rowIndex % 2) ? 5 : 4) . '"'; $sheet .= '>'; foreach (array_values($row) as $i => $value) $sheet .= $cell(excelColumn($i + 1) . $excelRow, $value, (($rowIndex % 2) ? 5 : 4)); $sheet .= '</row>'; }
     $sheet .= '</sheetData><autoFilter ref="A6:' . $lastColumn . ($excelRow ?? 6) . '"/></worksheet>';
     $styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="4"><font><sz val="11"/><name val="Arial"/></font><font><b/><sz val="18"/><color rgb="FFFFFFFF"/><name val="Arial"/></font><font><b/><sz val="12"/><color rgb="FF176B50"/><name val="Arial"/></font><font><b/><sz val="11"/><color rgb="FF000000"/><name val="Arial"/></font></fonts><fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF176B50"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFEAF5EF"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFBFE3CF"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellXfs count="7"><xf/><xf fontId="1" fillId="2" applyFont="1" applyFill="1"/><xf fontId="2"/><xf fontId="0" fillId="2" applyFont="1" applyFill="1"/><xf fillId="0"/><xf fillId="3" applyFill="1"/><xf fontId="3" fillId="4" applyFont="1" applyFill="1"/></cellXfs></styleSheet>';
@@ -31,7 +31,7 @@ function createProfessionalXlsx(string $file, array $rows, string $userName, str
     $rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
     $workbook = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Setup Menu" sheetId="1" r:id="rId1"/></sheets></workbook>';
     $workbookRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
-    $zip = new ZipArchive(); if ($zip->open($file, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) throw new RuntimeException('Não foi possível criar a planilha.'); $zip->addFromString('[Content_Types].xml', $content); $zip->addFromString('_rels/.rels', $rels); $zip->addFromString('xl/workbook.xml', $workbook); $zip->addFromString('xl/_rels/workbook.xml.rels', $workbookRels); $zip->addFromString('xl/styles.xml', $styles); $zip->addFromString('xl/worksheets/sheet1.xml', $sheet); $zip->close();
+    $zip = new ZipArchive(); if ($zip->open($file, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) throw new RuntimeException(ExportacaoTextos::t('erro_planilha')); $zip->addFromString('[Content_Types].xml', $content); $zip->addFromString('_rels/.rels', $rels); $zip->addFromString('xl/workbook.xml', $workbook); $zip->addFromString('xl/_rels/workbook.xml.rels', $workbookRels); $zip->addFromString('xl/styles.xml', $styles); $zip->addFromString('xl/worksheets/sheet1.xml', $sheet); $zip->close();
 }
 /**
  * Pesquisa de documentos: um lote de 1000 itens (registros e arquivos) da pesquisa gravada no pedido, já com as colunas da
@@ -52,32 +52,34 @@ function buscaExportarLote(PDO $pdo, array $p, int $offset): array
     $v->execute([json_encode(array_values($grupos), JSON_UNESCAPED_UNICODE), json_encode($p['permissoes'] ?? []), !empty($p['admin']) ? 1 : 0, (int)($p['usuario'] ?? 0)]);
     $vinc = []; foreach ($v->fetchAll(PDO::FETCH_ASSOC) as $x) $vinc[$x['grupo_tipo'] . '|' . $x['grupo_chave']][] = $x['rotulo_pt'] . ' (' . (int)$x['total'] . '): ' . $x['nomes'];
     $v->closeCursor(); while ($v->nextRowset()) {}
-    $tipo = ['licencas' => 'Licença', 'controles' => 'Controle de documento', 'requisitos' => 'Requisito legal', 'treinamentos' => 'Treinamento', 'infraestrutura' => 'Infraestrutura',
-        'fornecedorcriterios' => 'Documento de fornecedor', 'funcionariocriterios' => 'Documento de funcionário', 'funcionariotreinamentos' => 'Treinamento de funcionário'];
-    $negocio = ['fornecedor' => 'Fornecedor', 'funcionario' => 'Funcionário'] + $tipo;
-    $data = static fn($x): string => $x && preg_match('/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/', (string)$x, $m) && $m[1] !== '0000' ? $m[3] . '/' . $m[2] . '/' . $m[1] . (isset($m[4]) ? ' ' . $m[4] . ':' . $m[5] : '') : '';
+    $tipo = [];
+    foreach (['licencas', 'controles', 'requisitos', 'treinamentos', 'infraestrutura', 'fornecedorcriterios', 'funcionariocriterios', 'funcionariotreinamentos'] as $k) $tipo[$k] = ExportacaoTextos::t('n_' . $k);
+    $negocio = ['fornecedor' => ExportacaoTextos::t('n_fornecedor'), 'funcionario' => ExportacaoTextos::t('n_funcionario')] + $tipo;
+    $T = static fn(string $k): string => ExportacaoTextos::t($k);
+    $en = IdiomaService::idioma() === 'en';
+    $data = static fn($x): string => $x && preg_match('/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/', (string)$x, $m) && $m[1] !== '0000' ? ($en ? $m[2] . '/' . $m[3] : $m[3] . '/' . $m[2]) . '/' . $m[1] . (isset($m[4]) ? ' ' . $m[4] . ':' . $m[5] : '') : '';
     $raiz = rtrim((string)($p['raiz'] ?? ''), '/');
     $linhas = [];
     foreach ($itens as $i) {
         $g = $i['grupo_tipo'] . '|' . $i['grupo_chave'];
         $linhas[] = [
-            'Negócio' => $negocio[$i['grupo_tipo']] ?? (string)$i['grupo_tipo'],
-            'Nome do negócio' => (string)($i['grupo_nome'] ?? ''),
-            'Detalhe do negócio' => (string)($i['grupo_detalhe'] ?? ''),
-            'Tipo' => $tipo[$i['tipo']] ?? (string)$i['tipo'],
-            'Item' => $i['item'] === 'ARQUIVO' ? 'Arquivo' : 'Registro',
-            'Nome' => (string)$i['nome'],
-            'Título / descrição' => (string)($i['item'] === 'ARQUIVO' ? $i['titulo'] : ($i['descricao'] ?? '')),
-            'Trecho encontrado' => (string)($i['trecho'] ?? ''),
-            'Formato' => $i['item'] === 'ARQUIVO' ? strtoupper((string)$i['formato']) : '',
-            'Situação' => (string)($i['situacao'] ?? ''),
-            'Unidade' => (string)($i['unidade'] ?? ''),
-            'Responsável' => (string)($i['responsavel'] ?? ''),
-            'Validade' => $data($i['validade'] ?? null),
-            'Modificado' => $data($i['modificado_em'] ?? null),
-            'Vínculos' => implode(' | ', $vinc[$g] ?? []),
-            'Código' => (string)$i['chave'],
-            'Link' => $raiz . (string)$i['pagina'] . '?filtros=' . rawurlencode((string)($i['filtros'] ?? '{}')),
+            $T('b_negocio') => $negocio[$i['grupo_tipo']] ?? (string)$i['grupo_tipo'],
+            $T('b_nome_negocio') => (string)($i['grupo_nome'] ?? ''),
+            $T('b_detalhe') => (string)($i['grupo_detalhe'] ?? ''),
+            $T('b_tipo') => $tipo[$i['tipo']] ?? (string)$i['tipo'],
+            $T('b_item') => $i['item'] === 'ARQUIVO' ? $T('b_arquivo') : $T('b_registro'),
+            $T('b_nome') => (string)$i['nome'],
+            $T('b_titulo') => (string)($i['item'] === 'ARQUIVO' ? $i['titulo'] : ($i['descricao'] ?? '')),
+            $T('b_trecho') => (string)($i['trecho'] ?? ''),
+            $T('b_formato') => $i['item'] === 'ARQUIVO' ? strtoupper((string)$i['formato']) : '',
+            $T('b_situacao') => (string)($i['situacao'] ?? ''),
+            $T('b_unidade') => (string)($i['unidade'] ?? ''),
+            $T('b_responsavel') => (string)($i['responsavel'] ?? ''),
+            $T('b_validade') => $data($i['validade'] ?? null),
+            $T('b_modificado') => $data($i['modificado_em'] ?? null),
+            $T('b_vinculos') => implode(' | ', $vinc[$g] ?? []),
+            $T('b_codigo') => (string)$i['chave'],
+            $T('b_link') => $raiz . (string)$i['pagina'] . '?filtros=' . rawurlencode((string)($i['filtros'] ?? '{}')),
         ];
     }
     return $linhas;
@@ -85,6 +87,9 @@ function buscaExportarLote(PDO $pdo, array $p, int $offset): array
 
 $job = workerCall($pdo, 'CALL sp_crud_select(:tabela, :filtros, NULL, 1, 0)', ['tabela' => 'exportacoes_grid', 'filtros' => json_encode(['codexportacaogrid' => $jobId])])[0] ?? null;
 if (!$job) exit(1);
+// Onda 2 de idiomas: planilha/PDF no idioma de quem pediu (pedido ou cadastro do usuário); os alertas seguem em português
+require_once $root . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'ExportacaoTextos.php';
+ExportacaoTextos::usarIdiomaDoPedido($pdo, $job);
 $startedAt = (string)($job['iniciada_em'] ?? $job['solicitado_em'] ?? date('Y-m-d H:i:s'));
 workerCall($pdo, 'CALL sp_crud_update(:tabela, :chave, :dados)', ['tabela' => 'exportacoes_grid', 'chave' => json_encode(['codexportacaogrid' => $jobId]), 'dados' => json_encode(['status' => 'PROCESSANDO', 'iniciada_em' => date('Y-m-d H:i:s')], JSON_UNESCAPED_UNICODE)]);
 $startedAt = date('Y-m-d H:i:s');
@@ -219,14 +224,14 @@ try {
     }
     if (($exportConfig['special'] ?? '') === 'migracao_orfaos') {
         require_once $root . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'MigracaoOrfaosExportacao.php';
-        createProfessionalXlsx($xlsx, MigracaoOrfaosExportacao::linhas($env, $job), $userName, date('d/m/Y H:i:s'), $exportConfig['tipo']);
+        createProfessionalXlsx($xlsx, MigracaoOrfaosExportacao::linhas($env, $job), $userName, ExportacaoTextos::dataHora(), $exportConfig['tipo']);
         $generated = $xlsx;
         goto concluir;
     }
     if (in_array(($exportConfig['special'] ?? ''), ['painel_homologacao', 'documentos_fornecedor', 'relatorios_homologacao', 'consumo_ia'], true)) {
         $classeEspecial = match ($exportConfig['special']) { 'painel_homologacao' => 'HomologacaoPainelExportacao', 'relatorios_homologacao' => 'HomologacaoRelatoriosExportacao', 'consumo_ia' => 'IaConsumoExportacao', default => 'HomologacaoDocumentosExportacao' };
         require_once $root . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . $classeEspecial . '.php';
-        createProfessionalXlsx($xlsx, $classeEspecial::linhas($pdo, $job), $userName, date('d/m/Y H:i:s'), $exportConfig['tipo']);
+        createProfessionalXlsx($xlsx, $classeEspecial::linhas($pdo, $job), $userName, ExportacaoTextos::dataHora(), $exportConfig['tipo']);
         $generated = $xlsx;
         goto concluir;
     }
@@ -355,7 +360,7 @@ try {
                 foreach (array_keys($displayRow) as $column) {
                     if (strtolower((string)$column) === 'senha') unset($displayRow[$column]);
                 }
-                if (array_key_exists('ativo', $displayRow)) $displayRow['ativo'] = (int)$displayRow['ativo'] === 1 ? 'Sim' : 'Não';
+                if (array_key_exists('ativo', $displayRow)) $displayRow['ativo'] = (int)$displayRow['ativo'] === 1 ? ExportacaoTextos::t('sim') : ExportacaoTextos::t('nao');
             }
         }
         unset($displayRow);
@@ -376,7 +381,7 @@ try {
             return $labeled;
         }, $rows);
     }
-    createProfessionalXlsx($xlsx, $rows, $userName, date('d/m/Y H:i:s'), $exportConfig['tipo']);
+    createProfessionalXlsx($xlsx, $rows, $userName, ExportacaoTextos::dataHora(), $exportConfig['tipo']);
     $generated = $xlsx;
     concluir:
     $finishedAt = date('Y-m-d H:i:s');

@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/AdministracaoTextos.php';
+
+require_once __DIR__ . '/IdiomaService.php';
 
 /**
  * Administração › Textos e idiomas: leitura pelas views vw_idioma_* e gravação pelas procedures sp_idioma_*
@@ -91,16 +94,16 @@ final class IdiomaAdminService
     /** $itens: [['codtexto' => 1, 'idioma' => 'en', 'texto' => '...', 'revisao' => 3], ...] → revisões novas. */
     public function salvar(array $itens, array $autor): array
     {
-        if (!$itens) throw new InvalidArgumentException('Nenhuma alteração para salvar.');
-        if (count($itens) > self::MAX_ITENS) throw new InvalidArgumentException('Alterações demais em uma única gravação.');
+        if (!$itens) throw new InvalidArgumentException(adm_t('Nenhuma alteração para salvar.'));
+        if (count($itens) > self::MAX_ITENS) throw new InvalidArgumentException(adm_t('Alterações demais em uma única gravação.'));
         $normalizados = [];
         foreach ($itens as $item) {
-            if (!is_array($item)) throw new InvalidArgumentException('Alteração inválida.');
+            if (!is_array($item)) throw new InvalidArgumentException(adm_t('Alteração inválida.'));
             $codtexto = (int)($item['codtexto'] ?? 0);
             $idioma = strtolower((string)($item['idioma'] ?? ''));
-            if ($codtexto <= 0 || !in_array($idioma, IdiomaService::IDIOMAS, true)) throw new InvalidArgumentException('Alteração inválida.');
+            if ($codtexto <= 0 || !in_array($idioma, IdiomaService::IDIOMAS, true)) throw new InvalidArgumentException(adm_t('Alteração inválida.'));
             $texto = self::normalizarTexto((string)($item['texto'] ?? ''));
-            if ($idioma === 'pt' && $texto === '') throw new InvalidArgumentException('O texto em português é obrigatório.');
+            if ($idioma === 'pt' && $texto === '') throw new InvalidArgumentException(adm_t('O texto em português é obrigatório.'));
             $normalizados[$codtexto . '|' . $idioma] = ['codtexto' => $codtexto, 'idioma' => $idioma, 'texto' => $texto, 'revisao' => max(0, (int)($item['revisao'] ?? 0))];
         }
         $rows = GreenPortalDatabase::call($this->universal, 'CALL sp_idioma_salvar_rascunho(?, ?, ?, ?)', [
@@ -113,7 +116,7 @@ final class IdiomaAdminService
     {
         $observacao = mb_substr(trim(strip_tags($observacao)), 0, 500);
         $row = GreenPortalDatabase::call($this->universal, 'CALL sp_idioma_publicar(?, ?, ?, ?)', [$observacao, $autor['nome'], $autor['codusuario'] ?: null, $autor['banco']])[0] ?? null;
-        if (!$row) throw new RuntimeException('Publicação não registrada.');
+        if (!$row) throw new RuntimeException(adm_t('Publicação não registrada.'));
         IdiomaService::limparCache();
         return ['codpublicacao' => (int)$row['codpublicacao'], 'numero' => (int)$row['numero'], 'qtd' => (int)$row['qtd_alteracoes'], 'publicado_em' => (string)$row['publicado_em']];
     }
@@ -122,7 +125,7 @@ final class IdiomaAdminService
     public function descartar(?array $codtextos, array $autor): int
     {
         $lista = $codtextos === null ? null : json_encode(array_values(array_unique(array_filter(array_map('intval', $codtextos), static fn(int $v): bool => $v > 0))));
-        if ($lista === '[]') throw new InvalidArgumentException('Nenhum texto selecionado.');
+        if ($lista === '[]') throw new InvalidArgumentException(adm_t('Nenhum texto selecionado.'));
         $row = GreenPortalDatabase::call($this->universal, 'CALL sp_idioma_descartar_rascunho(?, ?, ?, ?)', [$lista, $autor['nome'], $autor['codusuario'] ?: null, $autor['banco']])[0] ?? [];
         return (int)($row['descartados'] ?? 0);
     }
@@ -132,8 +135,8 @@ final class IdiomaAdminService
     {
         $texto = str_replace(["\r\n", "\r", "\n", "\t"], ' ', $texto);
         $texto = trim((string)preg_replace('/\s{2,}/u', ' ', $texto));
-        if (preg_match('/[<>]/', $texto)) throw new InvalidArgumentException('Os textos não podem conter os caracteres < e >.');
-        if (mb_strlen($texto) > self::MAX_TEXTO) throw new InvalidArgumentException('Texto com mais de ' . self::MAX_TEXTO . ' caracteres.');
+        if (preg_match('/[<>]/', $texto)) throw new InvalidArgumentException((adm_t('Os textos não podem conter os caracteres') . ' < e >.'));
+        if (mb_strlen($texto) > self::MAX_TEXTO) throw new InvalidArgumentException(adm_t('Texto com mais de ') . self::MAX_TEXTO . ' caracteres.');
         return $texto;
     }
 
@@ -142,10 +145,10 @@ final class IdiomaAdminService
     {
         $mensagem = $e->getMessage();
         if ($e instanceof InvalidArgumentException) return [422, $mensagem];
-        if (str_contains($mensagem, 'CONFLITO_REVISAO')) return [409, 'Outro administrador alterou estes textos enquanto você editava. Recarregue a tela; suas alterações não foram gravadas.'];
-        if (str_contains($mensagem, 'SEM_ALTERACOES')) return [409, 'Não há alterações no rascunho para publicar.'];
-        if (preg_match('/1644\s+(.+)$/u', $mensagem, $m)) return [422, trim($m[1])];
+        if (str_contains($mensagem, 'CONFLITO_REVISAO')) return [409, adm_t('Outro administrador alterou estes textos enquanto você editava. Recarregue a tela; suas alterações não foram gravadas.')];
+        if (str_contains($mensagem, 'SEM_ALTERACOES')) return [409, adm_t('Não há alterações no rascunho para publicar.')];
+        if (preg_match('/1644\s+(.+)$/u', $mensagem, $m)) return [422, IdiomaService::mensagemBanco(trim($m[1]))];
         error_log('IdiomaAdminService: ' . $mensagem);
-        return [500, 'Não foi possível concluir a operação.'];
+        return [500, adm_t('Não foi possível concluir a operação.')];
     }
 }

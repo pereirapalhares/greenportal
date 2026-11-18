@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/IdiomaService.php';
+
 /**
  * Relatório de Atendimento Legal (slide 27 da apresentação Atlas Schindler 2026), em PDF ou Excel.
  *
@@ -37,6 +39,214 @@ final class RelatorioAtendimentoLegal
     private const COR_STATUS = ['OK' => '#198754', 'ATENCAO' => '#c98a00', 'FALHA' => '#c62f3d', 'CRITICO' => '#8b0f1c'];
     private const AREAS_LEGAIS = ['MEIO_AMBIENTE' => 'Meio ambiente', 'SEGURANCA' => 'Segurança', 'QUALIDADE' => 'Qualidade', 'RESPOSABILIDADE' => 'Social'];
 
+    /** Textos do relatório em EN/ES (Onda 2 de idiomas); o idioma vem do pedido (ExportacaoTextos::usarIdiomaDoPedido). */
+    private const TR = [
+        'Atendido' => ['Compliant', 'Atendido'],
+        'Parcialmente atendido' => ['Partially compliant', 'Parcialmente atendido'],
+        'Não atendido' => ['Not compliant', 'No atendido'],
+        'Indefinido' => ['Undefined', 'Indefinido'],
+        'Licença' => ['License', 'Licencia'],
+        'Medição e monitoramento' => ['Measurement and monitoring', 'Medición y monitoreo'],
+        'Treinamento' => ['Training', 'Capacitación'],
+        'Infraestrutura' => ['Infrastructure', 'Infraestructura'],
+        'Controle' => ['Control', 'Control'],
+        'Fornecedor' => ['Supplier', 'Proveedor'],
+        'Ok' => ['Ok', 'Ok'],
+        'Atenção' => ['Attention', 'Atención'],
+        'Falha' => ['Failure', 'Falla'],
+        'Vencido' => ['Expired', 'Vencido'],
+        'Crítico' => ['Critical', 'Crítico'],
+        'Alto' => ['High', 'Alto'],
+        'Moderado' => ['Moderate', 'Moderado'],
+        'Baixo' => ['Low', 'Bajo'],
+        'Não avaliado' => ['Not assessed', 'No evaluado'],
+        'Meio ambiente' => ['Environment', 'Medio ambiente'],
+        'Segurança' => ['Safety', 'Seguridad'],
+        'Qualidade' => ['Quality', 'Calidad'],
+        'Social' => ['Social', 'Social'],
+        'Empresa' => ['Company', 'Empresa'],
+        'Válida' => ['Valid', 'Válida'],
+        'Válida (em protocolo)' => ['Valid (renewal filed)', 'Válida (en protocolo)'],
+        'Em protocolo (prazo não informado)' => ['Renewal filed (deadline not provided)', 'En protocolo (plazo no informado)'],
+        'Vencida' => ['Expired', 'Vencida'],
+        'Sem data de vencimento' => ['No expiry date', 'Sin fecha de vencimiento'],
+        'Sim' => ['Yes', 'Sí'],
+        'Não' => ['No', 'No'],
+        'Unidade ' => ['Unit ', 'Unidad '],
+        'Avaliação do responsável' => ['Owner\'s assessment', 'Evaluación del responsable'],
+        'Calculada' => ['Calculated', 'Calculada'],
+        'Avaliação mantida' => ['Assessment kept', 'Evaluación mantenida'],
+        'Calculada aceita' => ['Calculated accepted', 'Calculada aceptada'],
+        'Sem área' => ['No area', 'Sin área'],
+        'Unidade' => ['Unit', 'Unidad'],
+        'Nível de controle' => ['Control level', 'Nivel de control'],
+        'Avaliação' => ['Assessment', 'Evaluación'],
+        'Situação calculada' => ['Calculated status', 'Situación calculada'],
+        'Divergência' => ['Divergence', 'Divergencia'],
+        'Situação consolidada' => ['Consolidated status', 'Situación consolidada'],
+        'Âmbito' => ['Scope', 'Ámbito'],
+        'Lei revogada' => ['Repealed law', 'Ley derogada'],
+        'Sem evidência' => ['No evidence', 'Sin evidencia'],
+        'Responsável' => ['Owner', 'Responsable'],
+        'Busca: "' => ['Search: "', 'Búsqueda: "'],
+        'Todos os requisitos aplicáveis' => ['All applicable requirements', 'Todos los requisitos aplicables'],
+        'Relatório de Atendimento Legal · ' => ['Legal Compliance Report · ', 'Informe de Cumplimiento Legal · '],
+        ' · emitido em ' => [' · issued on ', ' · emitido el '],
+        'Página {PAGE_NUM} de {PAGE_COUNT}' => ['Page {PAGE_NUM} of {PAGE_COUNT}', 'Página {PAGE_NUM} de {PAGE_COUNT}'],
+        'Não foi possível gravar o PDF.' => ['The PDF could not be saved.', 'No fue posible guardar el PDF.'],
+        'Atendimento e risco (duas dimensões)' => ['Compliance and risk (two dimensions)', 'Cumplimiento y riesgo (dos dimensiones)'],
+        '% de atendimento (' => ['% compliance (', '% de cumplimiento ('],
+        ' de ' => [' of ', ' de '],
+        ' itens aplicáveis)' => [' applicable items)', ' ítems aplicables)'],
+        'pendências críticas (ação imediata)' => ['critical pending items (immediate action)', 'pendencias críticas (acción inmediata)'],
+        'risco ' => ['risk ', 'riesgo '],
+        'Risco do requisito' => ['Requirement risk', 'Riesgo del requisito'],
+        'Total' => ['Total', 'Total'],
+        '% de atendimento = itens aplicáveis atendidos (Ok ou Atenção) ÷ itens aplicáveis (sem os marcados como "não se aplica"). Risco do requisito = pior risco entre os itens aplicáveis (Severidade × Probabilidade de cada item: 1–3 Baixo, 4–6 Moderado, 8–9 Alto, 12–16 ou Severidade 4 Crítico). As duas dimensões são independentes: um requisito pode estar 100% atendido e ter risco Crítico. Pendência crítica = item aplicável não atendido (Falha ou Vencido) com risco Crítico.' => ['% compliance = compliant applicable items (Ok or Attention) ÷ applicable items (excluding those marked "not applicable"). Requirement risk = worst risk among the applicable items (Severity × Probability of each item: 1–3 Low, 4–6 Moderate, 8–9 High, 12–16 or Severity 4 Critical). The two dimensions are independent: a requirement can be 100% compliant and have Critical risk. Critical pending item = non-compliant applicable item (Failure or Expired) with Critical risk.', '% de cumplimiento = ítems aplicables atendidos (Ok o Atención) ÷ ítems aplicables (sin los marcados como "no se aplica"). Riesgo del requisito = peor riesgo entre los ítems aplicables (Severidad × Probabilidad de cada ítem: 1–3 Bajo, 4–6 Moderado, 8–9 Alto, 12–16 o Severidad 4 Crítico). Las dos dimensiones son independientes: un requisito puede estar 100% atendido y tener riesgo Crítico. Pendencia crítica = ítem aplicable no atendido (Falla o Vencido) con riesgo Crítico.'],
+        ' requisito(s) sem itens aplicáveis.' => [' requirement(s) without applicable items.', ' requisito(s) sin ítems aplicables.'],
+        'Requisitos' => ['Requirements', 'Requisitos'],
+        'Parcial' => ['Partial', 'Parcial'],
+        '% atendido*' => ['% compliant*', '% atendido*'],
+        'Distribuição' => ['Distribution', 'Distribución'],
+        'Relatório de Atendimento Legal' => ['Legal Compliance Report', 'Informe de Cumplimiento Legal'],
+        'Emitido em' => ['Issued on', 'Emitido el'],
+        'Por' => ['By', 'Por'],
+        'Filtros' => ['Filters', 'Filtros'],
+        '1. Resumo' => ['1. Summary', '1. Resumen'],
+        'requisitos' => ['requirements', 'requisitos'],
+        'Situação consolidada: a calculada a partir dos itens de gestão vinculados (licenças, medições, treinamentos, infraestrutura, controles e fornecedores) ou, quando não há itens vinculados ou o responsável manteve a avaliação com justificativa, a avaliação do responsável. ' => ['Consolidated status: the one calculated from the linked management items (licenses, measurements, trainings, infrastructure, controls and suppliers) or, when there are no linked items or the owner kept the assessment with a justification, the owner\'s assessment. ', 'Situación consolidada: la calculada a partir de los ítems de gestión vinculados (licencias, mediciones, capacitaciones, infraestructura, controles y proveedores) o, cuando no hay ítems vinculados o el responsable mantuvo la evaluación con justificación, la evaluación del responsable. '],
+        ' requisito(s) com evidências vinculadas e ' => [' requirement(s) with linked evidence and ', ' requisito(s) con evidencias vinculadas y '],
+        ' sem evidências; ' => [' without evidence; ', ' sin evidencias; '],
+        ' com divergência ou decisão registrada. * % atendido sobre os requisitos com situação definida.' => [' with a divergence or recorded decision. * % compliant over the requirements with a defined status.', ' con divergencia o decisión registrada. * % atendido sobre los requisitos con situación definida.'],
+        'Por unidade' => ['By unit', 'Por unidad'],
+        'Por área' => ['By area', 'Por área'],
+        'Área' => ['Area', 'Área'],
+        '2. Licenças: válidas, em protocolo e vencidas (' => ['2. Licenses: valid, renewal filed and expired (', '2. Licencias: válidas, en protocolo y vencidas ('],
+        'Versão ativa de cada licença, sem as entregas periódicas. Válida (em protocolo): vencida, mas com a renovação protocolada no órgão dentro do prazo; continua valendo até a resposta do órgão. Protocolada fora do prazo conta como vencida. Em protocolo (prazo não informado): marcada em protocolo, mas sem as datas para saber se foi no prazo; fica em atenção até as datas serem informadas.' => ['Active version of each license, without periodic submissions. Valid (renewal filed): expired, but with the renewal filed with the agency within the deadline; it remains valid until the agency\'s answer. Filed after the deadline counts as expired. Renewal filed (deadline not provided): marked as filed, but without the dates to know whether it was on time; it stays under attention until the dates are provided.', 'Versión activa de cada licencia, sin las entregas periódicas. Válida (en protocolo): vencida, pero con la renovación protocolada en el órgano dentro del plazo; sigue valiendo hasta la respuesta del órgano. Protocolada fuera del plazo cuenta como vencida. En protocolo (plazo no informado): marcada en protocolo, pero sin las fechas para saber si fue en plazo; queda en atención hasta que se informen las fechas.'],
+        'Licenças' => ['Licenses', 'Licencias'],
+        'Válidas' => ['Valid', 'Válidas'],
+        'Em protocolo' => ['Renewal filed', 'En protocolo'],
+        'Em protocolo (sem prazo)' => ['Renewal filed (no deadline)', 'En protocolo (sin plazo)'],
+        'Vencidas' => ['Expired', 'Vencidas'],
+        'Sem data' => ['No date', 'Sin fecha'],
+        'Licenças vencidas e em protocolo (' => ['Expired and renewal-filed licenses (', 'Licencias vencidas y en protocolo ('],
+        'Vencimento' => ['Expiry', 'Vencimiento'],
+        'Situação' => ['Status', 'Situación'],
+        'Protocolo' => ['Filing', 'Protocolo'],
+        'Motivo' => ['Reason', 'Motivo'],
+        'Nenhuma licença vencida ou em protocolo.' => ['No expired or renewal-filed licenses.', 'Ninguna licencia vencida o en protocolo.'],
+        'Pendências críticas — ação imediata (' => ['Critical pending items — immediate action (', 'Pendencias críticas — acción inmediata ('],
+        'Requisito' => ['Requirement', 'Requisito'],
+        'Item de gestão' => ['Management item', 'Ítem de gestión'],
+        'Status' => ['Status', 'Estado'],
+        'Sev. × Prob.' => ['Sev. × Prob.', 'Sev. × Prob.'],
+        'sem responsável' => ['no owner', 'sin responsable'],
+        'Nenhum item não atendido com risco Crítico.' => ['No non-compliant item with Critical risk.', 'Ningún ítem no atendido con riesgo Crítico.'],
+        '3. Requisitos não atendidos (' => ['3. Non-compliant requirements (', '3. Requisitos no atendidos ('],
+        'Norma' => ['Standard', 'Norma'],
+        'Origem' => ['Origin', 'Origen'],
+        'Motivo / evidência' => ['Reason / evidence', 'Motivo / evidencia'],
+        'Avaliação do responsável: não atendido' => ['Owner\'s assessment: not compliant', 'Evaluación del responsable: no atendido'],
+        'Nenhum requisito não atendido com os filtros aplicados.' => ['No non-compliant requirement with the applied filters.', 'Ningún requisito no atendido con los filtros aplicados.'],
+        '4. Divergências entre a avaliação do responsável e a situação calculada (' => ['4. Divergences between the owner\'s assessment and the calculated status (', '4. Divergencias entre la evaluación del responsable y la situación calculada ('],
+        'Decisão' => ['Decision', 'Decisión'],
+        'Justificativa' => ['Justification', 'Justificación'],
+        'Pendente' => ['Pending', 'Pendiente'],
+        'Nenhuma divergência.' => ['No divergences.', 'Ninguna divergencia.'],
+        '5. Requisitos com evidências de atendimento (' => ['5. Requirements with compliance evidence (', '5. Requisitos con evidencias de cumplimiento ('],
+        ' · Nível de controle: ' => [' · Control level: ', ' · Nivel de control: '],
+        'Calculada: ' => ['Calculated: ', 'Calculada: '],
+        ' · Avaliação do responsável: ' => [' · Owner\'s assessment: ', ' · Evaluación del responsable: '],
+        ' · Vale: ' => [' · Applies: ', ' · Vale: '],
+        'Atendimento: ' => ['Compliance: ', 'Cumplimiento: '],
+        ' itens aplicáveis' => [' applicable items', ' ítems aplicables'],
+        ' não se aplica' => [' not applicable', ' no se aplica'],
+        ') · Risco: ' => [') · Risk: ', ') · Riesgo: '],
+        ' pendência(s) crítica(s)' => [' critical pending item(s)', ' pendencia(s) crítica(s)'],
+        ' item(ns) com risco não avaliado' => [' item(s) with risk not assessed', ' ítem(s) con riesgo no evaluado'],
+        'Risco' => ['Risk', 'Riesgo'],
+        'Não se aplica' => ['Not applicable', 'No se aplica'],
+        ' — Não se aplica: ' => [' — Not applicable: ', ' — No se aplica: '],
+        'Nenhum requisito com itens de gestão vinculados.' => ['No requirement with linked management items.', 'Ningún requisito con ítems de gestión vinculados.'],
+        '6. Requisitos sem evidências vinculadas (' => ['6. Requirements without linked evidence (', '6. Requisitos sin evidencias vinculadas ('],
+        'Requisitos sem nenhum item de gestão vinculado; vale a avaliação do responsável. Vincular licenças, medições, treinamentos, infraestrutura, controles ou fornecedores permite calcular o atendimento.' => ['Requirements without any linked management item; the owner\'s assessment applies. Linking licenses, measurements, trainings, infrastructure, controls or suppliers makes it possible to calculate compliance.', 'Requisitos sin ningún ítem de gestión vinculado; vale la evaluación del responsable. Vincular licencias, mediciones, capacitaciones, infraestructura, controles o proveedores permite calcular el cumplimiento.'],
+        'Com evidências vinculadas' => ['With linked evidence', 'Con evidencias vinculadas'],
+        'Sem evidências vinculadas' => ['Without linked evidence', 'Sin evidencias vinculadas'],
+        'Com divergência ou decisão' => ['With divergence or decision', 'Con divergencia o decisión'],
+        '% atendido' => ['% compliant', '% atendido'],
+        'Licenças (sem entregas periódicas)' => ['Licenses (without periodic submissions)', 'Licencias (sin entregas periódicas)'],
+        'Quantidade' => ['Quantity', 'Cantidad'],
+        '% de atendimento (itens aplicáveis)' => ['% compliance (applicable items)', '% de cumplimiento (ítems aplicables)'],
+        'Pendências críticas (ação imediata)' => ['Critical pending items (immediate action)', 'Pendencias críticas (acción inmediata)'],
+        'Áreas' => ['Areas', 'Áreas'],
+        'Artigos' => ['Articles', 'Artículos'],
+        '% atendimento' => ['% compliance', '% cumplimiento'],
+        'Pendências críticas' => ['Critical pending items', 'Pendencias críticas'],
+        'Itens aplicáveis' => ['Applicable items', 'Ítems aplicables'],
+        'Itens atendidos' => ['Compliant items', 'Ítems atendidos'],
+        'Itens não se aplica' => ['Not applicable items', 'Ítems no se aplica'],
+        'Itens sem risco avaliado' => ['Items without assessed risk', 'Ítems sin riesgo evaluado'],
+        'Decidido por' => ['Decided by', 'Decidido por'],
+        'Itens de gestão' => ['Management items', 'Ítems de gestión'],
+        'Motivo da situação calculada' => ['Reason for the calculated status', 'Motivo de la situación calculada'],
+        'Código da legislação' => ['Legislation code', 'Código de la legislación'],
+        'Código da unidade' => ['Unit code', 'Código de la unidad'],
+        'Severidade' => ['Severity', 'Severidad'],
+        'Probabilidade' => ['Probability', 'Probabilidad'],
+        'Pontos' => ['Points', 'Puntos'],
+        'Justificativa (não se aplica)' => ['Justification (not applicable)', 'Justificación (no se aplica)'],
+        'Situação consolidada do requisito' => ['Consolidated requirement status', 'Situación consolidada del requisito'],
+        'Resumo' => ['Summary', 'Resumen'],
+        'Evidências' => ['Evidence', 'Evidencias'],
+        'Severidade × Probabilidade' => ['Severity × Probability', 'Severidad × Probabilidad'],
+        'Tipo documental' => ['Document type', 'Tipo documental'],
+        'Número do protocolo' => ['Filing number', 'Número del protocolo'],
+        'Protocolado em' => ['Filed on', 'Protocolado el'],
+        'Protocolado no prazo' => ['Filed on time', 'Protocolado en plazo'],
+        'Não foi possível criar a planilha.' => ['The spreadsheet could not be created.', 'No fue posible crear la planilla.'],
+        'Não foi possível gravar a planilha.' => ['The spreadsheet could not be saved.', 'No fue posible guardar la planilla.'],
+        'Nº ' => ['No. ', 'N.º '],
+        ' em ' => [' on ', ' el '],
+        '50 a 99%' => ['50 to 99%', '50 a 99%'],
+        '1 a 49%' => ['1 to 49%', '1 a 49%'],
+    ];
+
+    /** Texto traduzido (chave relatorio_legal.<md5>, editável em Administração › Textos e idiomas). */
+    public static function l(string $pt): string
+    {
+        if (!isset(self::TR[$pt])) return $pt;
+        [$en, $es] = self::TR[$pt];
+        return IdiomaService::t(self::chave($pt), ['pt' => $pt, 'en' => $en, 'es' => $es]);
+    }
+
+    public static function chave(string $pt): string { return 'relatorio_legal.t' . substr(md5($pt), 0, 10); }
+
+    /** Itens para registrar no banco (scripts/aplicar-onda2-banco-idiomas.php). */
+    public static function itensIdioma(): array
+    {
+        $itens = []; $o = 0;
+        foreach (self::TR as $pt => [$en, $es]) $itens[] = ['chave' => self::chave($pt), 'tipo' => 'TEXTO', 'ordem' => ++$o, 'descricao' => 'Relatório de Atendimento Legal', 'pt' => $pt, 'en' => $en, 'es' => $es];
+        return $itens;
+    }
+
+    private static function rot(string $const): array
+    {
+        static $cache = [];
+        $k = $const . '|' . IdiomaService::idioma();
+        return $cache[$k] ??= array_map(static fn(string $v): string => self::l($v), constant('self::' . $const));
+    }
+
+    private static function data(int|false $ts, bool $hora = false): string
+    {
+        if ($ts === false) return '';
+        $en = IdiomaService::idioma() === 'en';
+        return date(($en ? 'm/d/Y' : 'd/m/Y') . ($hora ? ' H:i' : ''), $ts);
+    }
+
+    private static function sepDec(): string { return IdiomaService::idioma() === 'en' ? '.' : ','; }
+
+    private static function num(float $v): string { return IdiomaService::idioma() === 'en' ? number_format($v, 1, '.', ',') : number_format($v, 1, ',', '.'); }
+
     /** Gera o arquivo e devolve o caminho. */
     public static function gerar(PDO $pdo, array $job, string $dir, string $base, string $userName, string $root): string
     {
@@ -51,8 +261,8 @@ final class RelatorioAtendimentoLegal
         $busca = trim((string)($job['busca'] ?? ''));
         $d = self::dados($pdo, $fonte, $filtros, $busca);
         $meta = [
-            'empresa' => trim((string)($cfg['empresa'] ?? '')) ?: 'Empresa',
-            'emitido_em' => date('d/m/Y H:i'),
+            'empresa' => trim((string)($cfg['empresa'] ?? '')) ?: self::l('Empresa'),
+            'emitido_em' => self::data(time(), true),
             'emitido_por' => $userName,
             'filtros' => self::textoFiltros($filtros, $busca),
         ];
@@ -110,19 +320,19 @@ final class RelatorioAtendimentoLegal
             $ev = $itens[$chave] ?? [];
             usort($ev, static fn($a, $b) => [$ordemStatus[$a['STATUS']] ?? 9, $a['AREA'], $a['ITEM']] <=> [$ordemStatus[$b['STATUS']] ?? 9, $b['AREA'], $b['ITEM']]);
             $areas = [];
-            foreach (self::AREAS_LEGAIS as $col => $rot) if (strcasecmp(trim((string)($r[$col] ?? '')), 'Sim') === 0) $areas[] = $rot;
+            foreach (self::rot('AREAS_LEGAIS') as $col => $rot) if (strcasecmp(trim((string)($r[$col] ?? '')), 'Sim') === 0) $areas[] = $rot;
             $lista[] = [
                 'leg' => (int)$r['CODLEGISLACAO'], 'unid' => (int)$r['CODUNIDADE'],
-                'unidade' => trim((string)($r['UNIDADE'] ?? $r['DSCUNIDADE'] ?? '')) ?: 'Unidade ' . $r['CODUNIDADE'],
+                'unidade' => trim((string)($r['UNIDADE'] ?? $r['DSCUNIDADE'] ?? '')) ?: self::l('Unidade ') . $r['CODUNIDADE'],
                 'codigo' => trim((string)($r['CODIGO'] ?? '')),
                 'norma' => trim(preg_replace('/\s+/', ' ', trim((string)($r['DSCTIPO'] ?? '')) . ' ' . trim((string)($r['NR'] ?? '')) . (trim((string)($r['ANO'] ?? '')) !== '' ? '/' . trim((string)$r['ANO']) : '')) ?? ''),
                 'ambito' => trim((string)($r['DSCAMBITO'] ?? '')), 'artigos' => trim((string)($r['ARTIGOS'] ?? '')),
                 'padrao' => trim(strip_tags((string)($r['PADRAO'] ?? ''))), 'poder' => trim((string)($r['PODER'] ?? '')),
                 'areas' => $areas, 'manual' => $manual, 'calc' => $calc, 'final' => $final,
-                'origem' => $s ? ((string)$s['ORIGEM_FINAL'] === 'AVALIACAO' ? 'Avaliação do responsável' : 'Calculada') : 'Avaliação do responsável',
+                'origem' => $s ? ((string)$s['ORIGEM_FINAL'] === 'AVALIACAO' ? self::l('Avaliação do responsável') : self::l('Calculada')) : self::l('Avaliação do responsável'),
                 'divergente' => ($r['DIVERGENCIA'] ?? '') === 'Sim' || ($s && (int)$s['DIVERGENTE'] === 1),
-                'decisao' => $s && (int)$s['DECISAO_VALIDA'] === 1 ? ((string)$s['DECISAO'] === 'MANTIDA' ? 'Avaliação mantida' : 'Calculada aceita') : '',
-                'decisao_por' => $s && (int)$s['DECISAO_VALIDA'] === 1 ? trim((string)$s['DECISAO_USUARIO'] . ' ' . (($s['DECISAO_EM'] ?? '') ? date('d/m/Y', strtotime((string)$s['DECISAO_EM'])) : '')) : '',
+                'decisao' => $s && (int)$s['DECISAO_VALIDA'] === 1 ? ((string)$s['DECISAO'] === 'MANTIDA' ? self::l('Avaliação mantida') : self::l('Calculada aceita')) : '',
+                'decisao_por' => $s && (int)$s['DECISAO_VALIDA'] === 1 ? trim((string)$s['DECISAO_USUARIO'] . ' ' . (($s['DECISAO_EM'] ?? '') ? self::data(strtotime((string)$s['DECISAO_EM'])) : '')) : '',
                 'justificativa' => $s && (int)$s['DECISAO_VALIDA'] === 1 ? trim((string)$s['DECISAO_JUSTIFICATIVA']) : '',
                 'motivo' => $s ? trim((string)$s['MOTIVO']) : '',
                 'itens' => $ev,
@@ -142,7 +352,7 @@ final class RelatorioAtendimentoLegal
             $tot[$q['final']]++;
             $porUnidade[$q['unidade']] ??= ['S' => 0, 'PA' => 0, 'N' => 0, 'AI' => 0];
             $porUnidade[$q['unidade']][$q['final']]++;
-            foreach ($q['areas'] ?: ['Sem área'] as $a) { $porArea[$a] ??= ['S' => 0, 'PA' => 0, 'N' => 0, 'AI' => 0]; $porArea[$a][$q['final']]++; }
+            foreach ($q['areas'] ?: [self::l('Sem área')] as $a) { $porArea[$a] ??= ['S' => 0, 'PA' => 0, 'N' => 0, 'AI' => 0]; $porArea[$a][$q['final']]++; }
             if ($q['calc'] === 'AI') $semEv++; else $comEv++;
             if ($q['divergente'] || $q['decisao'] !== '') $div++;
         }
@@ -157,13 +367,13 @@ final class RelatorioAtendimentoLegal
                 foreach ($todas as $l) {
                     $sit = (string)($l['SITUACAO_LICENCA'] ?? '');
                     if (!isset($licencas['tot'][$sit]) || ($unids !== null && !isset($unids[(int)$l['CODUNIDADE']]))) continue;
-                    $u = trim((string)$l['UNIDADE']) ?: 'Unidade ' . $l['CODUNIDADE'];
+                    $u = trim((string)$l['UNIDADE']) ?: self::l('Unidade ') . $l['CODUNIDADE'];
                     $licencas['tot'][$sit]++;
                     $licencas['unidades'][$u] ??= array_fill_keys(['VALIDA', 'PROTOCOLO', 'PROT_SEM_PRAZO', 'VENCIDA', 'SEM_DATA'], 0);
                     $licencas['unidades'][$u][$sit]++;
                     $licencas['lista'][] = ['unidade' => $u, 'licenca' => trim((string)$l['LICENCA']), 'tipo' => trim((string)($l['TIPO_DOCUMENTAL'] ?? '')),
-                        'validade' => ($l['DATA_VALIDADE'] ?? '') ? date('d/m/Y', strtotime((string)$l['DATA_VALIDADE'])) : '', 'situacao' => $sit,
-                        'protocolado_em' => ($l['PROTOCOLADO_EM'] ?? '') ? date('d/m/Y', strtotime((string)$l['PROTOCOLADO_EM'])) : '',
+                        'validade' => ($l['DATA_VALIDADE'] ?? '') ? self::data(strtotime((string)$l['DATA_VALIDADE'])) : '', 'situacao' => $sit,
+                        'protocolado_em' => ($l['PROTOCOLADO_EM'] ?? '') ? self::data(strtotime((string)$l['PROTOCOLADO_EM'])) : '',
                         'numero' => trim((string)($l['NUMERO_PROTOCOLO'] ?? '')), 'no_prazo' => (string)($l['PROTOCOLO_NO_PRAZO'] ?? ''),
                         'motivo' => trim((string)($l['MOTIVO_SITUACAO'] ?? '')), 'responsavel' => trim((string)($l['RESPONSAVEL'] ?? ''))];
                 }
@@ -175,7 +385,7 @@ final class RelatorioAtendimentoLegal
         // Migração 341: as duas dimensões (% de atendimento e risco), a matriz e as pendências críticas das linhas do relatório
         $risco = null;
         if ($situacoes && array_key_exists('PCT_ATENDIMENTO', reset($situacoes))) {
-            $risco = ['tot' => array_fill_keys(array_keys(self::ROT_RISCO), 0), 'matriz' => [], 'aplic' => 0, 'atend' => 0, 'pend' => [], 'sem_itens' => 0];
+            $risco = ['tot' => array_fill_keys(array_keys(self::rot('ROT_RISCO')), 0), 'matriz' => [], 'aplic' => 0, 'atend' => 0, 'pend' => [], 'sem_itens' => 0];
             $chaves = [];
             foreach ($lista as $q) {
                 $chaves[$q['leg'] . ':' . $q['unid']] = $q;
@@ -191,7 +401,7 @@ final class RelatorioAtendimentoLegal
                     if (!isset($chaves[$k])) continue;
                     $ki = $k . ':' . $p['AREA'] . ':' . $p['ITEM_ID'];
                     $risco['pend'][$ki] ??= ['unidade' => $chaves[$k]['unidade'], 'codigo' => $chaves[$k]['codigo'], 'norma' => $chaves[$k]['norma'],
-                        'area' => self::ROT_AREA_ITEM[(string)$p['AREA']] ?? (string)$p['AREA'], 'item' => (string)$p['ITEM'], 'status' => (string)$p['STATUS'], 'motivo' => (string)$p['MOTIVO'],
+                        'area' => self::rot('ROT_AREA_ITEM')[(string)$p['AREA']] ?? (string)$p['AREA'], 'item' => (string)$p['ITEM'], 'status' => (string)$p['STATUS'], 'motivo' => (string)$p['MOTIVO'],
                         'sxp' => (int)$p['SEVERIDADE'] . ' × ' . (int)$p['PROBABILIDADE'], 'resp' => []];
                     if (trim((string)$p['RESPONSAVEL_ITEM']) !== '') $risco['pend'][$ki]['resp'][trim((string)$p['RESPONSAVEL_ITEM'])] = true;
                 }
@@ -204,22 +414,22 @@ final class RelatorioAtendimentoLegal
 
     private static function textoFiltros(array $filtros, string $busca): string
     {
-        $nomes = ['UNIDADE' => 'Unidade', 'PODER' => 'Nível de controle', 'ATENDIDO' => 'Avaliação', 'SITUACAO_CALCULADA' => 'Situação calculada',
-            'DIVERGENCIA' => 'Divergência', 'SITUACAO_CONSOLIDADA' => 'Situação consolidada', 'DSCAMBITO' => 'Âmbito', 'LEI_REVOGADA' => 'Lei revogada',
-            'SEM_EVIDENCIA' => 'Sem evidência', 'RESPONSAVEL_IDS' => 'Responsável', 'MEIO_AMBIENTE' => 'Meio ambiente', 'SEGURANCA' => 'Segurança',
-            'QUALIDADE' => 'Qualidade', 'RESPOSABILIDADE' => 'Social'];
+        $nomes = ['UNIDADE' => self::l('Unidade'), 'PODER' => self::l('Nível de controle'), 'ATENDIDO' => self::l('Avaliação'), 'SITUACAO_CALCULADA' => self::l('Situação calculada'),
+            'DIVERGENCIA' => self::l('Divergência'), 'SITUACAO_CONSOLIDADA' => self::l('Situação consolidada'), 'DSCAMBITO' => self::l('Âmbito'), 'LEI_REVOGADA' => self::l('Lei revogada'),
+            'SEM_EVIDENCIA' => self::l('Sem evidência'), 'RESPONSAVEL_IDS' => self::l('Responsável'), 'MEIO_AMBIENTE' => self::l('Meio ambiente'), 'SEGURANCA' => self::l('Segurança'),
+            'QUALIDADE' => self::l('Qualidade'), 'RESPOSABILIDADE' => self::l('Social')];
         $p = [];
         foreach ($filtros as $k => $v) {
             if (is_array($v)) $v = (string)($v['value'] ?? json_encode($v, JSON_UNESCAPED_UNICODE));
             $v = trim((string)$v); if ($v === '') continue;
-            if ($k === 'LEI_REVOGADA') $v = strtoupper($v) === 'NAO' ? 'Não' : (strtoupper($v) === 'SIM' ? 'Sim' : $v);
+            if ($k === 'LEI_REVOGADA') $v = strtoupper($v) === 'NAO' ? self::l('Não') : (strtoupper($v) === 'SIM' ? self::l('Sim') : $v);
             $p[] = ($nomes[$k] ?? $k) . ': ' . $v;
         }
-        if ($busca !== '') $p[] = 'Busca: "' . $busca . '"';
-        return $p ? implode(' · ', $p) : 'Todos os requisitos aplicáveis';
+        if ($busca !== '') $p[] = self::l('Busca: "') . $busca . '"';
+        return $p ? implode(' · ', $p) : self::l('Todos os requisitos aplicáveis');
     }
 
-    private static function pct(int $parte, int $total): string { return $total > 0 ? number_format(100 * $parte / $total, 1, ',', '.') . '%' : '–'; }
+    private static function pct(int $parte, int $total): string { return $total > 0 ? self::num(100 * $parte / $total) . '%' : '–'; }
 
     // ------------------------------------------------------------------ PDF
     private static function pdf(string $arquivo, array $d, array $meta, string $root): void
@@ -236,54 +446,54 @@ final class RelatorioAtendimentoLegal
         $pdf->render();
         $canvas = $pdf->getCanvas();
         $fonte = $pdf->getFontMetrics()->getFont('DejaVu Sans');
-        $rodape = 'Relatório de Atendimento Legal · ' . $meta['empresa'] . ' · emitido em ' . $meta['emitido_em'];
+        $rodape = self::l('Relatório de Atendimento Legal · ') . $meta['empresa'] . self::l(' · emitido em ') . $meta['emitido_em'];
         $canvas->page_text(34, 818, $rodape, $fonte, 6.5, [0.42, 0.51, 0.47]);
-        $canvas->page_text(510, 818, 'Página {PAGE_NUM} de {PAGE_COUNT}', $fonte, 6.5, [0.42, 0.51, 0.47]);
-        if (file_put_contents($arquivo, $pdf->output()) === false) throw new RuntimeException('Não foi possível gravar o PDF.');
+        $canvas->page_text(510, 818, self::l('Página {PAGE_NUM} de {PAGE_COUNT}'), $fonte, 6.5, [0.42, 0.51, 0.47]);
+        if (file_put_contents($arquivo, $pdf->output()) === false) throw new RuntimeException(self::l('Não foi possível gravar o PDF.'));
     }
 
     private static function e(string $v): string { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
 
     private static function selo(string $cod): string
     {
-        return '<span class="selo" style="background:' . self::COR_SIT[$cod] . '">' . self::e(self::ROT_SIT[$cod]) . '</span>';
+        return '<span class="selo" style="background:' . self::COR_SIT[$cod] . '">' . self::e(self::rot('ROT_SIT')[$cod]) . '</span>';
     }
 
     private static function seloRisco(string $r): string
     {
         if ($r === '') return '';
-        return '<span class="selo" style="background:' . (self::COR_RISCO[$r] ?? '#6c757d') . '">' . self::e(self::ROT_RISCO[$r] ?? $r) . '</span>';
+        return '<span class="selo" style="background:' . (self::COR_RISCO[$r] ?? '#6c757d') . '">' . self::e(self::rot('ROT_RISCO')[$r] ?? $r) . '</span>';
     }
 
-    private static function pctTexto(?float $v): string { return $v === null ? '–' : rtrim(rtrim(number_format($v, 1, ',', '.'), '0'), ',') . '%'; }
+    private static function pctTexto(?float $v): string { return $v === null ? '–' : rtrim(rtrim(self::num($v), '0'), self::sepDec()) . '%'; }
 
     /** Seção das duas dimensões (migração 341): cartões, matriz risco × % de atendimento e pendências críticas. */
     private static function htmlRisco(array $r): string
     {
         $e = [self::class, 'e'];
-        $h = '<h3>Atendimento e risco (duas dimensões)</h3><table class="cartoes" style="width:100%;border-collapse:collapse"><tr>'
-            . '<td><div class="n">' . self::pctTexto($r['aplic'] > 0 ? 100 * $r['atend'] / $r['aplic'] : null) . '</div><div class="l">% de atendimento (' . $r['atend'] . ' de ' . $r['aplic'] . ' itens aplicáveis)</div></td>'
-            . '<td><div class="n" style="color:#c62f3d">' . count($r['pend']) . '</div><div class="l">pendências críticas (ação imediata)</div></td>';
-        foreach (['CRITICO', 'ALTO', 'MODERADO', 'BAIXO', 'NAO_AVALIADO'] as $k) $h .= '<td><div class="n" style="color:' . self::COR_RISCO[$k] . '">' . (int)$r['tot'][$k] . '</div><div class="l">risco ' . $e(mb_strtolower(self::ROT_RISCO[$k])) . '</div></td>';
+        $h = ('<h3>' . self::l('Atendimento e risco (duas dimensões)') . '</h3><table class="cartoes" style="width:100%;border-collapse:collapse"><tr>')
+            . '<td><div class="n">' . self::pctTexto($r['aplic'] > 0 ? 100 * $r['atend'] / $r['aplic'] : null) . ('</div><div class="l">' . self::l('% de atendimento (')) . $r['atend'] . self::l(' de ') . $r['aplic'] . (self::l(' itens aplicáveis)') . '</div></td>')
+            . '<td><div class="n" style="color:#c62f3d">' . count($r['pend']) . ('</div><div class="l">' . self::l('pendências críticas (ação imediata)') . '</div></td>');
+        foreach (['CRITICO', 'ALTO', 'MODERADO', 'BAIXO', 'NAO_AVALIADO'] as $k) $h .= '<td><div class="n" style="color:' . self::COR_RISCO[$k] . '">' . (int)$r['tot'][$k] . ('</div><div class="l">' . self::l('risco ')) . $e(mb_strtolower(self::rot('ROT_RISCO')[$k])) . '</div></td>';
         $h .= '</tr></table>';
-        $faixas = ['F100' => '100%', 'F50' => '50 a 99%', 'F1' => '1 a 49%', 'F0' => '0%'];
-        $h .= '<table class="grade" style="width:70%"><thead><tr><th class="esq">Risco do requisito</th>';
+        $faixas = ['F100' => '100%', 'F50' => self::l('50 a 99%'), 'F1' => self::l('1 a 49%'), 'F0' => '0%'];
+        $h .= ('<table class="grade" style="width:70%"><thead><tr><th class="esq">' . self::l('Risco do requisito') . '</th>');
         foreach ($faixas as $f) $h .= '<th>' . $e($f) . '</th>';
-        $h .= '<th>Total</th></tr></thead><tbody>';
-        foreach (self::ROT_RISCO as $k => $rot) {
+        $h .= ('<th>' . self::l('Total') . '</th></tr></thead><tbody>');
+        foreach (self::rot('ROT_RISCO') as $k => $rot) {
             $l = $r['matriz'][$k] ?? []; $tl = array_sum(array_intersect_key($l, $faixas));
             $h .= '<tr><td class="esq">' . self::seloRisco($k) . '</td>';
             foreach (array_keys($faixas) as $f) { $n = (int)($l[$f] ?? 0); $h .= '<td' . ($n > 0 && $k === 'CRITICO' && $f !== 'F100' ? ' style="background:#f8d7da;font-weight:bold"' : '') . '>' . ($n ?: '·') . '</td>'; }
             $h .= '<td><b>' . $tl . '</b></td></tr>';
         }
-        $h .= '</tbody></table><p class="nota">% de atendimento = itens aplicáveis atendidos (Ok ou Atenção) ÷ itens aplicáveis (sem os marcados como "não se aplica"). Risco do requisito = pior risco entre os itens aplicáveis (Severidade × Probabilidade de cada item: 1–3 Baixo, 4–6 Moderado, 8–9 Alto, 12–16 ou Severidade 4 Crítico). As duas dimensões são independentes: um requisito pode estar 100% atendido e ter risco Crítico. Pendência crítica = item aplicável não atendido (Falha ou Vencido) com risco Crítico.'
-            . ($r['sem_itens'] ? ' ' . $r['sem_itens'] . ' requisito(s) sem itens aplicáveis.' : '') . '</p>';
+        $h .= ('</tbody></table><p class="nota">' . self::l('% de atendimento = itens aplicáveis atendidos (Ok ou Atenção) ÷ itens aplicáveis (sem os marcados como "não se aplica"). Risco do requisito = pior risco entre os itens aplicáveis (Severidade × Probabilidade de cada item: 1–3 Baixo, 4–6 Moderado, 8–9 Alto, 12–16 ou Severidade 4 Crítico). As duas dimensões são independentes: um requisito pode estar 100% atendido e ter risco Crítico. Pendência crítica = item aplicável não atendido (Falha ou Vencido) com risco Crítico.'))
+            . ($r['sem_itens'] ? ' ' . $r['sem_itens'] . self::l(' requisito(s) sem itens aplicáveis.') : '') . '</p>';
         return $h;
     }
 
     private static function seloStatus(string $st): string
     {
-        return '<span class="selo" style="background:' . (self::COR_STATUS[$st] ?? '#6c757d') . '">' . self::e(self::ROT_STATUS[$st] ?? $st) . '</span>';
+        return '<span class="selo" style="background:' . (self::COR_STATUS[$st] ?? '#6c757d') . '">' . self::e(self::rot('ROT_STATUS')[$st] ?? $st) . '</span>';
     }
 
     private static function barra(array $c): string
@@ -297,7 +507,7 @@ final class RelatorioAtendimentoLegal
 
     private static function tabelaContagem(string $titulo, array $grupos): string
     {
-        $h = '<table class="grade"><thead><tr><th class="esq">' . self::e($titulo) . '</th><th>Requisitos</th><th>Atendido</th><th>Parcial</th><th>Não atendido</th><th>Indefinido</th><th>% atendido*</th><th class="esq" style="width:22%">Distribuição</th></tr></thead><tbody>';
+        $h = '<table class="grade"><thead><tr><th class="esq">' . self::e($titulo) . ('</th><th>' . self::l('Requisitos') . '</th><th>' . self::l('Atendido') . '</th><th>' . self::l('Parcial') . '</th><th>' . self::l('Não atendido') . '</th><th>' . self::l('Indefinido') . '</th><th>' . self::l('% atendido*') . '</th><th class="esq" style="width:22%">' . self::l('Distribuição') . '</th></tr></thead><tbody>');
         foreach ($grupos as $nome => $c) {
             $t = array_sum($c);
             $h .= '<tr><td class="esq">' . self::e((string)$nome) . '</td><td>' . $t . '</td><td>' . $c['S'] . '</td><td>' . $c['PA'] . '</td><td>' . $c['N'] . '</td><td>' . $c['AI'] . '</td><td>'
@@ -321,85 +531,85 @@ final class RelatorioAtendimentoLegal
             . '.req .cab{font-weight:bold;font-size:8pt}.req .linha{color:#46574f;margin-top:1px}.nota{color:#5f7169;font-size:7pt}.quebra{page-break-before:always}.lista{line-height:1.45;font-size:7.2pt}';
         $h = '<html><head><meta charset="utf-8"><style>' . $css . '</style></head><body>';
         // Capa / cabeçalho
-        $h .= '<h1>Relatório de Atendimento Legal</h1><div class="sub">' . $e($meta['empresa']) . '</div>'
-            . '<table class="meta" style="margin-top:6px"><tr><td class="r">Emitido em</td><td>' . $e($meta['emitido_em']) . '</td><td class="r">Por</td><td>' . $e($meta['emitido_por']) . '</td></tr>'
-            . '<tr><td class="r">Filtros</td><td colspan="3">' . $e($meta['filtros']) . '</td></tr></table>';
+        $h .= ('<h1>' . self::l('Relatório de Atendimento Legal') . '</h1><div class="sub">') . $e($meta['empresa']) . '</div>'
+            . ('<table class="meta" style="margin-top:6px"><tr><td class="r">' . self::l('Emitido em') . '</td><td>') . $e($meta['emitido_em']) . ('</td><td class="r">' . self::l('Por') . '</td><td>') . $e($meta['emitido_por']) . '</td></tr>'
+            . ('<tr><td class="r">' . self::l('Filtros') . '</td><td colspan="3">') . $e($meta['filtros']) . '</td></tr></table>';
         // 1. Resumo
-        $h .= '<h2>1. Resumo</h2><table class="cartoes" style="width:100%;border-collapse:collapse"><tr>'
-            . '<td><div class="n">' . $total . '</div><div class="l">requisitos</div></td>';
-        foreach (['S', 'PA', 'N', 'AI'] as $k) $h .= '<td><div class="n" style="color:' . self::COR_SIT[$k] . '">' . $tot[$k] . '</div><div class="l">' . $e(self::ROT_SIT[$k]) . ' (' . self::pct($tot[$k], $total) . ')</div></td>';
+        $h .= ('<h2>' . self::l('1. Resumo') . '</h2><table class="cartoes" style="width:100%;border-collapse:collapse"><tr>')
+            . '<td><div class="n">' . $total . ('</div><div class="l">' . self::l('requisitos') . '</div></td>');
+        foreach (['S', 'PA', 'N', 'AI'] as $k) $h .= '<td><div class="n" style="color:' . self::COR_SIT[$k] . '">' . $tot[$k] . '</div><div class="l">' . $e(self::rot('ROT_SIT')[$k]) . ' (' . self::pct($tot[$k], $total) . ')</div></td>';
         $h .= '</tr></table>';
-        $h .= '<p>' . self::barra($tot) . '</p><p class="nota">Situação consolidada: a calculada a partir dos itens de gestão vinculados (licenças, medições, treinamentos, infraestrutura, controles e fornecedores) ou, quando não há itens vinculados ou o responsável manteve a avaliação com justificativa, a avaliação do responsável. '
-            . $d['com_ev'] . ' requisito(s) com evidências vinculadas e ' . $d['sem_ev'] . ' sem evidências; ' . $d['divergencias'] . ' com divergência ou decisão registrada. * % atendido sobre os requisitos com situação definida.</p>';
-        $h .= '<h3>Por unidade</h3>' . self::tabelaContagem('Unidade', $d['unidades']);
-        $h .= '<h3>Por área</h3>' . self::tabelaContagem('Área', $d['areas']);
+        $h .= '<p>' . self::barra($tot) . ('</p><p class="nota">' . self::l('Situação consolidada: a calculada a partir dos itens de gestão vinculados (licenças, medições, treinamentos, infraestrutura, controles e fornecedores) ou, quando não há itens vinculados ou o responsável manteve a avaliação com justificativa, a avaliação do responsável. '))
+            . $d['com_ev'] . self::l(' requisito(s) com evidências vinculadas e ') . $d['sem_ev'] . self::l(' sem evidências; ') . $d['divergencias'] . (self::l(' com divergência ou decisão registrada. * % atendido sobre os requisitos com situação definida.') . '</p>');
+        $h .= ('<h3>' . self::l('Por unidade') . '</h3>') . self::tabelaContagem(self::l('Unidade'), $d['unidades']);
+        $h .= ('<h3>' . self::l('Por área') . '</h3>') . self::tabelaContagem(self::l('Área'), $d['areas']);
         if ($d['risco'] !== null) $h .= self::htmlRisco($d['risco']);
         // 2. Licenças: válidas x em protocolo x vencidas
         if ($d['licencas'] !== null) {
             $lic = $d['licencas']; $lt = array_sum($lic['tot']);
-            $h .= '<h2 class="quebra">2. Licenças: válidas, em protocolo e vencidas (' . $lt . ')</h2><table class="cartoes" style="width:100%;border-collapse:collapse"><tr>';
-            foreach (self::ROT_LIC as $k => $rot) $h .= '<td><div class="n" style="color:' . self::COR_LIC[$k] . '">' . $lic['tot'][$k] . '</div><div class="l">' . $e($rot) . ' (' . self::pct($lic['tot'][$k], $lt) . ')</div></td>';
-            $h .= '</tr></table><p class="nota">Versão ativa de cada licença, sem as entregas periódicas. Válida (em protocolo): vencida, mas com a renovação protocolada no órgão dentro do prazo; continua valendo até a resposta do órgão. Protocolada fora do prazo conta como vencida. Em protocolo (prazo não informado): marcada em protocolo, mas sem as datas para saber se foi no prazo; fica em atenção até as datas serem informadas.</p>';
+            $h .= ('<h2 class="quebra">' . self::l('2. Licenças: válidas, em protocolo e vencidas (')) . $lt . ')</h2><table class="cartoes" style="width:100%;border-collapse:collapse"><tr>';
+            foreach (self::rot('ROT_LIC') as $k => $rot) $h .= '<td><div class="n" style="color:' . self::COR_LIC[$k] . '">' . $lic['tot'][$k] . '</div><div class="l">' . $e($rot) . ' (' . self::pct($lic['tot'][$k], $lt) . ')</div></td>';
+            $h .= ('</tr></table><p class="nota">' . self::l('Versão ativa de cada licença, sem as entregas periódicas. Válida (em protocolo): vencida, mas com a renovação protocolada no órgão dentro do prazo; continua valendo até a resposta do órgão. Protocolada fora do prazo conta como vencida. Em protocolo (prazo não informado): marcada em protocolo, mas sem as datas para saber se foi no prazo; fica em atenção até as datas serem informadas.') . '</p>');
             if ($lic['unidades']) {
-                $h .= '<table class="grade"><thead><tr><th class="esq">Unidade</th><th>Licenças</th><th>Válidas</th><th>Em protocolo</th><th>Em protocolo (sem prazo)</th><th>Vencidas</th><th>Sem data</th></tr></thead><tbody>';
+                $h .= ('<table class="grade"><thead><tr><th class="esq">' . self::l('Unidade') . '</th><th>' . self::l('Licenças') . '</th><th>' . self::l('Válidas') . '</th><th>' . self::l('Em protocolo') . '</th><th>' . self::l('Em protocolo (sem prazo)') . '</th><th>' . self::l('Vencidas') . '</th><th>' . self::l('Sem data') . '</th></tr></thead><tbody>');
                 foreach ($lic['unidades'] as $u => $c) $h .= '<tr><td class="esq">' . $e((string)$u) . '</td><td>' . array_sum($c) . '</td><td>' . $c['VALIDA'] . '</td><td>' . $c['PROTOCOLO'] . '</td><td>' . $c['PROT_SEM_PRAZO'] . '</td><td>' . $c['VENCIDA'] . '</td><td>' . $c['SEM_DATA'] . '</td></tr>';
                 $h .= '</tbody></table>';
             }
             $acao = array_values(array_filter($lic['lista'], static fn($l) => in_array($l['situacao'], ['VENCIDA', 'PROT_SEM_PRAZO', 'PROTOCOLO'], true)));
-            $h .= '<h3>Licenças vencidas e em protocolo (' . count($acao) . ')</h3>';
-            $h .= $acao ? self::tabela(['Unidade', 'Licença', 'Vencimento', 'Situação', 'Protocolo', 'Motivo'], array_map(static fn($l) => [
-                    $l['unidade'], $l['licenca'], $l['validade'], ['html' => '<span class="selo" style="background:' . self::COR_LIC[$l['situacao']] . '">' . self::e(self::ROT_LIC[$l['situacao']]) . '</span>'],
-                    trim(($l['numero'] !== '' ? 'Nº ' . $l['numero'] : '') . ($l['protocolado_em'] !== '' ? ' em ' . $l['protocolado_em'] : '')), $l['motivo']], $acao), [13, 25, 9, 12, 14, 27])
-                : '<p class="nota">Nenhuma licença vencida ou em protocolo.</p>';
+            $h .= ('<h3>' . self::l('Licenças vencidas e em protocolo (')) . count($acao) . ')</h3>';
+            $h .= $acao ? self::tabela([self::l('Unidade'), self::l('Licença'), self::l('Vencimento'), self::l('Situação'), self::l('Protocolo'), self::l('Motivo')], array_map(static fn($l) => [
+                    $l['unidade'], $l['licenca'], $l['validade'], ['html' => '<span class="selo" style="background:' . self::COR_LIC[$l['situacao']] . '">' . self::e(self::rot('ROT_LIC')[$l['situacao']]) . '</span>'],
+                    trim(($l['numero'] !== '' ? self::l('Nº ') . $l['numero'] : '') . ($l['protocolado_em'] !== '' ? self::l(' em ') . $l['protocolado_em'] : '')), $l['motivo']], $acao), [13, 25, 9, 12, 14, 27])
+                : ('<p class="nota">' . self::l('Nenhuma licença vencida ou em protocolo.') . '</p>');
         }
         // Pendências críticas (migração 341): ação imediata, com os responsáveis dos itens em evidência
         if ($d['risco'] !== null) {
             $pend = $d['risco']['pend'];
-            $h .= '<h2 class="quebra">Pendências críticas — ação imediata (' . count($pend) . ')</h2>';
-            $h .= $pend ? self::tabela(['Unidade', 'Requisito', 'Item de gestão', 'Status', 'Sev. × Prob.', 'Motivo', 'Responsável'], array_map(static fn($p) => [
+            $h .= ('<h2 class="quebra">' . self::l('Pendências críticas — ação imediata (')) . count($pend) . ')</h2>';
+            $h .= $pend ? self::tabela([self::l('Unidade'), self::l('Requisito'), self::l('Item de gestão'), self::l('Status'), self::l('Sev. × Prob.'), self::l('Motivo'), self::l('Responsável')], array_map(static fn($p) => [
                     $p['unidade'], trim($p['codigo'] . ($p['norma'] !== '' ? ' · ' . $p['norma'] : '')), $p['area'] . ': ' . $p['item'], ['html' => self::seloStatus($p['status'])], $p['sxp'], $p['motivo'],
-                    ['html' => $p['resp'] ? '<b>' . self::e(implode(', ', array_keys($p['resp']))) . '</b>' : '<span style="color:#c62f3d">sem responsável</span>']], $pend), [11, 15, 20, 8, 8, 24, 14])
-                : '<p class="nota">Nenhum item não atendido com risco Crítico.</p>';
+                    ['html' => $p['resp'] ? '<b>' . self::e(implode(', ', array_keys($p['resp']))) . '</b>' : ('<span style="color:#c62f3d">' . self::l('sem responsável') . '</span>')]], $pend), [11, 15, 20, 8, 8, 24, 14])
+                : ('<p class="nota">' . self::l('Nenhum item não atendido com risco Crítico.') . '</p>');
         }
         // 3. Não atendidos
         $nao = array_values(array_filter($d['lista'], static fn($q) => $q['final'] === 'N'));
-        $h .= '<h2 class="quebra">3. Requisitos não atendidos (' . count($nao) . ')</h2>';
-        $h .= $nao ? self::tabela(['Unidade', 'Requisito', 'Norma', 'Origem', 'Motivo / evidência'], array_map(static fn($q) => [
-                $q['unidade'], $q['codigo'], $q['norma'], $q['origem'], $q['motivo'] !== '' && $q['calc'] !== 'AI' ? $q['motivo'] : 'Avaliação do responsável: não atendido'], $nao), [12, 10, 16, 11, 51])
-            : '<p class="nota">Nenhum requisito não atendido com os filtros aplicados.</p>';
+        $h .= ('<h2 class="quebra">' . self::l('3. Requisitos não atendidos (')) . count($nao) . ')</h2>';
+        $h .= $nao ? self::tabela([self::l('Unidade'), self::l('Requisito'), self::l('Norma'), self::l('Origem'), self::l('Motivo / evidência')], array_map(static fn($q) => [
+                $q['unidade'], $q['codigo'], $q['norma'], $q['origem'], $q['motivo'] !== '' && $q['calc'] !== 'AI' ? $q['motivo'] : self::l('Avaliação do responsável: não atendido')], $nao), [12, 10, 16, 11, 51])
+            : ('<p class="nota">' . self::l('Nenhum requisito não atendido com os filtros aplicados.') . '</p>');
         // 4. Divergências
         $div = array_values(array_filter($d['lista'], static fn($q) => $q['divergente'] || $q['decisao'] !== ''));
-        $h .= '<h2>4. Divergências entre a avaliação do responsável e a situação calculada (' . count($div) . ')</h2>';
-        $h .= $div ? self::tabela(['Unidade', 'Requisito', 'Avaliação', 'Calculada', 'Decisão', 'Justificativa'], array_map(static fn($q) => [
+        $h .= ('<h2>' . self::l('4. Divergências entre a avaliação do responsável e a situação calculada (')) . count($div) . ')</h2>';
+        $h .= $div ? self::tabela([self::l('Unidade'), self::l('Requisito'), self::l('Avaliação'), self::l('Calculada'), self::l('Decisão'), self::l('Justificativa')], array_map(static fn($q) => [
                 $q['unidade'], $q['codigo'], ['html' => self::selo($q['manual'])], ['html' => self::selo($q['calc'])],
-                $q['decisao'] !== '' ? $q['decisao'] . ($q['decisao_por'] !== '' ? ' (' . $q['decisao_por'] . ')' : '') : 'Pendente', $q['justificativa']], $div), [12, 11, 13, 13, 18, 33])
-            : '<p class="nota">Nenhuma divergência.</p>';
+                $q['decisao'] !== '' ? $q['decisao'] . ($q['decisao_por'] !== '' ? ' (' . $q['decisao_por'] . ')' : '') : self::l('Pendente'), $q['justificativa']], $div), [12, 11, 13, 13, 18, 33])
+            : ('<p class="nota">' . self::l('Nenhuma divergência.') . '</p>');
         // 5. Detalhe com evidências
         $com = array_values(array_filter($d['lista'], static fn($q) => $q['calc'] !== 'AI'));
-        $h .= '<h2 class="quebra">5. Requisitos com evidências de atendimento (' . count($com) . ')</h2>';
+        $h .= ('<h2 class="quebra">' . self::l('5. Requisitos com evidências de atendimento (')) . count($com) . ')</h2>';
         foreach ($com as $q) {
             $h .= '<div class="req" style="border-left-color:' . self::COR_SIT[$q['final']] . '"><div class="cab">' . $e($q['codigo'] !== '' ? $q['codigo'] : '#' . $q['leg']) . ' · ' . $e($q['norma'])
                 . ' <span style="float:right">' . self::selo($q['final']) . '</span></div>'
-                . '<div class="linha">' . $e($q['unidade']) . ($q['ambito'] !== '' ? ' · ' . $e($q['ambito']) : '') . ($q['areas'] ? ' · ' . $e(implode(', ', $q['areas'])) : '') . ($q['poder'] !== '' ? ' · Nível de controle: ' . $e($q['poder']) : '') . '</div>'
-                . '<div class="linha">Calculada: ' . $e(self::ROT_SIT[$q['calc']]) . ' · Avaliação do responsável: ' . $e(self::ROT_SIT[$q['manual']]) . ' · Vale: ' . $e($q['origem'])
+                . '<div class="linha">' . $e($q['unidade']) . ($q['ambito'] !== '' ? ' · ' . $e($q['ambito']) : '') . ($q['areas'] ? ' · ' . $e(implode(', ', $q['areas'])) : '') . ($q['poder'] !== '' ? self::l(' · Nível de controle: ') . $e($q['poder']) : '') . '</div>'
+                . ('<div class="linha">' . self::l('Calculada: ')) . $e(self::rot('ROT_SIT')[$q['calc']]) . self::l(' · Avaliação do responsável: ') . $e(self::rot('ROT_SIT')[$q['manual']]) . self::l(' · Vale: ') . $e($q['origem'])
                 . ($q['decisao'] !== '' ? ' · ' . $e($q['decisao']) . ($q['justificativa'] !== '' ? ': ' . $e($q['justificativa']) : '') : '') . '</div>';
-            if ($d['risco'] !== null) $h .= '<div class="linha">Atendimento: <b>' . self::pctTexto($q['pct']) . '</b> (' . $q['atend'] . ' de ' . $q['aplic'] . ' itens aplicáveis' . ($q['na'] ? '; ' . $q['na'] . ' não se aplica' : '') . ') · Risco: ' . ($q['risco'] !== '' ? self::seloRisco($q['risco']) : '–')
-                . ($q['pend'] ? ' · <b style="color:#c62f3d">' . $q['pend'] . ' pendência(s) crítica(s)</b>' : '') . ($q['sem_risco'] ? ' · ' . $q['sem_risco'] . ' item(ns) com risco não avaliado' : '') . '</div>';
+            if ($d['risco'] !== null) $h .= ('<div class="linha">' . self::l('Atendimento: ') . '<b>') . self::pctTexto($q['pct']) . '</b> (' . $q['atend'] . self::l(' de ') . $q['aplic'] . self::l(' itens aplicáveis') . ($q['na'] ? '; ' . $q['na'] . self::l(' não se aplica') : '') . self::l(') · Risco: ') . ($q['risco'] !== '' ? self::seloRisco($q['risco']) : '–')
+                . ($q['pend'] ? ' · <b style="color:#c62f3d">' . $q['pend'] . (self::l(' pendência(s) crítica(s)') . '</b>') : '') . ($q['sem_risco'] ? ' · ' . $q['sem_risco'] . self::l(' item(ns) com risco não avaliado') : '') . '</div>';
             if ($q['itens'] && $d['risco'] !== null) {
-                $h .= self::tabela(['Área', 'Item de gestão', 'Status', 'Sev. × Prob.', 'Risco', 'Motivo'], array_map(static fn($i) => [
-                    self::ROT_AREA_ITEM[(string)$i['AREA']] ?? (string)$i['AREA'], ['html' => (int)($i['NA'] ?? 0) === 1 ? '<s>' . self::e((string)$i['ITEM']) . '</s>' : self::e((string)$i['ITEM'])], ['html' => self::seloStatus((string)$i['STATUS'])],
-                    (int)($i['SEVERIDADE'] ?? 0) ? (int)$i['SEVERIDADE'] . ' × ' . (int)$i['PROBABILIDADE'] : '–', ['html' => (int)($i['NA'] ?? 0) === 1 ? 'Não se aplica' : self::seloRisco((string)($i['RISCO'] ?? '') ?: 'NAO_AVALIADO')],
-                    (string)$i['MOTIVO'] . ((int)($i['NA'] ?? 0) === 1 ? ' — Não se aplica: ' . (string)($i['NA_JUSTIFICATIVA'] ?? '') : '')], $q['itens']), [13, 28, 8, 8, 9, 34]);
+                $h .= self::tabela([self::l('Área'), self::l('Item de gestão'), self::l('Status'), self::l('Sev. × Prob.'), self::l('Risco'), self::l('Motivo')], array_map(static fn($i) => [
+                    self::rot('ROT_AREA_ITEM')[(string)$i['AREA']] ?? (string)$i['AREA'], ['html' => (int)($i['NA'] ?? 0) === 1 ? '<s>' . self::e((string)$i['ITEM']) . '</s>' : self::e((string)$i['ITEM'])], ['html' => self::seloStatus((string)$i['STATUS'])],
+                    (int)($i['SEVERIDADE'] ?? 0) ? (int)$i['SEVERIDADE'] . ' × ' . (int)$i['PROBABILIDADE'] : '–', ['html' => (int)($i['NA'] ?? 0) === 1 ? self::l('Não se aplica') : self::seloRisco((string)($i['RISCO'] ?? '') ?: 'NAO_AVALIADO')],
+                    (string)$i['MOTIVO'] . ((int)($i['NA'] ?? 0) === 1 ? self::l(' — Não se aplica: ') . (string)($i['NA_JUSTIFICATIVA'] ?? '') : '')], $q['itens']), [13, 28, 8, 8, 9, 34]);
             } elseif ($q['itens']) {
-                $h .= self::tabela(['Área', 'Item de gestão', 'Status', 'Motivo'], array_map(static fn($i) => [
-                    self::ROT_AREA_ITEM[(string)$i['AREA']] ?? (string)$i['AREA'], (string)$i['ITEM'], ['html' => self::seloStatus((string)$i['STATUS'])], (string)$i['MOTIVO']], $q['itens']), [14, 34, 9, 43]);
+                $h .= self::tabela([self::l('Área'), self::l('Item de gestão'), self::l('Status'), self::l('Motivo')], array_map(static fn($i) => [
+                    self::rot('ROT_AREA_ITEM')[(string)$i['AREA']] ?? (string)$i['AREA'], (string)$i['ITEM'], ['html' => self::seloStatus((string)$i['STATUS'])], (string)$i['MOTIVO']], $q['itens']), [14, 34, 9, 43]);
             }
             $h .= '</div>';
         }
-        if (!$com) $h .= '<p class="nota">Nenhum requisito com itens de gestão vinculados.</p>';
+        if (!$com) $h .= ('<p class="nota">' . self::l('Nenhum requisito com itens de gestão vinculados.') . '</p>');
         // 6. Sem evidências (lista completa)
         $sem = array_values(array_filter($d['lista'], static fn($q) => $q['calc'] === 'AI'));
-        $h .= '<h2 class="quebra">6. Requisitos sem evidências vinculadas (' . count($sem) . ')</h2><p class="nota">Requisitos sem nenhum item de gestão vinculado; vale a avaliação do responsável. Vincular licenças, medições, treinamentos, infraestrutura, controles ou fornecedores permite calcular o atendimento.</p>';
+        $h .= ('<h2 class="quebra">' . self::l('6. Requisitos sem evidências vinculadas (')) . count($sem) . (')</h2><p class="nota">' . self::l('Requisitos sem nenhum item de gestão vinculado; vale a avaliação do responsável. Vincular licenças, medições, treinamentos, infraestrutura, controles ou fornecedores permite calcular o atendimento.') . '</p>');
         // Lista longa (milhares de linhas): texto corrido por unidade, sem tabela, que o Dompdf monta muito mais rápido
         $porUnidade = [];
         foreach ($sem as $q) $porUnidade[$q['unidade']][] = $q;
@@ -408,7 +618,7 @@ final class RelatorioAtendimentoLegal
             foreach (array_chunk($qs, 400) as $bloco) {
                 $linhas = [];
                 foreach ($bloco as $q) $linhas[] = '<b>' . $e($q['codigo'] !== '' ? $q['codigo'] : '#' . $q['leg']) . '</b> ' . $e($q['norma']) . ($q['ambito'] !== '' ? ' · ' . $e($q['ambito']) : '')
-                    . ' · <span style="color:' . self::COR_SIT[$q['manual']] . '">' . $e(self::ROT_SIT[$q['manual']]) . '</span>';
+                    . ' · <span style="color:' . self::COR_SIT[$q['manual']] . '">' . $e(self::rot('ROT_SIT')[$q['manual']]) . '</span>';
                 $h .= '<div class="lista">' . implode('<br>', $linhas) . '</div>';
             }
         }
@@ -439,73 +649,73 @@ final class RelatorioAtendimentoLegal
     {
         $tot = $d['tot']; $total = array_sum($tot);
         $resumo = [
-            ['Relatório de Atendimento Legal'], [$meta['empresa']], [],
-            ['Emitido em', $meta['emitido_em']], ['Por', $meta['emitido_por']], ['Filtros', $meta['filtros']], [],
-            ['Situação consolidada', 'Requisitos', '%'],
+            [self::l('Relatório de Atendimento Legal')], [$meta['empresa']], [],
+            [self::l('Emitido em'), $meta['emitido_em']], [self::l('Por'), $meta['emitido_por']], [self::l('Filtros'), $meta['filtros']], [],
+            [self::l('Situação consolidada'), self::l('Requisitos'), '%'],
         ];
-        foreach (['S', 'PA', 'N', 'AI'] as $k) $resumo[] = [self::ROT_SIT[$k], $tot[$k], self::pct($tot[$k], $total)];
-        $resumo[] = ['Total', $total, ''];
+        foreach (['S', 'PA', 'N', 'AI'] as $k) $resumo[] = [self::rot('ROT_SIT')[$k], $tot[$k], self::pct($tot[$k], $total)];
+        $resumo[] = [self::l('Total'), $total, ''];
         $resumo[] = [];
-        $resumo[] = ['Com evidências vinculadas', $d['com_ev']];
-        $resumo[] = ['Sem evidências vinculadas', $d['sem_ev']];
-        $resumo[] = ['Com divergência ou decisão', $d['divergencias']];
+        $resumo[] = [self::l('Com evidências vinculadas'), $d['com_ev']];
+        $resumo[] = [self::l('Sem evidências vinculadas'), $d['sem_ev']];
+        $resumo[] = [self::l('Com divergência ou decisão'), $d['divergencias']];
         $resumo[] = [];
         $cabUnidade = count($resumo) + 1;
-        $resumo[] = ['Unidade', 'Requisitos', 'Atendido', 'Parcial', 'Não atendido', 'Indefinido', '% atendido'];
+        $resumo[] = [self::l('Unidade'), self::l('Requisitos'), self::l('Atendido'), self::l('Parcial'), self::l('Não atendido'), self::l('Indefinido'), self::l('% atendido')];
         foreach ($d['unidades'] as $u => $c) { $t = array_sum($c); $resumo[] = [$u, $t, $c['S'], $c['PA'], $c['N'], $c['AI'], self::pct($c['S'], $t - $c['AI'])]; }
         $resumo[] = [];
         $cabArea = count($resumo) + 1;
-        $resumo[] = ['Área', 'Requisitos', 'Atendido', 'Parcial', 'Não atendido', 'Indefinido', '% atendido'];
+        $resumo[] = [self::l('Área'), self::l('Requisitos'), self::l('Atendido'), self::l('Parcial'), self::l('Não atendido'), self::l('Indefinido'), self::l('% atendido')];
         foreach ($d['areas'] as $a => $c) { $t = array_sum($c); $resumo[] = [$a, $t, $c['S'], $c['PA'], $c['N'], $c['AI'], self::pct($c['S'], $t - $c['AI'])]; }
         if ($d['licencas'] !== null) {
             $resumo[] = [];
-            $resumo[] = ['Licenças (sem entregas periódicas)', 'Quantidade', '%'];
+            $resumo[] = [self::l('Licenças (sem entregas periódicas)'), self::l('Quantidade'), '%'];
             $cabLic = count($resumo);
             $lt = array_sum($d['licencas']['tot']);
-            foreach (self::ROT_LIC as $k => $rot) $resumo[] = [$rot, $d['licencas']['tot'][$k], self::pct($d['licencas']['tot'][$k], $lt)];
-            $resumo[] = ['Total', $lt, ''];
+            foreach (self::rot('ROT_LIC') as $k => $rot) $resumo[] = [$rot, $d['licencas']['tot'][$k], self::pct($d['licencas']['tot'][$k], $lt)];
+            $resumo[] = [self::l('Total'), $lt, ''];
         }
         $r341 = $d['risco'] !== null;
         if ($r341) {
             $r = $d['risco'];
             $resumo[] = [];
             $cabRisco = count($resumo) + 1;
-            $resumo[] = ['Risco do requisito', '100%', '50 a 99%', '1 a 49%', '0%', 'Total'];
-            foreach (self::ROT_RISCO as $k => $rot) { $l = $r['matriz'][$k] ?? []; $resumo[] = [$rot, (int)($l['F100'] ?? 0), (int)($l['F50'] ?? 0), (int)($l['F1'] ?? 0), (int)($l['F0'] ?? 0), (int)$r['tot'][$k]]; }
-            $resumo[] = ['% de atendimento (itens aplicáveis)', self::pctTexto($r['aplic'] > 0 ? 100 * $r['atend'] / $r['aplic'] : null), $r['atend'] . ' de ' . $r['aplic']];
-            $resumo[] = ['Pendências críticas (ação imediata)', count($r['pend'])];
+            $resumo[] = [self::l('Risco do requisito'), '100%', self::l('50 a 99%'), self::l('1 a 49%'), '0%', self::l('Total')];
+            foreach (self::rot('ROT_RISCO') as $k => $rot) { $l = $r['matriz'][$k] ?? []; $resumo[] = [$rot, (int)($l['F100'] ?? 0), (int)($l['F50'] ?? 0), (int)($l['F1'] ?? 0), (int)($l['F0'] ?? 0), (int)$r['tot'][$k]]; }
+            $resumo[] = [self::l('% de atendimento (itens aplicáveis)'), self::pctTexto($r['aplic'] > 0 ? 100 * $r['atend'] / $r['aplic'] : null), $r['atend'] . self::l(' de ') . $r['aplic']];
+            $resumo[] = [self::l('Pendências críticas (ação imediata)'), count($r['pend'])];
         }
-        $req = [array_merge(['Unidade', 'Requisito', 'Norma', 'Âmbito', 'Áreas', 'Nível de controle', 'Artigos', 'Situação consolidada', 'Origem', 'Situação calculada'],
-            $r341 ? ['% atendimento', 'Risco', 'Pendências críticas', 'Itens aplicáveis', 'Itens atendidos', 'Itens não se aplica', 'Itens sem risco avaliado'] : [],
-            ['Avaliação do responsável', 'Divergência', 'Decisão', 'Decidido por', 'Justificativa', 'Itens de gestão', 'Motivo da situação calculada', 'Código da legislação', 'Código da unidade'])];
-        $ev = [array_merge(['Unidade', 'Requisito', 'Norma', 'Área', 'Item de gestão', 'Status'], $r341 ? ['Severidade', 'Probabilidade', 'Pontos', 'Risco', 'Não se aplica', 'Justificativa (não se aplica)'] : [], ['Motivo', 'Situação consolidada do requisito'])];
+        $req = [array_merge([self::l('Unidade'), self::l('Requisito'), self::l('Norma'), self::l('Âmbito'), self::l('Áreas'), self::l('Nível de controle'), self::l('Artigos'), self::l('Situação consolidada'), self::l('Origem'), self::l('Situação calculada')],
+            $r341 ? [self::l('% atendimento'), self::l('Risco'), self::l('Pendências críticas'), self::l('Itens aplicáveis'), self::l('Itens atendidos'), self::l('Itens não se aplica'), self::l('Itens sem risco avaliado')] : [],
+            [self::l('Avaliação do responsável'), self::l('Divergência'), self::l('Decisão'), self::l('Decidido por'), self::l('Justificativa'), self::l('Itens de gestão'), self::l('Motivo da situação calculada'), self::l('Código da legislação'), self::l('Código da unidade')])];
+        $ev = [array_merge([self::l('Unidade'), self::l('Requisito'), self::l('Norma'), self::l('Área'), self::l('Item de gestão'), self::l('Status')], $r341 ? [self::l('Severidade'), self::l('Probabilidade'), self::l('Pontos'), self::l('Risco'), self::l('Não se aplica'), self::l('Justificativa (não se aplica)')] : [], [self::l('Motivo'), self::l('Situação consolidada do requisito')])];
         foreach ($d['lista'] as $q) {
-            $req[] = array_merge([$q['unidade'], $q['codigo'], $q['norma'], $q['ambito'], implode(', ', $q['areas']), $q['poder'], $q['artigos'], self::ROT_SIT[$q['final']], $q['origem'],
-                $q['calc'] === 'AI' ? 'Sem evidências vinculadas' : self::ROT_SIT[$q['calc']]],
-                $r341 ? [self::pctTexto($q['pct']), self::ROT_RISCO[$q['risco']] ?? '', $q['pend'], $q['aplic'], $q['atend'], $q['na'], $q['sem_risco']] : [],
-                [self::ROT_SIT[$q['manual']], $q['divergente'] ? 'Sim' : 'Não', $q['decisao'], $q['decisao_por'], $q['justificativa'], count($q['itens']), $q['motivo'], $q['leg'], $q['unid']]);
+            $req[] = array_merge([$q['unidade'], $q['codigo'], $q['norma'], $q['ambito'], implode(', ', $q['areas']), $q['poder'], $q['artigos'], self::rot('ROT_SIT')[$q['final']], $q['origem'],
+                $q['calc'] === 'AI' ? self::l('Sem evidências vinculadas') : self::rot('ROT_SIT')[$q['calc']]],
+                $r341 ? [self::pctTexto($q['pct']), self::rot('ROT_RISCO')[$q['risco']] ?? '', $q['pend'], $q['aplic'], $q['atend'], $q['na'], $q['sem_risco']] : [],
+                [self::rot('ROT_SIT')[$q['manual']], $q['divergente'] ? self::l('Sim') : self::l('Não'), $q['decisao'], $q['decisao_por'], $q['justificativa'], count($q['itens']), $q['motivo'], $q['leg'], $q['unid']]);
             foreach ($q['itens'] as $i) {
                 $na = (int)($i['NA'] ?? 0) === 1;
-                $ev[] = array_merge([$q['unidade'], $q['codigo'], $q['norma'], self::ROT_AREA_ITEM[(string)$i['AREA']] ?? (string)$i['AREA'], (string)$i['ITEM'], self::ROT_STATUS[(string)$i['STATUS']] ?? (string)$i['STATUS']],
-                    $r341 ? [(int)($i['SEVERIDADE'] ?? 0) ?: '', (int)($i['PROBABILIDADE'] ?? 0) ?: '', (int)($i['PONTOS'] ?? 0) ?: '', self::ROT_RISCO[(string)($i['RISCO'] ?? '') ?: 'NAO_AVALIADO'], $na ? 'Sim' : 'Não', $na ? (string)($i['NA_JUSTIFICATIVA'] ?? '') : ''] : [],
-                    [(string)$i['MOTIVO'], self::ROT_SIT[$q['final']]]);
+                $ev[] = array_merge([$q['unidade'], $q['codigo'], $q['norma'], self::rot('ROT_AREA_ITEM')[(string)$i['AREA']] ?? (string)$i['AREA'], (string)$i['ITEM'], self::rot('ROT_STATUS')[(string)$i['STATUS']] ?? (string)$i['STATUS']],
+                    $r341 ? [(int)($i['SEVERIDADE'] ?? 0) ?: '', (int)($i['PROBABILIDADE'] ?? 0) ?: '', (int)($i['PONTOS'] ?? 0) ?: '', self::rot('ROT_RISCO')[(string)($i['RISCO'] ?? '') ?: 'NAO_AVALIADO'], $na ? self::l('Sim') : self::l('Não'), $na ? (string)($i['NA_JUSTIFICATIVA'] ?? '') : ''] : [],
+                    [(string)$i['MOTIVO'], self::rot('ROT_SIT')[$q['final']]]);
             }
         }
         $planilhas = [
-            'Resumo' => ['linhas' => $resumo, 'larguras' => [34, 16, 12, 12, 14, 12, 12], 'cabecalhos' => array_values(array_filter([8, $cabUnidade, $cabArea, $cabLic ?? null, $cabRisco ?? null])), 'titulo' => true],
-            'Requisitos' => ['linhas' => $req, 'larguras' => array_merge([18, 14, 26, 18, 22, 14, 18, 20, 20, 22], $r341 ? [12, 12, 12, 12, 12, 12, 14] : [], [20, 11, 16, 20, 40, 12, 70, 12, 12]), 'cabecalhos' => [1], 'filtro' => true],
-            'Evidências' => ['linhas' => $ev, 'larguras' => array_merge([18, 14, 26, 20, 40, 10], $r341 ? [11, 11, 8, 12, 12, 40] : [], [70, 20]), 'cabecalhos' => [1], 'filtro' => true],
+            self::l('Resumo') => ['linhas' => $resumo, 'larguras' => [34, 16, 12, 12, 14, 12, 12], 'cabecalhos' => array_values(array_filter([8, $cabUnidade, $cabArea, $cabLic ?? null, $cabRisco ?? null])), 'titulo' => true],
+            self::l('Requisitos') => ['linhas' => $req, 'larguras' => array_merge([18, 14, 26, 18, 22, 14, 18, 20, 20, 22], $r341 ? [12, 12, 12, 12, 12, 12, 14] : [], [20, 11, 16, 20, 40, 12, 70, 12, 12]), 'cabecalhos' => [1], 'filtro' => true],
+            self::l('Evidências') => ['linhas' => $ev, 'larguras' => array_merge([18, 14, 26, 20, 40, 10], $r341 ? [11, 11, 8, 12, 12, 40] : [], [70, 20]), 'cabecalhos' => [1], 'filtro' => true],
         ];
         if ($r341) {
-            $pend = [['Unidade', 'Requisito', 'Norma', 'Área', 'Item de gestão', 'Status', 'Severidade × Probabilidade', 'Motivo', 'Responsável']];
-            foreach ($d['risco']['pend'] as $p) $pend[] = [$p['unidade'], $p['codigo'], $p['norma'], $p['area'], $p['item'], self::ROT_STATUS[$p['status']] ?? $p['status'], $p['sxp'], $p['motivo'], $p['resp'] ? implode(', ', array_keys($p['resp'])) : 'sem responsável'];
-            $planilhas['Pendências críticas'] = ['linhas' => $pend, 'larguras' => [18, 14, 26, 18, 40, 10, 14, 60, 30], 'cabecalhos' => [1], 'filtro' => true];
+            $pend = [[self::l('Unidade'), self::l('Requisito'), self::l('Norma'), self::l('Área'), self::l('Item de gestão'), self::l('Status'), self::l('Severidade × Probabilidade'), self::l('Motivo'), self::l('Responsável')]];
+            foreach ($d['risco']['pend'] as $p) $pend[] = [$p['unidade'], $p['codigo'], $p['norma'], $p['area'], $p['item'], self::rot('ROT_STATUS')[$p['status']] ?? $p['status'], $p['sxp'], $p['motivo'], $p['resp'] ? implode(', ', array_keys($p['resp'])) : self::l('sem responsável')];
+            $planilhas[self::l('Pendências críticas')] = ['linhas' => $pend, 'larguras' => [18, 14, 26, 18, 40, 10, 14, 60, 30], 'cabecalhos' => [1], 'filtro' => true];
         }
         if ($d['licencas'] !== null) {
-            $lic = [['Unidade', 'Licença', 'Tipo documental', 'Vencimento', 'Situação', 'Número do protocolo', 'Protocolado em', 'Protocolado no prazo', 'Motivo', 'Responsável']];
-            foreach ($d['licencas']['lista'] as $l) $lic[] = [$l['unidade'], $l['licenca'], $l['tipo'], $l['validade'], self::ROT_LIC[$l['situacao']], $l['numero'], $l['protocolado_em'],
-                $l['no_prazo'] === 'S' ? 'Sim' : ($l['no_prazo'] === 'N' ? 'Não' : ''), $l['motivo'], $l['responsavel']];
-            $planilhas['Licenças'] = ['linhas' => $lic, 'larguras' => [18, 40, 22, 12, 20, 18, 14, 12, 70, 24], 'cabecalhos' => [1], 'filtro' => true];
+            $lic = [[self::l('Unidade'), self::l('Licença'), self::l('Tipo documental'), self::l('Vencimento'), self::l('Situação'), self::l('Número do protocolo'), self::l('Protocolado em'), self::l('Protocolado no prazo'), self::l('Motivo'), self::l('Responsável')]];
+            foreach ($d['licencas']['lista'] as $l) $lic[] = [$l['unidade'], $l['licenca'], $l['tipo'], $l['validade'], self::rot('ROT_LIC')[$l['situacao']], $l['numero'], $l['protocolado_em'],
+                $l['no_prazo'] === 'S' ? self::l('Sim') : ($l['no_prazo'] === 'N' ? self::l('Não') : ''), $l['motivo'], $l['responsavel']];
+            $planilhas[self::l('Licenças')] = ['linhas' => $lic, 'larguras' => [18, 40, 22, 12, 20, 18, 14, 12, 70, 24], 'cabecalhos' => [1], 'filtro' => true];
         }
         self::xlsx($arquivo, $planilhas);
     }
@@ -516,7 +726,7 @@ final class RelatorioAtendimentoLegal
     {
         $x = static fn(string $v): string => htmlspecialchars(preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $v) ?? '', ENT_XML1 | ENT_QUOTES, 'UTF-8');
         $zip = new ZipArchive();
-        if ($zip->open($arquivo, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) throw new RuntimeException('Não foi possível criar a planilha.');
+        if ($zip->open($arquivo, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) throw new RuntimeException(self::l('Não foi possível criar a planilha.'));
         $ct = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>';
         $wb = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>';
         $wbr = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
@@ -571,6 +781,6 @@ final class RelatorioAtendimentoLegal
         $zip->addFromString('xl/workbook.xml', $wb);
         $zip->addFromString('xl/_rels/workbook.xml.rels', $wbr);
         $zip->addFromString('xl/styles.xml', $styles);
-        if (!$zip->close()) throw new RuntimeException('Não foi possível gravar a planilha.');
+        if (!$zip->close()) throw new RuntimeException(self::l('Não foi possível gravar a planilha.'));
     }
 }

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/GreenPortalDatabase.php';
+require_once __DIR__ . '/IdiomaService.php';
 
 /**
  * Não Conformidades › Administração (migração 333, 22/10/2026). Apoio das telas de administração:
@@ -61,6 +62,15 @@ final class NaoConformidadeAdministracao
         'ADMIN_ENCERRAR' => 'Encerrada administrativamente', 'TRANSFERENCIA_ADMIN' => 'Responsabilidade transferida pela administração', 'GESTOR_ATRIBUIDO_ADMIN' => 'Gestor atribuído pela administração',
     ];
 
+    /** ACOES_HISTORICO no idioma do usuário (as chaves hist.* de NaoConformidadeTextos). */
+    public static function acoesHistorico(): array
+    {
+        require_once __DIR__ . '/NaoConformidadeTextos.php';
+        $out = [];
+        foreach (self::ACOES_HISTORICO as $k => $pt) $out[$k] = NaoConformidadeTextos::t('hist.' . strtolower($k));
+        return $out;
+    }
+
     /** Linhas de uma view (sp_crud_select; filtros exatos com ['CAMPO' => ['value' => 'x', 'exact' => true]]). */
     public static function ler(PDO $pdo, string $view, array $filtros = [], int $maximo = 20000): array
     {
@@ -88,7 +98,7 @@ final class NaoConformidadeAdministracao
             $s->closeCursor();
             return $r;
         } catch (PDOException $e) {
-            if (preg_match('/1644\s+(.+)$/su', $e->getMessage(), $m)) throw new DomainException(trim($m[1]), 1644, $e);
+            if (preg_match('/1644\s+(.+)$/su', $e->getMessage(), $m)) throw new DomainException(IdiomaService::mensagemBanco(trim($m[1])), 1644, $e); // no idioma do usuário (grupo BANCO)
             throw $e;
         }
     }

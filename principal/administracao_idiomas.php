@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once dirname(__DIR__) . '/classes/AdministracaoTextos.php';
 
 /*
  * Transação: Administração › Textos e idiomas (ADMINISTRACAO_IDIOMAS).
@@ -16,7 +17,7 @@ require_once dirname(__DIR__) . '/classes/PermissaoTransacao.php';
 require_once dirname(__DIR__) . '/classes/IdiomaService.php';
 
 $permissao = PermissaoTransacao::obter(IdiomaService::TRANSACAO);
-if (empty($permissao['pode_visualizar'])) { http_response_code(403); exit('Sem permissão para administrar textos e idiomas.'); }
+if (empty($permissao['pode_visualizar'])) { http_response_code(403); exit(adm_t('Sem permissão para administrar textos e idiomas.')); }
 $podeEditar = strtoupper((string)($_SESSION['usuario']['codigo_perfil'] ?? '')) === 'ADMINISTRADOR' && !empty($permissao['pode_editar']);
 if (empty($_SESSION['idiomas_csrf'])) $_SESSION['idiomas_csrf'] = bin2hex(random_bytes(32));
 $csrf = (string)$_SESSION['idiomas_csrf'];
@@ -24,77 +25,77 @@ $csrf = (string)$_SESSION['idiomas_csrf'];
 $idioma = IdiomaService::idioma();
 $L = static fn(string $pt, string $en, string $es): array => ['pt' => $pt, 'en' => $en, 'es' => $es];
 $textos = [
-    'titulo' => $L('Textos e idiomas', 'Texts and languages', 'Textos e idiomas'),
-    'subtitulo' => $L('Rótulos, dicas e mensagens das telas em PT, EN e ES. Valem para todas as empresas depois de publicados.', 'Screen labels, tooltips and messages in PT, EN and ES. They apply to all companies once published.', 'Rótulos, ayudas y mensajes de las pantallas en PT, EN y ES. Valen para todas las empresas una vez publicados.'),
-    'salvar' => $L('Salvar rascunho', 'Save draft', 'Guardar borrador'),
+    'titulo' => $L(adm_t('Textos e idiomas'), adm_t('Texts and languages'), adm_t('Textos e idiomas')),
+    'subtitulo' => $L(adm_t('Rótulos, dicas e mensagens das telas em PT, EN e ES. Valem para todas as empresas depois de publicados.'), adm_t('Screen labels, tooltips and messages in PT, EN and ES. They apply to all companies once published.'), adm_t('Rótulos, ayudas y mensajes de las pantallas en PT, EN y ES. Valen para todas las empresas una vez publicados.')),
+    'salvar' => $L(adm_t('Salvar rascunho'), adm_t('Save draft'), adm_t('Guardar borrador')),
     'publicar' => $L('Publicar', 'Publish', 'Publicar'),
-    'descartar' => $L('Descartar rascunho', 'Discard draft', 'Descartar borrador'),
-    'historico' => $L('Histórico', 'History', 'Historial'),
-    'previa' => $L('Ver rascunho nas telas', 'Show draft on screens', 'Ver borrador en las pantallas'),
-    'previa_on' => $L('Rascunho visível nas telas (só para você)', 'Draft visible on screens (only for you)', 'Borrador visible en las pantallas (solo para usted)'),
+    'descartar' => $L(adm_t('Descartar rascunho'), adm_t('Discard draft'), adm_t('Descartar borrador')),
+    'historico' => $L(adm_t('Histórico'), 'History', 'Historial'),
+    'previa' => $L(adm_t('Ver rascunho nas telas'), adm_t('Show draft on screens'), adm_t('Ver borrador en las pantallas')),
+    'previa_on' => $L(adm_t('Rascunho visível nas telas (só para você)'), 'Draft visible on screens (only for you)', adm_t('Borrador visible en las pantallas (solo para usted)')),
     'ajuda' => $L('Ajuda', 'Help', 'Ayuda'),
-    'ajuda_titulo' => $L('Como usar a tela Textos e idiomas', 'How to use the Texts and languages screen', 'Cómo usar la pantalla Textos e idiomas'),
+    'ajuda_titulo' => $L(adm_t('Como usar a tela Textos e idiomas'), adm_t('How to use the Texts and languages screen'), adm_t('Cómo usar la pantalla Textos e idiomas')),
     'carregando' => $L('Carregando…', 'Loading…', 'Cargando…'),
     'grupos' => $L('Grupos', 'Groups', 'Grupos'),
-    'todos_grupos' => $L('Todos os grupos', 'All groups', 'Todos los grupos'),
-    'buscar' => $L('Buscar texto, chave ou local…', 'Search text, key or place…', 'Buscar texto, clave o lugar…'),
-    'f_pendentes' => $L('Não publicados', 'Unpublished', 'No publicados'),
-    'f_faltando' => $L('Tradução faltando', 'Missing translation', 'Traducción faltante'),
-    'f_alterados' => $L('Não salvos', 'Unsaved', 'Sin guardar'),
-    'c_texto' => $L('Onde aparece', 'Where it appears', 'Dónde aparece'),
-    'c_situacao' => $L('Situação', 'Status', 'Situación'),
+    'todos_grupos' => $L(adm_t('Todos os grupos'), adm_t('All groups'), adm_t('Todos los grupos')),
+    'buscar' => $L(adm_t('Buscar texto, chave ou local…'), adm_t('Search text, key or place…'), adm_t('Buscar texto, clave o lugar…')),
+    'f_pendentes' => $L(adm_t('Não publicados'), 'Unpublished', adm_t('No publicados')),
+    'f_faltando' => $L(adm_t('Tradução faltando'), adm_t('Missing translation'), adm_t('Traducción faltante')),
+    'f_alterados' => $L(adm_t('Não salvos'), 'Unsaved', adm_t('Sin guardar')),
+    'c_texto' => $L(adm_t('Onde aparece'), adm_t('Where it appears'), adm_t('Dónde aparece')),
+    'c_situacao' => $L(adm_t('Situação'), 'Status', adm_t('Situación')),
     'publicado' => $L('Publicado', 'Published', 'Publicado'),
-    'publicacao' => $L('publicação', 'publication', 'publicación'),
+    'publicacao' => $L(adm_t('publicação'), 'publication', adm_t('publicación')),
     'por' => $L('por', 'by', 'por'),
-    'nunca' => $L('Nada publicado ainda', 'Nothing published yet', 'Nada publicado aún'),
-    'st_igual' => $L('Rascunho igual ao publicado', 'Draft matches what is published', 'Borrador igual al publicado'),
-    'st_pendente' => $L('alterações salvas, falta publicar', 'saved changes waiting to be published', 'cambios guardados, falta publicar'),
-    'st_sujo' => $L('alterações não salvas', 'unsaved changes', 'cambios sin guardar'),
-    'st_leitura' => $L('Somente leitura: apenas o ADMINISTRADOR altera os textos.', 'Read only: only the ADMINISTRADOR profile can change texts.', 'Solo lectura: solo el perfil ADMINISTRADOR modifica los textos.'),
-    'b_pendente' => $L('Salvo no rascunho, ainda não publicado', 'Saved in the draft, not published yet', 'Guardado en el borrador, aún no publicado'),
-    'b_sujo' => $L('Alterado e ainda não salvo', 'Changed and not saved yet', 'Modificado y aún no guardado'),
-    'b_faltando' => $L('Tradução vazia: a tela mostra o texto em português', 'Empty translation: the screen shows the Portuguese text', 'Traducción vacía: la pantalla muestra el texto en portugués'),
+    'nunca' => $L(adm_t('Nada publicado ainda'), adm_t('Nothing published yet'), adm_t('Nada publicado aún')),
+    'st_igual' => $L(adm_t('Rascunho igual ao publicado'), adm_t('Draft matches what is published'), adm_t('Borrador igual al publicado')),
+    'st_pendente' => $L(adm_t('alterações salvas, falta publicar'), 'saved changes waiting to be published', 'cambios guardados, falta publicar'),
+    'st_sujo' => $L(adm_t('alterações não salvas'), 'unsaved changes', 'cambios sin guardar'),
+    'st_leitura' => $L(adm_t('Somente leitura: apenas o ADMINISTRADOR altera os textos.'), adm_t('Read only: only the ADMINISTRADOR profile can change texts.'), adm_t('Solo lectura: solo el perfil ADMINISTRADOR modifica los textos.')),
+    'b_pendente' => $L(adm_t('Salvo no rascunho, ainda não publicado'), adm_t('Saved in the draft, not published yet'), adm_t('Guardado en el borrador, aún no publicado')),
+    'b_sujo' => $L(adm_t('Alterado e ainda não salvo'), adm_t('Changed and not saved yet'), adm_t('Modificado y aún no guardado')),
+    'b_faltando' => $L(adm_t('Tradução vazia: a tela mostra o texto em português'), adm_t('Empty translation: the screen shows the Portuguese text'), adm_t('Traducción vacía: la pantalla muestra el texto en portugués')),
     'b_ok' => $L('Publicado', 'Published', 'Publicado'),
-    'publicado_era' => $L('Publicado hoje:', 'Currently published:', 'Publicado hoy:'),
-    'desfazer' => $L('Voltar ao texto publicado', 'Revert to the published text', 'Volver al texto publicado'),
-    'nenhum' => $L('Nenhum texto encontrado com esses filtros.', 'No texts match these filters.', 'Ningún texto coincide con estos filtros.'),
-    'pt_obrigatorio' => $L('O texto em português é obrigatório.', 'The Portuguese text is required.', 'El texto en portugués es obligatorio.'),
-    'sem_tags' => $L('Não use os caracteres < e >.', 'Do not use the < and > characters.', 'No use los caracteres < y >.'),
-    'salvo' => $L('Rascunho salvo. Para os usuários verem, clique em Publicar.', 'Draft saved. Click Publish so users can see it.', 'Borrador guardado. Para que los usuarios lo vean, haga clic en Publicar.'),
-    'nada_salvar' => $L('Não há alterações para salvar.', 'There are no changes to save.', 'No hay cambios para guardar.'),
-    'salve_antes' => $L('Salve o rascunho antes de publicar.', 'Save the draft before publishing.', 'Guarde el borrador antes de publicar.'),
-    'publicado_ok' => $L('Publicação nº {n} concluída: {q} texto(s). As telas já mostram os novos textos (reabra a aba da transação).', 'Publication #{n} done: {q} text(s). Screens already show the new texts (reopen the transaction tab).', 'Publicación n.º {n} concluida: {q} texto(s). Las pantallas ya muestran los nuevos textos (vuelva a abrir la pestaña).'),
-    'descartado_ok' => $L('{q} tradução(ões) voltaram ao texto publicado.', '{q} translation(s) reverted to the published text.', '{q} traducción(es) volvieron al texto publicado.'),
-    'sair_sem_salvar' => $L('Há alterações não salvas. Deseja sair mesmo assim?', 'There are unsaved changes. Leave anyway?', 'Hay cambios sin guardar. ¿Desea salir de todos modos?'),
-    'pub_titulo' => $L('Publicar textos', 'Publish texts', 'Publicar textos'),
-    'pub_texto' => $L('Os textos abaixo passam a valer em todas as telas, para todas as empresas.', 'The texts below will apply to all screens, for all companies.', 'Los textos siguientes pasarán a valer en todas las pantallas, para todas las empresas.'),
-    'pub_obs' => $L('O que mudou (opcional)', 'What changed (optional)', 'Qué cambió (opcional)'),
-    'pub_nada' => $L('Não há alterações no rascunho para publicar.', 'There are no draft changes to publish.', 'No hay cambios en el borrador para publicar.'),
-    'des_titulo' => $L('Descartar rascunho', 'Discard draft', 'Descartar borrador'),
-    'des_texto' => $L('Todas as alterações salvas e não publicadas voltam ao texto publicado. Esta ação não pode ser desfeita.', 'All saved and unpublished changes go back to the published text. This cannot be undone.', 'Todos los cambios guardados y no publicados vuelven al texto publicado. Esta acción no se puede deshacer.'),
+    'publicado_era' => $L(adm_t('Publicado hoje:'), adm_t('Currently published:'), adm_t('Publicado hoy:')),
+    'desfazer' => $L(adm_t('Voltar ao texto publicado'), adm_t('Revert to the published text'), adm_t('Volver al texto publicado')),
+    'nenhum' => $L(adm_t('Nenhum texto encontrado com esses filtros.'), adm_t('No texts match these filters.'), adm_t('Ningún texto coincide con estos filtros.')),
+    'pt_obrigatorio' => $L(adm_t('O texto em português é obrigatório.'), adm_t('The Portuguese text is required.'), adm_t('El texto en portugués es obligatorio.')),
+    'sem_tags' => $L((adm_t('Não use os caracteres') . ' < e >.'), (adm_t('Do not use the') . ' < and > characters.'), (adm_t('No use los caracteres') . ' < y >.')),
+    'salvo' => $L(adm_t('Rascunho salvo. Para os usuários verem, clique em Publicar.'), adm_t('Draft saved. Click Publish so users can see it.'), adm_t('Borrador guardado. Para que los usuarios lo vean, haga clic en Publicar.')),
+    'nada_salvar' => $L(adm_t('Não há alterações para salvar.'), adm_t('There are no changes to save.'), adm_t('No hay cambios para guardar.')),
+    'salve_antes' => $L(adm_t('Salve o rascunho antes de publicar.'), adm_t('Save the draft before publishing.'), adm_t('Guarde el borrador antes de publicar.')),
+    'publicado_ok' => $L(adm_t('Publicação nº {n} concluída: {q} texto(s). As telas já mostram os novos textos (reabra a aba da transação).'), 'Publication #{n} done: {q} text(s). Screens already show the new texts (reopen the transaction tab).', adm_t('Publicación n.º {n} concluida: {q} texto(s). Las pantallas ya muestran los nuevos textos (vuelva a abrir la pestaña).')),
+    'descartado_ok' => $L(adm_t('{q} tradução(ões) voltaram ao texto publicado.'), '{q} translation(s) reverted to the published text.', adm_t('{q} traducción(es) volvieron al texto publicado.')),
+    'sair_sem_salvar' => $L(adm_t('Há alterações não salvas. Deseja sair mesmo assim?'), adm_t('There are unsaved changes. Leave anyway?'), adm_t('Hay cambios sin guardar. ¿Desea salir de todos modos?')),
+    'pub_titulo' => $L(adm_t('Publicar textos'), adm_t('Publish texts'), adm_t('Publicar textos')),
+    'pub_texto' => $L(adm_t('Os textos abaixo passam a valer em todas as telas, para todas as empresas.'), adm_t('The texts below will apply to all screens, for all companies.'), adm_t('Los textos siguientes pasarán a valer en todas las pantallas, para todas las empresas.')),
+    'pub_obs' => $L(adm_t('O que mudou (opcional)'), 'What changed (optional)', adm_t('Qué cambió (opcional)')),
+    'pub_nada' => $L(adm_t('Não há alterações no rascunho para publicar.'), adm_t('There are no draft changes to publish.'), adm_t('No hay cambios en el borrador para publicar.')),
+    'des_titulo' => $L(adm_t('Descartar rascunho'), adm_t('Discard draft'), adm_t('Descartar borrador')),
+    'des_texto' => $L(adm_t('Todas as alterações salvas e não publicadas voltam ao texto publicado. Esta ação não pode ser desfeita.'), adm_t('All saved and unpublished changes go back to the published text. This cannot be undone.'), adm_t('Todos los cambios guardados y no publicados vuelven al texto publicado. Esta acción no se puede deshacer.')),
     'cancelar' => $L('Cancelar', 'Cancel', 'Cancelar'),
     'fechar' => $L('Fechar', 'Close', 'Cerrar'),
     'confirmar' => $L('Confirmar', 'Confirm', 'Confirmar'),
     'h_numero' => $L('Nº', 'No.', 'N.º'),
     'h_data' => $L('Data', 'Date', 'Fecha'),
-    'h_por' => $L('Publicado por', 'Published by', 'Publicado por'),
-    'h_obs' => $L('O que mudou', 'What changed', 'Qué cambió'),
+    'h_por' => $L(adm_t('Publicado por'), adm_t('Published by'), adm_t('Publicado por')),
+    'h_obs' => $L(adm_t('O que mudou'), adm_t('What changed'), adm_t('Qué cambió')),
     'h_qtd' => $L('Textos', 'Texts', 'Textos'),
-    'h_ver' => $L('Ver alterações', 'See changes', 'Ver cambios'),
-    'h_carga' => $L('Carga inicial', 'Initial load', 'Carga inicial'),
+    'h_ver' => $L(adm_t('Ver alterações'), adm_t('See changes'), adm_t('Ver cambios')),
+    'h_carga' => $L(adm_t('Carga inicial'), adm_t('Initial load'), adm_t('Carga inicial')),
     'h_antes' => $L('Antes', 'Before', 'Antes'),
-    'h_depois' => $L('Depois', 'After', 'Después'),
-    'h_vazio' => $L('(vazio)', '(empty)', '(vacío)'),
+    'h_depois' => $L('Depois', 'After', adm_t('Después')),
+    'h_vazio' => $L('(vazio)', '(empty)', adm_t('(vacío)')),
     'h_novo' => $L('(novo)', '(new)', '(nuevo)'),
-    'h_nenhum' => $L('Nenhuma publicação.', 'No publications.', 'Ninguna publicación.'),
-    'erro' => $L('Não foi possível concluir a operação.', 'The operation could not be completed.', 'No fue posible completar la operación.'),
-    'tipo_TITULO' => $L('Título', 'Title', 'Título'),
+    'h_nenhum' => $L(adm_t('Nenhuma publicação.'), adm_t('No publications.'), adm_t('Ninguna publicación.')),
+    'erro' => $L(adm_t('Não foi possível concluir a operação.'), adm_t('The operation could not be completed.'), adm_t('No fue posible completar la operación.')),
+    'tipo_TITULO' => $L(adm_t('Título'), 'Title', adm_t('Título')),
     'tipo_COLUNA' => $L('Coluna', 'Column', 'Columna'),
-    'tipo_BOTAO' => $L('Botão', 'Button', 'Botón'),
+    'tipo_BOTAO' => $L(adm_t('Botão'), 'Button', adm_t('Botón')),
     'tipo_DICA' => $L('Dica', 'Tooltip', 'Ayuda'),
     'tipo_MENSAGEM' => $L('Mensagem', 'Message', 'Mensaje'),
-    'tipo_ROTULO' => $L('Rótulo', 'Label', 'Rótulo'),
-    'tipo_MENU' => $L('Menu', 'Menu', 'Menú'),
+    'tipo_ROTULO' => $L(adm_t('Rótulo'), 'Label', adm_t('Rótulo')),
+    'tipo_MENU' => $L('Menu', 'Menu', adm_t('Menú')),
     'textos' => $L('textos', 'texts', 'textos'),
 ];
 $ui = [];
@@ -122,7 +123,7 @@ $e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
       </div>
     </div>
     <div class="ti-actions">
-      <button type="button" class="btn btn-sm btn-success" data-acao="salvar" disabled title="Ctrl+S"><i class="bi bi-floppy me-1"></i><?= $e($ui['salvar']) ?></button>
+      <button type="button" class="btn btn-sm btn-success" data-acao="salvar" disabled title="<?= adm_a('Ctrl+S') ?>"><i class="bi bi-floppy me-1"></i><?= $e($ui['salvar']) ?></button>
       <button type="button" class="btn btn-sm btn-outline-success" data-acao="publicar"><i class="bi bi-cloud-arrow-up me-1"></i><?= $e($ui['publicar']) ?></button>
       <button type="button" class="btn btn-sm btn-outline-secondary" data-acao="historico"><i class="bi bi-clock-history me-1"></i><?= $e($ui['historico']) ?></button>
       <button type="button" class="btn btn-sm btn-outline-danger" data-acao="descartar"><i class="bi bi-arrow-counterclockwise me-1"></i><?= $e($ui['descartar']) ?></button>
@@ -155,9 +156,9 @@ $e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
         <table class="ti-table">
           <thead><tr>
             <th class="ti-col-onde"><?= $e($ui['c_texto']) ?></th>
-            <th class="ti-col-lang"><span class="ti-flag">PT</span> Português</th>
-            <th class="ti-col-lang"><span class="ti-flag">EN</span> English</th>
-            <th class="ti-col-lang"><span class="ti-flag">ES</span> Español</th>
+            <th class="ti-col-lang"><span class="ti-flag">PT</span> <?= adm_h('Português') ?></th>
+            <th class="ti-col-lang"><span class="ti-flag">EN</span> <?= adm_h('English') ?></th>
+            <th class="ti-col-lang"><span class="ti-flag">ES</span> <?= adm_h('Español') ?></th>
             <th class="ti-col-sit"><span class="visually-hidden"><?= $e($ui['c_situacao']) ?></span></th>
           </tr></thead>
           <tbody data-linhas><tr><td colspan="5" class="ti-empty"><?= $e($ui['carregando']) ?></td></tr></tbody>

@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/AdministracaoTextos.php';
 
 require_once __DIR__ . '/GreenPortalDatabase.php';
 
@@ -84,7 +85,7 @@ final class IaTaximetro
 
     public static function descricaoTipo(string $tipo): string
     {
-        return self::TIPOS[strtoupper(trim($tipo))][1] ?? $tipo;
+        return adm_t(self::TIPOS[strtoupper(trim($tipo))][1] ?? $tipo);
     }
 
     /**
@@ -256,9 +257,9 @@ final class IaTaximetro
 
     public static function mensagemBloqueio(array $s): string
     {
-        return 'Limite mensal de IA da empresa atingido (' . self::moeda((float)$s['CONSUMO_BRL']) . ' usados de ' . self::moeda((float)$s['LIMITE_BRL'])
-            . ', com a folga de ' . self::numero((float)$s['FOLGA_PCT'], 0) . '%). Os novos pedidos de IA estão bloqueados até o administrador aumentar o limite; '
-            . 'as análises já pedidas continuam. Procure o administrador do sistema.';
+        return adm_t('Limite mensal de IA da empresa atingido (') . self::moeda((float)$s['CONSUMO_BRL']) . adm_t(' usados de ') . self::moeda((float)$s['LIMITE_BRL'])
+            . adm_t(', com a folga de ') . self::numero((float)$s['FOLGA_PCT'], 0) . '%). Os novos pedidos de IA estão bloqueados até o administrador aumentar o limite; '
+            . adm_t('as análises já pedidas continuam. Procure o administrador do sistema.');
     }
 
     public static function moeda(?float $v, int $casas = 2): string
