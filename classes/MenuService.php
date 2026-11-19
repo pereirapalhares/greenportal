@@ -46,7 +46,33 @@ final class MenuService
         'MM_EQUIPAMENTOS' => 'bi-tools',
         'MM_MEDICOES' => 'bi-speedometer2', 'MM_CONTROLE_CALIBRACAO' => 'bi-check2-square',
         'MM_PLANO_MEDICAO_MONITORAMENTO' => 'bi-calendar2-week',
+        // 19/11/2026: itens que apareciam sem ícone (bi-circle genérico ou ícone que não existe no Bootstrap Icons 1.11.3)
+        'ADMINISTRACAO_SMTP' => 'bi-envelope-at', 'CONFIG_AJUDA_TRANSACOES' => 'bi-question-circle', 'SETUP_MENU' => 'bi-menu-button-wide',
+        'RESPONSABILIDADE_SUBSTITUICAO' => 'bi-arrow-left-right', 'PAINEL_PENDENCIAS_UNIVERSAL' => 'bi-hourglass-split',
+        'DOCUMENTOS_COMPARTILHADOS' => 'bi-share', 'LPRO_ATIVIDADES' => 'bi-list-task', 'LPRO_PERIGOS' => 'bi-exclamation-triangle',
+        'LPRO_RISCOS' => 'bi-shield-exclamation', 'LPRO_REVISAO' => 'bi-arrow-repeat', 'LAIS_ATIVIDADES' => 'bi-list-task',
+        'MINHAS_LICENCAS' => 'bi-file-earmark-text', 'MEUS_TREINAMENTOS' => 'bi-mortarboard', 'MINHAS_INFRAESTRUTURAS' => 'bi-buildings',
+        'MEUS_CONTROLES' => 'bi-sliders2', 'NAO_CONFORMIDADES_CAD_TIPOS_TAMPA' => 'bi-box-seam',
     ];
+
+    /** Ícones que existem no Bootstrap Icons instalado (lidos do CSS uma vez por requisição). */
+    private static ?array $iconesValidos = null;
+
+    /** Ícone do menu: o do cadastro, se existir no Bootstrap Icons instalado; senão o da lista acima; senão bi-circle. */
+    private static function icone(string $doCadastro, string $codigo): string
+    {
+        if (self::$iconesValidos === null) {
+            self::$iconesValidos = [];
+            $css = @file_get_contents(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'bootstrap-icons' . DIRECTORY_SEPARATOR . 'font' . DIRECTORY_SEPARATOR . 'bootstrap-icons.min.css');
+            if ($css !== false && preg_match_all('/\.(bi-[a-z0-9-]+)::?before/', $css, $m)) self::$iconesValidos = array_fill_keys($m[1], true);
+        }
+        $valido = static fn(string $i): bool => $i !== '' && (!self::$iconesValidos || isset(self::$iconesValidos[$i]));
+        $doCadastro = trim(str_replace('bi ', '', $doCadastro));
+        $lista = self::ICONS[strtoupper($codigo)] ?? '';
+        // bi-circle gravado no cadastro é o "sem ícone" genérico: vale o da lista, se houver
+        if ($valido($doCadastro) && !($doCadastro === 'bi-circle' && $valido($lista))) return $doCadastro;
+        return $valido($lista) ? $lista : 'bi-circle';
+    }
 
     public function __construct(private PDO $pdo, private string $idioma, private array $usuario, private array $permissoes)
     {
@@ -117,7 +143,7 @@ final class MenuService
         $byParent = [];
         foreach ($rows as $row) {
             $row['_label'] = (string)($row[$campo] ?? $row['label_pt'] ?? $row['label'] ?? $row['codigo']);
-            $row['_icon'] = (string)($row['icone'] ?? '') ?: (self::ICONS[(string)$row['codigo']] ?? 'bi-circle');
+            $row['_icon'] = self::icone((string)($row['icone'] ?? ''), (string)$row['codigo']);
             $row['_id'] = 'menu-' . strtolower((string)$row['codigo']);
             $byParent[(int)($row['codmenu_pai'] ?? 0)][] = $row;
         }

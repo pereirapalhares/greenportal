@@ -68,6 +68,7 @@ function resumoSincronismo(array $j, string $modo): array
         $c = (array)($j['legislacao_central']['totais'] ?? []);
         $r['legislacao_central'] = isset($j['legislacao_central']['erro']) ? ['erro' => (string)$j['legislacao_central']['erro']]
             : ['afetados' => (int)($c['afetados'] ?? 0), 'excluidos' => (int)($c['excluidos'] ?? 0)];
+        if (isset($j['universal'])) { $un = (array)($j['universal']['totais'] ?? []); $r['universal'] = isset($j['universal']['erro']) ? ['erro' => (string)$j['universal']['erro']] : ['afetados' => (int)($un['afetados'] ?? 0), 'excluidos' => (int)($un['excluidos'] ?? 0)]; }
         if (!empty($j['fora_da_execucao'])) $r['fora_da_execucao'] = $j['fora_da_execucao'];
     }
     if ($okVal + $div > 0) $r['validacao'] = $div ? "DIVERGENTE em $div banco(s)" : 'OK';
@@ -130,7 +131,7 @@ while (true) {
         }
         $resumo = resumoSincronismo($j, $modo);
         $bancos = array_keys($resumo['bancos']);
-        if (!$bancos && $empresa !== '') throw new RuntimeException("a empresa \"$empresa\" não entrou no sincronismo (sem migração concluída ou sem tabelas fo_ no legado)");
+        if (!$bancos && $empresa !== '' && !in_array($empresa, ['legislacao', 'universal'], true)) throw new RuntimeException("a empresa \"$empresa\" não entrou no sincronismo (sem migração concluída ou sem tabelas fo_ no legado)");
         if ($modo === 'VALIDAR') { $status = str_starts_with((string)$resumo['validacao'], 'DIVERGENTE') ? 'CONCLUIDA_COM_ERRO' : 'CONCLUIDA'; if ($status !== 'CONCLUIDA') $erro = 'Validação: ' . $resumo['validacao']; }
         else {
             $status = !empty($j['ok']) ? 'CONCLUIDA' : 'CONCLUIDA_COM_ERRO';
@@ -138,6 +139,8 @@ while (true) {
                 $msgs = [];
                 foreach ($resumo['bancos'] as $b => $x) if (isset($x['erro'])) $msgs[] = "$b: " . $x['erro'];
                 if (isset($resumo['legislacao_central']['erro'])) $msgs[] = 'legislação central: ' . $resumo['legislacao_central']['erro'];
+                if (isset($resumo['universal']['erro'])) $msgs[] = 'universal: ' . $resumo['universal']['erro'];
+                foreach ((array)($j['usuarios'] ?? []) as $b => $x) if (isset($x['erro'])) $msgs[] = "$b usuários: " . $x['erro'];
                 $erro = mb_substr(implode(' | ', $msgs ?: ['algum banco terminou com erro; veja o relatório']), 0, 4000);
             }
         }
@@ -152,7 +155,7 @@ while (true) {
     // (nova execução AGENDADO/APLICAR a partir desta simulação); acima, para e avisa o ADMINISTRADOR de cada empresa com exclusões.
     if ((string)$ex['origem'] === 'AGENDADO' && $modo === 'SIMULAR' && $status !== 'ERRO' && is_array($resumo)) {
         try {
-            $exclusoes = (int)($resumo['totais']['excluidos'] ?? 0) + (int)($resumo['totais']['legal_excluidos'] ?? 0) + (int)($resumo['legislacao_central']['excluidos'] ?? 0);
+            $exclusoes = (int)($resumo['totais']['excluidos'] ?? 0) + (int)($resumo['totais']['legal_excluidos'] ?? 0) + (int)($resumo['legislacao_central']['excluidos'] ?? 0) + (int)($resumo['universal']['excluidos'] ?? 0);
             $dec = $call('sp_sinc_agendado_continuar', [$id, $exclusoes])[0] ?? [];
             $log("simulação agendada #$id: $exclusoes exclusão(ões), limite " . ($dec['limite'] ?? '?') . ' → ' . ($dec['acao'] ?? '?') . (!empty($dec['codexecucao']) ? ' #' . $dec['codexecucao'] : ''));
             if (($dec['acao'] ?? '') === 'PARADO') avisarAdministradores($env, $resumo, $id, $exclusoes, (int)($dec['limite'] ?? 0), $log);

@@ -112,6 +112,9 @@ if (is_array($j) && $x['modo'] === 'VALIDAR') {
     $c = (array)($j['legislacao_central'] ?? []);
     if ($c) $rowsRes[] = ['cells' => ['BANCO' => adm_t('Legislação central'), 'INCL' => $n($c['totais']['afetados'] ?? 0), 'ALT' => $n(null), 'EXCL' => $n($c['totais']['excluidos'] ?? 0), 'IGN' => $n(null), 'ML' => $n(null), 'ML_EXC' => $n(null),
         'VALID' => '', 'ERRO' => ['text' => (string)($c['erro'] ?? ($c['motivo'] ?? '')), 'html' => '<span class="text-danger">' . $e($c['erro'] ?? ($c['motivo'] ?? '')) . '</span>']]];
+    $un = (array)($j['universal'] ?? []); // migração 400
+    if ($un) $rowsRes[] = ['cells' => ['BANCO' => adm_t('Universal (palavras-chave)'), 'INCL' => $n($un['totais']['incluidos'] ?? 0), 'ALT' => $n($un['totais']['alterados'] ?? 0), 'EXCL' => $n($un['totais']['excluidos'] ?? 0), 'IGN' => $n(null), 'ML' => $n(null), 'ML_EXC' => $n(null),
+        'VALID' => '', 'ERRO' => ['text' => (string)($un['erro'] ?? ''), 'html' => '<span class="text-danger">' . $e($un['erro'] ?? '') . '</span>']]];
     $fora = !empty($j['fora_da_execucao']) ? ('<div class="alert alert-warning py-1 small mb-2">' . adm_t('Fora desta execução (erro na pré-validação):') . ' ') . $e(json_encode($j['fora_da_execucao'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) . '</div>' : '';
     $nc = ['filter' => 'none', 'width' => '95px'];
     $abas[] = ['id' => 'resumo', 'icone' => 'bi-list-check', 'rotulo' => adm_t('Resumo por empresa'), 'contagem' => count((array)($j['bancos'] ?? [])), 'html' => $fora . DashboardGrid::grid('srResumo', [
@@ -124,6 +127,8 @@ if (is_array($j) && $x['modo'] === 'VALIDAR') {
         $r = (array)$r;
         array_push($rowsDet, ...$mudancas((string)$b, adm_t('Homologação e NC'), (array)($r['tabelas'] ?? []), ['ignorados_dependencia', 'ignorados_duplicidade']));
         array_push($rowsDet, ...$mudancas((string)$b, adm_t('Tabelas mapeadas'), (array)($j['mapeadas'][$b]['tabelas'] ?? []), []));
+        $usu = (array)($j['usuarios'][$b] ?? []); // migração 401
+        if ($usu) array_push($rowsDet, ...$mudancas((string)$b, adm_t('Usuários'), isset($usu['erro']) ? ['usuarios' => ['erro' => $usu['erro']]] : (array)($usu['tabelas'] ?? []), ['conflitos', 'ignorados']));
         array_push($rowsDet, ...$mudancas((string)$b, adm_t('Módulo Legal'), (array)($j['legal_empresas'][$b]['tabelas'] ?? []), ['protegidos']));
         if (isset($j['validacao'][$b])) {
             $v = (array)$j['validacao'][$b];
@@ -132,6 +137,7 @@ if (is_array($j) && $x['modo'] === 'VALIDAR') {
         }
     }
     array_push($rowsDet, ...$mudancas('glegislacao_dbp', adm_t('Legislação central'), (array)($j['legislacao_central']['tabelas'] ?? []), ['protegidos']));
+    array_push($rowsDet, ...$mudancas('guniversal_dbp', adm_t('Universal'), (array)($j['universal']['tabelas'] ?? []), ['protegidos']));
     $abas[] = ['id' => 'detalhe', 'icone' => 'bi-table', 'rotulo' => adm_t('Detalhe por empresa'), 'contagem' => count($rowsDet), 'html' => DashboardGrid::grid('srDetalhe', [
         'BANCO' => ['label' => adm_t('Banco'), 'filter' => 'select', 'width' => '140px'], 'GRUPO' => ['label' => adm_t('Grupo'), 'filter' => 'select', 'width' => '150px'], 'TABELA' => ['label' => adm_t('Tabela'), 'width' => '200px'],
         'INCL' => ['label' => adm_t('Incluídos')] + $nc, 'ALT' => ['label' => adm_t('Alterados')] + $nc, 'EXCL' => ['label' => adm_t('Excluídos')] + $nc, 'IGN' => ['label' => adm_t('Ignorados / protegidos')] + $nc, 'DETALHE' => ['label' => adm_t('Detalhe')],

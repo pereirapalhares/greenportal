@@ -75,7 +75,10 @@
                 var destino = bloco.querySelector('.tb-grupo-botoes');
                 (grupo.botoes || []).forEach(function (seletor) {
                     Array.prototype.forEach.call(fragmento.querySelectorAll('.crud-toolbar ' + seletor), function (botao) {
-                        if (botao.closest('.tb-grupo') && botao.closest('.tb-grupo') !== bloco) return;
+                        // Um botão já agrupado não troca de grupo; a exceção é o grupo "Outros" da configuração automática
+                        // (barras que entram no fragmento da tela depois do carregamento, como a de Legislação x Empresas).
+                        var grupoAtual = botao.closest('.tb-grupo');
+                        if (grupoAtual && grupoAtual !== bloco && grupoAtual.getAttribute('data-tb-grupo') !== 'outros') return;
                         botao.classList.add('grid-crud-button');
                         // Botão desabilitado fica dentro de um <span> de dica (manutencao-legal-cadastro.js):
                         // move-se o <span> junto, para a dica continuar funcionando e não sobrar espaço vazio.

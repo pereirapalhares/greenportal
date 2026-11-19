@@ -36,7 +36,7 @@ var _tx = window._tx || function (s) { return typeof window.greenTxt === 'functi
     function ensurePasswordCells() {
         var $templates = $('#userPasswordTemplates');
         var $lastLoginTemplates = $('#userLastLoginTemplates');
-        var $superiorTemplates = $('#userSuperiorTemplates');
+        var $generic = $('#userSuperiorOptions');
         $table.find('tbody tr').each(function () {
             var $row = $(this);
             var id = String($row.data('key') || '');
@@ -50,17 +50,28 @@ var _tx = window._tx || function (s) { return typeof window.greenTxt === 'functi
                 $cell.append($mask, $value, $button);
                 $row.append($cell);
             }
+            // Grupos (19/11/2026, só consulta): linha nova fica vazia até salvar e abrir "Grupos do usuário".
+            if ($table.find('thead th[data-column="grupos"]').length && !$row.children('[data-column="grupos"]').length) {
+                $row.append($('<td data-column="grupos" class="small text-truncate">'));
+            }
+            // Data de inclusão (19/11/2026): linha nova ainda não tem data; a célula fica vazia até salvar.
+            if (!$row.children('[data-column="criado_em"]').length) {
+                $row.append($('<td data-column="criado_em" class="text-nowrap">'));
+            }
             if ($lastLoginTemplates.length && !$row.children('[data-column="ultimo_acesso"]').length) {
                 var $loginTemplate = $lastLoginTemplates.find('[data-user-last-login="' + id + '"]');
                 $row.append($('<td data-column="ultimo_acesso">').text(String($loginTemplate.data('last-login-value') || '')));
             }
-            if ($superiorTemplates.length && !$row.children('[data-column="codusuario_superior"]').length) {
-                var $superiorTemplate = $superiorTemplates.find('[data-user-superior="' + id + '"]');
-                if (!$superiorTemplate.length) $superiorTemplate = $('#userSuperiorOptions');
-                if ($superiorTemplate.length) {
-                    var $select = $superiorTemplate.clone().removeAttr('data-user-superior').removeAttr('id').removeAttr('hidden').attr('name', 'rows[' + id + '][codusuario_superior]').addClass('grid-input');
-                    $row.append($('<td data-column="codusuario_superior">').append($select));
+            if (!$row.children('[data-column="codusuario_superior"]').length) {
+                // Só a opção atual; a lista completa entra ao abrir o campo (ver carregarSuperiores)
+                var superior = String($row.attr('data-superior') || '0');
+                var $select = $('<select class="grid-input" data-superior-select>').attr('name', 'rows[' + id + '][codusuario_superior]').attr('data-self', id);
+                $select.append($('<option value="">').text($generic.find('option[value=""]').first().text() || 'Selecione'));
+                if (superior !== '0' && superior !== '') {
+                    var nome = $generic.find('option[value="' + superior + '"]').first().text() || ('#' + superior);
+                    $select.append($('<option>').val(superior).text(nome)).val(superior);
                 }
+                $row.append($('<td data-column="codusuario_superior">').append($select));
             }
         });
     }
@@ -76,6 +87,16 @@ var _tx = window._tx || function (s) { return typeof window.greenTxt === 'functi
         $button.attr('aria-label', showing ? 'Mostrar senha' : _tx('Ocultar senha')).attr('title', showing ? 'Mostrar senha' : _tx('Ocultar senha'));
         $button.find('i').toggleClass('bi-eye', showing).toggleClass('bi-eye-slash', !showing);
     });
+
+    function carregarSuperiores() {
+        var $select = $(this);
+        if ($select.data('completo')) return;
+        var atual = String($select.val() || ''), self = String($select.attr('data-self') || '');
+        var $opcoes = $('#userSuperiorOptions').children().clone();
+        $opcoes = $opcoes.filter(function () { return String(this.value) !== self || self === ''; });
+        $select.empty().append($opcoes).val(atual).data('completo', 1);
+    }
+    $(document).on('mousedown focus keydown', '[data-superior-select]', carregarSuperiores);
 
     $(document).on('click', '[data-new-user]', function () {
         window.setTimeout(function () { ensurePasswordCells(); normalizeColumnOrder(); applyVisibility(); }, 0);

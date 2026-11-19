@@ -44,7 +44,8 @@ declare(strict_types=1);
  * Uso (em E:\wamp\apps\greenportal):
  *   E:\wamp\bin\php\php8.4.15\php.exe scripts\sincronizar-fo-legado.php              (simulação)
  *   E:\wamp\bin\php\php8.4.15\php.exe scripts\sincronizar-fo-legado.php --aplicar    (grava)
- *   Opcional: --empresa=atlas | modelo   (padrão: todas)
+ *   Opcional: --empresa=atlas | modelo   (padrão: todas)   --empresa=legislacao: só a legislação central (399)
+ *             --empresa=universal: só o universal (palavras-chave, 400)
  * Agendamento diário: scripts\sincronizar-fo-legado.bat (Agendador de Tarefas do Windows).
  */
 
@@ -52,7 +53,8 @@ date_default_timezone_set('America/Sao_Paulo'); // horários dos relatórios no 
 require_once __DIR__ . '/../classes/GreenPortalDatabase.php';
 require_once __DIR__ . '/../classes/SincronismoLegado.php'; // prefixos (fo_, nc_), tabelas desconsideradas e mantidas no novo
 require_once __DIR__ . '/../classes/NaoConformidadeParticipantes.php'; // migração 333: participantes externos das listas de NC
-require_once __DIR__ . '/../classes/SincronismoLegislacaoOperacoes.php'; // migração 393: legislação central por operações (de-para)
+require_once __DIR__ . '/../classes/SincronismoLegislacaoOperacoes.php';
+require_once __DIR__ . '/../classes/SincronismoUsuarios.php'; // migração 401: usuários do legado (<legado>_seguranca.usuarios) // migração 393: legislação central por operações (de-para)
 
 const SINC_SOMENTE_INCLUSAO = ['fo_fornecedorxcriterios_historico'];
 // Migração 393 (17/11/2026, decisão do usuário): a legislação central deixa de ser ESPELHO do legado. Agora vêm só as
@@ -91,8 +93,15 @@ $sincPares = paresMigrados($pdo);
 $empresas = array_keys($sincPares);
 $empresaFiltro = null;
 foreach ($argv as $arg) if (str_starts_with($arg, '--empresa=')) $empresaFiltro = strtolower(substr($arg, 10));
+// Migração 399 (19/11/2026, pedido do usuário): --empresa=legislacao roda só a legislação central (green_legislacao →
+// glegislacao_dbp), sem nenhuma empresa. Opção "Legislação (glegislacao_dbp)" do combo da tela de Sincronismo.
+$soLegislacao = $empresaFiltro === 'legislacao';
+// Migração 400: --empresa=universal roda só o universal (green_universal → guniversal_dbp: catálogo de palavras-chave).
+$soUniversal = $empresaFiltro === 'universal';
+$rodaCentral = !$soUniversal;     // legislação central: todas, uma empresa ou só a legislação
+$rodaUniversal = !$soLegislacao;  // universal: todas, uma empresa ou só o universal
 if ($empresaFiltro !== null) {
-    $sincPares = array_intersect_key($sincPares, [$empresaFiltro => true]);
+    $sincPares = ($soLegislacao || $soUniversal) ? [] : array_intersect_key($sincPares, [$empresaFiltro => true]);
     $empresas = array_keys($sincPares);
 }
 
@@ -150,6 +159,14 @@ function paresMigrados(PDO $pdo): array
         foreach ($origens as $origem) if (is_string($origem) && preg_match('/^[A-Za-z0-9_]+$/', $origem) && existeBanco($pdo, $origem) && linhas($pdo, "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA=? AND TABLE_NAME LIKE 'fo\\_%' AND TABLE_TYPE='BASE TABLE' LIMIT 1", [$origem])) { $pares[strtolower((string)$empresa['codigo'])][] = [$origem, $destino]; break; }
     }
     return $pares;
+}
+
+/** Migração 400: universal legado → guniversal_dbp por operações (só palavras_chaves; ver SincronismoLegislacaoOperacoes::universal). */
+function sincronizarUniversal(PDO $pdo, bool $aplicar): array
+{
+    $limite = 500;
+    try { $limite = (int)(valor($pdo, 'SELECT limite_exclusoes FROM guniversal_dbp.sincronismo_config WHERE codconfig = 1') ?? 500) ?: 500; } catch (Throwable) {}
+    return SincronismoLegislacaoOperacoes::universal($pdo, $aplicar, $limite);
 }
 
 function sincronizarLegislacao(PDO $pdo, bool $aplicar): array
@@ -684,7 +701,8 @@ if ($aplicar) {
         $mapPreflight=sincronizarMapeadas($pdo,$origem,$destino,false); if(isset($mapPreflight['erro'])){$preflight['ok']=false;$preflight['mapeadas'][$destino]=['erro'=>'tabelas mapeadas: '.$mapPreflight['erro']];}
         $foPreflight=sincronizar($pdo,$origem,$destino,false);$legalPreflight=sincronizarLegalTenant($pdo,$origem,$destino,false);$preflight['bancos'][$destino]=$foPreflight;$preflight['legal_empresas'][$destino]=$legalPreflight;if(isset($foPreflight['erro'])||isset($legalPreflight['erro']))$preflight['ok']=false;
     }
-    if ($sincPares) { $centralPreflight=sincronizarLegislacao($pdo,false);$preflight['legislacao_central']=$centralPreflight;if(isset($centralPreflight['erro']))$preflight['ok']=false; }
+    if (($sincPares || $soUniversal) && $rodaUniversal) { $uniPreflight = sincronizarUniversal($pdo, false); $preflight['universal'] = $uniPreflight; if (isset($uniPreflight['erro'])) $preflight['ok'] = false; }
+    if (($sincPares || $soLegislacao) && $rodaCentral) { $centralPreflight=sincronizarLegislacao($pdo,false);$preflight['legislacao_central']=$centralPreflight;if(isset($centralPreflight['erro']))$preflight['ok']=false; }
     // Banco com erro na pré-validação fica de fora desta execução; os outros seguem (antes, um erro cancelava todos).
     $foraDaExecucao = [];
     foreach ($preflight['bancos'] as $b => $x) if (isset($x['erro']) || isset($preflight['legal_empresas'][$b]['erro']) || isset($preflight['mapeadas'][$b]['erro'])) $foraDaExecucao[$b] = $x['erro'] ?? $preflight['legal_empresas'][$b]['erro'] ?? $preflight['mapeadas'][$b]['erro'];
@@ -723,6 +741,9 @@ foreach ($empresas as $empresa) {
         }
         if ($aplicar) registrarSincronismo($pdo, $destino, 'SINCRONISMO_LEGAL_LEGADO', $origem . '.legal', $destino . '.legal', $legal, $inicio);
         // Migração 316: unidades de cada usuário (restrição por unidade da Homologação e da Portaria).
+        // Migração 401: usuários antes das unidades de cada usuário (novos usuários do legado entram primeiro).
+        $saida['usuarios'][$destino] = SincronismoUsuarios::sincronizar($pdo, $origem, $destino, $aplicar);
+        if (isset($saida['usuarios'][$destino]['erro'])) $ok = false;
         $saida['usuarios_unidades'][$destino] = sincronizarUsuariosUnidades($pdo, $origem, $destino, $aplicar);
         if (isset($saida['usuarios_unidades'][$destino]['erro'])) $ok = false;
         // Migração 333: participantes externos das listas de distribuição de NC (<legado>_seguranca.usuarios ativado = 'X' ->
@@ -735,7 +756,12 @@ foreach ($empresas as $empresa) {
 }
 // A legislação central não depende das empresas: é aplicada mesmo que alguma empresa tenha falhado
 // (antes, qualquer falha deixava a central só em simulação).
-$saida['legislacao_central'] = empty($sincPares) ? ['status'=>'IGNORADA','motivo'=>'nenhuma empresa migrada elegível'] : sincronizarLegislacao($pdo, $aplicar);
+if (($sincPares || $soUniversal) && $rodaUniversal) {
+    $saida['universal'] = sincronizarUniversal($pdo, $aplicar);
+    if (isset($saida['universal']['erro'])) $ok = false;
+    if ($aplicar && !isset($saida['universal']['erro'])) @registrarSincronismo($pdo, 'guniversal_dbp', 'SINCRONISMO_UNIVERSAL', 'green_universal', 'guniversal_dbp', $saida['universal'], $inicio);
+}
+if ($rodaCentral) $saida['legislacao_central'] = (empty($sincPares) && !$soLegislacao) ? ['status'=>'IGNORADA','motivo'=>'nenhuma empresa migrada elegível'] : sincronizarLegislacao($pdo, $aplicar);
 if (isset($saida['legislacao_central']['erro'])) $ok = false;
 if ($aplicar && $ok && isset($saida['legislacao_central']['totais'])) registrarSincronismo($pdo, 'glegislacao_dbp', 'SINCRONISMO_LEGISLACAO_CENTRAL', 'green_legislacao', 'glegislacao_dbp', $saida['legislacao_central'], $inicio);
 $saida['fim'] = date('Y-m-d H:i:s');

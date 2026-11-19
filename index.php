@@ -93,6 +93,7 @@ try {
 <html lang="<?php echo $idioma === 'pt' ? 'pt-BR' : $idioma; ?>">
 <head>
     <meta charset="utf-8">
+    <script>/* 19/11/2026: login aberto dentro de um iframe/popup (sessão expirada) vai para a janela principal */ if (window.top !== window.self) { try { window.top.location.replace(window.location.href); } catch (e) {} }</script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Acesso ao <?php echo htmlspecialchars(ApplicationIdentity::LABEL, ENT_QUOTES, 'UTF-8'); ?>">
     <meta name="application-name" content="<?php echo htmlspecialchars(ApplicationIdentity::LABEL, ENT_QUOTES, 'UTF-8'); ?>">

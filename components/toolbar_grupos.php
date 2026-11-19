@@ -27,6 +27,7 @@ if (!function_exists('greenPortalToolbarGrupos')) {
             'operacoes' => ['pt' => 'Operações', 'en' => 'Operations', 'es' => 'Operaciones'],
             'associacoes' => ['pt' => 'Associações', 'en' => 'Associations', 'es' => 'Asociaciones'],
             'avaliacao' => ['pt' => 'Avaliação', 'en' => 'Assessment', 'es' => 'Evaluación'],
+            'importar' => ['pt' => 'Importar', 'en' => 'Import', 'es' => 'Importar'],
             'outros' => ['pt' => 'Outros', 'en' => 'Others', 'es' => 'Otros'],
         ];
         $idioma = (string)($_SESSION['idioma'] ?? 'pt');
@@ -63,7 +64,7 @@ if (!function_exists('greenPortalToolbarGrupos')) {
         if (!$recursos) {
             $recursos = true;
             echo '<link href="../assets/css/toolbar-grupos.css?v=3" rel="stylesheet">';
-            echo '<script src="../assets/js/toolbar-grupos.js?v=8"></script>';
+            echo '<script src="../assets/js/toolbar-grupos.js?v=9"></script>';
         }
     }
 
@@ -85,7 +86,7 @@ if (!function_exists('greenPortalToolbarGrupos')) {
             'associacoes' => [
                 '[data-context-child]:not([data-context-id^="questionario"]):not([data-context-url*="objetivosmetas"])',
                 '[data-license-condicionantes]', '[data-license-palavras-chave]', '[data-license-responsabilidades]',
-                '[data-license-requisitos]', '[data-license-arquivos]', '[data-control-relacionamento]', '[data-open-requisito-popup]',
+                '[data-license-requisitos]', '[data-license-arquivos]', '[data-control-relacionamento]', '[data-open-requisito-popup]', '[data-user-grupos]',
             ],
             'avaliacao' => [
                 '[data-context-id^="questionario"]', '[data-context-url*="objetivosmetas"]', '[data-open-questionnaire]',

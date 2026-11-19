@@ -379,4 +379,12 @@
     $fragment.on('click', '[data-open-legislacao-pdf]', function (event) { event.stopPropagation(); openPdf($(this).closest('tr')); });
     $fragment.on('click', '[data-export-cadastro]', function (event) { event.preventDefault(); var filters = {}; $fragment.find('[data-grid-filter], [data-column-filter]').each(function () { var key = String($(this).data('grid-filter') || $(this).data('column-filter')); var value = String($(this).val() || '').trim(); if (value !== '') filters[key] = value; }); $.post(window.location.href, { action: 'export_request', filtros: JSON.stringify(filters), busca: String($fragment.find('.crud-search input').val() || '').trim(), ajax: 1 }, function (response) { if (response && response.ok) window.alert(response.message || 'Exportação solicitada.'); else window.alert('Não foi possível solicitar a exportação.'); }, 'json').fail(function () { window.alert('Não foi possível solicitar a exportação.'); }); });
     $fragment.on('gridPageLoaded', installPdfButtons); installPdfButtons();
+    // Migração 402: Importar planilha de alterações (popup padrão; a tela confere e pede autorização antes de gravar)
+    $fragment.on('click', '[data-importar-alteracoes]', function (event) {
+        event.preventDefault();
+        var url = new URL('manutencaolegal_legislacaoxempresa_importacao.php?tipo=ALTERACAO', window.location.href).toString(), host = null, titulo = $(this).attr('title') || 'Importar planilha de alterações';
+        try { host = window.top && window.top.GreenPortalPopups && window.top.jQuery ? window.top : null; } catch (e) { host = null; }
+        if (host) host.GreenPortalPopups.transacaoIndependente({ titulo: titulo, conteudo: host.jQuery('<iframe>', { src: url, title: titulo, style: 'width:100%;height:100%;border:0;display:block;' }), redimensionavel: true });
+        else window.open(url, '_blank');
+    });
 }(jQuery));

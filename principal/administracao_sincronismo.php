@@ -66,6 +66,8 @@ $rotStatus = ['NA_FILA' => [adm_t('Na fila'), 'secondary'], 'EM_EXECUCAO' => [ad
 $rotModo = ['SIMULAR' => adm_t('Simulação'), 'APLICAR' => adm_t('Aplicação'), 'VALIDAR' => adm_t('Validação')];
 $nomeEmpresa = [];
 foreach ($empresas as $em) $nomeEmpresa[(string)$em['codigo']] = (string)$em['nome'];
+$nomeEmpresa['legislacao'] = adm_t('Legislação'); // migração 399: só a legislação central
+$nomeEmpresa['universal'] = adm_t('Universal');   // migração 400: só o universal (palavras-chave)
 $num = static fn($n): string => number_format((int)$n, 0, ',', '.');
 ?><!doctype html>
 <html lang="pt-BR">
@@ -124,6 +126,8 @@ body{padding:12px 14px}
         <label for="scEmpresa"><?= adm_h('Empresa') ?></label>
         <select class="form-select form-select-sm" style="width:auto;min-width:220px" id="scEmpresa" name="empresa">
           <option value=""><?= adm_h('Todas as empresas') ?></option>
+          <option value="legislacao"><?= adm_h('Legislação') ?> (glegislacao_dbp)</option>
+          <option value="universal"><?= adm_h('Universal') ?> (guniversal_dbp)</option>
           <?php foreach ($empresas as $em): ?><option value="<?= $e($em['codigo']) ?>"><?= $e($em['nome']) ?> (<?= $e($em['banco_dados']) ?>)</option><?php endforeach; ?>
         </select>
       </div>

@@ -14,13 +14,43 @@ require_once dirname(__DIR__) . '/classes/IdiomaService.php';
 require_once dirname(__DIR__) . '/classes/LegislacaoImportacao.php';
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
-TransactionSecurity::connect('LEGISLACAO_X_EMPRESAS');
-if (($_SESSION['usuario']['codigo_perfil'] ?? '') !== 'ADMINISTRADOR') { http_response_code(403); exit('Somente o ADMINISTRADOR importa a planilha de Legislação x Empresas.'); }
+// Tipo do pedido (migração 398): EMPRESA = Legislação x Empresas; PODER = Legislação x Controle. Um pedido aberto
+// pelo número usa o tipo gravado nele; a permissão conferida é a da tela de origem.
+$codPedido = (int)($_POST['codimportacao'] ?? $_GET['codimportacao'] ?? 0);
+$pedidoTipo = $codPedido > 0 ? LegislacaoImportacao::pedido($codPedido) : null;
+$tipo = LegislacaoImportacao::tipoPedido($pedidoTipo['tipo'] ?? ($_POST['tipo'] ?? $_GET['tipo'] ?? 'EMPRESA'));
+$poder = $tipo === 'PODER';
+$alt = $tipo === 'ALTERACAO'; // migração 402: planilha mensal de alterações da legislação (permissão da tela Legislação)
+TransactionSecurity::connect($alt ? 'LEGISLACAO' : ($poder ? 'LEGISLACAO_X_PODER' : 'LEGISLACAO_X_EMPRESAS'));
+if (($_SESSION['usuario']['codigo_perfil'] ?? '') !== 'ADMINISTRADOR') { http_response_code(403); exit('Somente o ADMINISTRADOR importa a planilha de ' . LegislacaoImportacao::PEDIDOS[$tipo] . '.'); }
 
 const LEGIMP_TEXTOS = [
     'titulo' => ['Importar planilha — Legislação x Empresas', 'Import spreadsheet — Legislation x Companies', 'Importar planilla — Legislación x Empresas'],
+    'titulo_alt' => ['Importar planilha — Alterações da legislação', 'Import spreadsheet — Legislation changes', 'Importar planilla — Cambios de la legislación'],
+    'enviar_texto_alt' => ['Cabeçalho com "Código" na coluna A e as colunas devido, descrição, tipo de alteração, situação da Lei (Lei Inclusa, Lei Alterada ou Lei Revogada) e Data de Alteração. Cada linha atua só na lei de código exato. Nada é gravado agora: o portal confere a planilha e mostra o que mudaria; as alterações só são gravadas quando você autorizar.', 'Header with "Código" in column A and the columns devido, descrição, tipo de alteração, situação da Lei (Lei Inclusa, Lei Alterada or Lei Revogada) and Data de Alteração. Each row acts only on the law with that exact code. Nothing is saved now: the portal checks the spreadsheet and shows what would change; changes are saved only when you authorize them.', 'Encabezado con "Código" en la columna A y las columnas devido, descrição, tipo de alteração, situação da Lei (Lei Inclusa, Lei Alterada o Lei Revogada) y Data de Alteração. Cada fila actúa solo en la ley de código exacto. Nada se graba ahora: el portal revisa la planilla y muestra lo que cambiaría; los cambios solo se graban cuando usted los autorice.'],
+    'a_novas' => ['Leis novas', 'New laws', 'Leyes nuevas'],
+    'a_atualizadas' => ['Leis atualizadas', 'Updated laws', 'Leyes actualizadas'],
+    'a_alteracoes' => ['Alterações a incluir', 'Changes to add', 'Cambios a incluir'],
+    'a_existentes' => ['Alterações que já existem', 'Changes that already exist', 'Cambios que ya existen'],
+    'a_novas_txt' => ['Leis que não existem no cadastro: são criadas só com código, situação e devido (como no legado). Complete o cadastro depois em Legislação.', 'Laws not in the register: created with code, status and reason only (as in the legacy system). Complete the record later in Legislation.', 'Leyes que no existen en el registro: se crean solo con código, situación y motivo (como en el legado). Complete el registro después en Legislación.'],
+    'a_atualizadas_txt' => ['Leis que já existem: recebem a situação e o devido da planilha, e a data de atualização passa a ser a da aplicação.', 'Existing laws: get the status and reason from the spreadsheet, and the update date becomes the application date.', 'Leyes existentes: reciben la situación y el motivo de la planilla, y la fecha de actualización pasa a ser la de la aplicación.'],
+    'a_existentes_txt' => ['Iguais a uma alteração já cadastrada para a mesma lei (sem diferença de espaços, quebras de linha e maiúsculas): ficam de fora.', 'Same as a change already registered for the law (ignoring spaces, line breaks and case): left out.', 'Iguales a un cambio ya registrado para la misma ley (sin diferencia de espacios, saltos de línea y mayúsculas): quedan fuera.'],
+    'c_situacao' => ['Situação', 'Status', 'Situación'],
+    'c_devido' => ['Devido', 'Reason', 'Motivo'],
+    'c_tipo_alt' => ['Tipo de alteração', 'Change type', 'Tipo de cambio'],
+    'c_descricao' => ['Descrição', 'Description', 'Descripción'],
+    'c_data' => ['Data', 'Date', 'Fecha'],
+    'c_linha' => ['Linha', 'Row', 'Fila'],
+    'data_aplicacao' => ['data da aplicação', 'application date', 'fecha de aplicación'],
+    'confirmar_texto_alt' => ['Serão gravados no portal: {n} leis novas, {t} leis atualizadas e {a} alterações. A aplicação roda em segundo plano, tudo ou nada (um erro desfaz tudo), e o resultado chega nos alertas.', 'This will be saved in the portal: {n} new laws, {t} updated laws and {a} changes. It runs in the background, all or nothing (an error undoes everything), and the result arrives in the alerts.', 'Se grabarán en el portal: {n} leyes nuevas, {t} leyes actualizadas y {a} cambios. Se aplica en segundo plano, todo o nada (un error deshace todo), y el resultado llega en las alertas.'],
+    'titulo_poder' => ['Importar planilha — Legislação x Controle', 'Import spreadsheet — Legislation x Control', 'Importar planilla — Legislación x Control'],
+    'enviar_texto_poder' => ['Cabeçalho com "Codigo" na coluna A (na linha 1, ou na 2 se a 1 tiver o título). Coluna A: código da lei (o valor vale também para os padrões da lei que não têm linha própria). Cabeçalho: nome das unidades. Células: Conhecimento, Controle ou Influência. Nada é gravado agora: o portal confere a planilha e mostra o que mudaria; as alterações só são gravadas quando você autorizar.', 'Header row with "Codigo" in column A (row 1, or row 2 when row 1 has the title). Column A: law code (the value also applies to the law\'s standards that have no row of their own). Header: unit names. Cells: Conhecimento, Controle or Influência. Nothing is saved now: the portal checks the spreadsheet and shows what would change; changes are saved only when you authorize them.', 'Encabezado con "Codigo" en la columna A (fila 1, o fila 2 si la 1 tiene el título). Columna A: código de la ley (el valor vale también para los patrones de la ley sin fila propia). Encabezado: nombre de las unidades. Celdas: Conhecimento, Controle o Influência. Nada se graba ahora: el portal revisa la planilla y muestra lo que cambiaría; los cambios solo se graban cuando usted los autorice.'],
+    'r_incluir_poder' => ['controles a incluir', 'controls to add', 'controles a incluir'],
+    'r_trocar_poder' => ['controles a trocar', 'controls to change', 'controles a cambiar'],
+    'r_herdados' => ['{n} alterações são de padrões que seguem a lei principal ({p} padrões sem linha própria na planilha).', '{n} changes are for standards that follow the main law ({p} standards without their own row).', '{n} cambios son de patrones que siguen la ley principal ({p} patrones sin fila propia).'],
+    'retirar_texto_poder' => ['Controles que existem no portal para as leis e unidades da planilha, mas com a célula vazia. Só saem os que você marcar.', 'Controls that exist in the portal for the laws and units in the spreadsheet, but with an empty cell. Only the ones you check are removed.', 'Controles que existen en el portal para las leyes y unidades de la planilla, pero con la celda vacía. Solo se retiran los que usted marque.'],
     'enviar_titulo' => ['Enviar a planilha do mês', 'Send the monthly spreadsheet', 'Enviar la planilla del mes'],
-    'enviar_texto' => ['A1 = "Codigo". Coluna A: código da lei. Linha 1: nome das unidades. Células: MATRIZ ou uma letra (padrão). Nada é gravado agora: o portal confere a planilha e mostra o que mudaria; as alterações só são gravadas quando você autorizar.', 'A1 = "Codigo". Column A: law code. Row 1: unit names. Cells: MATRIZ or a letter (standard). Nothing is saved now: the portal checks the spreadsheet and shows what would change; changes are saved only when you authorize them.', 'A1 = "Codigo". Columna A: código de la ley. Fila 1: nombre de las unidades. Celdas: MATRIZ o una letra (patrón). Nada se graba ahora: el portal revisa la planilla y muestra lo que cambiaría; los cambios solo se graban cuando usted los autorice.'],
+    'enviar_texto' => ['Cabeçalho com "Codigo" na coluna A (na linha 1, ou na 2 se a 1 tiver o título). Coluna A: código da lei. Cabeçalho: nome das unidades. Células: MATRIZ ou uma letra (padrão). Nada é gravado agora: o portal confere a planilha e mostra o que mudaria; as alterações só são gravadas quando você autorizar.', 'Header row with "Codigo" in column A (row 1, or row 2 when row 1 has the title). Column A: law code. Header: unit names. Cells: MATRIZ or a letter (standard). Nothing is saved now: the portal checks the spreadsheet and shows what would change; changes are saved only when you authorize them.', 'Encabezado con "Codigo" en la columna A (fila 1, o fila 2 si la 1 tiene el título). Columna A: código de la ley. Encabezado: nombre de las unidades. Celdas: MATRIZ o una letra (patrón). Nada se graba ahora: el portal revisa la planilla y muestra lo que cambiaría; los cambios solo se graban cuando usted los autorice.'],
     'arquivo' => ['Arquivo (.xls, .xlsx ou .csv)', 'File (.xls, .xlsx or .csv)', 'Archivo (.xls, .xlsx o .csv)'],
     'btn_conferir' => ['Enviar e conferir', 'Send and check', 'Enviar y revisar'],
     'conferindo' => ['Conferindo a planilha com o portal… pode levar alguns segundos.', 'Checking the spreadsheet against the portal… this may take a few seconds.', 'Revisando la planilla con el portal… puede tardar algunos segundos.'],
@@ -34,6 +64,7 @@ const LEGIMP_TEXTOS = [
     'col_enviado' => ['Enviado', 'Sent', 'Enviado'],
     'col_autorizado' => ['Autorizado', 'Authorized', 'Autorizado'],
     'col_mudancas' => ['Incluir / Trocar / Retirar', 'Add / Change / Remove', 'Incluir / Cambiar / Retirar'],
+    'col_mudancas_alt' => ['Leis novas / atualizadas', 'New / updated laws', 'Leyes nuevas / actualizadas'],
     'col_problemas' => ['Problemas', 'Issues', 'Problemas'],
     'abrir' => ['Abrir', 'Open', 'Abrir'],
     'voltar' => ['Voltar à lista', 'Back to the list', 'Volver a la lista'],
@@ -48,6 +79,7 @@ const LEGIMP_TEXTOS = [
     'aba_resumo' => ['Resumo', 'Summary', 'Resumen'],
     'aba_incluir' => ['Inclusões', 'Additions', 'Inclusiones'],
     'aba_trocar' => ['Trocas de tipo', 'Type changes', 'Cambios de tipo'],
+    'aba_trocar_poder' => ['Trocas de controle', 'Control changes', 'Cambios de control'],
     'aba_retirar' => ['Retiradas', 'Removals', 'Retiros'],
     'aba_padroes' => ['Padrões a criar', 'Standards to create', 'Patrones a crear'],
     'aba_problemas' => ['Problemas', 'Issues', 'Problemas'],
@@ -132,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = LegislacaoImportacao::conferir((string)$f['tmp_name'], basename((string)$f['name']), [
                 'codusuario' => $usuario, 'nome' => $nomeUsuario,
                 'codempresa' => (int)($_SESSION['tenant']['codempresa'] ?? 0), 'banco' => (string)($_SESSION['tenant']['banco_dados'] ?? ''),
-            ]);
+            ], $tipo);
             $resp(true, ['codimportacao' => $id]);
         }
         $id = (int)($_POST['codimportacao'] ?? 0);
@@ -156,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $id = max(0, (int)($_GET['codimportacao'] ?? 0));
 $pedido = $id > 0 ? LegislacaoImportacao::pedido($id) : null;
 $itens = $pedido ? LegislacaoImportacao::itens($id) : [];
-$pedidos = $pedido ? [] : LegislacaoImportacao::pedidos(50);
+$pedidos = $pedido ? [] : LegislacaoImportacao::pedidos(50, $tipo);
 $porAcao = ['INCLUIR' => [], 'TROCAR' => [], 'RETIRAR' => []];
 foreach ($itens as $it) $porAcao[$it['acao']][] = $it;
 $resumo = $pedido ? (json_decode((string)($pedido['resumo'] ?? ''), true) ?: []) : [];
@@ -176,7 +208,7 @@ $resultadoTd = static function (array $it) use ($e, $aplicado): string {
 <html lang="<?= $e(['en' => 'en', 'es' => 'es'][IdiomaService::idioma()] ?? 'pt-BR') ?>">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= $h('titulo') ?></title>
+<title><?= $h($alt ? 'titulo_alt' : ($poder ? 'titulo_poder' : 'titulo')) ?></title>
 <link href="../assets/vendor/bootstrap/css/bootstrap.min.css?v=2" rel="stylesheet"><link href="../assets/vendor/bootstrap-icons/font/bootstrap-icons.min.css?v=2" rel="stylesheet"><link href="../assets/css/app.css" rel="stylesheet"><link href="../assets/css/main.css?v=18" rel="stylesheet"><link href="../assets/css/design-system.css?v=3" rel="stylesheet">
 <style>
 body{background:transparent;font-size:13px}
@@ -203,13 +235,13 @@ body{background:transparent;font-size:13px}
 </style>
 </head>
 <body>
-<main class="li-pagina" data-legimp data-csrf="<?= $e($csrf) ?>" data-codimportacao="<?= (int)$id ?>">
+<main class="li-pagina" data-legimp data-csrf="<?= $e($csrf) ?>" data-codimportacao="<?= (int)$id ?>" data-tipo="<?= $e($tipo) ?>">
 <div class="li-msg" data-msg></div>
 <?php if (!$pedido): ?>
   <?php if ($id > 0): ?><div class="alert alert-warning py-2"><?= $h('nao_encontrado') ?></div><?php endif; ?>
   <section class="card mb-3"><div class="card-body">
     <h6 class="mb-1"><i class="bi bi-file-earmark-spreadsheet me-1"></i><?= $h('enviar_titulo') ?></h6>
-    <p class="text-muted small mb-2"><?= $h('enviar_texto') ?></p>
+    <p class="text-muted small mb-2"><?= $h($alt ? 'enviar_texto_alt' : ($poder ? 'enviar_texto_poder' : 'enviar_texto')) ?></p>
     <form class="d-flex flex-wrap gap-2 align-items-end" data-form-upload>
       <div><label class="form-label small mb-1" for="liArquivo"><?= $h('arquivo') ?></label><input class="form-control form-control-sm" type="file" id="liArquivo" name="planilha" accept=".xls,.xlsx,.csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" style="min-width:320px"></div>
       <button class="btn btn-sm btn-success" type="submit" data-btn-conferir><i class="bi bi-upload me-1"></i><?= $h('btn_conferir') ?></button>
@@ -218,19 +250,19 @@ body{background:transparent;font-size:13px}
   <h6><?= $h('pedidos') ?></h6>
   <?php if (!$pedidos): ?><p class="text-muted"><?= $h('nenhum_pedido') ?></p><?php else: ?>
   <div class="li-tabela" style="max-height:calc(100vh - 260px)"><table class="table table-sm table-hover align-middle">
-    <thead><tr><th><?= $h('col_pedido') ?></th><th><?= $h('col_arquivo') ?></th><th><?= $h('col_ref') ?></th><th><?= $h('col_situacao') ?></th><th><?= $h('col_enviado') ?></th><th><?= $h('col_autorizado') ?></th><th><?= $h('col_mudancas') ?></th><th><?= $h('col_problemas') ?></th><th></th></tr></thead>
+    <thead><tr><th><?= $h('col_pedido') ?></th><th><?= $h('col_arquivo') ?></th><th><?= $h('col_ref') ?></th><th><?= $h('col_situacao') ?></th><th><?= $h('col_enviado') ?></th><th><?= $h('col_autorizado') ?></th><th><?= $h($alt ? 'col_mudancas_alt' : 'col_mudancas') ?></th><th><?= $h('col_problemas') ?></th><th></th></tr></thead>
     <tbody><?php foreach ($pedidos as $p): ?>
       <tr><td><?= (int)$p['codimportacao'] ?></td><td><?= $e($p['arquivo_nome']) ?></td><td><?= $e($p['referencia'] ? substr((string)$p['referencia'], 5, 2) . '/' . substr((string)$p['referencia'], 0, 4) : '') ?></td><td><?= $badge((string)$p['status']) ?></td>
         <td><?= $e($p['enviado_por_nome']) ?><br><span class="text-muted small"><?= $e($dt($p['enviado_em'])) ?></span></td>
         <td><?= $e($p['autorizado_por_nome'] ?? '') ?><br><span class="text-muted small"><?= $e($dt($p['autorizado_em'] ?? null)) ?></span></td>
-        <td><?= (int)$p['total_incluir'] ?> / <?= (int)$p['total_trocar'] ?> / <?= (int)$p['total_retirar_marcadas'] ?><span class="text-muted"> (<?= (int)$p['total_retirar'] ?>)</span></td>
+        <td><?= (int)$p['total_incluir'] ?> / <?= (int)$p['total_trocar'] ?><?php if (!$alt): ?> / <?= (int)$p['total_retirar_marcadas'] ?><span class="text-muted"> (<?= (int)$p['total_retirar'] ?>)</span><?php endif; ?></td>
         <td><?= (int)$p['total_problemas'] ?></td>
         <td><a class="btn btn-sm btn-outline-primary" href="?codimportacao=<?= (int)$p['codimportacao'] ?>"><?= $h('abrir') ?></a></td></tr>
     <?php endforeach; ?></tbody></table></div>
   <?php endif; ?>
 <?php else: ?>
   <div class="d-flex flex-wrap align-items-center gap-2">
-    <a class="btn btn-sm btn-outline-secondary" href="?"><i class="bi bi-arrow-left me-1"></i><?= $h('voltar') ?></a>
+    <a class="btn btn-sm btn-outline-secondary" href="?tipo=<?= $e($tipo) ?>"><i class="bi bi-arrow-left me-1"></i><?= $h('voltar') ?></a>
     <h6 class="m-0"><?= $h('pedido', ['n' => (int)$pedido['codimportacao']]) ?> · <?= $e($pedido['arquivo_nome']) ?></h6>
     <?= $badge((string)$pedido['status']) ?>
   </div>
@@ -241,17 +273,54 @@ body{background:transparent;font-size:13px}
     <?php if ($pedido['total_aplicados'] !== null): ?> · <b><?= $h('resultado', ['a' => (int)$pedido['total_aplicados'], 'g' => (int)$pedido['total_ignorados'], 'e' => (int)$pedido['total_erros']]) ?></b><?php endif; ?>
   </div>
   <?php if ($emAndamento): ?><div class="alert alert-info py-2 mt-2 mb-0"><i class="bi bi-hourglass-split me-1"></i><?= $h('acompanhando') ?></div><?php endif; ?>
+  <?php if ($alt):
+    $novasA = $porAcao['NOVA_LEI'] ?? []; $atualA = $porAcao['ATUALIZAR'] ?? []; $altA = $porAcao['ALTERACAO'] ?? []; $existA = (array)($resumo['alteracoes_existentes'] ?? []);
+    $filtro = '<input type="search" class="form-control form-control-sm mb-2" style="max-width:320px" data-filtro placeholder="' . $h('filtrar') . '">';
+    $resTd = static fn(array $it): string => $resultadoTd($it);
+  ?>
   <div class="li-cartoes">
-    <div class="li-cartao"><b><?= (int)$pedido['total_incluir'] ?></b><?= $h('r_incluir') ?></div>
-    <div class="li-cartao"><b><?= (int)$pedido['total_trocar'] ?></b><?= $h('r_trocar') ?></div>
+    <div class="li-cartao"><b><?= count($novasA) ?></b><?= $h('a_novas') ?></div>
+    <div class="li-cartao"><b><?= count($atualA) ?></b><?= $h('a_atualizadas') ?></div>
+    <div class="li-cartao"><b><?= count($altA) ?></b><?= $h('a_alteracoes') ?></div>
+    <div class="li-cartao"><b><?= count($existA) ?></b><?= $h('a_existentes') ?></div>
+    <div class="li-cartao perigo"><b><?= (int)$pedido['total_problemas'] ?></b><?= $h('r_problemas') ?></div>
+  </div>
+  <nav class="li-abas" role="tablist">
+    <?php foreach (['novas' => [ti('a_novas'), count($novasA)], 'atualizadas' => [ti('a_atualizadas'), count($atualA)], 'alteracoes' => [ti('a_alteracoes'), count($altA)], 'existentes' => [ti('a_existentes'), count($existA)], 'problemas' => [ti('aba_problemas'), count($problemas)], 'log' => [ti('aba_log'), null]] as $k => [$rot, $qt]): ?><button type="button" class="li-aba" role="tab" data-aba="<?= $k ?>"><?= $e($rot) ?><?php if ($qt !== null): ?> <span class="badge text-bg-light"><?= (int)$qt ?></span><?php endif; ?></button><?php endforeach; ?>
+  </nav>
+  <section class="li-painel" data-painel="novas" hidden><p class="small text-muted mb-2"><?= $h('a_novas_txt') ?></p><?php if (!$novasA): ?><p class="text-muted m-0"><?= $h('nada') ?></p><?php else: ?><?= $filtro ?>
+    <div class="li-tabela"><table class="table table-sm table-striped"><thead><tr><th><?= $h('c_linha') ?></th><th><?= $h('c_lei') ?></th><th><?= $h('c_situacao') ?></th><th><?= $h('c_devido') ?></th><?= $aplicado ? '<th>' . $h('c_resultado') . '</th>' : '' ?></tr></thead><tbody>
+    <?php foreach ($novasA as $it): ?><tr><td class="text-muted"><?= (int)$it['linha'] ?></td><td><?= $e($it['codigo_lei']) ?></td><td><?= $e($it['tipo_novo']) ?></td><td><?= $e($it['codigo_novo']) ?></td><?= $resTd($it) ?></tr><?php endforeach; ?>
+    </tbody></table></div><?php endif; ?></section>
+  <section class="li-painel" data-painel="atualizadas" hidden><p class="small text-muted mb-2"><?= $h('a_atualizadas_txt') ?></p><?php if (!$atualA): ?><p class="text-muted m-0"><?= $h('nada') ?></p><?php else: ?><?= $filtro ?>
+    <div class="li-tabela"><table class="table table-sm table-striped"><thead><tr><th><?= $h('c_linha') ?></th><th><?= $h('c_lei') ?></th><th><?= $h('c_atual') ?></th><th><?= $h('c_novo') ?></th><?= $aplicado ? '<th>' . $h('c_resultado') . '</th>' : '' ?></tr></thead><tbody>
+    <?php foreach ($atualA as $it): $mudou = ($it['tipo_atual'] ?? '') !== ($it['tipo_novo'] ?? '') || ($it['codigo_atual'] ?? '') !== ($it['codigo_novo'] ?? ''); ?><tr><td class="text-muted"><?= (int)$it['linha'] ?></td><td><?= $e($it['codigo_lei']) ?></td><td><?= $e(trim(($it['tipo_atual'] ?? '') . ' · ' . ($it['codigo_atual'] ?? ''), ' ·')) ?: '—' ?></td><td<?= $mudou ? ' class="fw-semibold"' : '' ?>><?= $e(trim(($it['tipo_novo'] ?? '') . ' · ' . ($it['codigo_novo'] ?? ''), ' ·')) ?></td><?= $resTd($it) ?></tr><?php endforeach; ?>
+    </tbody></table></div><?php endif; ?></section>
+  <section class="li-painel" data-painel="alteracoes" hidden><?php if (!$altA): ?><p class="text-muted m-0"><?= $h('nada') ?></p><?php else: ?><?= $filtro ?>
+    <div class="li-tabela"><table class="table table-sm table-striped"><thead><tr><th><?= $h('c_linha') ?></th><th><?= $h('c_lei') ?></th><th><?= $h('c_situacao') ?></th><th><?= $h('c_tipo_alt') ?></th><th><?= $h('c_descricao') ?></th><th><?= $h('c_data') ?></th><?= $aplicado ? '<th>' . $h('c_resultado') . '</th>' : '' ?></tr></thead><tbody>
+    <?php foreach ($altA as $it): $d = (string)($it['alt_descricao'] ?? ''); ?><tr><td class="text-muted"><?= (int)$it['linha'] ?></td><td><?= $e($it['codigo_lei']) ?></td><td><?= $e($it['tipo_novo']) ?></td><td><?= $e($it['alt_tipo'] ?? '') ?></td><td title="<?= $e($d) ?>" style="max-width:420px"><?= $e(mb_strlen($d) > 180 ? mb_substr($d, 0, 180) . '…' : $d) ?></td><td class="text-nowrap"><?= !empty($it['alt_data']) ? $e($dt($it['alt_data'] . ' 00:00')) : '<span class="text-muted small">' . $h('data_aplicacao') . '</span>' ?></td><?= $resTd($it) ?></tr><?php endforeach; ?>
+    </tbody></table></div><?php endif; ?></section>
+  <section class="li-painel" data-painel="existentes" hidden><p class="small text-muted mb-2"><?= $h('a_existentes_txt') ?></p><?php if (!$existA): ?><p class="text-muted m-0"><?= $h('nada') ?></p><?php else: ?>
+    <div class="li-tabela"><table class="table table-sm table-striped"><thead><tr><th><?= $h('c_linha') ?></th><th><?= $h('c_lei') ?></th><th><?= $h('c_tipo_alt') ?></th></tr></thead><tbody>
+    <?php foreach ($existA as $x): ?><tr><td class="text-muted"><?= (int)($x['linha'] ?? 0) ?></td><td><?= $e($x['codigo'] ?? '') ?></td><td><?= $e($x['tipo'] ?? '') ?></td></tr><?php endforeach; ?>
+    </tbody></table></div><?php endif; ?></section>
+  <section class="li-painel" data-painel="problemas" hidden><?php if (!$problemas): ?><p class="text-muted m-0"><?= $h('nada') ?></p><?php else: ?><?= $filtro ?>
+    <div class="li-tabela"><table class="table table-sm table-striped"><tbody>
+    <?php foreach ($problemas as $pb): ?><tr class="li-problema<?= !empty($pb['aviso']) ? ' aviso' : '' ?>"><td style="width:24px"><i class="bi <?= !empty($pb['aviso']) ? 'bi-info-circle' : 'bi-exclamation-triangle text-danger' ?>"></i></td><td><?= $e($pb['texto'] ?? '') ?></td></tr><?php endforeach; ?>
+    </tbody></table></div><?php endif; ?></section>
+  <section class="li-painel" data-painel="log" hidden><pre class="small m-0" style="white-space:pre-wrap"><?= $e($pedido['log'] ?? '') ?></pre></section>
+  <?php else: ?>
+  <div class="li-cartoes">
+    <div class="li-cartao"><b><?= (int)$pedido['total_incluir'] ?></b><?= $h($poder ? 'r_incluir_poder' : 'r_incluir') ?></div>
+    <div class="li-cartao"><b><?= (int)$pedido['total_trocar'] ?></b><?= $h($poder ? 'r_trocar_poder' : 'r_trocar') ?></div>
     <div class="li-cartao alerta"><b data-total-retirar><?= (int)$pedido['total_retirar_marcadas'] ?> / <?= (int)$pedido['total_retirar'] ?></b><?= $h('r_retirar') ?></div>
-    <div class="li-cartao"><b><?= (int)$pedido['total_padroes'] ?></b><?= $h('r_padroes') ?></div>
+    <?php if (!$poder): ?><div class="li-cartao"><b><?= (int)$pedido['total_padroes'] ?></b><?= $h('r_padroes') ?></div><?php endif; ?>
     <div class="li-cartao"><b><?= (int)$pedido['total_manter'] ?></b><?= $h('r_manter') ?></div>
     <div class="li-cartao perigo"><b><?= (int)$pedido['total_problemas'] ?></b><?= $h('r_problemas') ?></div>
   </div>
   <?php
-    $abas = ['resumo' => [ti('aba_resumo'), null], 'incluir' => [ti('aba_incluir'), count($porAcao['INCLUIR'])], 'trocar' => [ti('aba_trocar'), count($porAcao['TROCAR'])],
-        'retirar' => [ti('aba_retirar'), count($porAcao['RETIRAR'])], 'padroes' => [ti('aba_padroes'), count($resumo['padroes'] ?? [])], 'problemas' => [ti('aba_problemas'), count($problemas)], 'log' => [ti('aba_log'), null]];
+    $abas = ['resumo' => [ti('aba_resumo'), null], 'incluir' => [ti('aba_incluir'), count($porAcao['INCLUIR'])], 'trocar' => [ti($poder ? 'aba_trocar_poder' : 'aba_trocar'), count($porAcao['TROCAR'])],
+        'retirar' => [ti('aba_retirar'), count($porAcao['RETIRAR'])]] + ($poder ? [] : ['padroes' => [ti('aba_padroes'), count($resumo['padroes'] ?? [])]]) + [ 'problemas' => [ti('aba_problemas'), count($problemas)], 'log' => [ti('aba_log'), null]];
     $filtro = '<input type="search" class="form-control form-control-sm mb-2" style="max-width:320px" data-filtro placeholder="' . $h('filtrar') . '">';
     $cabItem = '<th>' . $h('c_empresa') . '</th><th>' . $h('c_unidade') . '</th><th>' . $h('c_lei') . '</th><th>' . $h('c_celula') . '</th>';
     $tdItem = static fn(array $it): string => '<td>' . $e($it['empresa_nome']) . '</td><td>' . $e($it['unidade_nome']) . '</td><td>' . $e($it['codigo_lei']) . '</td><td class="text-muted">' . $e($it['coluna'] . $it['linha']) . '</td>';
@@ -261,7 +330,8 @@ body{background:transparent;font-size:13px}
   </nav>
   <section class="li-painel" data-painel="resumo" hidden>
     <p class="mb-1"><?= $h('r_planilha', ['l' => (int)($resumo['leis_validas'] ?? 0), 't' => (int)($resumo['linhas_planilha'] ?? 0), 'u' => (int)($resumo['unidades_validas'] ?? 0), 'c' => (int)($resumo['colunas_planilha'] ?? 0)]) ?></p>
-    <p class="text-muted small"><i class="bi bi-calendar-check me-1"></i><?= $h('r_data') ?></p>
+    <?php if ($poder): ?><p class="text-muted small"><i class="bi bi-diagram-3 me-1"></i><?= $h('r_herdados', ['n' => (int)($resumo['itens_herdados'] ?? 0), 'p' => (int)($resumo['padroes_herdados'] ?? 0)]) ?></p>
+    <?php else: ?><p class="text-muted small"><i class="bi bi-calendar-check me-1"></i><?= $h('r_data') ?></p><?php endif; ?>
     <div class="row g-3">
       <div class="col-lg-6"><h6 class="small fw-bold"><?= $h('r_por_empresa') ?></h6>
         <table class="table table-sm"><thead><tr><th><?= $h('c_empresa') ?></th><th><?= $h('aba_incluir') ?></th><th><?= $h('aba_trocar') ?></th><th><?= $h('aba_retirar') ?></th><th><?= $h('r_manter') ?></th></tr></thead><tbody>
@@ -285,7 +355,7 @@ body{background:transparent;font-size:13px}
     <?php foreach ($porAcao['TROCAR'] as $it): ?><tr><?= $tdItem($it) ?><td><?= $tipoTxt($it['tipo_atual'], $it['codigo_atual']) ?></td><td><b><?= $tipoTxt($it['tipo_novo'], $it['codigo_novo']) ?></b><?= (int)$it['padrao_novo'] ? ' <span class="badge text-bg-warning">' . $h('novo_padrao') . '</span>' : '' ?></td><?= $resultadoTd($it) ?></tr><?php endforeach; ?>
     </tbody></table></div><?php endif; ?></section>
   <section class="li-painel" data-painel="retirar" hidden>
-    <p class="small text-muted mb-2"><?= $h('retirar_texto') ?></p>
+    <p class="small text-muted mb-2"><?= $h($poder ? 'retirar_texto_poder' : 'retirar_texto') ?></p>
     <?php if (!$porAcao['RETIRAR']): ?><p class="text-muted m-0"><?= $h('nada') ?></p><?php else: ?>
     <div class="d-flex gap-2 align-items-start"><?= $filtro ?><?php if ($aberto): ?><button type="button" class="btn btn-sm btn-outline-secondary" data-marcar="1"><?= $h('marcar_todas') ?></button><button type="button" class="btn btn-sm btn-outline-secondary" data-marcar="0"><?= $h('desmarcar_todas') ?></button><?php endif; ?></div>
     <div class="li-tabela"><table class="table table-sm table-striped"><thead><tr><th><?= $h('c_retirar') ?></th><?= $cabItem ?><th><?= $h('c_atual') ?></th><?= $aplicado ? '<th>' . $h('c_resultado') . '</th>' : '' ?></tr></thead><tbody>
@@ -300,6 +370,7 @@ body{background:transparent;font-size:13px}
     <?php foreach ($problemas as $pb): ?><tr class="li-problema<?= !empty($pb['aviso']) ? ' aviso' : '' ?>"><td style="width:24px"><i class="bi <?= !empty($pb['aviso']) ? 'bi-info-circle' : 'bi-exclamation-triangle text-danger' ?>"></i></td><td><?= $e($pb['texto'] ?? '') ?></td></tr><?php endforeach; ?>
     </tbody></table></div><?php endif; ?></section>
   <section class="li-painel" data-painel="log" hidden><pre class="small m-0" style="white-space:pre-wrap"><?= $e($pedido['log'] ?? '') ?></pre></section>
+  <?php endif; ?>
   <?php if ($aberto): ?>
   <div class="li-barra">
     <button type="button" class="btn btn-sm btn-success" data-acao="autorizar"><i class="bi bi-check2-circle me-1"></i><?= $h('btn_autorizar') ?></button>
@@ -322,7 +393,7 @@ body{background:transparent;font-size:13px}
     var T = <?= json_encode([
         'conferindo' => ti('conferindo'), 'escolha' => ti('escolha_arquivo'), 'erro' => ti('erro_generico'),
         'confirmarTitulo' => ti('confirmar_titulo'), 'descartarTitulo' => ti('btn_descartar'), 'descartarTexto' => ti('descartar_texto'),
-        'confirmarTexto' => ti('confirmar_texto', ['i' => (int)($pedido['total_incluir'] ?? 0), 't' => (int)($pedido['total_trocar'] ?? 0), 'r' => '{r}', 'p' => (int)($pedido['total_padroes'] ?? 0)]),
+        'confirmarTexto' => $alt ? ti('confirmar_texto_alt', ['n' => (int)($pedido['total_incluir'] ?? 0), 't' => (int)($pedido['total_trocar'] ?? 0), 'a' => count($porAcao['ALTERACAO'] ?? [])]) : ti('confirmar_texto', ['i' => (int)($pedido['total_incluir'] ?? 0), 't' => (int)($pedido['total_trocar'] ?? 0), 'r' => '{r}', 'p' => (int)($pedido['total_padroes'] ?? 0)]),
         'totalRetirar' => (int)($pedido['total_retirar'] ?? 0),
     ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
     var csrf = raiz.getAttribute('data-csrf'), cod = raiz.getAttribute('data-codimportacao');
@@ -339,7 +410,7 @@ body{background:transparent;font-size:13px}
         var arq = form.querySelector('input[type=file]'); if (!arq.files.length) { msg(T.escolha, 'warning'); return; }
         var btn = form.querySelector('[data-btn-conferir]'); btn.disabled = true;
         msg(T.conferindo, 'info');
-        var d = new FormData(); d.append('acao', 'conferir'); d.append('planilha', arq.files[0]);
+        var d = new FormData(); d.append('acao', 'conferir'); d.append('tipo', raiz.getAttribute('data-tipo')); d.append('planilha', arq.files[0]);
         enviar(d).then(function (r) {
             if (r && r.ok) { window.location.href = window.location.pathname + '?codimportacao=' + encodeURIComponent(r.codimportacao); return; }
             btn.disabled = false; msg((r && r.message) || T.erro, 'danger');
@@ -353,7 +424,7 @@ body{background:transparent;font-size:13px}
         try { sessionStorage.setItem('gp.legimp.aba', id); } catch (e) { }
     }
     abas.forEach(function (b) { b.addEventListener('click', function () { abrir(b.getAttribute('data-aba')); }); });
-    if (abas.length) { var salva = null; try { salva = sessionStorage.getItem('gp.legimp.aba'); } catch (e) { } abrir(salva && raiz.querySelector('[data-aba="' + salva + '"]') ? salva : 'resumo'); }
+    if (abas.length) { var salva = null; try { salva = sessionStorage.getItem('gp.legimp.aba'); } catch (e) { } abrir(salva && raiz.querySelector('[data-aba="' + salva + '"]') ? salva : abas[0].getAttribute('data-aba')); }
     raiz.querySelectorAll('[data-filtro]').forEach(function (f) {
         f.addEventListener('input', function () {
             var q = f.value.trim().toLowerCase(), painel = f.closest('[data-painel]');

@@ -32,27 +32,51 @@ final class SincronismoLegislacaoOperacoes
     private const LOTE = 300;
     private const MARCA = '00000000000000000000000000000000'; // linha de base criada (mesmo se a tabela do legado estiver vazia)
 
-    public static function executar(PDO $pdo, bool $aplicar, int $limiteExclusoes = 500): array
+    // Bancos e tabelas da execução atual. Padrão = legislação central (393); universal() troca para o universal (400).
+    private static string $origem = self::ORIGEM;
+    private static string $destino = self::DESTINO;
+    private static string $base = self::BASE;
+    private static string $exclusoes = 'legislacao_sinc_exclusoes';
+    private static ?array $soTabelas = null;
+
+    /**
+     * Migração 400 (19/11/2026, decisão do usuário): universal legado (green_universal) → guniversal_dbp, pelas mesmas regras
+     * (só o que mudou no legado; o que foi feito no greenportal fica). Só o catálogo de palavras-chave (palavras_chaves), o
+     * mesmo das leis e licenças: os vínculos lei × palavra já vêm pela legislação central. Tipos de palavras-chave e Tipos ×
+     * Palavras-chave ficam fora (decisão de 18/11); Help Desk e pesquisas não são sincronizados (novo módulo no futuro).
+     */
+    public const UNIVERSAL_TABELAS = ['palavras_chaves'];
+
+    public static function universal(PDO $pdo, bool $aplicar, int $limiteExclusoes = 500): array
+    {
+        self::$origem = 'green_universal'; self::$destino = 'guniversal_dbp'; self::$base = 'universal_sinc_base';
+        self::$exclusoes = 'universal_sinc_exclusoes'; self::$soTabelas = self::UNIVERSAL_TABELAS;
+        try { return self::executar($pdo, $aplicar, $limiteExclusoes, 'sinc_universal'); }
+        finally { self::$origem = self::ORIGEM; self::$destino = self::DESTINO; self::$base = self::BASE; self::$exclusoes = 'legislacao_sinc_exclusoes'; self::$soTabelas = null; }
+    }
+
+    public static function executar(PDO $pdo, bool $aplicar, int $limiteExclusoes = 500, string $lock = 'sinc_legislacao_central'): array
     {
         $r = ['modo' => 'OPERACOES: só o que mudou no legado desde a última execução; o que foi feito no greenportal fica',
-            'origem' => self::ORIGEM, 'destino' => self::DESTINO, 'tabelas' => [],
+            'origem' => self::$origem, 'destino' => self::$destino, 'tabelas' => [],
             'totais' => ['processados' => 0, 'afetados' => 0, 'excluidos' => 0, 'incluidos' => 0, 'alterados' => 0, 'protegidos' => 0, 'exclusoes_bloqueadas' => 0]];
         $mem = (string)ini_get('memory_limit');
         if ($mem !== '-1' && (int)$mem < 1024) @ini_set('memory_limit', '2048M'); // 38 mil leis × hash por coluna
-        $lock = 'sinc_legislacao_central';
-        if ((int)self::valor($pdo, 'SELECT GET_LOCK(?, 5)', [$lock]) !== 1) return $r + ['erro' => 'outra sincronizacao da legislacao central esta em execucao'];
+        if ((int)self::valor($pdo, 'SELECT GET_LOCK(?, 5)', [$lock]) !== 1) return $r + ['erro' => 'outra sincronizacao de ' . self::$destino . ' esta em execucao'];
         try {
-            foreach ([self::ORIGEM, self::DESTINO] as $db) if (!(int)self::valor($pdo, 'SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = ?', [$db])) return $r + ['erro' => "banco $db não existe"];
+            foreach ([self::$origem, self::$destino] as $db) if (!(int)self::valor($pdo, 'SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = ?', [$db])) return $r + ['erro' => "banco $db não existe"];
             $pdo->exec("SET SESSION collation_connection = 'utf8mb4_bin'");
-            $tabelas = array_column(self::linhas($pdo, "SELECT s.TABLE_NAME FROM information_schema.TABLES s JOIN information_schema.TABLES d ON d.TABLE_SCHEMA = ? AND d.TABLE_NAME = s.TABLE_NAME AND d.TABLE_TYPE = 'BASE TABLE' WHERE s.TABLE_SCHEMA = ? AND s.TABLE_TYPE = 'BASE TABLE' AND (s.TABLE_NAME LIKE 'legislacao%' OR s.TABLE_NAME IN ('tipos','ambitos','assuntos','perguntas'))", [self::DESTINO, self::ORIGEM]), 'TABLE_NAME');
+            $filtro = self::$soTabelas !== null ? 's.TABLE_NAME IN (' . implode(',', array_map(static fn($t) => $pdo->quote($t), self::$soTabelas)) . ')'
+                : "(s.TABLE_NAME LIKE 'legislacao%' OR s.TABLE_NAME IN ('tipos','ambitos','assuntos','perguntas'))";
+            $tabelas = array_column(self::linhas($pdo, "SELECT s.TABLE_NAME FROM information_schema.TABLES s JOIN information_schema.TABLES d ON d.TABLE_SCHEMA = ? AND d.TABLE_NAME = s.TABLE_NAME AND d.TABLE_TYPE = 'BASE TABLE' WHERE s.TABLE_SCHEMA = ? AND s.TABLE_TYPE = 'BASE TABLE' AND $filtro", [self::$destino, self::$origem]), 'TABLE_NAME');
             // pais antes dos vínculos (inclusões); exclusões na ordem inversa
             usort($tabelas, static fn($a, $b) => [self::ordem($a), $a] <=> [self::ordem($b), $b]);
             // estrutura antes da transação (DDL faz commit implícito)
             if ($aplicar) {
-                $pdo->exec('CREATE TABLE IF NOT EXISTS ' . self::q(self::DESTINO) . '.' . self::q('legislacao_sinc_exclusoes') . ' (codexclusao BIGINT AUTO_INCREMENT PRIMARY KEY, tabela VARCHAR(128) NOT NULL, chave JSON NULL, dados JSON NOT NULL, excluido_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
-                $pdo->exec('CREATE TABLE IF NOT EXISTS ' . self::q(self::DESTINO) . '.' . self::q(self::BASE) . " (tabela VARCHAR(128) NOT NULL, chave CHAR(32) NOT NULL, chave_valores JSON NOT NULL, hashes JSON NOT NULL, atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (tabela, chave)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Migração 393: estado do legado na última sincronização aplicada da legislação central'");
+                $pdo->exec('CREATE TABLE IF NOT EXISTS ' . self::q(self::$destino) . '.' . self::q(self::$exclusoes) . ' (codexclusao BIGINT AUTO_INCREMENT PRIMARY KEY, tabela VARCHAR(128) NOT NULL, chave JSON NULL, dados JSON NOT NULL, excluido_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
+                $pdo->exec('CREATE TABLE IF NOT EXISTS ' . self::q(self::$destino) . '.' . self::q(self::$base) . " (tabela VARCHAR(128) NOT NULL, chave CHAR(32) NOT NULL, chave_valores JSON NOT NULL, hashes JSON NOT NULL, atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (tabela, chave)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Migração 393: estado do legado na última sincronização aplicada da legislação central'");
             }
-            $temBase = (int)self::valor($pdo, 'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?', [self::DESTINO, self::BASE]) > 0;
+            $temBase = (int)self::valor($pdo, 'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?', [self::$destino, self::$base]) > 0;
 
             $planos = [];
             foreach ($tabelas as $t) $planos[$t] = self::planejar($pdo, $t, $temBase);
@@ -67,7 +91,7 @@ final class SincronismoLegislacaoOperacoes
                         $info['linha_de_base'] = $aplicar ? 'criada (nada mudou no greenportal)' : 'será criada na 1ª execução aplicada (nada muda no greenportal)';
                         if ($aplicar) {
                             self::gravarBase($pdo, $t, $p['legado'], array_keys($p['legado']));
-                            $pdo->prepare('INSERT IGNORE INTO ' . self::q(self::DESTINO) . '.' . self::q(self::BASE) . " (tabela, chave, chave_valores, hashes) VALUES (?, ?, '[]', '{}')")->execute([$t, self::MARCA]);
+                            $pdo->prepare('INSERT IGNORE INTO ' . self::q(self::$destino) . '.' . self::q(self::$base) . " (tabela, chave, chave_valores, hashes) VALUES (?, ?, '[]', '{}')")->execute([$t, self::MARCA]);
                         }
                         $r['tabelas'][$t] = $info; continue;
                     }
@@ -116,19 +140,19 @@ final class SincronismoLegislacaoOperacoes
     /** Lê o legado (chave + hash de cada coluna) e a linha de base; devolve as operações. */
     private static function planejar(PDO $pdo, string $t, bool $temBase): array
     {
-        $src = self::colunas($pdo, self::ORIGEM, $t); $dst = self::colunas($pdo, self::DESTINO, $t);
+        $src = self::colunas($pdo, self::$origem, $t); $dst = self::colunas($pdo, self::$destino, $t);
         $comuns = array_values(array_intersect(array_keys($dst), array_keys($src))); // nomes em minúsculas
         $p = ['tabela' => $t, 'src' => $src, 'dst' => $dst, 'campos' => $comuns, 'sem_colunas' => !$comuns, 'inicial' => false,
             'legado' => [], 'qtd_legado' => 0, 'incluidos' => [], 'alterados' => [], 'excluidos' => [], 'natural' => false, 'chave' => []];
         if (!$comuns) return $p;
-        $pk = array_map('strtolower', array_column(self::linhas($pdo, "SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND CONSTRAINT_NAME = 'PRIMARY' ORDER BY ORDINAL_POSITION", [self::DESTINO, $t]), 'COLUMN_NAME'));
+        $pk = array_map('strtolower', array_column(self::linhas($pdo, "SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND CONSTRAINT_NAME = 'PRIMARY' ORDER BY ORDINAL_POSITION", [self::$destino, $t]), 'COLUMN_NAME'));
         $p['natural'] = !$pk || array_diff($pk, $comuns);
         $p['chave'] = $p['natural'] ? $comuns : $pk;
         // legado: chave + MD5 de cada coluna comum (sem trazer os textos)
         $sel = [];
         foreach ($p['chave'] as $i => $c) $sel[] = 'CAST(s.' . self::q($src[$c]) . ' AS CHAR CHARACTER SET utf8mb4) AS ' . self::q('k' . $i);
         if (!$p['natural']) foreach ($comuns as $i => $c) $sel[] = 'MD5(CAST(s.' . self::q($src[$c]) . ' AS CHAR CHARACTER SET utf8mb4)) AS ' . self::q('h' . $i);
-        $st = $pdo->query('SELECT ' . implode(', ', $sel) . ' FROM ' . self::q(self::ORIGEM) . '.' . self::q($t) . ' s');
+        $st = $pdo->query('SELECT ' . implode(', ', $sel) . ' FROM ' . self::q(self::$origem) . '.' . self::q($t) . ' s');
         while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
             $kv = []; foreach ($p['chave'] as $i => $c) $kv[] = $row['k' . $i];
             $k = md5(json_encode($kv, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE));
@@ -143,7 +167,7 @@ final class SincronismoLegislacaoOperacoes
         $st->closeCursor();
         $base = [];
         if ($temBase) {
-            $st = $pdo->prepare('SELECT chave, chave_valores, hashes FROM ' . self::q(self::DESTINO) . '.' . self::q(self::BASE) . ' WHERE tabela = ?');
+            $st = $pdo->prepare('SELECT chave, chave_valores, hashes FROM ' . self::q(self::$destino) . '.' . self::q(self::$base) . ' WHERE tabela = ?');
             $st->execute([$t]);
             $marca = false;
             while ($b = $st->fetch(PDO::FETCH_ASSOC)) { if ($b['chave'] === self::MARCA) { $marca = true; continue; } $base[$b['chave']] = ['kv' => json_decode((string)$b['chave_valores'], true), 'h' => json_decode((string)$b['hashes'], true)]; }
@@ -193,7 +217,7 @@ final class SincronismoLegislacaoOperacoes
         foreach (array_chunk($chaves, self::LOTE) as $lote) {
             $where = []; $args = [];
             foreach ($lote as $k) { $where[] = self::whereChave($p, 's.', $p['src']); foreach ($p['legado'][$k]['kv'] as $v) $args[] = $v; }
-            $st = $pdo->prepare('SELECT ' . $cols . ' FROM ' . self::q(self::ORIGEM) . '.' . self::q($p['tabela']) . ' s WHERE ' . implode(' OR ', $where));
+            $st = $pdo->prepare('SELECT ' . $cols . ' FROM ' . self::q(self::$origem) . '.' . self::q($p['tabela']) . ' s WHERE ' . implode(' OR ', $where));
             $st->execute($args);
             while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
                 $kv = []; foreach (array_keys($p['chave']) as $i) { $kv[] = $row['k__' . $i]; unset($row['k__' . $i]); }
@@ -207,7 +231,7 @@ final class SincronismoLegislacaoOperacoes
     private static function aplicarInclusoesAlteracoes(PDO $pdo, string $t, array $p): array
     {
         if (!$p['incluidos'] && !$p['alterados']) return [0, 0];
-        $dst = $p['dst']; $tab = self::q(self::DESTINO) . '.' . self::q($t);
+        $dst = $p['dst']; $tab = self::q(self::$destino) . '.' . self::q($t);
         $linhas = self::lerLegado($pdo, $p, array_merge(array_keys($p['incluidos']), array_keys($p['alterados'])));
         $campos = $p['campos']; $lista = implode(', ', array_map(static fn($c) => self::q($dst[$c]), $campos));
         $marc = implode(', ', array_fill(0, count($campos), '?'));
@@ -238,7 +262,7 @@ final class SincronismoLegislacaoOperacoes
 
     private static function aplicarExclusoes(PDO $pdo, string $t, array $p): array
     {
-        $dst = $p['dst']; $tab = self::q(self::DESTINO) . '.' . self::q($t);
+        $dst = $p['dst']; $tab = self::q(self::$destino) . '.' . self::q($t);
         $json = 'JSON_OBJECT(' . implode(', ', array_map(static fn($c) => $pdo->quote($dst[$c]) . ', d.' . self::q($dst[$c]), array_keys($dst))) . ')';
         $w = self::whereChave($p, 'd.', $dst);
         $exc = 0; $prot = 0;
@@ -246,7 +270,7 @@ final class SincronismoLegislacaoOperacoes
             $lim = $p['natural'] ? ' LIMIT ' . max(1, (int)$e['n']) : '';
             try {
                 $pdo->exec('SAVEPOINT exc393');
-                $b = $pdo->prepare('INSERT INTO ' . self::q(self::DESTINO) . ".legislacao_sinc_exclusoes (tabela, chave, dados) SELECT ?, ?, $json FROM $tab d WHERE $w$lim");
+                $b = $pdo->prepare('INSERT INTO ' . self::q(self::$destino) . '.' . self::q(self::$exclusoes) . " (tabela, chave, dados) SELECT ?, ?, $json FROM $tab d WHERE $w$lim");
                 $b->execute(array_merge([$t, json_encode($e['kv'], JSON_UNESCAPED_UNICODE)], $e['kv']));
                 $d = $pdo->prepare("DELETE FROM $tab WHERE " . self::whereChave($p, '', $dst) . $lim);
                 $d->execute($e['kv']);
@@ -262,7 +286,7 @@ final class SincronismoLegislacaoOperacoes
 
     private static function gravarBase(PDO $pdo, string $t, array $legado, array $chaves): void
     {
-        $tab = self::q(self::DESTINO) . '.' . self::q(self::BASE);
+        $tab = self::q(self::$destino) . '.' . self::q(self::$base);
         foreach (array_chunk($chaves, 500) as $lote) {
             $vals = []; $args = [];
             foreach ($lote as $k) { if (!isset($legado[$k])) continue; $vals[] = '(?, ?, ?, ?)'; array_push($args, $t, $k, json_encode($legado[$k]['kv'], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE), json_encode($legado[$k]['h'])); }
@@ -272,7 +296,7 @@ final class SincronismoLegislacaoOperacoes
 
     private static function apagarBase(PDO $pdo, string $t, array $chaves): void
     {
-        $tab = self::q(self::DESTINO) . '.' . self::q(self::BASE);
+        $tab = self::q(self::$destino) . '.' . self::q(self::$base);
         foreach (array_chunk($chaves, 500) as $lote) $pdo->prepare("DELETE FROM $tab WHERE tabela = ? AND chave IN (" . implode(', ', array_fill(0, count($lote), '?')) . ')')->execute(array_merge([$t], $lote));
     }
 

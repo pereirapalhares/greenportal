@@ -63,3 +63,7 @@ final class GreenPortalDatabase
         return $rows;
     }
 }
+
+// 19/11/2026: sessão expirada em qualquer tela volta para o login (ver classes/SessaoExpirada.php).
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'SessaoExpirada.php';
+SessaoExpirada::instalar();
