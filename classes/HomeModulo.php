@@ -12,16 +12,49 @@ require_once __DIR__ . '/DashboardGrid.php';
  *   calendario() calendário do mês com os prazos do módulo; o clique no dia filtra a lista de eventos do mês;
  *   DashboardGrid::grid() / subabas()  — grid padrão do portal e sub-abas (um quadro por vez, lembra a última).
  * As linhas dos grids levam em data-grupo os "grupos" (ex.: 'F_VENCIDA U_3 R_11735 M_2026-12') que cartões e barras filtram.
- * MENUS: as Homes de cada módulo (menu criado pela migração 381 como primeiro item do grupo do módulo).
+ * MENUS: as Homes de cada módulo (menu criado pela migração 381 como primeiro item do grupo do módulo). 24/11/2026: Legal, Medição,
+ * Controles, Treinamentos, Infraestrutura e Não conformidades (home_legal, home_medicao, home_controles/treinamentos/infraestrutura
+ * por classes/HomePilar.php, home_nao_conformidades).
  */
 final class HomeModulo
 {
     /** módulo => menu da Home, menu da tela do módulo (permissões copiadas dele), página, ajuda, nomes. */
+    // 'permissoes_de' (24/11/2026): menus cujas permissões são somadas (OU) para o menu da Home; padrão = só 'menu'.
     public const MENUS = [
         'LICENCAS' => [
             'codigo' => 'HOME_LICENCAS', 'menu' => 'LICENCAS', 'url' => '/principal/home_licencas.php', 'transacao' => 'home_licencas',
-            'icone' => 'bi-house-door',
+            'icone' => 'bi-house-door', 'permissoes_de' => ['LICENCAS', 'MINHAS_LICENCAS'],
             'nome' => ['pt' => 'Home de Licenças', 'en' => 'Licenses home', 'es' => 'Inicio de Licencias'],
+        ],
+        'LEGAL' => [
+            'codigo' => 'HOME_LEGAL', 'menu' => 'REQUISITOS_LEGAIS', 'url' => '/principal/home_legal.php', 'transacao' => 'home_legal',
+            'icone' => 'bi-house-door', 'permissoes_de' => ['REQUISITOS_LEGAIS'],
+            'nome' => ['pt' => 'Home do Módulo Legal', 'en' => 'Legal module home', 'es' => 'Inicio del Módulo Legal'],
+        ],
+        'MEDICAO' => [
+            'codigo' => 'HOME_MEDICAO', 'menu' => 'MM_PLANO_MEDICAO_MONITORAMENTO', 'url' => '/principal/home_medicao.php', 'transacao' => 'home_medicao',
+            'icone' => 'bi-house-door', 'permissoes_de' => ['MM_PLANO_MEDICAO_MONITORAMENTO'],
+            'nome' => ['pt' => 'Home de Medição e Monitoramento', 'en' => 'Measurement and monitoring home', 'es' => 'Inicio de Medición y Monitoreo'],
+        ],
+        'CONTROLES' => [
+            'codigo' => 'HOME_CONTROLES', 'menu' => 'CONTROLE_DOCUMENTOS', 'url' => '/principal/home_controles.php', 'transacao' => 'home_controles',
+            'icone' => 'bi-house-door', 'permissoes_de' => ['CONTROLE_DOCUMENTOS', 'MEUS_CONTROLES'],
+            'nome' => ['pt' => 'Home de Controles', 'en' => 'Controls home', 'es' => 'Inicio de Controles'],
+        ],
+        'TREINAMENTOS' => [
+            'codigo' => 'HOME_TREINAMENTOS', 'menu' => 'MODULOLEGAL_TREINAMENTOS', 'url' => '/principal/home_treinamentos.php', 'transacao' => 'home_treinamentos',
+            'icone' => 'bi-house-door', 'permissoes_de' => ['MODULOLEGAL_TREINAMENTOS', 'MEUS_TREINAMENTOS'],
+            'nome' => ['pt' => 'Home de Treinamentos', 'en' => 'Trainings home', 'es' => 'Inicio de Capacitaciones'],
+        ],
+        'INFRAESTRUTURA' => [
+            'codigo' => 'HOME_INFRAESTRUTURA', 'menu' => 'MODULOLEGAL_INFRAESTRUTURA', 'url' => '/principal/home_infraestrutura.php', 'transacao' => 'home_infraestrutura',
+            'icone' => 'bi-house-door', 'permissoes_de' => ['MODULOLEGAL_INFRAESTRUTURA', 'MINHAS_INFRAESTRUTURAS'],
+            'nome' => ['pt' => 'Home de Infraestrutura', 'en' => 'Infrastructure home', 'es' => 'Inicio de Infraestructura'],
+        ],
+        'NC' => [
+            'codigo' => 'HOME_NAO_CONFORMIDADES', 'menu' => 'NAO_CONFORMIDADES_LISTA_OCORRENCIAS', 'url' => '/principal/home_nao_conformidades.php', 'transacao' => 'home_nao_conformidades',
+            'icone' => 'bi-house-door', 'permissoes_de' => ['NAO_CONFORMIDADES_LISTA_OCORRENCIAS', 'NAO_CONFORMIDADES_MINHAS_OCORRENCIAS'],
+            'nome' => ['pt' => 'Home de Não Conformidades', 'en' => 'Nonconformities home', 'es' => 'Inicio de No Conformidades'],
         ],
     ];
 
@@ -47,6 +80,53 @@ final class HomeModulo
             if (count($r) < 1000) break;
         }
         return $out;
+    }
+
+    /**
+     * 24/11/2026: leitura de uma view grande numa consulta só, com as colunas pedidas (o sp_crud_select pagina de 1000 em 1000 e
+     * recalcula a view a cada página; com 6 mil requisitos isso levava 6 s). Só leitura de view/tabela, nomes validados.
+     * $iguais: coluna => valor (igualdade). Se falhar, cai no ler() (sp_crud_select) e devolve as linhas inteiras.
+     */
+    public static function consultar(PDO $pdo, string $view, array $colunas, array $iguais = []): ?array
+    {
+        $ok = static fn(string $n): bool => (bool)preg_match('/^[A-Za-z0-9_]+$/', $n);
+        if (!$ok($view) || array_filter($colunas, static fn($c) => !$ok((string)$c)) || array_filter(array_keys($iguais), static fn($c) => !$ok((string)$c))) return self::ler($pdo, $view);
+        try {
+            $sql = 'SELECT ' . implode(', ', array_map(static fn($c) => '`' . $c . '`', $colunas)) . ' FROM `' . $view . '`';
+            if ($iguais) $sql .= ' WHERE ' . implode(' AND ', array_map(static fn($c) => '`' . $c . '` = ?', array_keys($iguais)));
+            $s = $pdo->prepare($sql);
+            $s->execute(array_values($iguais));
+            $r = $s->fetchAll(PDO::FETCH_ASSOC);
+            $s->closeCursor();
+            return $r;
+        } catch (Throwable) { return self::ler($pdo, $view, array_map(static fn($v) => ['value' => (string)$v, 'exact' => true], $iguais), 200000); }
+    }
+
+    /**
+     * 24/11/2026: lista carregada depois (grids com milhares de linhas). A página devolve só o grid quando recebe ?parte=$parte
+     * (ver parte()); o script de scripts() carrega quando a sub-aba é aberta ou quando um cartão/barra filtra o grid $grid.
+     */
+    public static function adiada(string $grid, string $parte, int $quantos): string
+    {
+        return '<div data-hm-adiada="' . self::e($parte) . '" data-hm-adiada-grid="' . self::e($grid) . '"><div class="hm-vazio"><span class="spinner-border spinner-border-sm me-2"></span>'
+            . self::e(self::t('carregando', 'Carregando a lista', 'Loading the list', 'Cargando la lista')) . ' (' . $quantos . ')…</div></div>';
+    }
+
+    /** codusuario => nome de todos os usuários da empresa (vw_usuarios_grid; só as colunas de nome). */
+    public static function nomesUsuarios(PDO $pdo): array
+    {
+        $out = [];
+        foreach (self::consultar($pdo, 'vw_usuarios_grid', ['codusuario', 'nome', 'userid']) ?? [] as $u) {
+            $u = array_change_key_case($u, CASE_LOWER);
+            $out[(int)$u['codusuario']] = trim((string)($u['nome'] ?? '')) !== '' ? trim((string)$u['nome']) : (string)($u['userid'] ?? '');
+        }
+        return $out;
+    }
+
+    /** Parte pedida por ?parte= (lista adiada) ou ''. */
+    public static function parte(): string
+    {
+        return preg_match('/^[a-z0-9_]{1,30}$/', (string)($_GET['parte'] ?? '')) ? (string)$_GET['parte'] : '';
     }
 
     /** DashboardGrid::grid com as linhas já na ordem de 'ordem' (o grid local só marca o ícone; a ordem inicial vem do servidor). */
@@ -328,5 +408,21 @@ body{background:#fff;color:var(--gp-text,#21332b);font-size:13px}.hm{padding:12p
             . 'function datas(){var on=p&&p.value==="datas";f.querySelectorAll("[data-hm-filtro=de],[data-hm-filtro=ate]").forEach(function(l){l.hidden=!on;});}'
             . 'if(p){p.addEventListener("change",datas);datas();}'
             . 'document.addEventListener("keydown",function(e){if((e.key==="Enter"||e.key===" ")&&e.target.matches&&e.target.matches("[data-grid-filtro]")){e.preventDefault();e.target.click();}});}());</script>';
+        // listas adiadas (adiada()): carrega ao abrir a sub-aba ou quando um cartão/barra filtra o grid que ainda não veio
+        echo '<script>(function(){'
+            . 'function carregar(ph,depois){if(ph.__fila){ph.__fila.push(depois);return;}ph.__fila=[depois];'
+            . 'var u=new URL(location.href);u.searchParams.set("parte",ph.getAttribute("data-hm-adiada"));'
+            . 'fetch(u.toString(),{credentials:"same-origin"}).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();}).then(function(h){'
+            . 'ph.innerHTML=h;ph.removeAttribute("data-hm-adiada");if(window.greenPortalGridLocal)window.greenPortalGridLocal.iniciar(ph);'
+            . 'var f=ph.__fila;ph.__fila=null;f.forEach(function(x){if(x)x();});})'
+            . '.catch(function(){ph.__fila=null;ph.innerHTML=\'<div class="hm-vazio">' . self::e(self::t('erro_lista', 'Não foi possível carregar a lista. Recarregue a página.', 'Could not load the list. Reload the page.', 'No fue posible cargar la lista. Recargue la página.')) . '</div>\';});}'
+            . 'document.addEventListener("click",function(ev){var c=ev.target.closest&&ev.target.closest("[data-grid-filtro]");if(!c)return;var id=c.getAttribute("data-grid-filtro");'
+            . 'if(document.getElementById(id))return;var ph=document.querySelector("[data-hm-adiada-grid=\""+id+"\"]");if(!ph||!ph.hasAttribute("data-hm-adiada"))return;'
+            . 'ev.stopImmediatePropagation();ev.preventDefault();var p=ph.closest("[data-subaba-painel]"),g=p&&p.closest("[data-subabas]");'
+            . 'if(g&&window.greenPortalSubabas)window.greenPortalSubabas.abrir(g,p.getAttribute("data-subaba-painel"));carregar(ph,function(){c.click();});},true);'
+            . 'function visiveis(){document.querySelectorAll("[data-hm-adiada]").forEach(function(ph){var p=ph.closest("[data-subaba-painel]");if(!p||!p.hidden)carregar(ph);});}'
+            . 'document.addEventListener("click",function(ev){if(ev.target.closest&&ev.target.closest("[data-subaba]"))setTimeout(visiveis,0);});'
+            . 'if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(visiveis,0);});else setTimeout(visiveis,0);'
+            . '}());</script>';
     }
 }

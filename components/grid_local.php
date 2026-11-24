@@ -163,6 +163,6 @@ if (!function_exists('greenPortalGridLocalHead')) {
             'comum.paginacao.de' => ['pt' => 'de', 'en' => 'of', 'es' => 'de'],
             'comum.paginacao.registros' => ['pt' => 'registros', 'en' => 'records', 'es' => 'registros'],
         ]);
-        echo '<script src="../assets/vendor/jquery/jquery-3.7.1.min.js?v=2"></script><script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js?v=2"></script><script src="../assets/js/grid-local.js?v=7"></script>';
+        echo '<script src="../assets/vendor/jquery/jquery-3.7.1.min.js?v=2"></script><script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js?v=2"></script><script src="../assets/js/grid-local.js?v=8"></script>';
     }
 }

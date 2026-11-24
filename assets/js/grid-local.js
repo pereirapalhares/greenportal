@@ -14,6 +14,7 @@
  * cancelável 'grid-local-recarregar' antes de recarregar a página (o dashboard recarrega só a aba). data-grupo-inicial (+ -rotulo)
  * na section: filtro de grupo já aplicado ao abrir.
  * c574 (v7): section.gridLocalFiltradas() devolve as linhas filtradas de todas as páginas (Gestão de pendências).
+ * v8 (24/11/2026): filtros ativos lidos uma vez por render e colunas ocultas por CSS — grids com milhares de linhas (Homes).
  */
 (function ($) {
     'use strict';
@@ -35,22 +36,33 @@
 
         function cellText($row, column) { return String($row.children('[data-column="' + column + '"]').text() || '').trim(); }
         function sortValue($row, column) { var $cell = $row.children('[data-column="' + column + '"]'), v = $cell.attr('data-sort-value'); return v !== undefined ? v : String($cell.text() || '').trim(); }
+        // v8 (24/11/2026, Homes com milhares de linhas): os filtros ativos são lidos uma vez por render, não uma vez por linha
+        // (com 4.600 linhas a montagem levava 6 s).
+        var filtrosAtivos = null;
+        function lerFiltros() {
+            var lista = [];
+            $table.find('[data-column-filter]').each(function () {
+                var $f = $(this), value = normalize($f.val());
+                if (value) lista.push({ column: String($f.data('column-filter')), value: value, exato: $f.is('select') });
+            });
+            return { general: normalize($fragment.find('.crud-search input').val()), colunas: lista };
+        }
         function matches($row) {
             if (grupo !== '' && (' ' + String($row.attr('data-grupo') || '') + ' ').indexOf(' ' + grupo + ' ') === -1) return false;
-            var general = normalize($fragment.find('.crud-search input').val()), ok = true;
-            if (general && normalize($row.text()).indexOf(general) === -1) return false;
-            $table.find('[data-column-filter]').each(function () {
-                var $f = $(this), value = normalize($f.val()), column = String($f.data('column-filter'));
-                if (!value) return;
-                var text = normalize(cellText($row, column));
-                if ($f.is('select') ? text !== value : text.indexOf(value) === -1) { ok = false; return false; }
-            });
-            return ok;
+            var fa = filtrosAtivos || lerFiltros();
+            if (fa.general && normalize($row.text()).indexOf(fa.general) === -1) return false;
+            for (var i = 0; i < fa.colunas.length; i++) {
+                var c = fa.colunas[i], text = normalize(cellText($row, c.column));
+                if (c.exato ? text !== c.value : text.indexOf(c.value) === -1) return false;
+            }
+            return true;
         }
         // c574 (v7): linhas que passam no filtro (busca, colunas e grupo), de todas as páginas — ex.: "Limpar todas as filtradas"
-        this.gridLocalFiltradas = function () { return $rows.filter(function () { return matches($(this)); }).get(); };
+        this.gridLocalFiltradas = function () { filtrosAtivos = lerFiltros(); try { return $rows.filter(function () { return matches($(this)); }).get(); } finally { filtrosAtivos = null; } };
         function render() {
+            filtrosAtivos = lerFiltros();
             var visible = $rows.filter(function () { return matches($(this)); }), total = visible.length;
+            filtrosAtivos = null;
             var pages = Math.max(1, Math.ceil(total / pageSize));
             if (page > pages) page = pages;
             $rows.prop('hidden', true);
@@ -181,10 +193,17 @@
 
         // Colunas (como o botão Colunas do grid padrão): mostrar/ocultar; a escolha fica neste navegador, por tela.
         var chaveColunas = 'gridLocalColunas:' + String($fragment.attr('data-transacao') || window.location.pathname);
+        // v8: colunas ocultas por uma regra de CSS do grid (antes: .toggle() em cada célula, lento com milhares de linhas)
+        var idEstilo = 'gridLocalColunasCss_' + String($table.attr('id') || Math.random().toString(36).slice(2));
         function aplicarColunas(ocultas) {
-            $table.find('[data-column]').each(function () { $(this).toggle(ocultas.indexOf(String($(this).attr('data-column'))) === -1); });
+            var sel = '#' + ($table.attr('id') ? $table.attr('id').replace(/[^A-Za-z0-9_-]/g, '') : '');
+            if (!$table.attr('id')) { $table.find('[data-column]').each(function () { $(this).toggle(ocultas.indexOf(String($(this).attr('data-column'))) === -1); }); return; }
+            var css = ocultas.map(function (c) { var k = String(c).replace(/["\\]/g, ''); return sel + ' [data-column="' + k + '"]{display:none!important}'; }).join('');
+            var el = document.getElementById(idEstilo);
+            if (!el) { el = document.createElement('style'); el.id = idEstilo; document.head.appendChild(el); }
+            el.textContent = css;
         }
-        try { var salvas = JSON.parse(window.localStorage.getItem(chaveColunas) || '[]'); if ($.isArray(salvas)) aplicarColunas(salvas); } catch (e) { }
+        try { var salvas = JSON.parse(window.localStorage.getItem(chaveColunas) || '[]'); if ($.isArray(salvas) && salvas.length) aplicarColunas(salvas); } catch (e) { }
         $fragment.on('click', '[data-columns]', function () {
             var corpo = $('<div class="row g-2"></div>');
             $table.find('thead th[data-column]').each(function () {

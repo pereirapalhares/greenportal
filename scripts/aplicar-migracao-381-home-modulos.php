@@ -2,7 +2,8 @@
 declare(strict_types=1);
 
 /*
- * Migração 381 — Homes por módulo (GER-1 / GER-4 / GER-13), começando por Licenças (16/11/2026).
+ * Migração 381 — Homes por módulo (GER-1 / GER-4 / GER-13), começando por Licenças (16/11/2026); 24/11/2026: Legal, Medição, Controles,
+ * Treinamentos, Infraestrutura e Não conformidades, com as permissões somadas de 'permissoes_de' (tela do módulo + tela "Minhas").
  * Modelo único: classes/HomeModulo.php (filtros, cartões, gráficos, calendário, grid padrão em sub-abas). Páginas: principal/home_<módulo>.php.
  * Nada muda nas tabelas das empresas (só leitura das views que já existem: vw_dash_licencas, vw_licencas_grid, ...).
  *
@@ -122,6 +123,14 @@ foreach ($bancos as $banco) {
             if (!$orig) { $info[$mod] = 'sem o menu ' . $h['menu'] . ' (módulo não usado nesta empresa)'; continue; }
             if (!$novo) { $info[$mod] = $simular ? 'o menu será replicado ao aplicar' : 'menu ainda não replicado neste banco'; continue; }
             $cont = 0; $tirou = 0;
+            // 24/11/2026: permissões = soma (OU) das de cada menu de 'permissoes_de' (ex.: a tela do módulo e a "Minhas ..."),
+            // para que quem só tem a tela "Minhas" também veja a Home (que então mostra só o que é dele).
+            $origens = [];
+            foreach ((array)($h['permissoes_de'] ?? [$h['menu']]) as $cm) {
+                $m = strtoupper((string)$cm) === strtoupper((string)$h['menu']) ? $orig : null;
+                foreach ($m ? [] : MigracaoCrud::selecionar($pdo, 'menus', ['codigo' => (string)$cm]) as $x) { $x = array_change_key_case($x); if (strcasecmp((string)($x['codigo'] ?? ''), (string)$cm) === 0) { $m = $x; break; } } // o filtro de texto é por trecho: confere o código exato
+                if ($m) $origens[] = (int)$m['codmenu'];
+            }
             foreach (['permissoes', 'perfil_menus'] as $t) {
                 if (!MigracaoCrud::existe($pdo, $t)) continue;
                 $cols = MigracaoCrud::colunas($pdo, $t);
@@ -132,17 +141,24 @@ foreach ($bancos as $banco) {
                     $tirou += count($tem);
                     continue;
                 }
-                foreach (MigracaoCrud::selecionar($pdo, $t, ['codmenu' => (int)$orig['codmenu']]) as $p) {
+                $porPerfil = [];
+                foreach (array_unique($origens) as $codOrigem) foreach (MigracaoCrud::selecionar($pdo, $t, ['codmenu' => $codOrigem]) as $p) {
                     $p = array_change_key_case($p);
+                    if ((int)($p['codmenu'] ?? 0) !== $codOrigem) continue; // filtro numérico, mas confere
                     $flags = array_filter($p, static fn($k) => str_starts_with((string)$k, 'pode_'), ARRAY_FILTER_USE_KEY);
+                    $acc = $porPerfil[(int)$p['codperfil']] ?? [];
+                    foreach ($flags as $k => $v) $acc[$k] = (int)($acc[$k] ?? 0) | (int)$v;
+                    $porPerfil[(int)$p['codperfil']] = $acc;
+                }
+                foreach ($porPerfil as $codperfil => $flags) {
                     if (!array_filter($flags)) continue;
-                    if (MigracaoCrud::primeiro($pdo, $t, ['codperfil' => (int)$p['codperfil'], 'codmenu' => (int)$novo['codmenu']])) continue;
-                    if (!$simular) MigracaoCrud::inserir($pdo, $t, ['codperfil' => (int)$p['codperfil'], 'codmenu' => (int)$novo['codmenu']] + $flags);
+                    if (MigracaoCrud::primeiro($pdo, $t, ['codperfil' => $codperfil, 'codmenu' => (int)$novo['codmenu']])) continue;
+                    if (!$simular) MigracaoCrud::inserir($pdo, $t, ['codperfil' => $codperfil, 'codmenu' => (int)$novo['codmenu']] + $flags);
                     $cont++;
                 }
             }
             $info[$mod] = $remover ? $tirou . ' permissão(ões) ' . ($simular ? 'a tirar' : 'tirada(s)')
-                : $cont . ' permissão(ões) ' . ($simular ? 'a criar' : 'criada(s)') . ' (as mesmas de ' . $h['menu'] . ')';
+                : $cont . ' permissão(ões) ' . ($simular ? 'a criar' : 'criada(s)') . ' (soma de ' . implode(' + ', (array)($h['permissoes_de'] ?? [$h['menu']])) . ')';
         }
     } catch (Throwable $e) { $rel['ok'] = false; $info['erro'] = $e->getMessage(); }
     $rel['bancos'][$banco] = $info;

@@ -1,24 +1,5 @@
-/* Licenças — cor da linha conforme o vencimento (tons suaves). */
-.licencas-grid-fragment { --lic-vencida-bg: #fbeceb; --lic-vencida-borda: #d98c86; --lic-atencao-bg: #fdf6e1; --lic-atencao-borda: #d9b44a; --lic-emdia-bg: #eaf6ee; --lic-emdia-borda: #7fbf96; --lic-protocolo-bg: #e8f1fb; --lic-protocolo-borda: #6f9fd3; }
-.licencas-grid-fragment .menu-batch-grid tbody tr.lic-vencida:not(.selected) > td { background-color: var(--lic-vencida-bg) !important; }
-.licencas-grid-fragment .menu-batch-grid tbody tr.lic-atencao:not(.selected) > td { background-color: var(--lic-atencao-bg) !important; }
-.licencas-grid-fragment .menu-batch-grid tbody tr.lic-emdia:not(.selected) > td { background-color: var(--lic-emdia-bg) !important; }
-/* Vencida com renovação protocolada no prazo: continua válida até a resposta do órgão (migração 288). */
-.licencas-grid-fragment .menu-batch-grid tbody tr.lic-protocolo:not(.selected) > td { background-color: var(--lic-protocolo-bg) !important; }
-/* Filete na borda esquerda: identifica a situação sem depender só da cor de fundo. */
-.licencas-grid-fragment .menu-batch-grid tbody tr.lic-vencida > td:first-child { box-shadow: inset 4px 0 0 var(--lic-vencida-borda); }
-.licencas-grid-fragment .menu-batch-grid tbody tr.lic-atencao > td:first-child { box-shadow: inset 4px 0 0 var(--lic-atencao-borda); }
-.licencas-grid-fragment .menu-batch-grid tbody tr.lic-emdia > td:first-child { box-shadow: inset 4px 0 0 var(--lic-emdia-borda); }
-.licencas-grid-fragment .menu-batch-grid tbody tr.lic-protocolo > td:first-child { box-shadow: inset 4px 0 0 var(--lic-protocolo-borda); }
-/* Campos dentro das linhas coloridas acompanham o fundo. */
-.licencas-grid-fragment .menu-batch-grid tbody tr[class*="lic-"]:not(.selected) .grid-input:not(:focus),
-.licencas-grid-fragment .menu-batch-grid tbody tr[class*="lic-"]:not(.selected) textarea:not(:focus),
-.licencas-grid-fragment .menu-batch-grid tbody tr[class*="lic-"]:not(.selected) .inline-display { background-color: transparent !important; }
-
-/* Indicadores ao lado da paginação (sem rótulo; dica nativa no title). */
-.licencas-grid-fragment .grid-pagination .lic-legenda { display: inline-flex; align-items: center; gap: 5px; margin-left: 10px; padding-left: 10px; border-left: 1px solid var(--gp-border, #dce9e3); height: 20px; }
-.licencas-grid-fragment .lic-legenda-item { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid #c9d4cf; background: #fff; cursor: help; font-style: normal; }
-.licencas-grid-fragment .lic-legenda-item.lic-vencida { background: var(--lic-vencida-bg); border-color: var(--lic-vencida-borda); box-shadow: inset 3px 0 0 var(--lic-vencida-borda); }
-.licencas-grid-fragment .lic-legenda-item.lic-atencao { background: var(--lic-atencao-bg); border-color: var(--lic-atencao-borda); box-shadow: inset 3px 0 0 var(--lic-atencao-borda); }
-.licencas-grid-fragment .lic-legenda-item.lic-emdia { background: var(--lic-emdia-bg); border-color: var(--lic-emdia-borda); box-shadow: inset 3px 0 0 var(--lic-emdia-borda); }
-.licencas-grid-fragment .lic-legenda-item.lic-protocolo { background: var(--lic-protocolo-bg); border-color: var(--lic-protocolo-borda); box-shadow: inset 3px 0 0 var(--lic-protocolo-borda); }
+/*
+ * Licenças — as linhas deixaram de ser pintadas (24/11/2026, item 57 da Revisão G: visual mais "clean").
+ * A situação de cada licença agora é um ícone no início da linha, com legenda ao lado da paginação:
+ * assets/js/status-icones.js (carregado no main.php para todos os módulos).
+ */

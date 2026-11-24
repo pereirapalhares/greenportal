@@ -1,0 +1,929 @@
+﻿==============================================================================================================
+RELATÓRIO DE STATUS — REQUISITOS DO GREEN 4.0 × APLICAÇÃO GREENPORTAL (REAVALIAÇÃO)
+==============================================================================================================
+Documento avaliado : docs\Passo a passo mudança no Green4.0 - Revisão G - 13-08-2026.doc
+Aplicação          : E:\wamp\apps\greenportal (código de 24/11/2026, regras de negócio e histórico de migrações)
+Data da avaliação  : 24/11/2026, 15:50 — reavaliação depois das Homes por módulo (migração 381)
+Avaliação anterior : docs\status_requisitos_green40_revG_24-11-2026.txt (15:06)
+
+LEGENDA
+  FEITO             atende ao pedido (ajustes finos aparecem na linha "Falta")
+  PARCIAL           existe parte do pedido ou uma solução diferente da pedida
+  NÃO FEITO         não existe na aplicação
+  DECISÃO PENDENTE  item que a planilha não marcou como "Sim" (o autor tinha dúvida se deve ser feito);
+                    quando já existe na aplicação, aparece como FEITO
+
+Observação: a Revisão G lista os capítulos 12 (ESG) e 13 (Outros elementos) no índice, mas o corpo do
+documento termina no item 177 (Auditoria). Esses dois capítulos não foram avaliados. O item 169 não existe
+no documento (a numeração pula de 168 para 170).
+
+==============================================================================================================
+0. O QUE MUDOU DESDE A AVALIAÇÃO DAS 15:06
+==============================================================================================================
+  Entregue entre as duas avaliações: Homes de módulo para Legal, Medição e Monitoramento, Controles,
+  Treinamentos, Infraestrutura e Não Conformidades, no mesmo modelo da Home de Licenças (filtros, cartões
+  clicáveis, gráficos que filtram a lista, calendário quando o módulo tem datas, lista no grid padrão),
+  publicadas no menu das 7 empresas pela migração 381. Junto, o grid do portal ficou mais rápido com milhares
+  de linhas (grid-local.js v8).
+
+  Item   Antes       Agora       Pedido
+  4      PARCIAL     FEITO       Várias possibilidades de dashboards (gráfico + tabela ao clicar)
+  13     PARCIAL     FEITO       Calendário geral e por usuário em todos os módulos
+  22     PARCIAL     FEITO       Home do Módulo Legal (cards, dashboards por unidade/período/responsável/origem/tipo)
+  66     NÃO FEITO   FEITO       Home do módulo
+  83     NÃO FEITO   FEITO       Home do módulo
+  99     NÃO FEITO   FEITO       Home do módulo
+  114    NÃO FEITO   FEITO       Home do módulo
+  156    PARCIAL     FEITO       Home do módulo
+
+==============================================================================================================
+1. RESUMO GERAL
+==============================================================================================================
+Itens avaliados: 196
+  FEITO               92   (46.9%)
+  PARCIAL             59   (30.1%)
+  NÃO FEITO           38   (19.4%)
+  DECISÃO PENDENTE     7   ( 3.6%)
+
+Por capítulo:
+  Capítulo                           Itens   Feito  Parcial  Não feito  Decisão
+  1 Mudanças gerais                     26      14        7          2        3
+  2 Escalabilidade                       3       0        2          1        0
+  3 Módulo Legal                        29       9       12          7        1
+  4 Licenças                            19      12        4          2        1
+  5 Medição e Monitoramento             19      12        4          3        0
+  6 Controle                            18       9        7          2        0
+  7 Treinamento                         17       9        6          2        0
+  8 Infraestrutura                      17       9        6          2        0
+  9 Homologação                         27      13        7          5        2
+  10 RNC                                10       5        3          2        0
+  11 Auditoria                          11       0        1         10        0
+
+Leitura rápida:
+  - A base transversal está pronta: telas "Minhas ...", permissões, transferência de responsabilidade, sino de
+    pendências, gestão gerencial de pendências com log, risco em todos os pilares, potenciais gerados pela IA,
+    responsáveis e avisos por regra, idioma por usuário e Relatório de Atendimento Legal.
+  - Licenças e Homologação são os módulos mais completos (protocolo, taxas, Home de Licenças, IA nos
+    documentos, templates, adulteração, ranking).
+  - Todos os módulos existentes têm agora a sua Home (Legal, Licenças, Medição, Controles, Treinamentos,
+    Infraestrutura, Homologação e Não Conformidades), com gráficos que filtram a lista e calendário por
+    módulo.
+  - As maiores lacunas: barra de etapas "Mercado Livre" (só a NC mostra a etapa), novos campos das tabelas de
+    Controle, Treinamento e Infraestrutura (continuam simples, por isso não há "tipo" para as regras de
+    responsáveis nem datas para o calendário), categoria × responsável no Legal, chat com fornecedor e o
+    módulo de Auditoria, que não existe.
+  - Itens de escalabilidade dependem de produto: questionário legal (migrado, ainda em rascunho), padrão de
+    desempenho pela IA, APIs externas e importação de concorrentes.
+
+==============================================================================================================
+2. AS 10 "GRANDES MUDANÇAS" DO DOCUMENTO
+==============================================================================================================
+   1. Questionário de leis                                           PARCIAL
+        perguntas migradas para o motor de questionários; em rascunho, falta publicar e ligar aos requisitos
+   2. Novas Homes dos módulos                                        FEITO
+        Home geral em abas e Homes de Legal, Licenças, Medição, Controles, Treinamentos, Infraestrutura,
+        Homologação (Painel) e Não Conformidades; só falta a de Auditoria, porque o módulo não existe
+   3. Novos dados das tabelas dos 5 pilares                          PARCIAL
+        Licenças e Medição atendem quase tudo; Controle, Treinamento e Infraestrutura não
+   4. Orientação ao usuário (tarefas feitas, não feitas e a fazer)   FEITO
+        Minhas pendências, Minhas atividades, Agenda, sino, Aprovações, tarefas
+   5. IA: a) 5 pilares, b) situação, c) padrão de atendimento        PARCIAL
+        a) feito (potenciais); b) situação calculada pelas evidências, não pela IA; c) não feito
+   6. Relatório de Atendimento Legal automático                      FEITO
+        PDF e Excel em segundo plano (sem LaTeX)
+   7. Módulo ESG                                                     NÃO FEITO
+        questionário ESG cadastrado como contexto; sem módulo e sem especificação na Revisão G
+   8. Modernização da Homologação                                    FEITO
+        painel, IA nos documentos, templates, adulteração, ranking, integração; faltam chat e regra por tipo
+   9. Modernização da Não Conformidade                               FEITO
+        6 tipos de NC (Empresa, Cliente, Fornecedor, Planejamento, Assistência Técnica e Acidente) com
+        workflow, IA na causa e na eficácia, PDF, listas; faltam risco e Home própria
+  10. Modernização da Auditoria                                      NÃO FEITO
+        o módulo não existe; só a auditoria de fornecedor dentro da Homologação
+
+==============================================================================================================
+3. O QUE FALTA, EM ORDEM SUGERIDA (menor esforço × maior efeito)
+==============================================================================================================
+   1. Novos campos de Controle, Treinamento e Infraestrutura (itens 89, 104, 119). Isso libera a regra de
+      responsáveis "por tipo" (85, 87, 94, 101, 103, 109, 116, 118, 124), a extração completa pela IA (95,
+      110, 125) e prazos nos cartões e no calendário das novas Homes.
+   2. Legal: campo "Razão para inclusão" (38), justificativa ao mudar o Nível de controle (39), replicar
+      avaliação e data da próxima avaliação para outras unidades (30, 40), "não avaliado" como padrão com
+      pendência (25).
+   3. Legal: categoria do cliente × responsável e atribuição automática (26, 27, 28).
+   4. Barra de etapas "Mercado Livre" como componente único, aplicada em todos os módulos (18.4 e repetições).
+   5. Licenças: validade recorrente (56) e marcação de validade inexistente (55); Medição: retirar Aspecto e
+      Perigo (74) e recorrência (67).
+   6. RNC: campo Risco (158); Homologação: regra por tipo de fornecedor (132, 138), atalho para abrir NC do
+      fornecedor (148) e chat (146, 147).
+   7. Produto/decisão: questionário legal publicado (20, 23, 43), padrão de desempenho pela IA (19, 44), APIs
+      (11), logs contratáveis (16), portal de planos (2), módulo de Auditoria (166–177) e itens sem "Sim" (6,
+      10, 12, 42, 63, 149, 150).
+
+==============================================================================================================
+4. DETALHE POR ITEM
+==============================================================================================================
+
+--- 1. GERAL --------------------------------------------------------------------------------------------------
+
+[    1] PARCIAL           Nova Home e navegabilidade
+        Existe hoje:      Home geral em abas (Dashboard pessoal, Agenda, Minhas pendências, Minhas atividades,
+                          Alertas, Minha equipe, Gestão de pendências, Transferências, Dashboard da empresa);
+                          cards clicáveis; logo do cliente e do Green; foto do usuário. Homes por módulo
+                          (24/11): Legal, Licenças, Medição, Controles, Treinamentos, Infraestrutura,
+                          Homologação (Painel) e Não conformidades, com filtros por unidade e responsável.
+        Falta:            Filtros por unidade/período/responsável na Home geral; foto nas listas de
+                          responsáveis; Home de Auditoria (o módulo não existe).
+
+[    2] NÃO FEITO         Portal com planos de uso / white label
+        Existe hoje:      Só a personalização da tela de login por empresa e os módulos por empresa.
+        Falta:            Portal de planos e modelo white label.
+
+[    3] FEITO             Política de e-mails "friendly"
+        Existe hoje:      Menu "Responsáveis e avisos" em cada pilar (migração 361): regras por tipo e/ou
+                          unidade → usuário ou grupo, escolhendo os avisos; SMTP configurado (360).
+        Falta:            Teste com grupo de usuários.
+
+[    4] FEITO             Várias possibilidades de dashboards (gráfico + tabela ao clicar)
+        Existe hoje:      Gráficos em barras/colunas com a tabela logo abaixo: o clique na barra, no cartão ou
+                          no dia do calendário filtra a lista. Nas 8 Homes de módulo (24/11) e no Painel de
+                          Homologação.
+        Falta:            Mesmo recurso na Home geral (Dashboard da empresa usa cartões e listas).
+
+[    5] FEITO             Flag "avaliar eficácia" em todos os planos de ação
+        Existe hoje:      NC, Condicionantes e Fornecedores (migração 362): "Avaliar eficácia?", avaliador,
+                          pendência e histórico.
+
+[  5.1] FEITO             Telas "Minhas ..." em todos os módulos
+        Existe hoje:      Home › Minhas atividades com uma sub-aba por módulo (358); Meus requisitos, Minhas
+                          licenças, condicionantes, medições, treinamentos, infraestruturas, controles, ações,
+                          fornecedores, funcionários.
+        Falta:            Minhas auditorias depende do módulo Auditoria.
+
+[  5.2] FEITO             Link "Minhas Ações"
+        Existe hoje:      Sub-aba Ações (planos de Condicionantes, Fornecedores e NC).
+
+[  5.3] PARCIAL           Painel de Bordo Gerencial Geral
+        Existe hoje:      Dashboard da empresa, Painel do gestor (Minha equipe), Gestão de pendências por
+                          usuário.
+        Falta:            Visão "quem fez / quem não fez" por usuário em todos os módulos, com flags de
+                          caminho crítico.
+
+[    6] DECISÃO PENDENTE  Filtros favoritos (estrelinha) [sem "Sim"]
+        Existe hoje:      Existe "Salvar filtro" no Painel de Homologação e "Meus relatórios"; desde 24/11
+                          todo grid lembra o último filtro.
+        Falta:            Decidir se terá filtros nomeados e compartilháveis.
+
+[    7] FEITO             Permissões Visualizar/Editar/Inserir/Excluir/Exportar
+        Existe hoje:      Segurança › Permissões por perfil e transação + permissões por campo (Formulário).
+
+[    8] FEITO             Transferência/delegação de responsabilidade em todos os módulos
+        Existe hoje:      Home › Transferências (380): temporária ou definitiva, por módulo, com log; NC tem
+                          transferência própria.
+        Falta:            Fase 2 a decidir (gravar a troca nos registros na virada).
+
+[    9] PARCIAL           Monitorar se o usuário continua válido
+        Existe hoje:      Usuário inativo perde a sessão; sincronismo de usuários com o legado (401);
+                          responsabilidades de inativo viram pendência.
+        Falta:            Verificação periódica (AD, último acesso ou confirmação do gestor).
+
+[   10] DECISÃO PENDENTE  Token API [sem "Sim"]
+        Existe hoje:      Não existe.
+        Falta:            Decidir.
+
+[   11] NÃO FEITO         APIs para integração com outros sistemas
+        Existe hoje:      As APIs existentes são internas (telas). Há importação de planilhas (legislação,
+                          controle, alterações).
+        Falta:            API externa autenticada.
+
+[   12] DECISÃO PENDENTE  Integração com Power BI [sem "Sim"]
+        Existe hoje:      Não existe (há exportação para Excel).
+        Falta:            Decidir.
+
+[   13] FEITO             Calendário geral e por usuário em todos os módulos
+        Existe hoje:      Agenda e calendário da barra lateral por usuário; calendário por módulo nas Homes de
+                          Legal (próximas avaliações), Licenças, Medição e Não conformidades (24/11), com a
+                          visão de toda a empresa para quem tem acesso total.
+        Falta:            Controles, Treinamentos e Infraestrutura não têm datas para calendário (dependem dos
+                          novos campos, itens 89/104/119).
+
+[   14] FEITO             Lembrete avulso no schedule
+        Existe hoje:      Agenda › Novo evento.
+
+[   15] FEITO             Notificações (sininho) com as pendências
+        Existe hoje:      Sino com o resumo das pendências do usuário logado.
+
+[   16] PARCIAL           Log de todas as mudanças (contratável)
+        Existe hoje:      Históricos obrigatórios nas tabelas de gestão (359), auditoria de ações, log de
+                          pendências e transferências.
+        Falta:            Consulta/download geral de logs, envio por e-mail, retenção contratável.
+
+[   17] PARCIAL           Menus multi-idiomas (tradução por IA)
+        Existe hoje:      PT/EN/ES completos; Administração › Textos e idiomas para revisar traduções.
+        Falta:            Tradução por IA e idiomas além de EN/ES.
+
+[   18] FEITO             Idioma no cadastro do usuário
+        Existe hoje:      Idioma do usuário muda os menus e telas.
+
+[ 18.1] FEITO             Gerencial: deletar pendências com log
+        Existe hoje:      Home › Gestão de pendências (365): ocultar com motivo e log.
+
+[ 18.2] FEITO             Gerencial: não gerar pendências com log
+        Existe hoje:      Não gerar para o registro ou para a pessoa (365).
+
+[ 18.3] FEITO             Gerencial: limpar pendências com log
+        Existe hoje:      Limpar todas as filtradas, uma linha no log (365).
+
+[ 18.4] PARCIAL           Fluxo do estágio tipo "entrega do Mercado Livre"
+        Existe hoje:      Só a NC mostra a etapa atual e quem age (abas por etapa).
+        Falta:            Barra de etapas visual em todos os módulos.
+
+[ 18.5] PARCIAL           Link "Ajuda / Como funciona" em todos os módulos
+        Existe hoje:      Ajuda da transação, F1 com "Mostre-me" (NC e Fornecedores completos), Guia do
+                          usuário, demonstração animada da NC.
+        Falta:            Vídeos; ajuda completa do Legal e de algumas telas da Home.
+
+--- 2. ESCALABILIDADE -----------------------------------------------------------------------------------------
+
+[   19] NÃO FEITO         Gerar o padrão de desempenho através de IA
+        Existe hoje:      A IA usa o padrão para gerar potenciais, sugerir risco e comparar leis; não gera o
+                          padrão.
+        Falta:            Geração do padrão de desempenho pela IA.
+
+[   20] PARCIAL           Amarrar requisitos ao questionário respondido pelo cliente
+        Existe hoje:      Questionário Legal migrado para o motor de questionários (9.621 perguntas) e
+                          atribuição manual de leis (matriz Legislação × Empresa e importação de planilha
+                          397).
+        Falta:            Questionário em RASCUNHO: revisar e publicar; gerar os requisitos a partir das
+                          respostas.
+
+[   21] PARCIAL           Migrar dados de softwares concorrentes
+        Existe hoje:      Ferramentas de migração do legado Green (Administração › Migração, sincronismo) e
+                          importação de planilhas.
+        Falta:            Importador genérico para dados de concorrentes (legal, licenças, homologação).
+
+--- 3. LEGAL --------------------------------------------------------------------------------------------------
+
+[   22] FEITO             Home do Módulo Legal (cards, dashboards por unidade/período/responsável/origem/tipo)
+        Existe hoje:      Home do Módulo Legal (24/11): atendidos, parciais, não atendidos, não avaliados e
+                          taxa de conformidade; avaliação vencida/a vencer; risco; pendências críticas;
+                          atualização do mês (inseridos/alterados/revogados, regra da RCL); gráficos por
+                          unidade, responsável, origem, nível de controle e área; calendário das avaliações.
+        Falta:            Cartões de avisos/alertas enviados e filtro por período de avaliação além do
+                          vencimento.
+
+[   23] PARCIAL           Amarrar requisitos ao questionário (mantendo a atribuição manual)
+        Existe hoje:      Igual ao item 20.
+        Falta:            Publicar o questionário e ligar as respostas aos requisitos.
+
+[   24] PARCIAL           Migrar informações de outros sistemas
+        Existe hoje:      Igual ao item 21.
+        Falta:            Importador para concorrentes.
+
+[   25] PARCIAL           Opção "não avaliado" como padrão
+        Existe hoje:      Situação calculada "AI – sem evidências vinculadas" e risco "Não avaliado";
+                          avaliação manual com S/N/PA/AI.
+        Falta:            Gravar "não avaliado" como padrão nas leis novas e gerar pendência de lei não
+                          analisada.
+
+[   26] PARCIAL           Tabela de assuntos/temas (categoria) do cliente
+        Existe hoje:      Assuntos da legislação na base central (legislacaoxassunto) e tipos/palavras-chave
+                          (394).
+        Falta:            Categorias definidas pelo próprio cliente (ex.: tabela do Tomás para a Crown).
+
+[   27] NÃO FEITO         Responsável por categoria (usuário, vários ou grupo)
+        Existe hoje:      O modelo de responsabilidades tem o campo de categoria, mas nada o usa.
+        Falta:            Tabela Responsável × Categoria.
+
+[   28] NÃO FEITO         Atribuição automática de responsável pela lei via categoria
+        Existe hoje:      Responsáveis do requisito são manuais (por situação) e o perfil de atribuições é
+                          usado nos potenciais da IA.
+        Falta:            Atribuição automática por categoria, mantendo a manual.
+
+[   29] FEITO             Campo "Risco" nos requisitos e nos pilares, nos dashboards
+        Existe hoje:      Risco = severidade × probabilidade em todos os pilares e fornecedores; risco do
+                          requisito = pior item; sugestão de risco pela IA; dashboards com a lente do risco
+                          (341/342).
+        Falta:            Itens antigos ainda "Não avaliado" (preencher).
+
+[   30] NÃO FEITO         Replicar o atendimento da mesma lei para outras unidades
+        Existe hoje:      Não encontrado.
+        Falta:            Opção de replicar a avaliação para outras unidades.
+
+[ 30.1] FEITO             Link "Minhas Leis"
+        Existe hoje:      Meus requisitos (meus_requisitos.php) e sub-aba em Minhas atividades.
+
+[   31] PARCIAL           IA sugerir a situação de atendimento (aceitar/alterar)
+        Existe hoje:      Situação calculada automaticamente pelos itens de gestão, com Aceitar / Manter /
+                          Limpar quando diverge da manual; IA sugere risco e potenciais.
+        Falta:            Sugestão da situação feita pela IA a partir das evidências.
+
+[   32] PARCIAL           Mesmo atendimento para leis iguais ou parecidas
+        Existe hoje:      Reavaliação por mudança de lei lista itens parecidos pelo sentido (346).
+        Falta:            Aplicar uma avaliação a vários requisitos de uma vez.
+
+[   33] PARCIAL           Grupos de leis por palavras-chave geradas por IA
+        Existe hoje:      Busca semântica e palavras-chave da legislação.
+        Falta:            Grupos de leis com palavras-chave geradas pela IA.
+
+[   34] PARCIAL           Compartilhar documentos entre leis do grupo
+        Existe hoje:      Documentos compartilhados (um documento com vários vínculos e contextos).
+        Falta:            Compartilhamento a partir dos grupos de leis.
+
+[   35] FEITO             Escolher as colunas da tabela de requisitos [sem "Sim"]
+        Existe hoje:      Botão Colunas em todos os grids (preferência por usuário).
+
+[   36] FEITO             Histórico automático da situação de atendimento
+        Existe hoje:      situacaoxhistorico (136/140) e histórico do risco.
+
+[   37] FEITO             Ver as leis conforme o permissionamento
+        Existe hoje:      Meus requisitos + permissões da transação.
+
+[   38] NÃO FEITO         Campo "Razão para inclusão"
+        Existe hoje:      Não encontrado.
+        Falta:            Campo de texto na lei (preenchido pela Camila).
+
+[   39] PARCIAL           Cliente editar Controle/Influência/Conhecimento com justificativa
+        Existe hoje:      O Nível de controle é editável por lei e unidade no grid de Requisitos legais
+                          (legislacaoxpoder da empresa).
+        Falta:            Justificativa obrigatória e registro de quem mudou.
+
+[   40] NÃO FEITO         Replicar a data da próxima avaliação por unidade/responsável/grupo
+        Existe hoje:      Não encontrado.
+        Falta:            Tela de aplicação em lote por atributos.
+
+[   41] FEITO             Validar/inativar requisito com justificativa (tabela de inativados)
+        Existe hoje:      Inativar requisito na unidade com motivo, tela Requisitos inativados e reativação
+                          (286).
+
+[   42] DECISÃO PENDENTE  Registro de que a RCL foi lida [sem "Sim"]
+        Existe hoje:      A RCL é gerada (385) e grava o histórico do dia; leitura pelo usuário não é
+                          registrada.
+        Falta:            Decidir.
+
+[   43] PARCIAL           Questionário de leis
+        Existe hoje:      Igual ao item 20.
+        Falta:            Publicar.
+
+[   44] NÃO FEITO         Padrão de atendimento via IA
+        Existe hoje:      Igual ao item 19.
+
+[   45] FEITO             Relatório de Atendimento Legal automático
+        Existe hoje:      PDF e Excel em segundo plano, com os filtros do grid (284/341).
+        Falta:            Não usa LaTeX (o documento cita LaTeX).
+
+[   46] PARCIAL           Visual mais agradável da tabela (ícones de status)
+        Existe hoje:      Grid padrão com coluna de % e situação calculada colorida.
+        Falta:            Ícones de status de conformidade.
+
+[   47] FEITO             Link "Meus Requisitos Legais"
+        Existe hoje:      meus_requisitos.php.
+
+[ 47.1] NÃO FEITO         Fluxo do estágio (Legal)
+        Existe hoje:      Não existe barra de etapas no Legal.
+        Falta:            Barra com as 10 etapas do processo.
+
+[ 47.2] PARCIAL           Ajuda / Como funciona (Legal)
+        Existe hoje:      Ajuda da transação e F1 parcial.
+        Falta:            Ajuda completa e vídeo.
+
+--- 4. LICENÇAS -----------------------------------------------------------------------------------------------
+
+[   48] PARCIAL           Novos campos da Gestão de Licenças
+        Existe hoje:      Nº da licença, tipo documental, órgão emissor, protocolo (nº, data, protocolado em,
+                          no prazo), data de reação, risco, observação, vários arquivos com versões e
+                          histórico.
+        Falta:            "Arquivar licença?" e conferir a lista completa com o cliente.
+
+[   49] FEITO             Tabela Tipo de Licença × Responsável
+        Existe hoje:      Responsáveis e avisos (Licenças): tipo documental + unidade → usuário ou grupo
+                          (361).
+
+[   50] FEITO             Nova atribuição de responsabilidade (direta ou por tipo)
+        Existe hoje:      Responsável do registro + atribuições (usuário/grupo) + regras por tipo.
+
+[   51] FEITO             Política de e-mails friendly por licença
+        Existe hoje:      Regras com avisos escolhidos e botão Responsáveis por registro (361).
+
+[   52] FEITO             Gestão de licenças em protocolo
+        Existe hoje:      Em protocolo com nº e datas; "Válida (em protocolo)"; nova versão da licença ativa a
+                          nova e substitui a antiga (208, 285, 288).
+
+[   53] FEITO             Monitorar protocolada / protocolada em atraso
+        Existe hoje:      Situações e faixas nos dashboards, painel lateral e alertas (285, 288, 290).
+
+[   54] FEITO             Preencher a licença via IA a partir do upload
+        Existe hoje:      "Analisar com IA" sugere os campos e grava após confirmação (173, 208).
+        Falta:            PDF digitalizado sem texto não é lido nessa tela (a confirmar).
+
+[   55] PARCIAL           Parâmetro "Validade inexistente"
+        Existe hoje:      Situação "Sem data de vencimento" e card "sem validade".
+        Falta:            Marcação explícita que diferencie "não tem validade" de "não preenchida".
+
+[   56] NÃO FEITO         Validade "Recorrente"
+        Existe hoje:      Só as taxas têm recorrência automática.
+        Falta:            Validade recorrente na licença.
+
+[   57] PARCIAL           Visual mais "clean" da tabela de Licenças
+        Existe hoje:      Grid padrão e situação com cor.
+        Falta:            Trocar linhas pintadas por ícones/flags.
+
+[   58] FEITO             Link "Minhas Licenças"
+        Existe hoje:      minhas_licencas / Minhas atividades.
+
+[   59] FEITO             Link "Minhas Condicionantes"
+        Existe hoje:      minhas_condicionantes.php.
+
+[   60] FEITO             Home do Módulo de Licenças
+        Existe hoje:      Home de Licenças (381): filtros, cartões, gráficos, lista, calendário,
+                          condicionantes e taxas.
+        Falta:            Confirmar o menu em todas as empresas.
+
+[   61] FEITO             Pendências do usuário
+        Existe hoje:      Sino e Minhas pendências.
+
+[   62] FEITO             Agenda do usuário
+        Existe hoje:      Agenda e calendário da Home de Licenças.
+
+[   63] DECISÃO PENDENTE  Campos personalizados [sem "Sim"]
+        Existe hoje:      Não existe.
+        Falta:            Decidir.
+
+[   64] FEITO             Gestão de taxas das licenças
+        Existe hoje:      Várias taxas por licença, recorrência, alertas, pendências e agenda (344).
+
+[ 65.1] NÃO FEITO         Fluxo do estágio (Licenças)
+        Existe hoje:      Não existe.
+        Falta:            Barra de etapas.
+
+[ 65.2] PARCIAL           Ajuda / Como funciona (Licenças)
+        Existe hoje:      Ajuda das telas.
+        Falta:            Vídeo.
+
+--- 5. MEDIÇÃO E MONITORAMENTO --------------------------------------------------------------------------------
+
+[   66] FEITO             Home do módulo
+        Existe hoje:      Home de Medição e Monitoramento (24/11): situação pelo cronograma (atrasada,
+                          prevista no mês, em dia, sem cronograma), data de reação, risco, gráficos por
+                          tipo/unidade/responsável, previstas por mês, calendário e requisitos ligados.
+
+[   67] PARCIAL           Validade "Recorrente"
+        Existe hoje:      Cronograma de medições por mês, que gera pendência e entra no cálculo.
+        Falta:            Recorrência com início, fim e período que revalida sozinha.
+
+[   68] FEITO             Associação manual das leis
+        Existe hoje:      mm_monitoramentoxlegislacao e botão no grid de Requisitos legais.
+
+[   69] FEITO             Tabela Tipo de Medição × Responsável
+        Existe hoje:      Responsáveis e avisos (Medição): tipo de medição + unidade (361).
+
+[   70] FEITO             Link "Minhas Medições e Monitoramentos"
+        Existe hoje:      minhas_medicoes.php.
+
+[   71] FEITO             Atribuição automática por tipo
+        Existe hoje:      Regras da 361.
+
+[   72] FEITO             Política de e-mails
+        Existe hoje:      Regras da 361.
+
+[   73] PARCIAL           Novos campos (tipo, histórico, risco)
+        Existe hoje:      Tipo de medição, equipamento, área, parâmetros, responsável, datas, cronograma,
+                          risco e histórico.
+        Falta:            Conferir "Evidência da medição" e os demais campos pedidos.
+
+[   74] NÃO FEITO         Retirar os campos Aspecto e Perigo
+        Existe hoje:      Os dois campos continuam na tela de Monitoramento.
+        Falta:            Retirar (ou ocultar).
+
+[   75] FEITO             Campo Risco
+        Existe hoje:      Severidade × probabilidade (341).
+
+[   76] FEITO             Tabela de Potenciais
+        Existe hoje:      Potenciais da IA com aprovação (139, 179).
+
+[   77] FEITO             Histórico automático
+        Existe hoje:      Históricos obrigatórios (359).
+
+[   78] FEITO             Política de e-mails friendly
+        Existe hoje:      Regras da 361.
+
+[   79] NÃO FEITO         Preencher via IA a partir do upload
+        Existe hoje:      A extração por IA existe para licenças, controles, treinamentos e infraestrutura,
+                          não para medição.
+        Falta:            Extração da evidência da medição.
+
+[   80] PARCIAL           Visual mais "clean"
+        Existe hoje:      Grid padrão.
+        Falta:            Ícones/flags.
+
+[   81] FEITO             Pendências do usuário
+        Existe hoje:      Sino e Minhas pendências.
+
+[   82] FEITO             Agenda do usuário
+        Existe hoje:      Agenda.
+
+[ 82.1] NÃO FEITO         Fluxo do estágio
+        Existe hoje:      Não existe.
+
+[ 82.2] PARCIAL           Ajuda / Como funciona
+        Existe hoje:      Ajuda das telas.
+        Falta:            Vídeo.
+
+--- 6. CONTROLE -----------------------------------------------------------------------------------------------
+
+[   83] FEITO             Home do módulo
+        Existe hoje:      Home de Controles (24/11): situação legal do item nos requisitos ligados, risco,
+                          responsáveis, sem vínculo, gráficos e lista de requisitos ligados.
+        Falta:            Cartões de validade/reação dependem dos novos campos (item 89).
+
+[   84] FEITO             Associação manual das leis
+        Existe hoje:      Popup Controles no grid de Requisitos legais.
+
+[   85] PARCIAL           Tabela Tipo de Controle × Responsável
+        Existe hoje:      Regras por unidade (361); não existe "tipo de controle".
+        Falta:            Cadastro de tipos de controle e regra por tipo.
+
+[   86] FEITO             Link "Meus Controles"
+        Existe hoje:      meus_controles.php.
+
+[   87] PARCIAL           Atribuição automática
+        Existe hoje:      Por unidade.
+        Falta:            Por tipo.
+
+[   88] PARCIAL           Ligar a tabela de controle ao GED (versionamento)
+        Existe hoje:      Arquivos do controle no GED e documentos compartilhados com versão.
+        Falta:            Integração com o GED-E (versionar e distribuir).
+
+[   89] NÃO FEITO         Novos campos da Gestão de Controle
+        Existe hoje:      A tela tem código, título, arquivos, associações e responsáveis.
+        Falta:            Unidade, tipo, versão, origem, emitente/revisor/aprovador, datas de
+                          emissão/vencimento/reação, prazos de guarda, descarte etc.
+
+[   90] FEITO             Campo Risco
+        Existe hoje:      Severidade × probabilidade (341).
+
+[   91] FEITO             Política de e-mails
+        Existe hoje:      Regras da 361 (por unidade).
+
+[   92] FEITO             Tabela de Potenciais
+        Existe hoje:      Potenciais da IA (documentos), com escolha de destino (355).
+
+[   93] FEITO             Histórico automático
+        Existe hoje:      Históricos obrigatórios (359).
+
+[   94] PARCIAL           Política de e-mails friendly
+        Existe hoje:      Regras por unidade.
+        Falta:            Por tipo de controle.
+
+[   95] PARCIAL           Preencher via IA a partir do upload
+        Existe hoje:      Extração assistida de código e título (174).
+        Falta:            Os demais campos (depende do item 89).
+
+[   96] PARCIAL           Visual mais "clean"
+        Existe hoje:      Grid padrão.
+        Falta:            Ícones/flags.
+
+[   97] FEITO             Pendências do usuário
+        Existe hoje:      Sino e Minhas pendências.
+
+[   98] FEITO             Agenda do usuário
+        Existe hoje:      Agenda.
+
+[ 98.1] NÃO FEITO         Fluxo do estágio
+        Existe hoje:      Não existe.
+
+[ 98.2] PARCIAL           Ajuda / Como funciona
+        Existe hoje:      Ajuda das telas.
+        Falta:            Vídeo.
+
+--- 7. TREINAMENTO --------------------------------------------------------------------------------------------
+
+[   99] FEITO             Home do módulo
+        Existe hoje:      Home de Treinamentos (24/11): situação legal, risco, responsáveis, sem vínculo,
+                          gráficos e requisitos ligados.
+        Falta:            Cartões de validade/reciclagem dependem dos novos campos (item 104).
+
+[  100] FEITO             Associação manual das leis
+        Existe hoje:      legislacaoxtreinamentos (popup no requisito).
+
+[  101] PARCIAL           Tabela Tipo de Treinamento × Responsável
+        Existe hoje:      Regras por unidade (361); não existe "tipo de treinamento" no pilar.
+        Falta:            Tipos e regra por tipo.
+
+[  102] FEITO             Link "Meus Treinamentos"
+        Existe hoje:      meus_treinamentos.php.
+
+[  103] PARCIAL           Atribuição automática
+        Existe hoje:      Por unidade.
+        Falta:            Por tipo.
+
+[  104] NÃO FEITO         Novos campos (unidade, tipo, carga horária, reciclagem, evidências por trabalhador)
+        Existe hoje:      A tela tem descrição, arquivo, palavras-chave e responsável.
+        Falta:            Os campos pedidos e o registro de trabalhadores treinados.
+
+[  105] FEITO             Campo Risco
+        Existe hoje:      Severidade × probabilidade (341).
+
+[  106] FEITO             Política de e-mails
+        Existe hoje:      Regras da 361.
+
+[  107] FEITO             Tabela de Potenciais
+        Existe hoje:      Potenciais da IA.
+
+[  108] FEITO             Histórico automático
+        Existe hoje:      Históricos obrigatórios (359).
+
+[  109] PARCIAL           Política de e-mails friendly por tipo
+        Existe hoje:      Por unidade.
+        Falta:            Por tipo.
+
+[  110] PARCIAL           Preencher via IA a partir do upload
+        Existe hoje:      Extração assistida só da descrição (174).
+        Falta:            Demais campos (depende do 104).
+
+[  111] PARCIAL           Visual mais "clean"
+        Existe hoje:      Grid padrão.
+        Falta:            Ícones/flags.
+
+[  112] FEITO             Pendências do usuário
+        Existe hoje:      Sino e Minhas pendências.
+
+[  113] FEITO             Agenda do usuário
+        Existe hoje:      Agenda.
+
+[113.1] NÃO FEITO         Fluxo do estágio
+        Existe hoje:      Não existe.
+
+[113.2] PARCIAL           Ajuda / Como funciona
+        Existe hoje:      Ajuda das telas.
+        Falta:            Vídeo.
+
+--- 8. INFRAESTRUTURA -----------------------------------------------------------------------------------------
+
+[  114] FEITO             Home do módulo
+        Existe hoje:      Home de Infraestrutura (24/11): situação legal, risco, responsáveis, sem vínculo,
+                          gráficos e requisitos ligados.
+        Falta:            Plano de manutenção e classes dependem dos novos campos (item 119).
+
+[  115] FEITO             Associação manual das leis
+        Existe hoje:      legislacaoxinfraestruturas (popup no requisito).
+
+[  116] PARCIAL           Tabela Tipo de Infraestrutura × Responsável
+        Existe hoje:      Regras por unidade (361); não existe "tipo de infraestrutura".
+        Falta:            Tipos e regra por tipo.
+
+[  117] FEITO             Link "Minhas Infraestruturas"
+        Existe hoje:      minhas_infraestruturas.php.
+
+[  118] PARCIAL           Atribuição automática
+        Existe hoje:      Por unidade.
+        Falta:            Por tipo.
+
+[  119] NÃO FEITO         Novos campos (tipo, setor, condições, classe, plano de manutenção)
+        Existe hoje:      A tela tem descrição, arquivo, atributos (descrição/valor), palavras-chave e
+                          responsável.
+        Falta:            Os campos pedidos.
+
+[  120] FEITO             Campo Risco
+        Existe hoje:      Severidade × probabilidade (341).
+
+[  121] FEITO             Política de e-mails
+        Existe hoje:      Regras da 361.
+
+[  122] FEITO             Tabela de Potenciais
+        Existe hoje:      Potenciais da IA.
+
+[  123] FEITO             Histórico automático
+        Existe hoje:      Históricos obrigatórios (359).
+
+[  124] PARCIAL           Política de e-mails friendly por tipo
+        Existe hoje:      Por unidade.
+        Falta:            Por tipo.
+
+[  125] PARCIAL           Preencher via IA a partir do upload
+        Existe hoje:      Extração assistida só da descrição (174).
+        Falta:            Demais campos (depende do 119).
+
+[  126] PARCIAL           Visual mais "clean"
+        Existe hoje:      Grid padrão.
+        Falta:            Ícones/flags.
+
+[  127] FEITO             Pendências do usuário
+        Existe hoje:      Sino e Minhas pendências.
+
+[  128] FEITO             Agenda do usuário
+        Existe hoje:      Agenda.
+
+[128.1] NÃO FEITO         Fluxo do estágio
+        Existe hoje:      Não existe.
+
+[128.2] PARCIAL           Ajuda / Como funciona
+        Existe hoje:      Ajuda das telas.
+        Falta:            Vídeo.
+
+--- 9. HOMOLOGAÇÃO --------------------------------------------------------------------------------------------
+
+[  129] FEITO             Home do módulo
+        Existe hoje:      Painel de Homologação (números clicáveis, gráficos, listas) e dashboard de
+                          Fornecedores (366).
+
+[  130] FEITO             Ligar Legal × Homologação pelas leis de "influência"
+        Existe hoje:      Botão Homologação de Fornecedores nos requisitos de Influência; fornecedores entram
+                          na situação calculada (141, 284).
+
+[  131] PARCIAL           Relatório de Atendimento Legal dos fornecedores
+        Existe hoje:      Relatórios gerenciais da homologação (PDF/Excel) e ranking.
+        Falta:            Relatório de atendimento legal por fornecedor.
+
+[  132] NÃO FEITO         Tabela Tipo de Empresa × Responsável
+        Existe hoje:      Responsabilidades são por fornecedor.
+        Falta:            Regra por tipo de fornecedor.
+
+[  133] FEITO             IA preenche dados dos documentos (empresa e funcionários)
+        Existe hoje:      Análise de documentos pela IA nos critérios do fornecedor e do funcionário.
+
+[  134] FEITO             IA valida documentos por templates
+        Existe hoje:      Modelos de documento e validação automática (347).
+        Falta:            Cadastrar e ativar os modelos nos critérios.
+
+[  135] FEITO             IA reconhece adulteração
+        Existe hoje:      Análise de adulteração dos documentos.
+
+[  136] FEITO             Link "Meus Fornecedores"
+        Existe hoje:      meus_fornecedores.php.
+
+[  137] FEITO             Link "Meus Funcionários dos fornecedores"
+        Existe hoje:      meus_funcionarios.php.
+
+[  138] PARCIAL           Atribuição automática por tipo de fornecedor
+        Existe hoje:      Responsáveis por fornecedor (usuário ou grupo).
+        Falta:            Automática por tipo.
+
+[  139] FEITO             Campo Risco do fornecedor
+        Existe hoje:      Severidade × probabilidade no fornecedor (341).
+        Falta:            Critérios de severidade dos fornecedores a validar com o Ricardo.
+
+[  140] PARCIAL           E-mails para vários responsáveis
+        Existe hoje:      Alertas para os responsáveis do fornecedor; política de e-mails do legado.
+        Falta:            Depende do item 138.
+
+[  141] FEITO             Histórico automático (fornecedores e funcionários)
+        Existe hoje:      Histórico de documentos e log das regras automáticas.
+
+[  142] PARCIAL           Visual mais "clean"
+        Existe hoje:      Regra única de cores e painel.
+        Falta:            Ícones/flags nas tabelas.
+
+[  143] FEITO             Pendências do usuário
+        Existe hoje:      Sino, Minhas pendências e Aprovações.
+
+[  144] FEITO             Agenda do usuário
+        Existe hoje:      Agenda (inclui cronograma de auditoria).
+
+[  145] PARCIAL           Portaria dentro do módulo de Homologação
+        Existe hoje:      Telas de Portaria (documentação do fornecedor e do funcionário) existem.
+        Falta:            Confirmar se o menu da Portaria fica dentro da Homologação.
+
+[  146] NÃO FEITO         "Chat" com o fornecedor sobre documentos da empresa
+        Existe hoje:      Continua com Observação da empresa / do fornecedor.
+        Falta:            Troca de mensagens, iniciada sozinha quando a IA rejeita.
+
+[  147] NÃO FEITO         "Chat" sobre documentos dos funcionários
+        Existe hoje:      Não existe.
+        Falta:            Idem.
+
+[  148] NÃO FEITO         Abrir RNC do fornecedor a partir do plano de ação
+        Existe hoje:      A NC do Fornecedor existe, mas não há atalho a partir do plano de ação.
+        Falta:            Botão no plano de ação (se o cliente tiver o módulo NC).
+
+[  149] DECISÃO PENDENTE  Tipo de veículo e documentos [sem "Sim"]
+        Existe hoje:      Não existe.
+        Falta:            Decidir.
+
+[  150] DECISÃO PENDENTE  Tipo de equipamento e documentos [sem "Sim"]
+        Existe hoje:      Aba Equipamentos do fornecedor (sem tipos nem documentação própria).
+        Falta:            Decidir.
+
+[  151] FEITO             Integração de funcionários com questionário [sem "Sim"]
+        Existe hoje:      Integração com questionário, decisão e certificado (348).
+        Falta:            Publicar o questionário de integração.
+
+[  152] PARCIAL           Aprovação de documentos por pessoas/grupos em tabela resumo
+        Existe hoje:      Painel de Aprovações com os documentos "Pendente com a empresa".
+        Falta:            Atrelar a aprovação a pessoas ou grupos.
+
+[  153] FEITO             Ranking de fornecedores [sem "Sim"]
+        Existe hoje:      Ranking com bloqueio na Portaria.
+
+[  154] NÃO FEITO         Fluxo do estágio
+        Existe hoje:      Não existe.
+
+[  155] PARCIAL           Ajuda / Como funciona
+        Existe hoje:      F1 com "Mostre-me" completo.
+        Falta:            Vídeo.
+
+--- 10. RNC ---------------------------------------------------------------------------------------------------
+
+[  156] FEITO             Home do módulo
+        Existe hoje:      Home de Não Conformidades (24/11): abertas por etapa, com quem estão, tempo em
+                          aberto, prazo vencido, paradas, ações vencidas, abertas × finalizadas por mês e
+                          calendário.
+        Falta:            Lente de risco depende do campo Risco (item 158).
+
+[  157] FEITO             Link "Minhas RNCs"
+        Existe hoje:      NC › Minhas ocorrências.
+
+[  158] NÃO FEITO         Campo Risco da RNC
+        Existe hoje:      Não existe.
+        Falta:            Campo e lente de risco nos dashboards.
+
+[  159] FEITO             Histórico automático
+        Existe hoje:      Histórico do workflow (usuário, data, de/para).
+
+[  160] NÃO FEITO         Preencher a RNC via IA a partir do upload
+        Existe hoje:      A IA atua na análise da causa e na eficácia, não na extração de documento.
+        Falta:            Extração por IA.
+
+[  161] PARCIAL           Visual mais "clean"
+        Existe hoje:      Grid padrão.
+        Falta:            Ícones/flags.
+
+[  162] FEITO             Pendências do usuário
+        Existe hoje:      Sino e Minhas pendências.
+
+[  163] FEITO             Agenda do usuário
+        Existe hoje:      Agenda.
+
+[  164] PARCIAL           Fluxo do estágio
+        Existe hoje:      A ocorrência mostra a etapa e libera só a aba de quem age.
+        Falta:            Barra visual de etapas.
+
+[  165] PARCIAL           Ajuda / Como funciona
+        Existe hoje:      F1 completo e demonstração animada da NC da Empresa.
+        Falta:            Demonstrações dos outros tipos e vídeo.
+
+--- 11. AUDITORIA ---------------------------------------------------------------------------------------------
+
+[  166] NÃO FEITO         Home do módulo
+        Existe hoje:      O módulo de Auditoria não existe no greenportal.
+
+[  167] NÃO FEITO         Link "Minhas Auditorias"
+        Existe hoje:      Idem.
+
+[  168] NÃO FEITO         Histórico automático
+        Existe hoje:      Idem.
+
+[  170] NÃO FEITO         Preencher via IA a partir do upload
+        Existe hoje:      Idem.
+
+[  171] NÃO FEITO         Visual mais "clean"
+        Existe hoje:      Idem.
+
+[  172] NÃO FEITO         Pendências do usuário
+        Existe hoje:      Idem.
+
+[  173] NÃO FEITO         Agenda do usuário
+        Existe hoje:      Idem.
+
+[  174] NÃO FEITO         Fluxo do estágio
+        Existe hoje:      Idem.
+
+[  175] NÃO FEITO         Ajuda / Como funciona
+        Existe hoje:      Idem.
+
+[  176] NÃO FEITO         Ligar Auditoria × RNC
+        Existe hoje:      Idem.
+
+[  177] PARCIAL           Ligar Homologação × Auditoria
+        Existe hoje:      A Homologação tem a auditoria de fornecedor por tipo, com cronograma, nota e
+                          evidência.
+        Falta:            Ligação com um módulo de Auditoria.
+
+==============================================================================================================
+5. OBSERVAÇÕES ENCONTRADAS DURANTE A AVALIAÇÃO (fora da planilha)
+==============================================================================================================
+  - O repositório GitHub pereirapalhares/greenportal está PÚBLICO (o documento interno o descreve como
+    privado). Qualquer pessoa pode baixar o código e a pasta docs. O arquivo scripts\executar-teste-crud-
+    modulolegal-potenciais.ps1 tem uma senha do MySQL escrita no código. Recomendado: tornar o repositório
+    privado, trocar essa senha e tirá-la do arquivo.
+  - Há 12 arquivos principal\diagnostico_*_temporario.php no servidor (quatro deles com 3 a 4 KB de código).
+    Recomendado apagar.
+  - O portal é acessado de fora em HTTP, sem TLS (já registrado em 11/11/2026). Recomendado HTTPS.
+  - Os itens antigos dos pilares continuam com risco "Não avaliado" até alguém preencher ou aceitar a sugestão
+    da IA.
+  - Na Crown, Controles, Treinamentos, Infraestrutura e Medição têm 0 ou 1 registro: as Homes desses pilares
+    funcionam, mas aparecem quase vazias até os cadastros serem preenchidos ou migrados.
+
+==============================================================================================================
+6. MÉTODO E LIMITES
+==============================================================================================================
+  - Os 196 itens numerados do documento foram extraídos e comparados com o código da aplicação (telas,
+    classes, migrações), com as regras de negócio (docs\regras-negocio-01 a 06) e com o histórico de
+    implantação das migrações até a 404 e os ajustes de 24/11/2026.
+  - A avaliação é de existência da funcionalidade. Não foi feito teste de tela item a item nesta rodada; os
+    módulos Legal, Homologação e NC foram testados em tela na Crown em 11/11/2026 e as entregas seguintes
+    foram testadas uma a uma.
+  - Onde o greenportal resolveu o pedido de outro jeito (ex.: risco por severidade × probabilidade em vez de
+    Alto/Médio/Baixo; Relatório de Atendimento Legal em PDF/Excel em vez de LaTeX), o item foi considerado
+    FEITO e a diferença foi anotada.
+
