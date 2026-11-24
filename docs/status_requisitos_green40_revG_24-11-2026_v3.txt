@@ -3,7 +3,7 @@ RELATÓRIO DE STATUS — REQUISITOS DO GREEN 4.0 × APLICAÇÃO GREENPORTAL (REA
 ==============================================================================================================
 Documento avaliado : docs\Passo a passo mudança no Green4.0 - Revisão G - 13-08-2026.doc
 Aplicação          : E:\wamp\apps\greenportal (código de 24/11/2026, regras de negócio e histórico de migrações)
-Data da avaliação  : 24/11/2026, 16:20 — reavaliação depois da onda 1 (ícones de status e barra de etapas)
+Data da avaliação  : 24/11/2026, 17:45 — reavaliação depois da onda 1 (ícones de status e barra de etapas)
 Avaliações anteriores: docs\status_requisitos_green40_revG_24-11-2026.txt (15:06) e _v2.txt (15:50)
 
 LEGENDA
@@ -25,10 +25,11 @@ no documento (a numeração pula de 168 para 170).
   Treinamento, Infraestrutura, Homologação e RNC; (b) barra de etapas "tipo entrega do Mercado Livre" acima
   desses grids, com os workflows da planilha: ao selecionar uma linha, mostra as etapas feitas, a atual, as
   facultativas e as que ainda não se aplicam. Os dois são carregados pelo main.php e valem para as telas e os
-  popups do portal.
+  popups do portal. A ajuda (F1) das 18 telas dos módulos explica os ícones e a barra (migração 405).
   Na revisão completa desta rodada, o item 158 (Risco da RNC) passou de NÃO FEITO para PARCIAL: a coluna Risco
   existe na ocorrência e aparece na Lista geral, mas não no formulário. Histórico: 15:06 = 84 feitos (42,9%);
-  15:50 = 92 (46,9%), depois das Homes; agora = 109 (55,6%).
+  15:50 = 92 (46,9%), depois das Homes; depois da onda 1 = 109 (55,6%); com a Homologação da onda 2 (132, 138,
+  140, migração 406) = 112 (57,1%); agora, com o Legal (26, 27, 28, migração 407) = 115 (58,7%).
 
   Item   Antes       Agora       Pedido
   18.4   PARCIAL     FEITO       Fluxo do estágio tipo "entrega do Mercado Livre"
@@ -49,27 +50,33 @@ no documento (a numeração pula de 168 para 170).
   161    PARCIAL     FEITO       Visual mais "clean"
   164    PARCIAL     FEITO       Fluxo do estágio
   158    NÃO FEITO   PARCIAL     Campo Risco da RNC
+  132    NÃO FEITO   FEITO       Tabela Tipo de Empresa × Responsável
+  138    PARCIAL     FEITO       Atribuição automática por tipo de fornecedor
+  140    PARCIAL     FEITO       E-mails para vários responsáveis
+  26     PARCIAL     FEITO       Tabela de assuntos/temas (categoria) do cliente
+  27     NÃO FEITO   FEITO       Responsável por categoria (usuário, vários ou grupo)
+  28     NÃO FEITO   FEITO       Atribuição automática de responsável pela lei via categoria
 
 ==============================================================================================================
 1. RESUMO GERAL
 ==============================================================================================================
 Itens avaliados: 196
-  FEITO              109   (55.6%)
-  PARCIAL             50   (25.5%)
-  NÃO FEITO           30   (15.3%)
+  FEITO              115   (58.7%)
+  PARCIAL             47   (24.0%)
+  NÃO FEITO           27   (13.8%)
   DECISÃO PENDENTE     7   ( 3.6%)
 
 Por capítulo:
   Capítulo                           Itens   Feito  Parcial  Não feito  Decisão
   1 Mudanças gerais                     26      15        6          2        3
   2 Escalabilidade                       3       0        2          1        0
-  3 Módulo Legal                        29      11       11          6        1
+  3 Módulo Legal                        29      14       10          4        1
   4 Licenças                            19      14        3          1        1
   5 Medição e Monitoramento             19      14        3          2        0
   6 Controle                            18      11        6          1        0
   7 Treinamento                         17      11        5          1        0
   8 Infraestrutura                      17      11        5          1        0
-  9 Homologação                         27      15        6          4        2
+  9 Homologação                         27      18        4          3        2
   10 RNC                                10       7        2          1        0
   11 Auditoria                          11       0        1         10        0
 
@@ -85,8 +92,8 @@ Leitura rápida:
   - Onda 1 (24/11): todos os grids principais dos módulos têm ícones de status no lugar das linhas pintadas e
     a barra de etapas do processo, que mostra em que passo do workflow está o registro selecionado.
   - As maiores lacunas: novos campos das tabelas de Controle, Treinamento e Infraestrutura (continuam simples,
-    por isso não há "tipo" para as regras de responsáveis nem datas para o calendário), categoria ×
-    responsável no Legal, chat com fornecedor e o módulo de Auditoria, que não existe.
+    por isso não há "tipo" para as regras de responsáveis nem datas para o calendário), chat com fornecedor e
+    o módulo de Auditoria, que não existe.
   - Itens de escalabilidade dependem de produto: questionário legal (migrado, ainda em rascunho), padrão de
     desempenho pela IA, APIs externas e importação de concorrentes.
 
@@ -110,7 +117,7 @@ Leitura rápida:
         questionário ESG cadastrado como contexto; sem módulo e sem especificação na Revisão G
    8. Modernização da Homologação                                    FEITO
         painel, IA nos documentos, templates, adulteração, ranking, integração, ícones de status e barra de
-        etapas; faltam chat e regra por tipo
+        etapas; falta o chat
    9. Modernização da Não Conformidade                               FEITO
         6 tipos de NC (Empresa, Cliente, Fornecedor, Planejamento, Assistência Técnica e Acidente) com
         workflow, IA na causa e na eficácia, PDF, listas, Home própria e barra de etapas; falta o campo Risco
@@ -126,16 +133,16 @@ Leitura rápida:
       Os campos também liberam a extração completa pela IA (95, 110, 125), prazos nas Homes e no calendário, e
       transformam em etapas reais as que a barra hoje mostra como "ainda não disponível". Cerca de 6 itens.
    2. Onda 2 — regra Tipo × Responsável com atribuição automática e e-mails por tipo: Controle (85, 87, 94),
-      Treinamento (101, 103, 109), Infraestrutura (116, 118, 124), Homologação (132, 138, 140; o tipo de
-      fornecedor já existe) e categoria do cliente × responsável no Legal (26, 27, 28). Cerca de 15 itens; com
-      a onda 3, o total passa de ~65%.
+      Treinamento (101, 103, 109), Infraestrutura (116, 118, 124), Homologação (132, 138, 140 — FEITO em
+      24/11, migração 406) e categoria × responsável no Legal (26, 27, 28 — FEITO em 24/11, migração 407).
+      Faltam os 9 itens de Controle, Treinamento e Infraestrutura, que dependem do campo Tipo da onda 3.
    3. Legal: campo "Razão para inclusão" (38), justificativa ao mudar o Nível de controle (39), replicar
       avaliação e data da próxima avaliação para outras unidades (30, 40), "não avaliado" como padrão com
       pendência (25).
    4. Licenças: validade recorrente (56) e marcação de validade inexistente (55); Medição: retirar Aspecto e
       Perigo (74), recorrência (67) e campo de evidência (73).
-   5. RNC: campo Risco no formulário (158); Homologação: atalho para abrir NC do fornecedor (148), chat (146,
-      147) e barra do fluxo do funcionário (154).
+   5. RNC: campo Risco no formulário (158); Homologação: atalho para abrir NC do fornecedor (148) e chat (146,
+      147).
    6. Ajuda com vídeo em todos os módulos (18.5 e repetições: 47.2, 65.2, 82.2, 98.2, 113.2, 128.2, 155, 165)
       — podem ser demonstrações animadas como a da NC.
    7. Produto/decisão: questionário legal publicado (20, 23, 43), padrão de desempenho pela IA (19, 44), APIs
@@ -311,19 +318,24 @@ Leitura rápida:
         Falta:            Gravar "não avaliado" como padrão nas leis novas e gerar pendência de lei não
                           analisada.
 
-[   26] PARCIAL           Tabela de assuntos/temas (categoria) do cliente
-        Existe hoje:      Assuntos da legislação na base central (legislacaoxassunto) e tipos/palavras-chave
-                          (394).
-        Falta:            Categorias definidas pelo próprio cliente (ex.: tabela do Tomás para a Crown).
+[   26] FEITO             Tabela de assuntos/temas (categoria) do cliente
+        Existe hoje:      Categorias: catálogo central glegislacao_dbp.legislacao_categoria (18 categorias,
+                          mantido só pelo ADMINISTRADOR). Cada empresa vincula a lei às categorias dela no
+                          botão "Categorias" de Requisitos legais (legislacaoxcategoria_empresa, migração
+                          407); lei sem vínculo próprio usa o vínculo central (legacy). Decisão do usuário em
+                          24/11/2026.
 
-[   27] NÃO FEITO         Responsável por categoria (usuário, vários ou grupo)
-        Existe hoje:      O modelo de responsabilidades tem o campo de categoria, mas nada o usa.
-        Falta:            Tabela Responsável × Categoria.
+[   27] FEITO             Responsável por categoria (usuário, vários ou grupo)
+        Existe hoje:      Tela "Responsáveis e avisos (Requisitos legais)" (migração 407): Categoria + unidade
+                          → usuário ou grupo (várias regras = vários usuários); lei com várias categorias
+                          entra na regra de cada uma.
 
-[   28] NÃO FEITO         Atribuição automática de responsável pela lei via categoria
-        Existe hoje:      Responsáveis do requisito são manuais (por situação) e o perfil de atribuições é
-                          usado nos potenciais da IA.
-        Falta:            Atribuição automática por categoria, mantendo a manual.
+[   28] FEITO             Atribuição automática de responsável pela lei via categoria
+        Existe hoje:      Atribuição automática pela categoria (migração 407): vale na hora, soma com o
+                          responsável da situação e as atribuições manuais; chega a Meus requisitos e às
+                          pendências (vw_ml_requisito_responsaveis). Testado na Crown: categoria Segurança
+                          Ocupacional cobre 2.379 requisitos; Meus requisitos do admin passou de 1 para 65
+                          páginas com a regra.
 
 [   29] FEITO             Campo "Risco" nos requisitos e nos pilares, nos dashboards
         Existe hoje:      Risco = severidade × probabilidade em todos os pilares e fornecedores; risco do
@@ -798,9 +810,10 @@ Leitura rápida:
         Existe hoje:      Relatórios gerenciais da homologação (PDF/Excel) e ranking.
         Falta:            Relatório de atendimento legal por fornecedor.
 
-[  132] NÃO FEITO         Tabela Tipo de Empresa × Responsável
-        Existe hoje:      Responsabilidades são por fornecedor.
-        Falta:            Regra por tipo de fornecedor.
+[  132] FEITO             Tabela Tipo de Empresa × Responsável
+        Existe hoje:      Tela "Responsáveis e avisos (Homologação de fornecedores)" (migração 406,
+                          24/11/2026): regra Tipo de fornecedor + unidade → usuário ou grupo (várias regras =
+                          vários usuários). Fornecedor com vários tipos entra na regra de cada um.
 
 [  133] FEITO             IA preenche dados dos documentos (empresa e funcionários)
         Existe hoje:      Análise de documentos pela IA nos critérios do fornecedor e do funcionário.
@@ -818,17 +831,22 @@ Leitura rápida:
 [  137] FEITO             Link "Meus Funcionários dos fornecedores"
         Existe hoje:      meus_funcionarios.php.
 
-[  138] PARCIAL           Atribuição automática por tipo de fornecedor
-        Existe hoje:      Responsáveis por fornecedor (usuário ou grupo).
-        Falta:            Automática por tipo.
+[  138] FEITO             Atribuição automática por tipo de fornecedor
+        Existe hoje:      Atribuição automática pelo tipo (migração 406): a regra vale na hora para
+                          fornecedores novos e antigos e soma com o Responsável do fornecedor (manual) e as
+                          atribuições; chega a Meus fornecedores, Meus funcionários, pendências, agenda e
+                          acesso do usuário restrito. Testado na Crown: tipo Destinação de Resíduos cobre 51
+                          fornecedores ativos; Todos cobre 394.
 
 [  139] FEITO             Campo Risco do fornecedor
         Existe hoje:      Severidade × probabilidade no fornecedor (341).
         Falta:            Critérios de severidade dos fornecedores a validar com o Ricardo.
 
-[  140] PARCIAL           E-mails para vários responsáveis
-        Existe hoje:      Alertas para os responsáveis do fornecedor; política de e-mails do legado.
-        Falta:            Depende do item 138.
+[  140] FEITO             E-mails para vários responsáveis
+        Existe hoje:      Avisos para todos os responsáveis (migração 406): atribuição, alteração e prazos
+                          (próxima avaliação, validade da homologação por tipo e documentos em até 30 dias)
+                          para atribuições e pessoas das regras, nos Alertas e por e-mail; o Responsável do
+                          fornecedor continua recebendo pela política de e-mails da Homologação.
 
 [  141] FEITO             Histórico automático (fornecedores e funcionários)
         Existe hoje:      Histórico de documentos e log das regras automáticas.
@@ -837,7 +855,8 @@ Leitura rápida:
         Existe hoje:      Ícones de status no início de cada linha do grid principal do módulo, com dica e
                           legenda com a contagem ao lado da paginação (assets/js/status-icones.js,
                           24/11/2026). Mesmo conjunto em todos os módulos: em dia, atenção, vencido, crítico,
-                          em andamento, não avaliado, inativo.
+                          em andamento, não avaliado, inativo. Na tela de Funcionários, o ícone indica se a
+                          integração foi realizada.
 
 [  143] FEITO             Pendências do usuário
         Existe hoje:      Sino, Minhas pendências e Aprovações.
@@ -885,9 +904,9 @@ Leitura rápida:
                           api/fluxo_etapas.php, 24/11/2026), com os passos do workflow da planilha. Ao
                           selecionar uma linha mostra o que foi feito, a etapa atual, as facultativas e as que
                           não se aplicam. Fluxo da empresa (13 etapas); as 3 etapas de auditoria aparecem como
-                          "ainda não disponível". O fluxo do funcionário ainda não tem barra.
-        Falta:            Barra do fluxo do funcionário da empresa; etapas de auditoria quando o módulo
-                          existir.
+                          "ainda não disponível". Fluxo do funcionário da empresa (11 etapas: critérios,
+                          integração, documentos e treinamentos) na tela de Funcionários.
+        Falta:            Etapas de auditoria quando o módulo existir.
 
 [  155] PARCIAL           Ajuda / Como funciona
         Existe hoje:      F1 com "Mostre-me" completo.

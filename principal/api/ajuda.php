@@ -63,6 +63,9 @@ if ($acao === 'transacao') {
         if ($row && trim(strip_tags((string)($row['texto_' . $idioma] ?? $row['texto_pt'] ?? ''))) !== '') {
             $texto = (string)(($row['texto_' . $idioma] ?? '') !== '' ? $row['texto_' . $idioma] : $row['texto_pt']);
             // o texto já é limpo na gravação (Configurações › Ajuda das transações); aqui só as tags permitidas
+            // 24/11/2026: títulos (h1–h6) viram parágrafo em negrito — antes o strip_tags os tirava e o título ficava colado ao texto
+            // (ajudas das Homes por módulo, migração 381, e outras gravadas com <h5>).
+            $texto = preg_replace('#<h[1-6][^>]*>(.*?)</h[1-6]>#is', '<p><strong>$1</strong></p>', $texto) ?? $texto;
             $texto = strip_tags($texto, '<p><br><strong><b><em><i><ul><ol><li><a>');
             $texto = preg_replace('/\son\w+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $texto) ?? '';
             $texto = preg_replace('/href\s*=\s*("|\')\s*javascript:[^"\']*\1/i', 'href="#"', $texto) ?? '';

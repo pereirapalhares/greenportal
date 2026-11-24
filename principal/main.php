@@ -334,8 +334,9 @@ if ($assistenteLiberado && empty($_SESSION['assistente_ia_csrf'])) $_SESSION['as
 <script src="<?php echo $baseUrl; ?>/assets/js/filtro-atraso.js?v=2"></script>
 <script>window.greenPortalFiltroChave = <?php echo json_encode(substr(md5((string)$tenantDatabase . ':' . (int)($usuario['codusuario'] ?? 0)), 0, 12)); ?>;</script>
 <script src="<?php echo $baseUrl; ?>/assets/js/filtro-memoria.js?v=1"></script>
-<script src="<?php echo $baseUrl; ?>/assets/js/status-icones.js?v=2"></script>
-<script src="<?php echo $baseUrl; ?>/assets/js/fluxo-etapas.js?v=2"></script>
+<script src="<?php echo $baseUrl; ?>/assets/js/status-icones.js?v=3"></script>
+<script src="<?php echo $baseUrl; ?>/assets/js/fluxo-etapas.js?v=3"></script>
+<script src="<?php echo $baseUrl; ?>/assets/js/legislacao-categorias.js?v=1"></script>
 <?php if ($abrirAlertaJs): ?><script>(function(){var a=<?php echo json_encode($abrirAlertaJs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;try{history.replaceState(null,'',location.pathname);}catch(e){}window.setTimeout(function(){if(typeof window.greenPortalOpenTab==='function')window.greenPortalOpenTab(a.id,a.url,a.titulo);},300);}());</script><?php endif; ?>
 <?php if ($buscaLiberada): ?><script src="<?php echo $baseUrl; ?>/assets/js/busca-cabecalho.js?v=2"></script><?php endif; ?>
 <script src="<?php echo $baseUrl; ?>/assets/js/idioma-cabecalho.js?v=1"></script>

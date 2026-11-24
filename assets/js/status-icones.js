@@ -31,6 +31,7 @@
             med_ok: 'Medi\u00e7\u00e3o em dia', med_atencao: 'Prazo de rea\u00e7\u00e3o atingido', med_vencido: 'Data da medi\u00e7\u00e3o vencida', med_na: 'Sem data da medi\u00e7\u00e3o',
             nc_ok: 'Encerrada', nc_andamento: 'Em andamento no prazo', nc_vencido: 'Prazo vencido', nc_critico: 'Risco alto',
             fo_ok: 'Avalia\u00e7\u00e3o em dia', fo_atencao: 'Pr\u00f3xima avalia\u00e7\u00e3o em at\u00e9 30 dias', fo_vencido: 'Avalia\u00e7\u00e3o vencida', fo_na: 'Sem data da pr\u00f3xima avalia\u00e7\u00e3o', fo_inativo: 'Fornecedor desativado',
+            fu_ok: 'Integra\u00e7\u00e3o realizada', fu_na: 'Integra\u00e7\u00e3o n\u00e3o realizada (sem data)', fu_inativo: 'Funcion\u00e1rio inativo',
             pi_ok: 'Requisitos legais atendidos', pi_atencao: 'Aten\u00e7\u00e3o em algum requisito legal', pi_vencido: 'Vencido em algum requisito legal', pi_critico: 'Falha em algum requisito legal', pi_na: 'Sem requisito legal vinculado',
             legenda: 'Legenda dos \u00edcones de status' },
         en: { ok: 'Up to date', atencao: 'Attention', vencido: 'Expired', critico: 'Critical', andamento: 'In progress', nao_avaliado: 'Not assessed / no date', inativo: 'Inactive',
@@ -39,6 +40,7 @@
             med_ok: 'Measurement up to date', med_atencao: 'Reaction date reached', med_vencido: 'Measurement date expired', med_na: 'No measurement date',
             nc_ok: 'Closed', nc_andamento: 'In progress, on time', nc_vencido: 'Deadline expired', nc_critico: 'High risk',
             fo_ok: 'Evaluation up to date', fo_atencao: 'Next evaluation within 30 days', fo_vencido: 'Evaluation expired', fo_na: 'No next evaluation date', fo_inativo: 'Supplier deactivated',
+            fu_ok: 'Induction done', fu_na: 'Induction not done (no date)', fu_inativo: 'Inactive employee',
             pi_ok: 'Legal requirements met', pi_atencao: 'Attention in a legal requirement', pi_vencido: 'Expired in a legal requirement', pi_critico: 'Failure in a legal requirement', pi_na: 'No linked legal requirement',
             legenda: 'Status icon legend' },
         es: { ok: 'Al d\u00eda', atencao: 'En atenci\u00f3n', vencido: 'Vencido', critico: 'Cr\u00edtico', andamento: 'En curso', nao_avaliado: 'No evaluado / sin fecha', inativo: 'Inactivo',
@@ -47,6 +49,7 @@
             med_ok: 'Medici\u00f3n al d\u00eda', med_atencao: 'Fecha de reacci\u00f3n alcanzada', med_vencido: 'Fecha de medici\u00f3n vencida', med_na: 'Sin fecha de medici\u00f3n',
             nc_ok: 'Cerrada', nc_andamento: 'En curso, en plazo', nc_vencido: 'Plazo vencido', nc_critico: 'Riesgo alto',
             fo_ok: 'Evaluaci\u00f3n al d\u00eda', fo_atencao: 'Pr\u00f3xima evaluaci\u00f3n en hasta 30 d\u00edas', fo_vencido: 'Evaluaci\u00f3n vencida', fo_na: 'Sin fecha de pr\u00f3xima evaluaci\u00f3n', fo_inativo: 'Proveedor desactivado',
+            fu_ok: 'Integraci\u00f3n realizada', fu_na: 'Integraci\u00f3n no realizada (sin fecha)', fu_inativo: 'Empleado inactivo',
             pi_ok: 'Requisitos legales cumplidos', pi_atencao: 'Atenci\u00f3n en alg\u00fan requisito legal', pi_vencido: 'Vencido en alg\u00fan requisito legal', pi_critico: 'Falla en alg\u00fan requisito legal', pi_na: 'Sin requisito legal vinculado',
             legenda: 'Leyenda de los iconos de estado' }
     };
@@ -171,6 +174,14 @@
                 if (prox < hoje()) return ['vencido', 'fo_vencido'];
                 if (prox <= hoje(30)) return ['atencao', 'fo_atencao'];
                 return ['ok', 'fo_ok'];
+            } },
+        // Funcionário: DATA_VALIDADE é a "Data de realização da integração" (não é vencimento).
+        { sel: '.homologacao-funcionario-grid-fragment', legenda: [['ok', 'fu_ok'], ['nao_avaliado', 'fu_na'], ['inativo', 'fu_inativo']],
+            estado: function (tr) {
+                if (!celula(tr, 'DATA_VALIDADE')) return null;
+                var ativo = valor(tr, 'ATIVO');
+                if (ativo !== null && ativo !== '' && !sim(ativo)) return ['inativo', 'fu_inativo'];
+                return data(tr, 'DATA_VALIDADE') ? ['ok', 'fu_ok'] : ['nao_avaliado', 'fu_na'];
             } },
         { sel: '.controle-documentos-grid-fragment', pilar: 'controles', id: 'CODDOCUMENTO' },
         { sel: '.modulo-legal-treinamentos-grid-fragment', pilar: 'treinamentos', id: 'CODTREINAMENTO' },

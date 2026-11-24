@@ -33,10 +33,18 @@ CREATE TABLE IF NOT EXISTS `resp_regras` (
   KEY `ix_resp_regras_area` (`AREA`, `ATIVO`, `REGISTRO_ID`),
   KEY `ix_resp_regras_usuario` (`CODUSUARIO`),
   KEY `ix_resp_regras_grupo` (`CODGRUPO`),
-  CONSTRAINT `ck_resp_regras_area` CHECK (`AREA` IN ('LICENCAS', 'MEDICAO', 'CONTROLES', 'TREINAMENTOS', 'INFRAESTRUTURA')),
+  CONSTRAINT `ck_resp_regras_area` CHECK (`AREA` IN ('LICENCAS', 'MEDICAO', 'CONTROLES', 'TREINAMENTOS', 'INFRAESTRUTURA', 'HOMOLOGACAO', 'LEGAL')),
   CONSTRAINT `ck_resp_regras_destino` CHECK ((`TIPO_DESTINO` = 'USUARIO' AND `CODUSUARIO` IS NOT NULL AND `CODGRUPO` IS NULL)
       OR (`TIPO_DESTINO` = 'GRUPO' AND `CODGRUPO` IS NOT NULL AND `CODUSUARIO` IS NULL))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+-- @@
+-- Migração 406 (24/11/2026, onda 2 da Revisão G): áreas HOMOLOGACAO (fornecedores por tipo) e LEGAL (requisitos por categoria)
+-- nas regras. Refaz a restrição nas tabelas criadas antes (a 361 pode ser reaplicada: DROP e ADD da mesma restrição).
+ALTER TABLE `resp_regras` DROP CHECK `ck_resp_regras_area`
+
+-- @@
+ALTER TABLE `resp_regras` ADD CONSTRAINT `ck_resp_regras_area` CHECK (`AREA` IN ('LICENCAS', 'MEDICAO', 'CONTROLES', 'TREINAMENTOS', 'INFRAESTRUTURA', 'HOMOLOGACAO', 'LEGAL'))
 
 -- @@
 -- Avisos já dados (o mesmo aviso não se repete): pessoa × registro × tipo × chave (data do prazo ou último histórico).
@@ -100,12 +108,15 @@ BEGIN
         SELECT t.`CODUSUARIO`,
                LEFT(CONCAT(
                    CASE t.`AREA` WHEN 'LICENCAS' THEN 'Licenças' WHEN 'MEDICAO' THEN 'Medição e monitoramento' WHEN 'CONTROLES' THEN 'Controles'
-                        WHEN 'TREINAMENTOS' THEN 'Treinamentos' ELSE 'Infraestrutura' END, ': ',
+                        WHEN 'TREINAMENTOS' THEN 'Treinamentos' WHEN 'HOMOLOGACAO' THEN 'Homologação de fornecedores'
+                        WHEN 'LEGAL' THEN 'Requisitos legais' ELSE 'Infraestrutura' END, ': ',
                    CASE t.`TIPO`
                         WHEN 'ATRIBUICAO' THEN CONCAT('você passou a responder por ', COUNT(*), ' registro(s)')
                         WHEN 'VENCIMENTO' THEN CONCAT(COUNT(*), ' vence(m) em até 30 dias')
                         WHEN 'REACAO' THEN CONCAT(COUNT(*), ' com a data de reação atingida')
                         WHEN 'MEDICAO' THEN CONCAT(COUNT(*), ' medição(ões) prevista(s) em até 7 dias')
+                        WHEN 'AVALIACAO' THEN CONCAT(COUNT(*), ' com a próxima avaliação em até 30 dias')
+                        WHEN 'DOCUMENTOS' THEN CONCAT(COUNT(*), ' documento(s) vence(m) em até 30 dias')
                         ELSE CONCAT(COUNT(*), ' registro(s) alterado(s) por outra pessoa') END), 180),
                LEFT(CONCAT(GROUP_CONCAT(CONCAT('• ', COALESCE(NULLIF(TRIM(t.`DESCRICAO`), ''), CONCAT('#', t.`REGISTRO_ID`)),
                                                IF(COALESCE(t.`DETALHE`, '') = '', '', CONCAT(' — ', t.`DETALHE`)))
@@ -113,6 +124,7 @@ BEGIN
                            '\n\nVocê recebe este aviso porque responde por estes registros (Responsável do registro, atribuição ou regra de Responsáveis e avisos do módulo).'), 60000),
                CASE t.`AREA` WHEN 'LICENCAS' THEN '/principal/minhas_licencas.php' WHEN 'MEDICAO' THEN '/principal/minhas_medicoes.php'
                     WHEN 'CONTROLES' THEN '/principal/meus_controles.php' WHEN 'TREINAMENTOS' THEN '/principal/meus_treinamentos.php'
+                    WHEN 'HOMOLOGACAO' THEN '/principal/meus_fornecedores.php' WHEN 'LEGAL' THEN '/principal/meus_requisitos.php'
                     ELSE '/principal/minhas_infraestruturas.php' END,
                0
           FROM `tmp_resp_regras_avisos` t

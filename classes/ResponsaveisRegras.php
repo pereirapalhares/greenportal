@@ -9,6 +9,8 @@ declare(strict_types=1);
  *   - a regra é dinâmica: vale na hora para registros novos e antigos; nada é copiado para o registro;
  *   - os responsáveis da regra SOMAM com o Responsável do registro e com as atribuições (responsabilidade_atribuicoes);
  *   - Licenças: Tipo documental + unidade; Medição: Tipo de medição + unidade; Controles, Treinamentos e Infraestrutura: unidade;
+ *   - 24/11/2026 (onda 2): Homologação de fornecedores por Tipo de fornecedor + unidade (migração 406);
+ *     Requisitos legais por Categoria + unidade (migração 407);
  *   - os avisos (prazos, atribuição, alteração) são escolhidos em cada regra.
  *
  * Tabelas (database/361_responsaveis_regras.sql): resp_regras (AREA, REGISTRO_ID opcional = regra de um registro só, CODTIPO,
@@ -85,6 +87,44 @@ final class ResponsaveisRegras
             'entidades' => ['ml_infraestrutura', 'infraestrutura'],
             'ligacoes' => [['infraestruturaxunidades', 'CODINFRAESTRUTURA', 'CODUNIDADE'], ['legislacaoxinfraestruturas', 'CODINFRAESTRUTURA', 'CODUNIDADE']],
             'modulo_resp' => 'INFRAESTRUTURA', 'prazos' => false, 'historico' => true, 'responsavel' => ['codusuario', 'codusuario_responsavel', 'codresponsavel'],
+        ],
+        // Onda 2 da Revisão G (24/11/2026; HOM-132, HOM-138, HOM-140): fornecedores por Tipo de fornecedor (um fornecedor pode ter
+        // vários tipos: fo_fornecedoresxtipofornecedores) + unidade. Só fornecedores ativados. As regras entram na
+        // vw_responsabilidade_efetiva (ENTIDADE fo_fornecedores, módulo HOMOLOGACAO) e por ela chegam a Meus fornecedores, Meus
+        // funcionários, pendências, agenda e ao acesso do usuário interno restrito (vw_homologacao_responsabilidade_fornecedor).
+        'HOMOLOGACAO' => [
+            'nome' => ['pt' => 'Homologação de fornecedores', 'en' => 'Supplier approval', 'es' => 'Homologación de proveedores'],
+            'tabela' => 'fo_fornecedores', 'chave' => 'CODFORNECEDOR', 'descricao' => 'RAZAOSOCIAL', 'unidade' => 'codunidade',
+            'tipo' => ['codtipofornecedor', 'fo_tipofornecedores', 'CODTIPOFORNECEDOR', 'DSCTIPO'],
+            'tipo_ligacao' => ['fo_fornecedoresxtipofornecedores', 'codfornecedor', 'codtipofornecedor'],
+            'onde' => "COALESCE(x.`ativadofor`, 'Sim') = 'Sim'",
+            'tipo_rotulo' => ['pt' => 'Tipo de fornecedor', 'en' => 'Supplier type', 'es' => 'Tipo de proveedor'],
+            'menu' => 'HOMOLOGACAO_FORNECEDOR_FORNECEDOR', 'menu_minhas' => 'HOMOLOGACAO_FORNECEDOR_FORNECEDOR', 'menu_regras' => 'RESP_REGRAS_HOMOLOGACAO',
+            'grid' => 'vw_homologacao_fornecedores_grid', 'pagina' => '/principal/meus_fornecedores.php', 'tela' => '/principal/responsaveis_regras_homologacao.php',
+            'entidades' => ['fo_fornecedores'], 'ligacoes' => [], 'modulo_resp' => 'HOMOLOGACAO', 'prazos' => true, 'historico' => true,
+            'responsavel' => ['codusuario_responsavel_fornecedor'],
+            // Prazos: a política de e-mails do legado já avisa o Responsável do fornecedor; aqui vão para atribuições e regras.
+            'prazo_sem_registro' => true,
+        ],
+        // Onda 2 da Revisão G (24/11/2026; LEG-26, LEG-27, LEG-28 — migração 407): requisitos legais (lei × unidade da empresa,
+        // legislacaoxempresa) por Categoria + unidade. Categorias: catálogo central glegislacao_dbp.legislacao_categoria (só o
+        // ADMINISTRADOR mantém); vínculo lei × categoria da empresa (legislacaoxcategoria_empresa, a lei sem vínculo próprio usa o
+        // central legislacaoxcategoria) — vw_legislacao_categorias_empresa. Uma lei com várias categorias entra na regra de cada uma.
+        // As pessoas das regras entram em vw_ml_requisito_responsaveis (358) → Meus requisitos (RESPONSAVEL_IDS) e pendências.
+        'LEGAL' => [
+            'nome' => ['pt' => 'Requisitos legais', 'en' => 'Legal requirements', 'es' => 'Requisitos legales'],
+            'tabela' => 'legislacaoxempresa', 'chave' => 'CODLEGISLACAXEMPRESA', 'descricao' => 'CODLEGISLACAO', 'unidade' => 'codunidade',
+            'descricao_sql' => "COALESCE((SELECT CONCAT(lg.`CODIGO`, '') FROM `glegislacao_dbp`.`legislacao` lg WHERE lg.`CODLEGISLACAO` = x.`CODLEGISLACAO` LIMIT 1), CONCAT('Lei ', x.`CODLEGISLACAO`))",
+            'tipo' => ['codcategorialegislacao', 'vw_legislacao_categorias', 'CODCATEGORIALEGISLACAO', 'NOME'],
+            'tipo_ligacao' => ['vw_legislacao_categorias_empresa', 'CODLEGISLACAO', 'CODCATEGORIALEGISLACAO', 'CODLEGISLACAO'],
+            'tipo_rotulo' => ['pt' => 'Categoria', 'en' => 'Category', 'es' => 'Categoría'],
+            'menu' => 'REQUISITOS_LEGAIS', 'menu_minhas' => 'REQUISITOS_LEGAIS', 'menu_regras' => 'RESP_REGRAS_LEGAL',
+            'grid' => 'vw_modulolegal_requisitos_grid', 'pagina' => '/principal/meus_requisitos.php', 'tela' => '/principal/responsaveis_regras_legal.php',
+            'entidades' => ['legislacaoxempresa'], 'ligacoes' => [], 'modulo_resp' => 'REQUISITOS_LEGAIS', 'prazos' => true, 'historico' => false,
+            'responsavel' => [], 'prazo_sem_registro' => true,
+            // Muitos requisitos: as linhas do Legal só entram em vw_resp_regras_itens quando há regra ativa do Legal
+            // (a view é usada por toda a vw_responsabilidade_efetiva).
+            'so_com_regra' => true,
         ],
     ];
 
@@ -202,13 +242,26 @@ final class ResponsaveisRegras
             $c = self::colunas($pdo, $a['tabela']);
             $id = 'x.' . self::q($c[strtolower($a['chave'])]);
             $desc = isset($c[strtolower($a['descricao'])]) ? 'x.' . self::q($c[strtolower($a['descricao'])]) : "CONCAT('#', $id)";
+            if (!empty($a['descricao_sql'])) $desc = $a['descricao_sql'];
             if ($area === 'CONTROLES' && isset($c['codigo'], $c['titulo'])) $desc = "COALESCE(NULLIF(TRIM(x.`TITULO`), ''), x.`CODIGO`)";
             $tipo = 'NULL';
             if ($a['tipo'] && isset($c[strtolower($a['tipo'][0])])) $tipo = 'x.' . self::q($c[strtolower($a['tipo'][0])]);
             $onde = $area === 'LICENCAS' ? self::licencaAtiva($pdo, 'x') : '';
+            if (!empty($a['onde']) && isset($c['ativadofor'])) $onde = $a['onde'];
+            if (!empty($a['so_com_regra'])) $onde = ($onde !== '' ? "($onde) AND " : '') . "EXISTS (SELECT 1 FROM `resp_regras` rg WHERE rg.`AREA` = '$area' AND rg.`ATIVO` = 1)";
             if ($a['unidade'] !== null) {
                 $un = isset($c[strtolower($a['unidade'])]) ? 'x.' . self::q($c[strtolower($a['unidade'])]) : 'NULL';
                 $de = 'FROM ' . self::q($a['tabela']) . ' x';
+                // Tipo numa tabela de ligação (um registro com vários tipos): uma linha por tipo; sem tipo, uma linha com tipo NULL.
+                if (!empty($a['tipo_ligacao'])) {
+                    [$lt, $lk, $lv] = $a['tipo_ligacao'];
+                    $lx = $a['tipo_ligacao'][3] ?? null; // coluna do registro ligada à tabela de tipos (padrão: a chave)
+                    $lc = self::colunas($pdo, $lt);
+                    if (isset($lc[strtolower($lk)], $lc[strtolower($lv)]) && ($lx === null || isset($c[strtolower($lx)]))) {
+                        $de .= ' LEFT JOIN ' . self::q($lt) . ' tl ON tl.' . self::q($lc[strtolower($lk)]) . ' = ' . ($lx === null ? $id : 'x.' . self::q($c[strtolower($lx)]));
+                        $tipo = 'tl.' . self::q($lc[strtolower($lv)]);
+                    }
+                }
             } else {
                 $lig = [];
                 foreach ($a['ligacoes'] as [$t, $k, $u]) {
@@ -300,6 +353,28 @@ SELECT $lista, a.`CODUSUARIO_ACESSO`
         $v['vw_resp_acesso'] = 'CREATE OR REPLACE VIEW `vw_resp_acesso` AS ' . ($todas ? implode("\nUNION ALL\n", $todas)
             : 'SELECT ' . self::lit('') . ' AS `AREA`, CAST(0 AS SIGNED) AS `REGISTRO_ID`, CAST(0 AS SIGNED) AS `CODUSUARIO_ACESSO`, ' . self::lit('') . ' AS `ORIGEM` FROM DUAL WHERE 1 = 0');
         $v['vw_resp_regras_avisos_pendentes'] = self::viewAvisos($pdo, $areas);
+        // Requisitos legais (migração 407): as pessoas das regras do Legal entram em vw_ml_requisito_responsaveis (migração 358),
+        // de onde saem o RESPONSAVEL_IDS de vw_modulolegal_requisitos_grid (Meus requisitos) e as pendências.
+        if (in_array('LEGAL', $areas, true) && self::existe($pdo, 'vw_ml_requisito_responsaveis') && self::existe($pdo, 'legislacaoxsituacao')) {
+            $efetiva = self::existe($pdo, self::EFETIVA) ? "
+UNION
+SELECT s.`CODLEGISLACAO`, s.`codunidade`, e.`CODUSUARIO_DESTINO`
+  FROM `vw_responsabilidade_efetiva` e
+  JOIN `legislacaoxsituacao` s ON s.`CODSITUACAO` = CAST(e.`REGISTRO_ID` AS UNSIGNED)
+ WHERE e.`ENTIDADE` = 'legislacaoxsituacao' AND COALESCE(e.`CODUSUARIO_DESTINO`, 0) > 0" : '';
+            $v['vw_ml_requisito_responsaveis'] = "CREATE OR REPLACE VIEW `vw_ml_requisito_responsaveis` AS
+SELECT s.`CODLEGISLACAO`, s.`codunidade` AS `CODUNIDADE`, s.`CODUSUARIO`
+  FROM `legislacaoxsituacao` s
+ WHERE COALESCE(s.`CODUSUARIO`, 0) > 0$efetiva
+UNION
+SELECT x.`CODLEGISLACAO`, x.`codunidade`, ru.`CODUSUARIO`
+  FROM `vw_resp_regras_usuarios` ru
+  JOIN `legislacaoxempresa` x ON (ru.`REGISTRO_ID` IS NULL OR x.`CODLEGISLACAXEMPRESA` = ru.`REGISTRO_ID`)
+   AND (ru.`CODUNIDADE` IS NULL OR x.`codunidade` = ru.`CODUNIDADE`)
+ WHERE ru.`AREA` = 'LEGAL'
+   AND (ru.`CODTIPO` IS NULL" . (self::existe($pdo, 'vw_legislacao_categorias_empresa') ? " OR EXISTS (SELECT 1 FROM `vw_legislacao_categorias_empresa` c
+         WHERE c.`CODLEGISLACAO` = x.`CODLEGISLACAO` AND c.`CODCATEGORIALEGISLACAO` = ru.`CODTIPO`)" : '') . ")";
+        }
         return [$v, $sit];
     }
 
@@ -329,7 +404,7 @@ SELECT $lista, a.`CODUSUARIO_ACESSO`
         // Prazos (decisão de 16/11/2026): vão SEMPRE para quem responde pelo registro (Responsável do registro e atribuições,
         // de usuário ou grupo) e também para as pessoas das regras com "Prazos" marcado.
         $quem = static fn(string $area): string => "(SELECT `REGISTRO_ID`, `CODUSUARIO` FROM `vw_resp_regras_registros` WHERE `AREA` = '$area' AND `AVISO_PRAZO` = 1
-   UNION SELECT `REGISTRO_ID`, `CODUSUARIO_ACESSO` FROM `vw_resp_acesso_" . strtolower($area) . "` WHERE `ORIGEM` IN ('REGISTRO', 'ATRIBUICAO'))";
+   UNION SELECT `REGISTRO_ID`, `CODUSUARIO_ACESSO` FROM `vw_resp_acesso_" . strtolower($area) . "` WHERE `ORIGEM` IN (" . (empty(self::AREAS[$area]['prazo_sem_registro']) ? "'REGISTRO', " : '') . "'ATRIBUICAO'))";
         $prazo = static function (string $area, string $tipo, string $tabela, string $chave, string $desc, string $col, string $detalhe, string $janela) use ($quem): string {
             return 'SELECT CAST(d.`CODUSUARIO` AS SIGNED) AS `CODUSUARIO`, ' . self::lit($area) . ' AS `AREA`, CAST(d.`REGISTRO_ID` AS SIGNED) AS `REGISTRO_ID`, '
                 . self::lit($tipo) . ' AS `TIPO`, ' . self::txt("DATE_FORMAT(x.`$col`, '%Y-%m-%d')", 40) . ' AS `CHAVE`, ' . self::txt($desc) . ' AS `DESCRICAO`, '
@@ -353,6 +428,43 @@ SELECT $lista, a.`CODUSUARIO_ACESSO`
                 $p[] = $prazo('MEDICAO', 'REACAO', 'mm_monitoramento', 'CODMONITORAMENTO', $desc, 'DATA_REACAO', 'reação em', 'DATE(x.`DATA_REACAO`) BETWEEN CURDATE() - INTERVAL 7 DAY AND CURDATE()');
             if (isset($c['data_medicao']))
                 $p[] = $prazo('MEDICAO', 'MEDICAO', 'mm_monitoramento', 'CODMONITORAMENTO', $desc, 'DATA_MEDICAO', 'medição prevista em', 'DATE(x.`DATA_MEDICAO`) BETWEEN CURDATE() AND CURDATE() + INTERVAL 7 DAY');
+        }
+        if (in_array('HOMOLOGACAO', $areas, true)) {
+            $c = self::colunas($pdo, 'fo_fornecedores');
+            $desc = "COALESCE(NULLIF(TRIM(x.`NOMEFANTASIA`), ''), NULLIF(TRIM(x.`RAZAOSOCIAL`), ''), CONCAT('Fornecedor ', x.`CODFORNECEDOR`))";
+            $ativo = isset($c['ativadofor']) ? " AND COALESCE(x.`ativadofor`, 'Sim') = 'Sim'" : '';
+            if (isset($c['data_da_proxima_avaliacao']))
+                $p[] = $prazo('HOMOLOGACAO', 'AVALIACAO', 'fo_fornecedores', 'CODFORNECEDOR', $desc, 'data_da_proxima_avaliacao', 'próxima avaliação em', 'x.`data_da_proxima_avaliacao` BETWEEN CURDATE() AND CURDATE() + INTERVAL 30 DAY' . $ativo);
+            // Homologação por tipo de fornecedor (validade do tipo) e documentos (critérios) que vencem em até 30 dias
+            $lt = self::colunas($pdo, 'fo_fornecedoresxtipofornecedores');
+            if (isset($lt['datavalidade'], $lt['codfornecedor'])) {
+                $p[] = 'SELECT CAST(d.`CODUSUARIO` AS SIGNED) AS `CODUSUARIO`, ' . self::lit('HOMOLOGACAO') . ' AS `AREA`, CAST(d.`REGISTRO_ID` AS SIGNED) AS `REGISTRO_ID`, '
+                    . self::lit('VENCIMENTO') . ' AS `TIPO`, ' . self::txt("CONCAT(t.`codtipofornecedor`, '|', DATE_FORMAT(t.`datavalidade`, '%Y-%m-%d'))", 40) . ' AS `CHAVE`, ' . self::txt($desc) . ' AS `DESCRICAO`, '
+                    . self::txt("CONCAT('homologação', IF(tf.`DSCTIPO` IS NULL, '', CONCAT(' (', tf.`DSCTIPO`, ')')), ' vence em ', DATE_FORMAT(t.`datavalidade`, '%d/%m/%Y'))", 500) . " AS `DETALHE`
+  FROM " . $quem('HOMOLOGACAO') . " d JOIN `fo_fornecedores` x ON x.`CODFORNECEDOR` = d.`REGISTRO_ID`
+  JOIN `fo_fornecedoresxtipofornecedores` t ON t.`codfornecedor` = x.`CODFORNECEDOR`
+  LEFT JOIN `fo_tipofornecedores` tf ON tf.`CODTIPOFORNECEDOR` = t.`codtipofornecedor`
+ WHERE t.`datavalidade` BETWEEN CURDATE() AND CURDATE() + INTERVAL 30 DAY$ativo";
+            }
+            $cr = self::colunas($pdo, 'fo_fornecedorxcriterios');
+            if (isset($cr['datadevalidade'], $cr['codfornecedor'], $cr['codfornecedorxcriterios'])) {
+                $p[] = 'SELECT CAST(d.`CODUSUARIO` AS SIGNED) AS `CODUSUARIO`, ' . self::lit('HOMOLOGACAO') . ' AS `AREA`, CAST(d.`REGISTRO_ID` AS SIGNED) AS `REGISTRO_ID`, '
+                    . self::lit('DOCUMENTOS') . ' AS `TIPO`, ' . self::txt("CONCAT(k.`codfornecedorxcriterios`, '|', DATE_FORMAT(k.`datadevalidade`, '%Y-%m-%d'))", 40) . ' AS `CHAVE`, ' . self::txt($desc) . ' AS `DESCRICAO`, '
+                    . self::txt("CONCAT('documento vence em ', DATE_FORMAT(k.`datadevalidade`, '%d/%m/%Y'))", 500) . " AS `DETALHE`
+  FROM " . $quem('HOMOLOGACAO') . " d JOIN `fo_fornecedores` x ON x.`CODFORNECEDOR` = d.`REGISTRO_ID`
+  JOIN `fo_fornecedorxcriterios` k ON k.`codfornecedor` = x.`CODFORNECEDOR`
+ WHERE k.`datadevalidade` BETWEEN CURDATE() AND CURDATE() + INTERVAL 30 DAY
+   AND COALESCE(k.`situacao`, '') NOT IN ('NA', 'Não enviar ao fornecedor')$ativo";
+            }
+        }
+        if (in_array('LEGAL', $areas, true) && isset(self::colunas($pdo, 'legislacaoxsituacao')['data_de_vencimento_avaliacao'])) {
+            $desc = self::AREAS['LEGAL']['descricao_sql'];
+            $p[] = 'SELECT CAST(d.`CODUSUARIO` AS SIGNED) AS `CODUSUARIO`, ' . self::lit('LEGAL') . ' AS `AREA`, CAST(d.`REGISTRO_ID` AS SIGNED) AS `REGISTRO_ID`, '
+                . self::lit('AVALIACAO') . ' AS `TIPO`, ' . self::txt("DATE_FORMAT(s.`data_de_vencimento_avaliacao`, '%Y-%m-%d')", 40) . ' AS `CHAVE`, ' . self::txt($desc) . ' AS `DESCRICAO`, '
+                . self::txt("CONCAT('próxima avaliação em ', DATE_FORMAT(s.`data_de_vencimento_avaliacao`, '%d/%m/%Y'))", 500) . " AS `DETALHE`
+  FROM " . $quem('LEGAL') . " d JOIN `legislacaoxempresa` x ON x.`CODLEGISLACAXEMPRESA` = d.`REGISTRO_ID`
+  JOIN `legislacaoxsituacao` s ON s.`CODLEGISLACAO` = x.`CODLEGISLACAO` AND s.`codunidade` = x.`codunidade`
+ WHERE s.`data_de_vencimento_avaliacao` BETWEEN CURDATE() AND CURDATE() + INTERVAL 30 DAY";
         }
         // Alteração feita por outra pessoa (histórico obrigatório da 359), entre a última marca (HIST) e o limite desta execução (HIST_ATE)
         if (self::existe($pdo, 'historico_alteracoes')) {

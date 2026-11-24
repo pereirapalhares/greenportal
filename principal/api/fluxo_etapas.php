@@ -8,7 +8,7 @@ declare(strict_types=1);
  * planos de ação, situação do requisito legal, critérios do fornecedor, dados da ocorrência.
  * Só leitura (sp_crud_select com filtro exato, ou SELECT em view). Cada fato que não puder ser lido volta null
  * ("não sei") — a barra não marca a etapa como feita nem como pendente.
- * GET: modulo = legal|licencas|medicao|controles|treinamentos|infraestrutura|fornecedor|rnc; id; leg e unid (legal).
+ * GET: modulo = legal|licencas|medicao|controles|treinamentos|infraestrutura|fornecedor|funcionario|rnc; id; leg e unid (legal).
  */
 
 if (session_status() !== PHP_SESSION_ACTIVE) session_start();
@@ -20,7 +20,7 @@ $modulo = strtolower(trim((string)($_GET['modulo'] ?? '')));
 $id = max(0, (int)($_GET['id'] ?? 0));
 $leg = max(0, (int)($_GET['leg'] ?? 0));
 $unid = max(0, (int)($_GET['unid'] ?? 0));
-if (!in_array($modulo, ['legal', 'licencas', 'medicao', 'controles', 'treinamentos', 'infraestrutura', 'fornecedor', 'rnc'], true)
+if (!in_array($modulo, ['legal', 'licencas', 'medicao', 'controles', 'treinamentos', 'infraestrutura', 'fornecedor', 'funcionario', 'rnc'], true)
     || ($modulo === 'legal' ? ($leg < 1 || $unid < 1) : $id < 1)) { http_response_code(400); echo json_encode(['ok' => false]); exit; }
 
 require_once dirname(__DIR__, 2) . '/classes/GreenPortalDatabase.php';
@@ -168,6 +168,39 @@ try {
             }
             $f['risco'] = $risco('HOMOLOGACAO', $id);
             $f['planos'] = $planos($ler('fo_planodeacao', ['codfornecedor' => $id], 200));
+            break;
+
+        case 'funcionario':
+            // Funcionário da empresa homologada: critérios (documentos) e treinamentos do tipo de função.
+            // Critérios com "Desligado", "Afastado" ou "NAP" (não se aplica) não contam.
+            $fu = ($ler('fo_funcionarios', ['CODFUNCIONARIO' => $id], 2) ?? [null])[0];
+            $f['tipo'] = $fu === null ? null : !$vazio($col($fu, 'CODTIPOFUNCIONARIO'));
+            if ($fu !== null && !$f['tipo']) { $t = $ler('fo_funcionariosxtipofuncionarios', ['codfuncionario' => $id], 20); $f['tipo'] = $t === null ? null : count($t) > 0; }
+            // DATA_VALIDADE do funcionário = "Data de realização da integração".
+            $f['integracao'] = $fu === null ? null : (!$vazio($col($fu, 'DATA_VALIDADE')) || strtoupper(trim((string)$col($fu, 'INTEGRACAO'))) === 'SIM');
+            $cri = $ler('fo_funcionarioxtiposxcriterios', ['codfuncionario' => $id], 2000);
+            if ($cri === null) $f['criterios'] = null;
+            else {
+                $ativos = array_values(array_filter($cri, static fn($c) => !in_array(strtoupper(trim((string)$col($c, 'atendeaocriterio'))), ['DESLIGADO', 'AFASTADO', 'NAP'], true)));
+                $f['criterios'] = count($ativos);
+                $f['cri_responsavel'] = count(array_filter($ativos, static fn($c) => !$vazio($col($c, 'responsaveldocumentacaofornecedor')) || !$vazio($col($c, 'codusuario_responsavel_fornecedor')) || !$vazio($col($c, 'codusuario'))));
+                $f['cri_validade'] = count(array_filter($ativos, static fn($c) => !$vazio($col($c, 'datadevalidade'))));
+                $f['cri_aprovados'] = count(array_filter($ativos, static fn($c) => in_array(strtoupper(trim((string)$col($c, 'atendeaocriterio'))), ['SIM'], true)));
+                $ev = 0; $semPermissao = false;
+                foreach ($ativos as $c) { $n = $arquivos('funcionariocriterios', 'fo_funcionarioxtiposxcriterios', (int)$col($c, 'codigo')); if ($n === null) { $semPermissao = true; break; } if ($n > 0) $ev++; }
+                $f['cri_evidencias'] = $semPermissao ? null : $ev;
+            }
+            $tre = $ler('fo_funcionarioxtiposxtreinamentos', ['codfuncionario' => $id], 1000);
+            if ($tre === null) $f['treinamentos'] = null;
+            else {
+                $f['treinamentos'] = count($tre);
+                $f['tre_responsavel'] = count(array_filter($tre, static fn($t) => !$vazio($col($t, 'responsaveltreinamento')) || !$vazio($col($t, 'codusuario'))));
+                $f['tre_realizado'] = count(array_filter($tre, static fn($t) => strtoupper(trim((string)$col($t, 'treinamentorealizado'))) === 'SIM'));
+                $f['tre_validade'] = count(array_filter($tre, static fn($t) => !$vazio($col($t, 'datadevalidadetreinamento'))));
+                $ev = 0; $semPermissao = false;
+                foreach ($tre as $t) { $n = $arquivos('funcionariotreinamentos', 'fo_funcionarioxtiposxtreinamentos', (int)$col($t, 'codigo')); if ($n === null) { $semPermissao = true; break; } if ($n > 0) $ev++; }
+                $f['tre_evidencias'] = $semPermissao ? null : $ev;
+            }
             break;
 
         case 'rnc':

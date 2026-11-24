@@ -59,6 +59,15 @@
     var NAO_EXISTE = tr('campo_novo', 'Campo ainda n\u00e3o existe no cadastro (onda 3: novos campos)', 'Field not in the form yet', 'Campo a\u00fan no existe en el registro');
     var SEM_AUDITORIA = tr('sem_auditoria', 'O m\u00f3dulo de Auditoria ainda n\u00e3o existe', 'The Audit module does not exist yet', 'El m\u00f3dulo de Auditor\u00eda a\u00fan no existe');
 
+    // Etapa de conjunto (funcionário): feita quando todos os critérios/treinamentos ativos têm o dado; sem nenhum, não se aplica.
+    function FU(campo, total) {
+        return function (l, f) {
+            if (f[total] === null || f[total] === undefined || f[campo] === null || f[campo] === undefined) return null;
+            if (!n(f[total])) return NA;
+            return n(f[campo]) >= n(f[total]);
+        };
+    }
+
     /* ---------- workflows (planilha Revisão G) ---------- */
     var MODULOS = [
         { sel: '.modulo-legal-requisitos-fragment', modulo: 'legal', nome: tr('m.legal', 'Requisito legal', 'Legal requirement', 'Requisito legal'),
@@ -148,6 +157,21 @@
                 [tr('fo.11', 'Define a pr\u00f3xima avalia\u00e7\u00e3o', 'Sets the next evaluation', 'Define la pr\u00f3xima evaluaci\u00f3n'), 0, function (l, f) { return f.proxima === null || f.proxima === undefined ? preenchido(l, ['DATA_DA_PROXIMA_AVALIACAO']) : f.proxima; }],
                 [tr('fo.12', 'Abre plano de a\u00e7\u00e3o', 'Opens an action plan', 'Abre plan de acci\u00f3n'), 1, function (l, f) { return f.planos ? n(f.planos[0]) > 0 : null; }],
                 [tr('fo.13', 'Encerra o plano de a\u00e7\u00e3o', 'Closes the action plan', 'Cierra el plan de acci\u00f3n'), 0, function (l, f) { if (!f.planos) return null; if (!n(f.planos[0])) return NA; return n(f.planos[1]) >= n(f.planos[0]); }]
+            ] },
+        { sel: '.homologacao-funcionario-grid-fragment', modulo: 'funcionario', nome: tr('m.funcionario', 'Homologa\u00e7\u00e3o do funcion\u00e1rio', 'Contractor employee approval', 'Homologaci\u00f3n del empleado'),
+            params: function (l) { var id = chave(l, 'CODFUNCIONARIO'); return id ? { id: id } : null; },
+            etapas: [
+                [tr('fu.1', 'Cadastra o funcion\u00e1rio', 'Registers the employee', 'Registra el empleado'), 0, function () { return true; }],
+                [tr('fu.2', 'Define os crit\u00e9rios (tipo de fun\u00e7\u00e3o)', 'Sets criteria (job type)', 'Define los criterios (tipo de funci\u00f3n)'), 0, function (l, f) { return f.tipo === null || f.tipo === undefined ? preenchido(l, ['CODTIPOFUNCIONARIO']) : f.tipo; }],
+                [tr('fu.3', 'Define a data da integra\u00e7\u00e3o', 'Sets the induction date', 'Define la fecha de integraci\u00f3n'), 0, function (l, f) { return f.integracao === null || f.integracao === undefined ? preenchido(l, ['DATA_VALIDADE']) : f.integracao; }],
+                [tr('fu.4', 'Define o respons\u00e1vel pela documenta\u00e7\u00e3o', 'Assigns the documentation owner', 'Define el responsable de la documentaci\u00f3n'), 0, FU('cri_responsavel', 'criterios')],
+                [tr('fu.5', 'Define a validade dos documentos', 'Sets document due dates', 'Define la validez de los documentos'), 0, FU('cri_validade', 'criterios')],
+                [tr('fu.6', 'Carrega as evid\u00eancias dos documentos', 'Uploads document evidence', 'Carga las evidencias de los documentos'), 0, FU('cri_evidencias', 'criterios')],
+                [tr('fu.7', 'Aprova os documentos', 'Approves the documents', 'Aprueba los documentos'), 0, FU('cri_aprovados', 'criterios')],
+                [tr('fu.8', 'Define o respons\u00e1vel pelo treinamento', 'Assigns the training owner', 'Define el responsable de la capacitaci\u00f3n'), 0, FU('tre_responsavel', 'treinamentos')],
+                [tr('fu.9', 'Informa se o treinamento foi realizado', 'Records whether training was done', 'Informa si la capacitaci\u00f3n fue realizada'), 0, FU('tre_realizado', 'treinamentos')],
+                [tr('fu.10', 'Define a validade dos treinamentos', 'Sets training due dates', 'Define la validez de las capacitaciones'), 0, FU('tre_validade', 'treinamentos')],
+                [tr('fu.11', 'Carrega as evid\u00eancias dos treinamentos', 'Uploads training evidence', 'Carga las evidencias de las capacitaciones'), 0, FU('tre_evidencias', 'treinamentos')]
             ] },
         { sel: '.nao-conformidades-grid-fragment', modulo: 'rnc', nome: tr('m.rnc', 'Ocorr\u00eancia (RNC)', 'Nonconformity', 'No conformidad'),
             params: function (l) { var id = chave(l, 'CODOCORRENCIA'); return id ? { id: id } : null; },

@@ -21,6 +21,10 @@ declare(strict_types=1);
  * Ajuda da tela (transação responsaveis_regras) no universal: database/361_ajuda_responsaveis_regras.php.
  * 16/11/2026: avisos de prazo também para o Responsável do registro e as atribuições (decisão do usuário); lista de pessoas
  * da tela sem as contas de fornecedor (vw_resp_regras_pessoas). Rodar de novo para aplicar.
+ * 24/11/2026 (migração 406, onda 2 da Revisão G): área HOMOLOGACAO (fornecedores por Tipo de fornecedor + unidade) e restrição
+ * da tabela pronta para LEGAL; rodar de novo (ou scripts\aplicar-migracao-406-responsaveis-homologacao.php).
+ * 24/11/2026 (migração 407): área LEGAL (requisitos por Categoria + unidade; database/407_legislacao_categorias_empresa.sql) e
+ * vw_ml_requisito_responsaveis com as pessoas das regras do Legal (scripts\aplicar-migracao-407-responsaveis-legal.php).
  * Pode ser executada mais de uma vez. Depois: sair e entrar no portal (o menu fica na sessão).
  *
  * Uso: E:\wamp\bin\php\php8.4.15\php.exe scripts\aplicar-migracao-361-responsaveis-regras.php [--simular] [--banco=gcrown_dbp]
@@ -56,10 +60,10 @@ try {
     $u = $cat->universal();
     $u->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     foreach (ResponsaveisRegras::AREAS as $area => $a) {
-        $existe = MigracaoCrud::primeiro($u, 'menus', ['codigo' => $a['menu_regras']]);
+        $existe = menuExato361($u, $a['menu_regras']);
         if ($existe) $menusUniversal[$area] = (int)$existe['codmenu'];
         if ($remover) { $rel['universal']['menus'][$area] = !$existe ? 'não existe' : ($soBanco !== null ? 'mantido (--banco)' : ($simular ? 'será excluído' : 'a excluir')); continue; }
-        $mod = MigracaoCrud::primeiro($u, 'menus', ['codigo' => $a['menu']]);
+        $mod = menuExato361($u, $a['menu']);
         if (!$mod) { $rel['universal']['menus'][$area] = 'ignorado: menu ' . $a['menu'] . ' não existe no catálogo'; continue; }
         $mod = array_change_key_case($mod);
         $nome = $a['nome'];
@@ -99,7 +103,7 @@ foreach ($bancos as $banco) {
         $pdo->exec('SET NAMES utf8mb4');
         ResponsaveisRegras::limparCache();
         $areas = ResponsaveisRegras::areas($pdo);
-        if (!array_filter($areas, static fn($s) => $s === 'ok')) { $rel['bancos'][$banco] = ['ignorado' => 'sem nenhum dos cinco módulos']; continue; }
+        if (!array_filter($areas, static fn($s) => $s === 'ok')) { $rel['bancos'][$banco] = ['ignorado' => 'sem nenhum dos módulos']; continue; }
 
         if ($remover) { $rel['bancos'][$banco] = remover361($pdo, $banco, $logDir, $simular, $apagar); continue; }
 
@@ -130,6 +134,18 @@ foreach ($bancos as $banco) {
         }
         ResponsaveisRegras::limparCache();
         $info['fixa'] = $n . ' bloco(s): tabelas e sp_resp_regras_avisar';
+        // Migração 407 (24/11/2026): vínculo lei × categoria da empresa e views das categorias (para a área LEGAL).
+        $sql407 = dirname(__DIR__) . '/database/407_legislacao_categorias_empresa.sql';
+        if (is_file($sql407) && ResponsaveisRegras::existe($pdo, 'legislacaoxempresa')) {
+            $ok407 = 0;
+            foreach (preg_split('/^-- @@\s*$/m', (string)file_get_contents($sql407)) as $bloco) {
+                $cmd = trim((string)preg_replace('/^--(?! @@).*$/m', '', $bloco));
+                if ($cmd === '') continue;
+                try { $pdo->exec($cmd); $ok407++; } catch (Throwable $e) { $rel['ok'] = false; $info['categorias_407'][] = 'ERRO: ' . mb_substr($e->getMessage(), 0, 200); }
+            }
+            ResponsaveisRegras::limparCache();
+            $info['categorias_407'][] = $ok407 . ' bloco(s): legislacaoxcategoria_empresa, vw_legislacao_categorias, vw_legislacao_categorias_empresa';
+        }
         $info['areas'] = $areas;
         // 2. views das regras
         foreach (ResponsaveisRegras::viewsRegras($pdo) as $nome => $ddl) { $pdo->exec($ddl); $info['views'][$nome] = 'ok'; }
@@ -166,6 +182,13 @@ elseif ($remover && !$simular) {
         try { $x = $cat->excluir($cod); $rel['universal']['menus'][$area] = 'excluído (' . count($x['empresas']) . ' empresa(s))'; }
         catch (Throwable $e) { $rel['ok'] = false; $rel['universal']['menus'][$area] = 'ERRO ao excluir: ' . $e->getMessage(); }
     }
+}
+
+/** Menu pelo código exato (24/11/2026: o filtro de texto é por trecho — LICENCAS também acha HOME_LICENCAS, da migração 381). */
+function menuExato361(PDO $p, string $codigo): ?array
+{
+    foreach (MigracaoCrud::selecionar($p, 'menus', ['codigo' => $codigo]) as $m) if (strcasecmp((string)(array_change_key_case($m)['codigo'] ?? ''), $codigo) === 0) return $m;
+    return null;
 }
 
 /** Ajuda: trecho entre <!-- ml361 --> e <!-- /ml361 --> no texto da transação (só esse trecho é trocado ao rodar de novo). */
@@ -209,8 +232,8 @@ function permissoes361(PDO $pdo): array
 {
     $out = [];
     foreach (ResponsaveisRegras::AREAS as $area => $a) {
-        $novo = MigracaoCrud::primeiro($pdo, 'menus', ['codigo' => $a['menu_regras']]);
-        $orig = MigracaoCrud::primeiro($pdo, 'menus', ['codigo' => $a['menu']]);
+        $novo = menuExato361($pdo, $a['menu_regras']);
+        $orig = menuExato361($pdo, $a['menu']);
         if (!$novo || !$orig) { $out[$area] = !$novo ? 'menu ainda não replicado neste banco' : 'sem o menu ' . $a['menu']; continue; }
         $cont = 0;
         foreach (['permissoes', 'perfil_menus'] as $t) {
@@ -252,7 +275,7 @@ function remover361(PDO $pdo, string $banco, string $logDir, bool $simular, call
     $info['responsaveis_automaticos_345'] = refazer345($pdo);
     $cont = 0;
     foreach (ResponsaveisRegras::AREAS as $a) {
-        $m = MigracaoCrud::primeiro($pdo, 'menus', ['codigo' => $a['menu_regras']]);
+        $m = menuExato361($pdo, $a['menu_regras']);
         if (!$m) continue;
         foreach (['permissoes', 'perfil_menus'] as $t) {
             if (!MigracaoCrud::existe($pdo, $t)) continue;
