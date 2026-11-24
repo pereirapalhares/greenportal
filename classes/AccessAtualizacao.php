@@ -234,8 +234,10 @@ final class AccessAtualizacao
         if ($arqs['MODELO'] && is_file(self::caminho($arqs['MODELO']))) {
             $modelo = self::lerModelo(self::caminho($arqs['MODELO']));
             $log('leis_modelo.mdb: ' . count($modelo) . ' lei(s).');
-        } elseif ($fonte === 'MODELO') {
-            throw new RuntimeException('leis_modelo.mdb não encontrado.');
+        } else {
+            // 24/11/2026 (decisão do usuário): as inclusões são só as leis do mês (as do leis_modelo.mdb), como no .NET,
+            // nas duas fontes; sem o modelo não há o que incluir
+            throw new RuntimeException('leis_modelo.mdb não encontrado. Envie o arquivo na aba leis_modelo.mdb.');
         }
         $idsCodigo = self::codigosPorId();
         // alterações da última importação aplicada
@@ -301,21 +303,27 @@ final class AccessAtualizacao
                     if (!@copy($caminho, $trabalho)) throw new RuntimeException('não foi possível copiar o arquivo');
                     $cn = self::abrir($trabalho, !$aplicar);
                     if ($aplicar) self::garantirColunas($cn);
-                    $tem = self::codigosNoMdb($cn);
+                    $ctlAtual = [];
+                    $tem = self::codigosNoMdb($cn, $ctlAtual);
                     $colunas = self::colunasMdb($cn);
                     $rsNovo = null;
                     $r['leis_antes'] = count($tem);
                     $semFonte = [];
                     // 1. inclusões
+                    $foraDoMes = 0;
                     foreach (array_keys($leisUn[$codun] ?? []) as $cod) {
                         if (isset($tem[$cod])) continue;
+                        // só as leis do mês (leis_modelo.mdb); as vinculadas antigas que a unidade não tem ficam como estão
+                        if (!isset($modelo[$cod])) { $foraDoMes++; continue; }
                         $f = $fonteDe($cod);
                         if ($f === null) { $r['sem_fonte']++; $semFonte[] = $cod; continue; }
                         if ($aplicar) {
                             if ($rsNovo === null) { $rsNovo = new COM('ADODB.Recordset', null, CP_UTF8); $rsNovo->Open('SELECT * FROM [' . self::TABELA_MDB . '] WHERE 1 = 0', $cn, 1 /* adOpenKeyset */, 3 /* adLockOptimistic */); }
-                            $rsNovo->AddNew();
-                            self::preencher($rsNovo, $colunas, $f, $un['nome'], true, $fonte);
-                            $rsNovo->Update();
+                            try {
+                                $rsNovo->AddNew();
+                                self::preencher($rsNovo, $colunas, $f, $un['nome'], true, $fonte);
+                                $rsNovo->Update();
+                            } catch (Throwable $e) { try { $rsNovo->CancelUpdate(); } catch (Throwable) {} throw new RuntimeException('lei ' . $cod . ' (inclusão): ' . self::erroCom($e), 0, $e); }
                         }
                         $tem[$cod] = true; $r['incluidas']++;
                     }
@@ -323,6 +331,9 @@ final class AccessAtualizacao
                     // 2. controles
                     foreach (($poderUn[$codun] ?? []) as $cod => $val) {
                         if (!isset($tem[$cod])) continue;
+                        // 24/11/2026: só grava (e conta) quando o valor muda; lei incluída agora sempre recebe o controle
+                        $novoCtl = mb_substr($val, 0, 12);
+                        if (isset($ctlAtual[$cod]) && mb_strtolower($ctlAtual[$cod]) === mb_strtolower($novoCtl)) continue;
                         if ($aplicar) self::executarSql($cn, 'UPDATE [' . self::TABELA_MDB . '] SET [DIRETA / INDIRETA] = ' . self::lit(mb_substr($val, 0, 12)) . ' WHERE [N°] = ' . self::lit($cod));
                         $r['controles']++;
                     }
@@ -336,10 +347,14 @@ final class AccessAtualizacao
                         }
                         $f = $fonteDe($cod);
                         if ($f === null) continue;
-                        if ($aplicar) self::alterar($cn, $colunas, $cod, $f, $un['nome'], $fonte);
+                        if ($aplicar) {
+                            try { self::alterar($cn, $colunas, $cod, $f, $un['nome'], $fonte); }
+                            catch (Throwable $e) { throw new RuntimeException('lei ' . $cod . ' (alteração): ' . self::erroCom($e), 0, $e); }
+                        }
                         $r['alteradas']++;
                     }
                     $r['leis_depois'] = count($tem);
+                    $r['vinculadas_fora_do_mes'] = $foraDoMes;
                     if ($semFonte) $r['sem_fonte_exemplos'] = array_slice($semFonte, 0, 15);
                     $cn->Close();
                     $cn = null;
@@ -360,7 +375,7 @@ final class AccessAtualizacao
                 @unlink($trabalho);
                 foreach (['incluidas', 'controles', 'revogadas', 'alteradas', 'sem_fonte'] as $k) $resumo['totais'][$k] += $r[$k];
                 $resumo['unidades'][] = $r;
-                $log($chaveUn . ': ' . ($r['erro'] ? 'ERRO — ' . $r['erro'] : sprintf('%d incluída(s), %d controle(s), %d revogada(s), %d alterada(s)%s', $r['incluidas'], $r['controles'], $r['revogadas'], $r['alteradas'], $r['sem_fonte'] ? ', ' . $r['sem_fonte'] . ' sem dados na fonte' : '')));
+                $log($chaveUn . ': ' . ($r['erro'] ? 'ERRO — ' . $r['erro'] : sprintf('%d incluída(s), %d controle(s), %d revogada(s), %d alterada(s)%s', $r['incluidas'], $r['controles'], $r['revogadas'], $r['alteradas'], $r['sem_fonte'] ? ', ' . $r['sem_fonte'] . ' sem dados na fonte' : '') . (!empty($r['vinculadas_fora_do_mes']) ? '; ' . $r['vinculadas_fora_do_mes'] . ' vinculada(s) que não são do mês ficaram de fora' : '')));
                 self::atualizarPedido($id, ['resumo' => self::json($resumo)]);
             }
         }
@@ -518,11 +533,13 @@ final class AccessAtualizacao
         return $out;
     }
 
-    private static function codigosNoMdb(object $cn): array
+    private static function codigosNoMdb(object $cn, ?array &$controle = null): array
     {
-        $tem = [];
-        $rs = $cn->Execute('SELECT [N°] FROM [' . self::TABELA_MDB . ']');
-        while (!$rs->EOF) { $c = strtoupper(trim((string)$rs->Fields(0)->Value)); if ($c !== '') $tem[$c] = true; $rs->MoveNext(); }
+        $tem = []; $controle = [];
+        $comCtl = true;
+        try { $rs = $cn->Execute('SELECT [N°], [DIRETA / INDIRETA] FROM [' . self::TABELA_MDB . ']'); }
+        catch (Throwable) { $comCtl = false; $rs = $cn->Execute('SELECT [N°] FROM [' . self::TABELA_MDB . ']'); } // .mdb antigo sem a coluna
+        while (!$rs->EOF) { $c = strtoupper(trim((string)$rs->Fields(0)->Value)); if ($c !== '') { $tem[$c] = true; if ($comCtl) $controle[$c] = trim((string)$rs->Fields(1)->Value); } $rs->MoveNext(); }
         $rs->Close();
         return $tem;
     }
@@ -573,9 +590,10 @@ final class AccessAtualizacao
             $temNaFonte = array_key_exists($col, $f) || ($col === 'DATA DE AVALIAÇÃO' && array_key_exists('DATA_DE_AVALIACAO', $f));
             if (!$inclusao && $fonte === 'PORTAL' && !$temNaFonte) continue;                // portal: só os campos que vêm dele
             $v = self::valorColuna($f, $col);
-            if (!$inclusao && in_array($col, self::CAMPOS_AVALIACAO, true) && ($v === null || $v === '')) continue; // não apaga a avaliação
-            if ($inclusao && ($v === null || $v === '')) {
-                if ($col === 'Manter') $v = false; else continue;
+            // Valor vazio na fonte: não grava. Na alteração mantém o que a unidade já tem (o Access também recusa texto vazio
+            // nos campos com "Permitir comprimento zero = Não", ex.: N° DA NORMA — erro do processamento nº 3, 24/11/2026)
+            if ($v === null || (is_string($v) && trim($v) === '')) {
+                if ($inclusao && $col === 'Manter') $v = false; else continue;
             }
             $tamanho = (int)$rs->Fields($real)->DefinedSize;
             if (is_string($v) && $tamanho > 0 && $tamanho < 65535 && mb_strlen($v) > $tamanho) $v = mb_substr($v, 0, $tamanho);

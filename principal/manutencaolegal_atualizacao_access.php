@@ -199,10 +199,34 @@ $emAndamento = (bool)array_filter($lista, static fn($p) => in_array($p['status']
 $base = basename(__FILE__);
 // Processamentos
 $rowsProc = [];
+// 24/11/2026 (pedido do usuário): coluna Empresa / unidade — as unidades do processamento. Concluído: as do resultado;
+// na fila ou processando: as unidades com .mdb das empresas pedidas (a que está sendo atualizada agora vem marcada com ▶).
+$unidadesProc = static function (array $p) use ($arqs, $migradas): array {
+    $res = json_decode((string)($p['resumo'] ?? ''), true);
+    $feitas = [];
+    foreach ((array)($res['unidades'] ?? []) as $u) $feitas[] = ['emp' => (string)$u['empresa'], 'un' => (string)$u['unidade'], 'erro' => !empty($u['erro'])];
+    $andamento = in_array($p['status'], ['SOLICITADO', 'PROCESSANDO'], true);
+    if (!$andamento) return ['lista' => $feitas, 'atual' => null];
+    $previstas = [];
+    foreach ((array)(json_decode((string)($p['empresas'] ?? ''), true) ?: []) as $codemp) {
+        foreach (($arqs['UNIDADES'][(int)$codemp] ?? []) as $a) $previstas[] = ['emp' => (string)($migradas[(int)$codemp]['nome'] ?? $codemp), 'un' => (string)$a['unidade_nome'], 'erro' => false];
+    }
+    $atual = $p['status'] === 'PROCESSANDO' && isset($previstas[count($feitas)]) ? count($feitas) : null;
+    return ['lista' => $previstas ?: $feitas, 'atual' => $atual];
+};
 foreach ($lista as $p) {
     $id = (int)$p['codprocessamento'];
+    $up = $unidadesProc($p);
+    $partes = []; $htmlUn = [];
+    foreach ($up['lista'] as $i => $u) {
+        $txt = $u['emp'] === $u['un'] ? $u['un'] : $u['emp'] . ' › ' . $u['un'];
+        $partes[] = $txt;
+        $htmlUn[] = ($up['atual'] === $i ? '<strong class="text-success">▶ ' . $e($txt) . '</strong>' : ($u['erro'] ? '<span class="text-danger">' . $e($txt) . '</span>' : $e($txt)));
+    }
+    $textoUn = implode('; ', $partes);
     $rowsProc[] = ['cells' => [
         'COD' => ['text' => (string)$id, 'sort' => str_pad((string)$id, 8, '0', STR_PAD_LEFT)],
+        'UNIDADES' => ['text' => $textoUn, 'html' => implode('; ', $htmlUn), 'title' => $textoUn],
         'TIPO' => $modoTxt((string)$p['modo']), 'FONTE' => $fonteTxt((string)$p['fonte']), 'STATUS' => $stCell($p['status']),
         'PEDIDO' => $dtCell($p['solicitado_em']), 'POR' => (string)$p['solicitado_por_nome'], 'FIM' => $dtCell($p['fim']),
         'ARQUIVOS' => DashboardGrid::numero((int)($p['total_arquivos'] ?? 0)), 'ERROS' => DashboardGrid::numero((int)($p['total_erros'] ?? 0), 'status-danger'),
@@ -218,6 +242,7 @@ $extrasProc = '<button type="button" class="btn btn-sm btn-outline-primary grid-
     . '<button type="button" class="btn btn-sm btn-outline-success grid-crud-button" data-processar="APLICAR"' . ($bloq ? ' disabled' : '') . ' title="' . $e($bloq ? $motivoBloq : $tAtu) . '" aria-label="' . $e($tAtu) . '"><i class="bi bi-database-up"></i></button>';
 $gridProc = DashboardGrid::grid('accessProcessamentos', [
     'COD' => ['label' => 'Nº', 'width' => '70px'],
+    'UNIDADES' => ['label' => $L('Empresa / unidade', 'Company / unit', 'Empresa / unidad'), 'width' => '260px'],
     'TIPO' => ['label' => $L('Tipo', 'Type', 'Tipo'), 'filter' => 'select', 'width' => '110px'],
     'FONTE' => ['label' => $L('Fonte', 'Source', 'Fuente'), 'filter' => 'select', 'width' => '120px'],
     'STATUS' => ['label' => 'Status', 'filter' => 'select', 'width' => '150px'],
@@ -406,5 +431,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 </script>
+<?php if ($emAndamento): ?><script>/* 24/11/2026: com processamento na fila ou em andamento, o grid acompanha sozinho (a cada 15 s), sem atrapalhar quem está usando a tela */
+setInterval(function () { if (document.hidden || document.querySelector('.modal.show')) return; var p = document.querySelector('[data-subaba-painel]:not([hidden]) #accessProcessamentos'); if (p || !document.querySelector('[data-subaba-painel]')) window.location.reload(); }, 15000);</script><?php endif; ?>
 </body>
 </html>
