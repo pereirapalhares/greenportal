@@ -11,3 +11,11 @@ ErrorDocument 503 /greenportal/erro.php?status=503
     Header always unset X-Powered-By
     Header always unset Server
 </IfModule>
+
+# Limite de envio de arquivos (ex.: .mdb das unidades na Atualização do Access)
+<IfModule php_module>
+    php_value upload_max_filesize 100M
+    php_value post_max_size 110M
+    php_value max_input_time 600
+    php_value max_execution_time 600
+</IfModule>

@@ -76,7 +76,43 @@ final class ManutencaoLegalCadastroGrid
         // Cadastros da base compartilhada de legislação (prefixo GLEGISLACAO: tipos, âmbitos, assuntos) ficam no banco
         // da própria configuração; os demais (prefixo GPT) sempre no banco do cliente da sessão.
         if (strtoupper((string)$cfg['prefix']) !== 'GPT' && preg_match('/^[A-Za-z0-9_]+$/', (string)($cfg['database'] ?? ''))) $tenantDatabase = (string)$cfg['database'];
+        // 23/11/2026 'multi_empresa' => true (Administração › Unidades): só o ADMINISTRADOR; combo Empresa com as empresas
+        // migradas (guniversal_dbp.vw_empresas_login_migradas, as mesmas da Legislação) e o grid trabalha no banco da empresa
+        // escolhida (leitura, gravação, exclusão e exportação). A escolha vem de ?empresa= e fica guardada na sessão por transação.
+        $multiEmpresa = null;
+        if (!empty($cfg['multi_empresa']) && strtoupper((string)$cfg['prefix']) === 'GPT') {
+            if (strtoupper(trim((string)($_SESSION['usuario']['codigo_perfil'] ?? ''))) !== 'ADMINISTRADOR') {
+                http_response_code(403);
+                exit(htmlspecialchars(IdiomaService::t('comum.erro.sem_permissao', ['pt' => 'Seu perfil não tem permissão para acessar esta transação.', 'en' => 'Your profile is not allowed to access this transaction.', 'es' => 'Su perfil no tiene permiso para acceder a esta transacción.']), ENT_QUOTES, 'UTF-8'));
+            }
+            require_once __DIR__ . '/LegislacaoEmpresas.php';
+            $empresasMulti = LegislacaoEmpresas::migradas();
+            $chaveMulti = 'multi_empresa_' . (string)($cfg['transaction'] ?? $cfg['menu']);
+            // Ao abrir a tela (navegação sem ?empresa=) o combo volta sempre para a empresa em que o usuário está logado (pedido
+            // de 23/11); chamadas internas da tela (AJAX/POST sem ?empresa=) seguem a última empresa escolhida, guardada na sessão.
+            $abrindoMulti = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' && strtolower((string)($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) !== 'xmlhttprequest'
+                && in_array(strtolower((string)($_SERVER['HTTP_SEC_FETCH_DEST'] ?? 'document')), ['document', 'iframe', 'frame'], true);
+            $pedidaMulti = isset($_GET['empresa']) ? (int)$_GET['empresa'] : ($abrindoMulti ? (int)($_SESSION['tenant']['codempresa'] ?? 0) : (int)($_SESSION[$chaveMulti] ?? ($_SESSION['tenant']['codempresa'] ?? 0)));
+            if (!isset($empresasMulti[$pedidaMulti])) {
+                $pedidaMulti = 0;
+                foreach ($empresasMulti as $codMulti => $empMulti) if (strcasecmp($empMulti['banco'], $tenantDatabase) === 0) { $pedidaMulti = $codMulti; break; }
+                if ($pedidaMulti === 0 && $empresasMulti) $pedidaMulti = (int)array_key_first($empresasMulti);
+            }
+            if ($pedidaMulti > 0) {
+                $_SESSION[$chaveMulti] = $pedidaMulti;
+                $tenantDatabase = $empresasMulti[$pedidaMulti]['banco'];
+                $multiEmpresa = ['atual' => $pedidaMulti, 'empresas' => $empresasMulti];
+            }
+        }
         $target = new PDO($dsn($tenantDatabase, (string)$cfg['prefix']), $env[$cfg['prefix'] . '_DB_USERNAME'] ?? '', $env[$cfg['prefix'] . '_DB_PASSWORD'] ?? '', self::pdoOptions());
+        // 23/11/2026 'view_preferida' => view usada quando existe no banco (ex.: vw_unidades_admin da migração 403, com NOME_MDB);
+        // sem ela, fica a 'view' e saem os campos marcados 'requer_view_preferida'.
+        if (preg_match('/^[A-Za-z0-9_]+$/', (string)($cfg['view_preferida'] ?? ''))) {
+            $temPreferida = false;
+            try { $sv = $target->prepare('SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?'); $sv->execute([(string)$cfg['view_preferida']]); $temPreferida = (int)$sv->fetchColumn() > 0; $sv->closeCursor(); } catch (Throwable) {}
+            if ($temPreferida) $cfg['view'] = (string)$cfg['view_preferida'];
+            else foreach ((array)($cfg['fields'] ?? []) as $campoPref => $cfgPref) if (!empty($cfgPref['requer_view_preferida'])) unset($cfg['fields'][$campoPref]);
+        }
         // Migração 361 (Responsáveis e avisos): 'resp_minhas' => área — a tela "Minhas" usa vw_resp_minhas_<área> (Responsável do
         // registro + atribuições de usuário e grupo + regras do módulo), filtrada por CODUSUARIO_ACESSO. Sem a 361, fica como estava.
         $respMinhas = strtoupper((string)($cfg['resp_minhas'] ?? ''));
@@ -794,6 +830,8 @@ final class ManutencaoLegalCadastroGrid
             if ($botaoResp !== '') { $cfg['extras'] = (string)($cfg['extras'] ?? '') . $botaoResp; $respAtivo = true; }
         }
         ?>
+        <?php if ($multiEmpresa): ?><div class="grid-multi-empresa d-inline-flex align-items-center gap-1 ms-2"><label class="small text-muted mb-0" for="gridMultiEmpresa"><?= $e($t('comum.empresa', ['pt' => 'Empresa', 'en' => 'Company', 'es' => 'Empresa'])) ?></label><select id="gridMultiEmpresa" class="form-select form-select-sm" style="width:auto;min-width:180px" data-multi-empresa title="<?= $e($t('comum.empresa.multi', ['pt' => 'Empresa migrada cujas unidades aparecem no grid', 'en' => 'Migrated company whose units are shown in the grid', 'es' => 'Empresa migrada cuyas unidades aparecen en la cuadrícula'])) ?>"><?php foreach ($multiEmpresa['empresas'] as $codMulti => $empMulti): ?><option value="<?= (int)$codMulti ?>"<?= (int)$codMulti === (int)$multiEmpresa['atual'] ? ' selected' : '' ?>><?= $e($empMulti['nome']) ?></option><?php endforeach; ?></select></div><script>(function () { /* 23/11/2026: combo Empresa à direita da paginação (a barra é montada por script; se for remontada, o combo volta para o lugar) */ var box = document.currentScript.previousElementSibling; function pos() { var nav = document.querySelector('.crud-toolbar .grid-pagination'); if (nav && box && nav.nextElementSibling !== box) nav.insertAdjacentElement('afterend', box); } pos(); document.addEventListener('DOMContentLoaded', pos); window.addEventListener('load', pos); [100, 400, 1200].forEach(function (t) { setTimeout(pos, t); }); if (window.MutationObserver) new MutationObserver(pos).observe(document.documentElement, { childList: true, subtree: true }); }());
+document.getElementById('gridMultiEmpresa').addEventListener('change', function () { var u = new URL(window.location.href); ['pagina', 'filtros', 'busca', 'ordem', 'salvo'].forEach(function (k) { u.searchParams.delete(k); }); u.searchParams.set('empresa', this.value); window.location.href = u.toString(); });</script><?php endif; ?>
         <div class="crud-toolbar menu-grid-toolbar"><?php greenPortalCrudButtons(['form_id' => $formId, 'language' => $language, 'permission' => $permission, 'permission_title' => $permissionTitle, 'transaction' => (string)($cfg['transaction'] ?? ''), 'extras' => (string)($cfg['extras'] ?? ''), ...((array)($cfg['button_options'] ?? []))]); ?><div class="crud-search"><i class="bi bi-search"></i><input type="search" placeholder="<?= $e($t('comum.busca.grid', ['pt' => 'Buscar no grid', 'en' => 'Search the grid', 'es' => 'Buscar en la cuadrícula'])) ?>" aria-label="<?= $e($t('comum.busca.grid', ['pt' => 'Buscar no grid', 'en' => 'Search the grid', 'es' => 'Buscar en la cuadrícula'])) ?>" value="<?= $e((string)$search) ?>"></div></div>
   <?php $erroGrid = (string)($_SESSION['grid_mensagem_erro'][(string)($cfg['transaction'] ?? '')] ?? ''); unset($_SESSION['grid_mensagem_erro'][(string)($cfg['transaction'] ?? '')]); if ($erroGrid !== ''): ?><div class="alert alert-danger py-2 mb-2" role="alert" data-grid-erro><?= $e($erroGrid) ?></div><?php endif; ?>
   <?php if (isset($_GET['salvo'])): ?><div class="alert alert-success py-2 mb-2"><?= $e($t('comum.msg.registro_salvo', ['pt' => 'Registro salvo com sucesso.', 'en' => 'Record saved successfully.', 'es' => 'Registro guardado correctamente.'])) ?></div><?php endif; ?>

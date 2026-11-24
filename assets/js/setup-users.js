@@ -27,13 +27,13 @@
     $('[data-new-user]').on('click', function () {
         var key = 'novo_' + Date.now();
         $table.find('tbody').prepend(
-            '<tr data-key="' + key + '">' +
+            '<tr data-row data-key="' + key + '">' +
             '<td data-column="codusuario">Novo</td>' +
             '<td data-column="userid"><input class="grid-input" name="rows[' + key + '][userid]"></td>' +
             '<td data-column="nome"><input class="grid-input" name="rows[' + key + '][nome]"></td>' +
             '<td data-column="email"><input class="grid-input" name="rows[' + key + '][email]"></td>' +
             '<td data-column="codperfil"><input class="grid-input" name="rows[' + key + '][codperfil]"></td>' +
-            '<td data-column="codgrupo"><input class="grid-input" name="rows[' + key + '][codgrupo]"></td>' +
+            // 19/11/2026: sem a coluna "Grupo principal" (grupos ficam no botão "Grupos do usuário")
             '<td data-column="ativo"><input type="checkbox" name="rows[' + key + '][ativo]" value="1" checked></td>' +
             '</tr>'
         );

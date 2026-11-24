@@ -11,8 +11,13 @@ var _tx = window._tx || function (s) { return typeof window.greenTxt === 'functi
         return;
     }
 
+    // 19/11/2026: respeita as colunas escolhidas em "Colunas" (antes só escondia o código e a escolha só valia depois de recarregar).
     function applyVisibility() {
-        $table.find('[data-column="codusuario"]').hide();
+        $table.find('thead th').each(function () {
+            var column = String($(this).data('column') || ''), pref = preferences[column] || {};
+            var visible = column !== 'codusuario' && (pref.visivel === undefined || !!Number(pref.visivel));
+            $table.find('[data-column="' + column + '"]').toggle(visible);
+        });
     }
 
     // Mantém o corpo do grid na mesma ordem declarada no cabeçalho.
@@ -106,7 +111,7 @@ var _tx = window._tx || function (s) { return typeof window.greenTxt === 'functi
         var html = $table.find('thead th').map(function () {
             var $header = $(this);
             var column = String($header.data('column') || '');
-            var label = $.trim($header.text()) || column;
+            var label = $.trim($header.find('.column-heading > span').first().text()) || $.trim($header.text()) || column;
             var locked = column === 'codusuario';
             var visible = !locked && $table.find('[data-column="' + column + '"]:first').is(':visible');
 

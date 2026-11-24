@@ -27,5 +27,7 @@
     convertFilter('codperfil');
     convertFilter('codgrupo');
     $table.closest('.menu-grid-fragment').on('gridPageLoaded', function () { convertRows(); });
-    if (window.MutationObserver) new MutationObserver(function (mutations) { mutations.forEach(function (mutation) { $(mutation.addedNodes).filter('tr').each(function () { convert($(this)); }); }); }).observe($table.find('tbody')[0], { childList: true });
+    // 19/11/2026: observa a tabela inteira (a paginação troca o tbody e o observador antigo ficava preso ao tbody removido;
+    // a linha de "Novo" ficava com o Perfil como número em vez da lista).
+    if (window.MutationObserver) new MutationObserver(function (mutations) { mutations.forEach(function (mutation) { $(mutation.addedNodes).each(function () { var $n = $(this); if ($n.is('tr')) convert($n); else if ($n.is('tbody')) convertRows(); }); }); }).observe($table[0], { childList: true, subtree: true });
 }(jQuery));

@@ -149,6 +149,12 @@ try {
         'codigo_perfil' => $usuario['codigo_perfil'],
     ];
     AuditService::record($tenant, 'LOGIN', 'AUTENTICAR', 'SUCESSO', 'usuarios', (string)$usuario['codusuario'], ['empresa' => $empresa['codigo']]);
+    // 19/11/2026: grava o último login (usuarios.ultimo_acesso; a coluna "Último login" de Segurança › Usuários ficava sempre vazia).
+    // Nunca impede o login.
+    if (array_key_exists('ultimo_acesso', $usuario)) {
+        try { GreenPortalDatabase::call($tenant, 'CALL sp_crud_update(:tabela,:chave,:dados)', ['tabela' => 'usuarios', 'chave' => json_encode(['codusuario' => (int)$usuario['codusuario']]), 'dados' => json_encode(['ultimo_acesso' => date('Y-m-d H:i:s')])]); }
+        catch (Throwable $e) { error_log('Green Portal login ultimo_acesso: ' . $e->getMessage()); }
+    }
 
     // Migração 343: veio do link "Abrir no portal" do e-mail de alerta: a tela do alerta abre como aba
     $abrirAlerta = max(0, (int)($_POST['abrir_alerta'] ?? 0));

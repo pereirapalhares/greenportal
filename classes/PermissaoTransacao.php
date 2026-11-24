@@ -8,7 +8,11 @@ final class PermissaoTransacao
     /** Migração 384: grupo Manutenção Legal (cadastros compartilhados de legislação) só para o perfil ADMINISTRADOR. */
     public const MENUS_SO_ADMIN = ['MANUTENCAO_LEGAL', 'LEGISLACAO', 'LEGISLACAO_X_EMPRESAS', 'LEGISLACAO_X_PODER', 'TIPOS', 'AMBITOS', 'PERIGOS', 'RISCOS', 'ASSUNTOS',
         // migração 394
-        'TIPOS_PALAVRAS_CHAVE', 'TIPOS_X_PALAVRAS_CHAVE'];
+        'TIPOS_PALAVRAS_CHAVE', 'TIPOS_X_PALAVRAS_CHAVE',
+        // 23/11/2026: Administração › Unidades trabalha com as unidades de todas as empresas migradas (só o ADMINISTRADOR)
+        'ADMINISTRACAO_UNIDADES',
+        // 24/11/2026: Manutenção Legal › Atualização do Access (migração 404)
+        'ATUALIZACAO_ACCESS'];
 
     public static function obter(string $codigo): array
     {
