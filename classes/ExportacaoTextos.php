@@ -72,6 +72,7 @@ final class ExportacaoTextos
         'tipo_info' => ['Tipo de informação: {tipo}', 'Information type: {tipo}', 'Tipo de información: {tipo}'],
         'data_pedido' => ['Data da solicitação: {data}', 'Request date: {data}', 'Fecha de la solicitud: {data}'],
         'usuario' => ['Usuário solicitante: {nome}', 'Requested by: {nome}', 'Usuario solicitante: {nome}'],
+        'empresa' => ['Empresa: {nome}', 'Company: {nome}', 'Empresa: {nome}'],
         'informacao' => ['Informação', 'Information', 'Información'],
         'nenhum' => ['Nenhum registro encontrado.', 'No records found.', 'Ningún registro encontrado.'],
         'erro_planilha' => ['Não foi possível criar a planilha.', 'The spreadsheet could not be created.', 'No fue posible crear la planilla.'],

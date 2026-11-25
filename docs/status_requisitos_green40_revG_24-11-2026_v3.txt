@@ -2,8 +2,8 @@
 RELATÓRIO DE STATUS — REQUISITOS DO GREEN 4.0 × APLICAÇÃO GREENPORTAL (REAVALIAÇÃO)
 ==============================================================================================================
 Documento avaliado : docs\Passo a passo mudança no Green4.0 - Revisão G - 13-08-2026.doc
-Aplicação          : E:\wamp\apps\greenportal (código de 24/11/2026, regras de negócio e histórico de migrações)
-Data da avaliação  : 24/11/2026, 17:45 — reavaliação depois da onda 1 (ícones de status e barra de etapas)
+Aplicação          : E:\wamp\apps\greenportal (código de 25/11/2026, regras de negócio e histórico de migrações)
+Data da avaliação  : 25/11/2026, 12:15 — reavaliação depois das ondas 1 (ícones e barra de etapas), 2 (responsáveis por tipo/categoria) e 3 (campos dos pilares, migrações 408–412)
 Avaliações anteriores: docs\status_requisitos_green40_revG_24-11-2026.txt (15:06) e _v2.txt (15:50)
 
 LEGENDA
@@ -29,7 +29,10 @@ no documento (a numeração pula de 168 para 170).
   Na revisão completa desta rodada, o item 158 (Risco da RNC) passou de NÃO FEITO para PARCIAL: a coluna Risco
   existe na ocorrência e aparece na Lista geral, mas não no formulário. Histórico: 15:06 = 84 feitos (42,9%);
   15:50 = 92 (46,9%), depois das Homes; depois da onda 1 = 109 (55,6%); com a Homologação da onda 2 (132, 138,
-  140, migração 406) = 112 (57,1%); agora, com o Legal (26, 27, 28, migração 407) = 115 (58,7%).
+  140, migração 406) = 112 (57,1%); com o Legal (26, 27, 28, migração 407) = 115 (58,7%); com o Tipo e a regra
+  por tipo (408) = 124 (63,3%); com os campos novos, treinados e unidades (409, 410, 411) = 126 (64,3%); com o
+  plano de manutenção e os avisos de prazo (412) = 127 (64,8%); agora, com a IA preenchendo os campos novos
+  (413) = 130 (66,3%).
 
   Item   Antes       Agora       Pedido
   18.4   PARCIAL     FEITO       Fluxo do estágio tipo "entrega do Mercado Livre"
@@ -56,14 +59,32 @@ no documento (a numeração pula de 168 para 170).
   26     PARCIAL     FEITO       Tabela de assuntos/temas (categoria) do cliente
   27     NÃO FEITO   FEITO       Responsável por categoria (usuário, vários ou grupo)
   28     NÃO FEITO   FEITO       Atribuição automática de responsável pela lei via categoria
+  85     PARCIAL     FEITO       Tabela Tipo de Controle × Responsável
+  87     PARCIAL     FEITO       Atribuição automática
+  89     NÃO FEITO   PARCIAL     Novos campos da Gestão de Controle
+  94     PARCIAL     FEITO       Política de e-mails friendly
+  101    PARCIAL     FEITO       Tabela Tipo de Treinamento × Responsável
+  103    PARCIAL     FEITO       Atribuição automática
+  104    NÃO FEITO   PARCIAL     Novos campos (unidade, tipo, carga horária, reciclagem, evidências por trabalhador)
+  109    PARCIAL     FEITO       Política de e-mails friendly por tipo
+  116    PARCIAL     FEITO       Tabela Tipo de Infraestrutura × Responsável
+  118    PARCIAL     FEITO       Atribuição automática
+  119    NÃO FEITO   PARCIAL     Novos campos (tipo, setor, condições, classe, plano de manutenção)
+  124    PARCIAL     FEITO       Política de e-mails friendly por tipo
+  89     PARCIAL     FEITO       Novos campos da Gestão de Controle
+  104    PARCIAL     FEITO       Novos campos (unidade, tipo, carga horária, reciclagem, evidências por trabalhador)
+  119    PARCIAL     FEITO       Novos campos (tipo, setor, condições, classe, plano de manutenção)
+  95     PARCIAL     FEITO       Preencher via IA a partir do upload
+  110    PARCIAL     FEITO       Preencher via IA a partir do upload
+  125    PARCIAL     FEITO       Preencher via IA a partir do upload
 
 ==============================================================================================================
 1. RESUMO GERAL
 ==============================================================================================================
 Itens avaliados: 196
-  FEITO              115   (58.7%)
-  PARCIAL             47   (24.0%)
-  NÃO FEITO           27   (13.8%)
+  FEITO              130   (66.3%)
+  PARCIAL             35   (17.9%)
+  NÃO FEITO           24   (12.2%)
   DECISÃO PENDENTE     7   ( 3.6%)
 
 Por capítulo:
@@ -73,9 +94,9 @@ Por capítulo:
   3 Módulo Legal                        29      14       10          4        1
   4 Licenças                            19      14        3          1        1
   5 Medição e Monitoramento             19      14        3          2        0
-  6 Controle                            18      11        6          1        0
-  7 Treinamento                         17      11        5          1        0
-  8 Infraestrutura                      17      11        5          1        0
+  6 Controle                            18      16        2          0        0
+  7 Treinamento                         17      16        1          0        0
+  8 Infraestrutura                      17      16        1          0        0
   9 Homologação                         27      18        4          3        2
   10 RNC                                10       7        2          1        0
   11 Auditoria                          11       0        1         10        0
@@ -106,7 +127,9 @@ Leitura rápida:
         Home geral em abas e Homes de Legal, Licenças, Medição, Controles, Treinamentos, Infraestrutura,
         Homologação (Painel) e Não Conformidades; só falta a de Auditoria, porque o módulo não existe
    3. Novos dados das tabelas dos 5 pilares                          PARCIAL
-        Licenças e Medição atendem quase tudo; Controle, Treinamento e Infraestrutura não
+        Licenças e Medição atendem quase tudo; Controle, Treinamento e Infraestrutura com Tipo, campos da
+        planilha, treinados, unidades e plano de manutenção (migrações 408–412); faltam validade recorrente
+        (Licenças/Medição) e a IA preencher os campos novos
    4. Orientação ao usuário (tarefas feitas, não feitas e a fazer)   FEITO
         Minhas pendências, Minhas atividades, Agenda, sino, Aprovações, tarefas
    5. IA: a) 5 pilares, b) situação, c) padrão de atendimento        PARCIAL
@@ -128,26 +151,21 @@ Leitura rápida:
 ==============================================================================================================
 3. O QUE FALTA, EM ORDEM SUGERIDA (menor esforço × maior efeito)
 ==============================================================================================================
-   1. Onda 3 antes da onda 2 — novos campos de Controle, Treinamento e Infraestrutura (89, 104, 119),
-      começando pelo campo Tipo. Sem ele não existe "tipo" para a regra de responsáveis desses três pilares.
-      Os campos também liberam a extração completa pela IA (95, 110, 125), prazos nas Homes e no calendário, e
-      transformam em etapas reais as que a barra hoje mostra como "ainda não disponível". Cerca de 6 itens.
-   2. Onda 2 — regra Tipo × Responsável com atribuição automática e e-mails por tipo: Controle (85, 87, 94),
-      Treinamento (101, 103, 109), Infraestrutura (116, 118, 124), Homologação (132, 138, 140 — FEITO em
-      24/11, migração 406) e categoria × responsável no Legal (26, 27, 28 — FEITO em 24/11, migração 407).
-      Faltam os 9 itens de Controle, Treinamento e Infraestrutura, que dependem do campo Tipo da onda 3.
-   3. Legal: campo "Razão para inclusão" (38), justificativa ao mudar o Nível de controle (39), replicar
-      avaliação e data da próxima avaliação para outras unidades (30, 40), "não avaliado" como padrão com
-      pendência (25).
-   4. Licenças: validade recorrente (56) e marcação de validade inexistente (55); Medição: retirar Aspecto e
-      Perigo (74), recorrência (67) e campo de evidência (73).
-   5. RNC: campo Risco no formulário (158); Homologação: atalho para abrir NC do fornecedor (148) e chat (146,
-      147).
-   6. Ajuda com vídeo em todos os módulos (18.5 e repetições: 47.2, 65.2, 82.2, 98.2, 113.2, 128.2, 155, 165)
-      — podem ser demonstrações animadas como a da NC.
-   7. Produto/decisão: questionário legal publicado (20, 23, 43), padrão de desempenho pela IA (19, 44), APIs
-      (11), logs contratáveis (16), portal de planos (2), módulo de Auditoria (166–177) e itens sem "Sim" (6,
-      10, 12, 42, 63, 149, 150).
+   1. Legal: campo "Razão para inclusão" (38), justificativa ao mudar Controle/Influência/Conhecimento (39),
+      replicar avaliação e data da próxima avaliação para outras unidades (30, 40), "não avaliado" como padrão
+      com pendência (25), mesma avaliação para leis iguais (32). Cerca de 6 itens.
+   2. Licenças: validade recorrente (56), marcação de validade inexistente (55) e "Arquivar licença?" (48);
+      Medição: retirar Aspecto e Perigo (74), recorrência (67) e campo de evidência (73).
+   3. RNC: campo Risco no formulário (158); Homologação: atalho para abrir NC do fornecedor (148), relatório
+      de atendimento legal do fornecedor (131) e chat (146, 147).
+   4. Ajuda com vídeo em todos os módulos (18.5 e repetições: 47.2, 65.2, 82.2, 98.2, 113.2, 128.2, 155, 165)
+      — podem ser demonstrações animadas como a da NC. 9 itens.
+   5. Envio dos avisos: o serviço de Responsabilidades tinha 93 avisos parados na Crown em 25/11 (o cálculo
+      dos avisos de prazo foi testado; o envio não foi disparado para não avisar pessoas reais). Decidir se o
+      serviço deve ser ligado.
+   6. Produto/decisão: questionário legal publicado (20, 23, 43), padrão de desempenho pela IA (19, 44), APIs
+      (11), logs contratáveis (16), portal de planos (2), migração de concorrentes (21, 24), módulo de
+      Auditoria (166–177) e itens sem "Sim" (6, 10, 12, 42, 63, 149, 150).
 
 ==============================================================================================================
 4. DETALHE POR ITEM
@@ -592,25 +610,29 @@ Leitura rápida:
 [   84] FEITO             Associação manual das leis
         Existe hoje:      Popup Controles no grid de Requisitos legais.
 
-[   85] PARCIAL           Tabela Tipo de Controle × Responsável
-        Existe hoje:      Regras por unidade (361); não existe "tipo de controle".
-        Falta:            Cadastro de tipos de controle e regra por tipo.
+[   85] FEITO             Tabela Tipo de Controle × Responsável
+        Existe hoje:      Catálogo "Tipos de controle" (migração 408) e tela "Responsáveis e avisos" do módulo
+                          com Tipo + unidade → usuário ou grupo (várias regras = vários usuários).
 
 [   86] FEITO             Link "Meus Controles"
         Existe hoje:      meus_controles.php.
 
-[   87] PARCIAL           Atribuição automática
-        Existe hoje:      Por unidade.
-        Falta:            Por tipo.
+[   87] FEITO             Atribuição automática
+        Existe hoje:      Atribuição automática pelo tipo (migrações 408 + 361): a regra vale na hora, soma
+                          com as atribuições manuais e chega às telas "Meus/Minhas". Testado na Crown em
+                          Controles: regra do tipo de teste cobriu 1 controle e ele apareceu em Meus controles
+                          do admin; teste desfeito.
 
 [   88] PARCIAL           Ligar a tabela de controle ao GED (versionamento)
         Existe hoje:      Arquivos do controle no GED e documentos compartilhados com versão.
         Falta:            Integração com o GED-E (versionar e distribuir).
 
-[   89] NÃO FEITO         Novos campos da Gestão de Controle
-        Existe hoje:      A tela tem código, título, arquivos, associações e responsáveis.
-        Falta:            Unidade, tipo, versão, origem, emitente/revisor/aprovador, datas de
-                          emissão/vencimento/reação, prazos de guarda, descarte etc.
+[   89] FEITO             Novos campos da Gestão de Controle
+        Existe hoje:      Tipo (408) e campos da planilha (409): versão, origem, emitente, revisor, aprovador,
+                          documento de nível superior, datas de emissão e vencimento, dias e data de reação,
+                          necessita treinamento, notificar alteração, prazo de guarda, forma de descarte,
+                          controle/influência, observação. Unidades, responsável, risco, histórico e arquivos
+                          já existiam. Testado na Crown (controle 190, desfeito).
 
 [   90] FEITO             Campo Risco
         Existe hoje:      Severidade × probabilidade (341).
@@ -624,13 +646,22 @@ Leitura rápida:
 [   93] FEITO             Histórico automático
         Existe hoje:      Históricos obrigatórios (359).
 
-[   94] PARCIAL           Política de e-mails friendly
-        Existe hoje:      Regras por unidade.
-        Falta:            Por tipo de controle.
+[   94] FEITO             Política de e-mails friendly
+        Existe hoje:      Avisos escolhidos em cada regra Tipo + unidade (atribuição, alteração; prazos quando
+                          o cadastro tiver datas) para todas as pessoas da regra, nos Alertas e por e-mail
+                          conforme Minha conta. Prazos por módulo (412): vencimento/reação do controle,
+                          treinados a vencer/vencidos, manutenção prevista/atrasada. Testado na Crown em
+                          25/11: regra só para o admin com Prazos gerou exatamente 2 avisos pendentes
+                          (vencimento e reação do controle 190) e nenhum para outras pessoas; regra e datas
+                          desfeitas.
 
-[   95] PARCIAL           Preencher via IA a partir do upload
-        Existe hoje:      Extração assistida de código e título (174).
-        Falta:            Os demais campos (depende do item 89).
+[   95] FEITO             Preencher via IA a partir do upload
+        Existe hoje:      Análise por IA do arquivo do controle (botão Analisar com IA na Gestão de Arquivos)
+                          sugere código, título, versão, origem, emitente, revisor, aprovador, documento de
+                          nível superior, datas de emissão e vencimento, prazo de guarda, forma de descarte,
+                          necessita treinamento, notificar alteração e observação; revisão antes de gravar,
+                          com validação de datas e listas (migração 413).
+        Falta:            Teste com um documento real (consome créditos de IA) ainda não feito.
 
 [   96] FEITO             Visual mais "clean"
         Existe hoje:      Ícones de status no início de cada linha do grid principal do módulo, com dica e
@@ -667,20 +698,25 @@ Leitura rápida:
 [  100] FEITO             Associação manual das leis
         Existe hoje:      legislacaoxtreinamentos (popup no requisito).
 
-[  101] PARCIAL           Tabela Tipo de Treinamento × Responsável
-        Existe hoje:      Regras por unidade (361); não existe "tipo de treinamento" no pilar.
-        Falta:            Tipos e regra por tipo.
+[  101] FEITO             Tabela Tipo de Treinamento × Responsável
+        Existe hoje:      Catálogo "Tipos de treinamento" (migração 408) e tela "Responsáveis e avisos" do
+                          módulo com Tipo + unidade → usuário ou grupo (várias regras = vários usuários).
 
 [  102] FEITO             Link "Meus Treinamentos"
         Existe hoje:      meus_treinamentos.php.
 
-[  103] PARCIAL           Atribuição automática
-        Existe hoje:      Por unidade.
-        Falta:            Por tipo.
+[  103] FEITO             Atribuição automática
+        Existe hoje:      Atribuição automática pelo tipo (migrações 408 + 361): a regra vale na hora, soma
+                          com as atribuições manuais e chega às telas "Meus/Minhas". Testado na Crown em
+                          Controles: regra do tipo de teste cobriu 1 controle e ele apareceu em Meus controles
+                          do admin; teste desfeito.
 
-[  104] NÃO FEITO         Novos campos (unidade, tipo, carga horária, reciclagem, evidências por trabalhador)
-        Existe hoje:      A tela tem descrição, arquivo, palavras-chave e responsável.
-        Falta:            Os campos pedidos e o registro de trabalhadores treinados.
+[  104] FEITO             Novos campos (unidade, tipo, carga horária, reciclagem, evidências por trabalhador)
+        Existe hoje:      Tipo (408); carga horária, reciclagem em meses, controle/influência, observação
+                          (409); lista de treinados com matrícula, nome, cargo, setor, responsável,
+                          realização, validade (realização + reciclagem), dias e data de reação, status,
+                          classificação e certificados no GED (410); Unidades por botão, valendo para a regra
+                          Tipo + Unidade (411). Testado na Crown (treinamentos 8 e 9, apagados).
 
 [  105] FEITO             Campo Risco
         Existe hoje:      Severidade × probabilidade (341).
@@ -694,13 +730,17 @@ Leitura rápida:
 [  108] FEITO             Histórico automático
         Existe hoje:      Históricos obrigatórios (359).
 
-[  109] PARCIAL           Política de e-mails friendly por tipo
-        Existe hoje:      Por unidade.
-        Falta:            Por tipo.
+[  109] FEITO             Política de e-mails friendly por tipo
+        Existe hoje:      Avisos escolhidos em cada regra Tipo + unidade (atribuição, alteração; prazos quando
+                          o cadastro tiver datas) para todas as pessoas da regra, nos Alertas e por e-mail
+                          conforme Minha conta. Prazos por módulo (412): vencimento/reação do controle,
+                          treinados a vencer/vencidos, manutenção prevista/atrasada.
 
-[  110] PARCIAL           Preencher via IA a partir do upload
-        Existe hoje:      Extração assistida só da descrição (174).
-        Falta:            Demais campos (depende do 104).
+[  110] FEITO             Preencher via IA a partir do upload
+        Existe hoje:      Análise por IA do arquivo do treinamento sugere descrição, carga horária, reciclagem
+                          em meses e observação; revisão antes de gravar, com validação dos números (migração
+                          413).
+        Falta:            Teste com um documento real (consome créditos de IA) ainda não feito.
 
 [  111] FEITO             Visual mais "clean"
         Existe hoje:      Ícones de status no início de cada linha do grid principal do módulo, com dica e
@@ -736,21 +776,25 @@ Leitura rápida:
 [  115] FEITO             Associação manual das leis
         Existe hoje:      legislacaoxinfraestruturas (popup no requisito).
 
-[  116] PARCIAL           Tabela Tipo de Infraestrutura × Responsável
-        Existe hoje:      Regras por unidade (361); não existe "tipo de infraestrutura".
-        Falta:            Tipos e regra por tipo.
+[  116] FEITO             Tabela Tipo de Infraestrutura × Responsável
+        Existe hoje:      Catálogo "Tipos de infraestrutura" (migração 408) e tela "Responsáveis e avisos" do
+                          módulo com Tipo + unidade → usuário ou grupo (várias regras = vários usuários).
 
 [  117] FEITO             Link "Minhas Infraestruturas"
         Existe hoje:      minhas_infraestruturas.php.
 
-[  118] PARCIAL           Atribuição automática
-        Existe hoje:      Por unidade.
-        Falta:            Por tipo.
+[  118] FEITO             Atribuição automática
+        Existe hoje:      Atribuição automática pelo tipo (migrações 408 + 361): a regra vale na hora, soma
+                          com as atribuições manuais e chega às telas "Meus/Minhas". Testado na Crown em
+                          Controles: regra do tipo de teste cobriu 1 controle e ele apareceu em Meus controles
+                          do admin; teste desfeito.
 
-[  119] NÃO FEITO         Novos campos (tipo, setor, condições, classe, plano de manutenção)
-        Existe hoje:      A tela tem descrição, arquivo, atributos (descrição/valor), palavras-chave e
-                          responsável.
-        Falta:            Os campos pedidos.
+[  119] FEITO             Novos campos (tipo, setor, condições, classe, plano de manutenção)
+        Existe hoje:      Tipo (408); setor, condições, classe A/B/C, propriedade, situação,
+                          controle/influência, observação (409); Unidades (411); plano de manutenção com
+                          atividade, periodicidade, responsável, datas prevista/realizada, próxima data,
+                          status e evidências no GED, com resumo e avisos de prazo (412). Testado na Crown
+                          (infraestrutura 4, apagada).
 
 [  120] FEITO             Campo Risco
         Existe hoje:      Severidade × probabilidade (341).
@@ -764,13 +808,17 @@ Leitura rápida:
 [  123] FEITO             Histórico automático
         Existe hoje:      Históricos obrigatórios (359).
 
-[  124] PARCIAL           Política de e-mails friendly por tipo
-        Existe hoje:      Por unidade.
-        Falta:            Por tipo.
+[  124] FEITO             Política de e-mails friendly por tipo
+        Existe hoje:      Avisos escolhidos em cada regra Tipo + unidade (atribuição, alteração; prazos quando
+                          o cadastro tiver datas) para todas as pessoas da regra, nos Alertas e por e-mail
+                          conforme Minha conta. Prazos por módulo (412): vencimento/reação do controle,
+                          treinados a vencer/vencidos, manutenção prevista/atrasada.
 
-[  125] PARCIAL           Preencher via IA a partir do upload
-        Existe hoje:      Extração assistida só da descrição (174).
-        Falta:            Demais campos (depende do 119).
+[  125] FEITO             Preencher via IA a partir do upload
+        Existe hoje:      Análise por IA do arquivo da infraestrutura sugere descrição, setor, condições,
+                          classe, propriedade, situação e observação; revisão antes de gravar, com validação
+                          das listas (migração 413).
+        Falta:            Teste com um documento real (consome créditos de IA) ainda não feito.
 
 [  126] FEITO             Visual mais "clean"
         Existe hoje:      Ícones de status no início de cada linha do grid principal do módulo, com dica e
@@ -1004,13 +1052,15 @@ Leitura rápida:
     privado). Qualquer pessoa pode baixar o código e a pasta docs. O arquivo scripts\executar-teste-crud-
     modulolegal-potenciais.ps1 tem uma senha do MySQL escrita no código. Recomendado: tornar o repositório
     privado, trocar essa senha e tirá-la do arquivo.
-  - Há 14 arquivos principal\diagnostico_*_temporario.php no servidor (quatro deles com 3 a 4 KB de código; o
-    de hoje, diagnostico_fluxo_temporario.php, já desativado). Recomendado apagar.
+  - Há 15 arquivos principal\diagnostico_*_temporario.php no servidor (quatro deles com 3 a 4 KB de código;
+    diagnostico_fluxo_temporario.php e diagnostico_avisos_temporario.php já desativados). Recomendado apagar.
   - O portal é acessado de fora em HTTP, sem TLS (já registrado em 11/11/2026). Recomendado HTTPS.
   - Os itens antigos dos pilares continuam com risco "Não avaliado" até alguém preencher ou aceitar a sugestão
     da IA.
   - Na Crown, Controles, Treinamentos, Infraestrutura e Medição têm 0 ou 1 registro: as Homes desses pilares
     funcionam, mas aparecem quase vazias até os cadastros serem preenchidos ou migrados.
+  - Na Crown há 93 avisos de Responsáveis e avisos pendentes (25/11): o serviço que os envia parece não estar
+    rodando.
 
 ==============================================================================================================
 6. MÉTODO E LIMITES

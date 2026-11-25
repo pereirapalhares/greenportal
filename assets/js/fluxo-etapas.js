@@ -118,8 +118,8 @@
             etapas: [
                 [tr('controles.1', 'Cadastra o controle', 'Registers the control', 'Registra el control'), 0, function () { return true; }],
                 [tr('controles.2', 'Define o respons\u00e1vel', 'Assigns the owner', 'Define el responsable'), 0, function (l) { return preenchido(l, ['RESPONSAVEIS', 'CODUSUARIO']); }],
-                [tr('controles.3', 'Define a validade', 'Sets the due date', 'Define la validez'), 1, function () { return NA; }, NAO_EXISTE],
-                [tr('controles.4', 'Define o prazo de guarda', 'Sets the retention period', 'Define el plazo de guarda'), 1, function () { return NA; }, NAO_EXISTE],
+                [tr('controles.3', 'Define a validade', 'Sets the due date', 'Define la validez'), 1, function (l) { return preenchido(l, ['DATA_VENCIMENTO']); }],
+                [tr('controles.4', 'Define o prazo de guarda', 'Sets the retention period', 'Define el plazo de guarda'), 1, function (l) { return preenchido(l, ['PRAZO_GUARDA']); }],
                 [tr('controles.5', 'Define o n\u00edvel de risco', 'Sets the risk level', 'Define el nivel de riesgo'), 1, function (l, f) { return f.risco === null || f.risco === undefined ? null : f.risco !== ''; }],
                 [tr('controles.6', 'Carrega a evid\u00eancia do atendimento', 'Uploads the evidence', 'Carga la evidencia'), 0, function (l, f) { return f.arquivos === null || f.arquivos === undefined ? null : n(f.arquivos) > 0; }]
             ] },
@@ -128,16 +128,16 @@
             etapas: [
                 [tr('treinamentos.1', 'Cadastra o treinamento', 'Registers the training', 'Registra la capacitaci\u00f3n'), 0, function () { return true; }],
                 [tr('treinamentos.2', 'Define o respons\u00e1vel', 'Assigns the owner', 'Define el responsable'), 0, function (l) { return preenchido(l, ['CODUSUARIO', 'RESPONSAVEIS']); }],
-                [tr('treinamentos.3', 'Define a validade', 'Sets the due date', 'Define la validez'), 1, function () { return NA; }, NAO_EXISTE],
+                [tr('treinamentos.3', 'Define a validade', 'Sets the due date', 'Define la validez'), 1, function (l) { return preenchido(l, ['PERIODO_RECICLAGEM']); }],
                 [tr('treinamentos.4', 'Define o n\u00edvel de risco', 'Sets the risk level', 'Define el nivel de riesgo'), 1, function (l, f) { return f.risco === null || f.risco === undefined ? null : f.risco !== ''; }],
-                [tr('treinamentos.5', 'Carrega a evid\u00eancia (treinados)', 'Uploads the evidence (trainees)', 'Carga la evidencia (capacitados)'), 0, function (l, f) { return f.arquivos === null || f.arquivos === undefined ? null : n(f.arquivos) > 0; }]
+                [tr('treinamentos.5', 'Carrega a evid\u00eancia (treinados)', 'Uploads the evidence (trainees)', 'Carga la evidencia (capacitados)'), 0, function (l, f) { if (preenchido(l, ['TREINADOS']) === true) return true; return f.arquivos === null || f.arquivos === undefined ? null : n(f.arquivos) > 0; }]
             ] },
         { sel: '.modulo-legal-infraestrutura-grid-fragment', modulo: 'infraestrutura', nome: tr('m.infraestrutura', 'Infraestrutura', 'Infrastructure', 'Infraestructura'),
             params: function (l) { var id = chave(l, 'CODINFRAESTRUTURA'); return id ? { id: id } : null; },
             etapas: [
                 [tr('infra.1', 'Cadastra a infraestrutura', 'Registers the item', 'Registra la infraestructura'), 0, function () { return true; }],
                 [tr('infra.2', 'Define o respons\u00e1vel', 'Assigns the owner', 'Define el responsable'), 0, function (l) { return preenchido(l, ['CODUSUARIO', 'RESPONSAVEIS']); }],
-                [tr('infra.3', 'Carrega o plano de manuten\u00e7\u00e3o', 'Uploads the maintenance plan', 'Carga el plan de mantenimiento'), 1, function () { return NA; }, NAO_EXISTE],
+                [tr('infra.3', 'Carrega o plano de manuten\u00e7\u00e3o', 'Uploads the maintenance plan', 'Carga el plan de mantenimiento'), 1, function (l) { return preenchido(l, ['MANUTENCOES']); }],
                 [tr('infra.4', 'Define o n\u00edvel de risco', 'Sets the risk level', 'Define el nivel de riesgo'), 1, function (l, f) { return f.risco === null || f.risco === undefined ? null : f.risco !== ''; }],
                 [tr('infra.5', 'Carrega a evid\u00eancia do atendimento', 'Uploads the evidence', 'Carga la evidencia'), 0, function (l, f) { return f.arquivos === null || f.arquivos === undefined ? null : n(f.arquivos) > 0; }]
             ] },

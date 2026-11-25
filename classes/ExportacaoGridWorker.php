@@ -12,7 +12,7 @@ $pdo = new PDO('mysql:host=' . ($env['GPT_DB_HOST'] ?? '127.0.0.1') . ';port=' .
 function workerCall(PDO $pdo, string $sql, array $params): array { $s = $pdo->prepare($sql); $s->execute($params); $rows = $s->fetchAll(); $s->closeCursor(); return $rows; }
 function excelColumn(int $number): string { $letters = ''; while ($number > 0) { $number--; $letters = chr(65 + ($number % 26)) . $letters; $number = intdiv($number, 26); } return $letters; }
 function filenamePart(string $value, string $fallback): string { $value = trim($value); /* Acentos removidos antes do iconv: no Windows ele troca "ã" por "'a" (Gest_ao). */ if (class_exists('Normalizer')) { $semAcento = preg_replace('/\p{Mn}/u', '', (string)Normalizer::normalize($value, Normalizer::FORM_D)); if (is_string($semAcento)) $value = $semAcento; } $value = strtr($value, ['ç' => 'c', 'Ç' => 'C', 'ã' => 'a', 'õ' => 'o', 'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'â' => 'a', 'ê' => 'e', 'ô' => 'o', 'à' => 'a', 'Ã' => 'A', 'Õ' => 'O', 'Á' => 'A', 'É' => 'E', 'Í' => 'I', 'Ó' => 'O', 'Ú' => 'U', 'Â' => 'A', 'Ê' => 'E', 'Ô' => 'O', 'À' => 'A', 'ñ' => 'n', 'Ñ' => 'N']); $converted = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value); if ($converted !== false) $value = $converted; $value = preg_replace('/[^a-zA-Z0-9]+/', '_', $value) ?? ''; $value = trim($value, '_'); return $value !== '' ? $value : $fallback; }
-function createProfessionalXlsx(string $file, array $rows, string $userName, string $requestedAt, string $informationType): void {
+function createProfessionalXlsx(string $file, array $rows, string $userName, string $requestedAt, string $informationType, string $companyName = ''): void {
     $columns = $rows ? array_keys($rows[0]) : [ExportacaoTextos::t('informacao')]; $lastColumn = excelColumn(count($columns)); $lastRow = 6 + max(1, count($rows));
     $xml = static function (string $value): string {
         $value = preg_replace('/[^\x09\x0A\x0D\x20-\x{D7FF}\x{E000}-\x{FFFD}]/u', '', $value) ?? '';
@@ -21,7 +21,7 @@ function createProfessionalXlsx(string $file, array $rows, string $userName, str
     $cell = static function (string $ref, mixed $value, int $style = 0) use ($xml): string { return '<c r="' . $ref . '" t="inlineStr" s="' . $style . '"><is><t>' . $xml((string)$value) . '</t></is></c>'; };
     $sheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><dimension ref="A1:' . $lastColumn . $lastRow . '"/><sheetViews><sheetView workbookViewId="0"><pane ySplit="5" topLeftCell="A6" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>';
     for ($i = 1; $i <= count($columns); $i++) $sheet .= '<col min="' . $i . '" max="' . $i . '" width="18" customWidth="1"/>';
-    $sheet .= '</cols><sheetData><row r="1">' . $cell('A1', 'Green Portal', 1) . '</row><row r="2">' . $cell('A2', ExportacaoTextos::t('titulo'), 2) . '</row><row r="3">' . $cell('A3', ExportacaoTextos::t('tipo_info', ['tipo' => ExportacaoTextos::tipo($informationType)])) . '</row><row r="4">' . $cell('A4', ExportacaoTextos::t('data_pedido', ['data' => $requestedAt])) . '</row><row r="5">' . $cell('A5', ExportacaoTextos::t('usuario', ['nome' => $userName])) . '</row><row r="6">';
+    $sheet .= '</cols><sheetData><row r="1">' . $cell('A1', 'Green Portal' . ($companyName !== '' ? ' · ' . $companyName : ''), 1) . '</row><row r="2">' . $cell('A2', ExportacaoTextos::t('titulo'), 2) . '</row><row r="3">' . $cell('A3', ExportacaoTextos::t('tipo_info', ['tipo' => ExportacaoTextos::tipo($informationType)])) . '</row><row r="4">' . $cell('A4', ExportacaoTextos::t('data_pedido', ['data' => $requestedAt])) . '</row><row r="5">' . $cell('A5', ExportacaoTextos::t('usuario', ['nome' => $userName]) . ($companyName !== '' ? '   ·   ' . ExportacaoTextos::t('empresa', ['nome' => $companyName]) : '')) . '</row><row r="6">';
     foreach ($columns as $i => $column) $sheet .= $cell(excelColumn($i + 1) . '6', (string)$column, 6); $sheet .= '</row>';
     if (!$rows) $rows = [[ExportacaoTextos::t('informacao') => ExportacaoTextos::t('nenhum')]];
     foreach ($rows as $rowIndex => $row) { $excelRow = $rowIndex + 7; $sheet .= '<row r="' . $excelRow . '" s="' . (($rowIndex % 2) ? 5 : 4) . '"'; $sheet .= '>'; foreach (array_values($row) as $i => $value) $sheet .= $cell(excelColumn($i + 1) . $excelRow, $value, (($rowIndex % 2) ? 5 : 4)); $sheet .= '</row>'; }
@@ -89,6 +89,7 @@ $job = workerCall($pdo, 'CALL sp_crud_select(:tabela, :filtros, NULL, 1, 0)', ['
 if (!$job) exit(1);
 // Onda 2 de idiomas: planilha/PDF no idioma de quem pediu (pedido ou cadastro do usuário); os alertas seguem em português
 require_once $root . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'ExportacaoTextos.php';
+require_once $root . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'GreenPortalDatabase.php';
 ExportacaoTextos::usarIdiomaDoPedido($pdo, $job);
 $startedAt = (string)($job['iniciada_em'] ?? $job['solicitado_em'] ?? date('Y-m-d H:i:s'));
 workerCall($pdo, 'CALL sp_crud_update(:tabela, :chave, :dados)', ['tabela' => 'exportacoes_grid', 'chave' => json_encode(['codexportacaogrid' => $jobId]), 'dados' => json_encode(['status' => 'PROCESSANDO', 'iniciada_em' => date('Y-m-d H:i:s')], JSON_UNESCAPED_UNICODE)]);
@@ -109,70 +110,73 @@ register_shutdown_function(static function () use (&$slotHandle): void {
 });
 $exportConfig = match ((string)$job['transacao']) { 'seguranca_grupos' => ['view' => 'vw_grupos_grid', 'tipo' => 'Cadastro de grupos', 'base' => 'seguranca_grupos'], 'seguranca_usuarios' => ['view' => 'vw_usuarios_grid', 'tipo' => 'Cadastro de usuários', 'base' => 'seguranca_usuarios'], 'seguranca_perfil' => ['view' => 'vw_perfis_grid', 'tipo' => 'Cadastro de perfis', 'base' => 'seguranca_perfil'], 'seguranca_permissoes' => ['view' => 'vw_permissoes_grid', 'tipo' => 'Cadastro de permissões', 'base' => 'seguranca_permissoes'], 'seguranca_formulario' => ['view' => 'vw_formularios_campos_grid', 'tipo' => 'Configuração de campos de formulário', 'base' => 'seguranca_formulario'], 'seguranca_lista' => ['view' => 'vw_formulario_lista_grid', 'tipo' => 'Cadastro de listas', 'base' => 'seguranca_lista'], default => ['view' => 'vw_menus_grid', 'tipo' => 'Cadastro de menus - Setup / Menu', 'base' => 'setup_menu'] };
 $legalExports = [
-    'modulolegal_treinamentos' => ['view' => 'vw_modulolegal_treinamentos_grid', 'tipo' => 'Treinamentos', 'base' => 'modulolegal_treinamentos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'meus_treinamentos' => ['view' => 'vw_minhas_treinamentos_grid', 'tipo' => 'Meus treinamentos', 'base' => 'meus_treinamentos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'minhas_infraestruturas' => ['view' => 'vw_minhas_infraestrutura_grid', 'tipo' => 'Minhas infraestruturas', 'base' => 'minhas_infraestruturas', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_infraestrutura' => ['view' => 'vw_modulolegal_infraestrutura_grid', 'tipo' => 'Infraestrutura', 'base' => 'modulolegal_infraestrutura', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamnetoambiental' => ['view' => 'vw_modulolegal_correlacionamento_ambiental_grid', 'tipo' => 'Correlacionamento ambiental', 'base' => 'modulolegal_correlacionamnetoambiental', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentoambiental_aspectos' => ['view' => 'vw_modulolegal_correlacionamento_ambiental_aspectos', 'tipo' => 'Aspectos relacionados', 'base' => 'modulolegal_correlacionamentoambiental_aspectos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentoambiental_atividades' => ['view' => 'vw_modulolegal_correlacionamento_ambiental_atividades', 'tipo' => 'Atividades relacionadas', 'base' => 'modulolegal_correlacionamentoambiental_atividades', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentoambiental_impactos' => ['view' => 'vw_modulolegal_correlacionamento_ambiental_impactos', 'tipo' => 'Impactos relacionados', 'base' => 'modulolegal_correlacionamentoambiental_impactos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentoambiental_licencas' => ['view' => 'vw_modulolegal_correlacionamento_ambiental_licencas', 'tipo' => 'Licencas relacionadas', 'base' => 'modulolegal_correlacionamentoambiental_licencas', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentoambiental_documentos' => ['view' => 'vw_modulolegal_correlacionamento_ambiental_documentos', 'tipo' => 'Documentos relacionados', 'base' => 'modulolegal_correlacionamentoambiental_documentos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentosocial' => ['view' => 'vw_modulolegal_correlacionamento_social_grid', 'tipo' => 'Correlacionamento social', 'base' => 'modulolegal_correlacionamentosocial', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentosocial_aspectos' => ['view' => 'vw_modulolegal_correlacionamento_social_aspectos', 'tipo' => 'Aspectos sociais relacionados', 'base' => 'modulolegal_correlacionamentosocial_aspectos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentosocial_impactos' => ['view' => 'vw_modulolegal_correlacionamento_social_impactos', 'tipo' => 'Impactos sociais relacionados', 'base' => 'modulolegal_correlacionamentosocial_impactos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentosocial_documentos' => ['view' => 'vw_modulolegal_correlacionamento_social_documentos', 'tipo' => 'Documentos relacionados', 'base' => 'modulolegal_correlacionamentosocial_documentos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentoocupacional' => ['view' => 'vw_modulolegal_correlacionamento_ocupacional_grid', 'tipo' => 'Correlacionamento ocupacional', 'base' => 'modulolegal_correlacionamentoocupacional', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentoocupacional_perigos' => ['view' => 'vw_modulolegal_correlacionamento_ocupacional_perigos', 'tipo' => 'Perigos ocupacionais relacionados', 'base' => 'modulolegal_correlacionamentoocupacional_perigos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentoocupacional_atividades' => ['view' => 'vw_modulolegal_correlacionamento_ocupacional_atividades', 'tipo' => 'Atividades ocupacionais relacionadas', 'base' => 'modulolegal_correlacionamentoocupacional_atividades', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentoocupacional_riscos' => ['view' => 'vw_modulolegal_correlacionamento_ocupacional_riscos', 'tipo' => 'Riscos ocupacionais relacionados', 'base' => 'modulolegal_correlacionamentoocupacional_riscos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentoocupacional_licencas' => ['view' => 'vw_modulolegal_correlacionamento_ocupacional_licencas', 'tipo' => 'Licencas relacionadas', 'base' => 'modulolegal_correlacionamentoocupacional_licencas', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_correlacionamentoocupacional_documentos' => ['view' => 'vw_modulolegal_correlacionamento_ocupacional_documentos', 'tipo' => 'Documentos relacionados', 'base' => 'modulolegal_correlacionamentoocupacional_documentos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
+    'modulolegal_treinamentos' => ['view' => 'vw_modulolegal_treinamentos_grid', 'tipo' => 'Treinamentos', 'base' => 'modulolegal_treinamentos', 'prefix' => 'GPT'],
+    'meus_treinamentos' => ['view' => 'vw_minhas_treinamentos_grid', 'tipo' => 'Meus treinamentos', 'base' => 'meus_treinamentos', 'prefix' => 'GPT'],
+    'minhas_infraestruturas' => ['view' => 'vw_minhas_infraestrutura_grid', 'tipo' => 'Minhas infraestruturas', 'base' => 'minhas_infraestruturas', 'prefix' => 'GPT'],
+    'modulolegal_infraestrutura' => ['view' => 'vw_modulolegal_infraestrutura_grid', 'tipo' => 'Infraestrutura', 'base' => 'modulolegal_infraestrutura', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamnetoambiental' => ['view' => 'vw_modulolegal_correlacionamento_ambiental_grid', 'tipo' => 'Correlacionamento ambiental', 'base' => 'modulolegal_correlacionamnetoambiental', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentoambiental_aspectos' => ['view' => 'vw_modulolegal_correlacionamento_ambiental_aspectos', 'tipo' => 'Aspectos relacionados', 'base' => 'modulolegal_correlacionamentoambiental_aspectos', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentoambiental_atividades' => ['view' => 'vw_modulolegal_correlacionamento_ambiental_atividades', 'tipo' => 'Atividades relacionadas', 'base' => 'modulolegal_correlacionamentoambiental_atividades', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentoambiental_impactos' => ['view' => 'vw_modulolegal_correlacionamento_ambiental_impactos', 'tipo' => 'Impactos relacionados', 'base' => 'modulolegal_correlacionamentoambiental_impactos', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentoambiental_licencas' => ['view' => 'vw_modulolegal_correlacionamento_ambiental_licencas', 'tipo' => 'Licencas relacionadas', 'base' => 'modulolegal_correlacionamentoambiental_licencas', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentoambiental_documentos' => ['view' => 'vw_modulolegal_correlacionamento_ambiental_documentos', 'tipo' => 'Documentos relacionados', 'base' => 'modulolegal_correlacionamentoambiental_documentos', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentosocial' => ['view' => 'vw_modulolegal_correlacionamento_social_grid', 'tipo' => 'Correlacionamento social', 'base' => 'modulolegal_correlacionamentosocial', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentosocial_aspectos' => ['view' => 'vw_modulolegal_correlacionamento_social_aspectos', 'tipo' => 'Aspectos sociais relacionados', 'base' => 'modulolegal_correlacionamentosocial_aspectos', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentosocial_impactos' => ['view' => 'vw_modulolegal_correlacionamento_social_impactos', 'tipo' => 'Impactos sociais relacionados', 'base' => 'modulolegal_correlacionamentosocial_impactos', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentosocial_documentos' => ['view' => 'vw_modulolegal_correlacionamento_social_documentos', 'tipo' => 'Documentos relacionados', 'base' => 'modulolegal_correlacionamentosocial_documentos', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentoocupacional' => ['view' => 'vw_modulolegal_correlacionamento_ocupacional_grid', 'tipo' => 'Correlacionamento ocupacional', 'base' => 'modulolegal_correlacionamentoocupacional', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentoocupacional_perigos' => ['view' => 'vw_modulolegal_correlacionamento_ocupacional_perigos', 'tipo' => 'Perigos ocupacionais relacionados', 'base' => 'modulolegal_correlacionamentoocupacional_perigos', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentoocupacional_atividades' => ['view' => 'vw_modulolegal_correlacionamento_ocupacional_atividades', 'tipo' => 'Atividades ocupacionais relacionadas', 'base' => 'modulolegal_correlacionamentoocupacional_atividades', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentoocupacional_riscos' => ['view' => 'vw_modulolegal_correlacionamento_ocupacional_riscos', 'tipo' => 'Riscos ocupacionais relacionados', 'base' => 'modulolegal_correlacionamentoocupacional_riscos', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentoocupacional_licencas' => ['view' => 'vw_modulolegal_correlacionamento_ocupacional_licencas', 'tipo' => 'Licencas relacionadas', 'base' => 'modulolegal_correlacionamentoocupacional_licencas', 'prefix' => 'GPT'],
+    'modulolegal_correlacionamentoocupacional_documentos' => ['view' => 'vw_modulolegal_correlacionamento_ocupacional_documentos', 'tipo' => 'Documentos relacionados', 'base' => 'modulolegal_correlacionamentoocupacional_documentos', 'prefix' => 'GPT'],
     'manutencaolegal_tipos' => ['view' => 'vw_tipos_grid', 'tipo' => 'Cadastro de tipos de legislação', 'base' => 'manutencaolegal_tipos', 'database' => 'glegislacao_dbp', 'prefix' => 'GLEGISLACAO'],
     'manutencaolegal_ambitos' => ['view' => 'vw_ambitos_grid', 'tipo' => 'Cadastro de âmbitos', 'base' => 'manutencaolegal_ambitos', 'database' => 'glegislacao_dbp', 'prefix' => 'GLEGISLACAO'],
-    'manutencaolegal_aspectos' => ['view' => 'vw_aspectos_grid', 'tipo' => 'Cadastro de aspectos', 'base' => 'manutencaolegal_aspectos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'manutencaolegal_impactos' => ['view' => 'vw_impactos_grid', 'tipo' => 'Cadastro de impactos', 'base' => 'manutencaolegal_impactos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'manutencaolegal_perigos' => ['view' => 'vw_perigos_grid', 'tipo' => 'Cadastro de perigos', 'base' => 'manutencaolegal_perigos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'manutencaolegal_riscos' => ['view' => 'vw_riscos_grid', 'tipo' => 'Cadastro de riscos', 'base' => 'manutencaolegal_riscos', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
+    'manutencaolegal_aspectos' => ['view' => 'vw_aspectos_grid', 'tipo' => 'Cadastro de aspectos', 'base' => 'manutencaolegal_aspectos', 'prefix' => 'GPT'],
+    'manutencaolegal_impactos' => ['view' => 'vw_impactos_grid', 'tipo' => 'Cadastro de impactos', 'base' => 'manutencaolegal_impactos', 'prefix' => 'GPT'],
+    'manutencaolegal_perigos' => ['view' => 'vw_perigos_grid', 'tipo' => 'Cadastro de perigos', 'base' => 'manutencaolegal_perigos', 'prefix' => 'GPT'],
+    'manutencaolegal_riscos' => ['view' => 'vw_riscos_grid', 'tipo' => 'Cadastro de riscos', 'base' => 'manutencaolegal_riscos', 'prefix' => 'GPT'],
     'manutencaolegal_assuntos' => ['view' => 'vw_assuntos_grid', 'tipo' => 'Cadastro de assuntos', 'base' => 'manutencaolegal_assuntos', 'database' => 'glegislacao_dbp', 'prefix' => 'GLEGISLACAO'],
-    'administracao_unidades' => ['view' => 'vw_unidades_grid', 'tipo' => 'Cadastro de unidades', 'base' => 'administracao_unidades', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'administracao_areas' => ['view' => 'vw_areas_grid', 'tipo' => 'Cadastro de áreas', 'base' => 'administracao_areas', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'administracao_atividades' => ['view' => 'vw_atividades_grid', 'tipo' => 'Cadastro de atividades', 'base' => 'administracao_atividades', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_requisitoslegais' => ['view' => 'vw_modulolegal_requisitos_filtro_grid', 'tipo' => 'Requisitos legais', 'base' => 'modulolegal_requisitoslegais', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_laia' => ['view' => 'vw_laia_grid', 'tipo' => 'LAIA', 'base' => 'modulolegal_laia', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_lpro' => ['view' => 'vw_lpro_grid', 'tipo' => 'LPRO', 'base' => 'modulolegal_lpro', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_lais' => ['view' => 'vw_lais_grid', 'tipo' => 'LAIS', 'base' => 'modulolegal_lais', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'modulolegal_controle' => ['view' => 'vw_controle_documentos_grid', 'tipo' => 'Controle de documentos', 'base' => 'modulolegal_controle', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'meus_controles' => ['view' => 'vw_meus_controles_grid', 'tipo' => 'Meus controles', 'base' => 'meus_controles', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'manutencaolegal_licencas' => ['view' => 'vw_licencas_grid', 'tipo' => 'Cadastro de licenças', 'base' => 'manutencaolegal_licencas', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-    'minhas_licencas' => ['view' => 'vw_licencas_grid', 'tipo' => 'Minhas licenças', 'base' => 'minhas_licencas', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
+    'administracao_unidades' => ['view' => 'vw_unidades_grid', 'tipo' => 'Cadastro de unidades', 'base' => 'administracao_unidades', 'prefix' => 'GPT'],
+    'administracao_areas' => ['view' => 'vw_areas_grid', 'tipo' => 'Cadastro de áreas', 'base' => 'administracao_areas', 'prefix' => 'GPT'],
+    'administracao_atividades' => ['view' => 'vw_atividades_grid', 'tipo' => 'Cadastro de atividades', 'base' => 'administracao_atividades', 'prefix' => 'GPT'],
+    'modulolegal_requisitoslegais' => ['view' => 'vw_modulolegal_requisitos_filtro_grid', 'tipo' => 'Requisitos legais', 'base' => 'modulolegal_requisitoslegais', 'prefix' => 'GPT'],
+    'modulolegal_laia' => ['view' => 'vw_laia_grid', 'tipo' => 'LAIA', 'base' => 'modulolegal_laia', 'prefix' => 'GPT'],
+    'modulolegal_lpro' => ['view' => 'vw_lpro_grid', 'tipo' => 'LPRO', 'base' => 'modulolegal_lpro', 'prefix' => 'GPT'],
+    'modulolegal_lais' => ['view' => 'vw_lais_grid', 'tipo' => 'LAIS', 'base' => 'modulolegal_lais', 'prefix' => 'GPT'],
+    'modulolegal_controle' => ['view' => 'vw_controle_documentos_grid', 'tipo' => 'Controle de documentos', 'base' => 'modulolegal_controle', 'prefix' => 'GPT'],
+    'meus_controles' => ['view' => 'vw_meus_controles_grid', 'tipo' => 'Meus controles', 'base' => 'meus_controles', 'prefix' => 'GPT'],
+    'manutencaolegal_licencas' => ['view' => 'vw_licencas_grid', 'tipo' => 'Cadastro de licenças', 'base' => 'manutencaolegal_licencas', 'prefix' => 'GPT'],
+    'minhas_licencas' => ['view' => 'vw_licencas_grid', 'tipo' => 'Minhas licenças', 'base' => 'minhas_licencas', 'prefix' => 'GPT'],
      'manutencaolegal_legislacao' => ['view' => 'vw_legislacao_grid', 'tipo' => 'Cadastro de legislação', 'base' => 'manutencaolegal_legislacao', 'database' => 'glegislacao_dbp', 'prefix' => 'GLEGISLACAO', 'special' => 'legislacao'],
-     'manutencaolegal_legislacaoxempresa' => ['view' => 'vw_legislacaoxempresa_matrix', 'tipo' => 'Legislação x Empresas', 'base' => 'manutencaolegal_legislacaoxempresa', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
-     'manutencaolegal_legislacaoxpoder' => ['view' => 'vw_legislacaoxpoder_matrix', 'tipo' => 'Legislação x Poder', 'base' => 'manutencaolegal_legislacaoxpoder', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT'],
+     'manutencaolegal_legislacaoxempresa' => ['view' => 'vw_legislacaoxempresa_matrix', 'tipo' => 'Legislação x Empresas', 'base' => 'manutencaolegal_legislacaoxempresa', 'prefix' => 'GPT'],
+     'manutencaolegal_legislacaoxpoder' => ['view' => 'vw_legislacaoxpoder_matrix', 'tipo' => 'Legislação x Poder', 'base' => 'manutencaolegal_legislacaoxpoder', 'prefix' => 'GPT'],
  ];
 $columnPayload = json_decode((string)($job['colunas'] ?? '[]'), true);
 $runtimeExportConfig = is_array($columnPayload) && is_array($columnPayload['__config'] ?? null) ? $columnPayload['__config'] : [];
-if (isset($legalExports[(string)$job['transacao']])) {
-    $exportConfig = $legalExports[(string)$job['transacao']];
-    $exportPdo = $pdo;
-    if ($exportConfig['database'] !== $tenantDatabase) {
-        $exportPdo = new PDO('mysql:host=' . ($env[$exportConfig['prefix'] . '_DB_HOST'] ?? '127.0.0.1') . ';port=' . ($env[$exportConfig['prefix'] . '_DB_PORT'] ?? '3306') . ';dbname=' . $exportConfig['database'] . ';charset=utf8mb4', $env[$exportConfig['prefix'] . '_DB_USERNAME'] ?? '', $env[$exportConfig['prefix'] . '_DB_PASSWORD'] ?? '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
-    }
-} else {
-    $exportPdo = $pdo;
+// 25/11/2026 (regra do usuário): cada empresa só recebe planilhas com os dados dela. O banco da exportação é SEMPRE o da
+// empresa que solicitou — o pedido fica na exportacoes_grid do banco dessa empresa ($tenantDatabase, parâmetro do serviço);
+// nada de banco fixo na lista acima nem de outro banco vindo do pedido. Só a base compartilhada de legislação
+// (prefixo GLEGISLACAO: tipos, âmbitos, assuntos, legislação), que é comum a todas as empresas, usa o banco dela.
+$exportConfig = $legalExports[(string)$job['transacao']] ?? (isset($exportConfig) && is_array($exportConfig) ? $exportConfig : []);
+$exportConfig['prefix'] = (string)($exportConfig['prefix'] ?? 'GPT');
+if ($runtimeExportConfig) {
+    foreach (['view', 'database', 'prefix'] as $chaveCfg) if (isset($runtimeExportConfig[$chaveCfg])) $runtimeExportConfig[$chaveCfg] = preg_replace('/[^a-zA-Z0-9_]/', '', (string)$runtimeExportConfig[$chaveCfg]);
+    foreach (['view', 'prefix', 'tipo', 'base'] as $chaveCfg) if ((string)($runtimeExportConfig[$chaveCfg] ?? '') !== '') $exportConfig[$chaveCfg] = $runtimeExportConfig[$chaveCfg];
+    foreach ($runtimeExportConfig as $chaveCfg => $valorCfg) if (!array_key_exists($chaveCfg, $exportConfig) && !in_array($chaveCfg, ['database', 'codempresa'], true)) $exportConfig[$chaveCfg] = $valorCfg;
 }
-if ($runtimeExportConfig && isset($runtimeExportConfig['view'], $runtimeExportConfig['database'], $runtimeExportConfig['prefix'])) {
-    $runtimeExportConfig['view'] = preg_replace('/[^a-zA-Z0-9_]/', '', (string)$runtimeExportConfig['view']);
-    $runtimeExportConfig['database'] = preg_replace('/[^a-zA-Z0-9_]/', '', (string)$runtimeExportConfig['database']);
-    $runtimeExportConfig['prefix'] = preg_replace('/[^a-zA-Z0-9_]/', '', (string)$runtimeExportConfig['prefix']);
-    if ($runtimeExportConfig['view'] !== '' && $runtimeExportConfig['database'] !== '' && $runtimeExportConfig['prefix'] !== '') {
-        $exportConfig = array_merge($exportConfig, $runtimeExportConfig);
-        if ($exportConfig['database'] !== $tenantDatabase && $exportPdo === $pdo) {
-            $exportPdo = new PDO('mysql:host=' . ($env[$exportConfig['prefix'] . '_DB_HOST'] ?? '127.0.0.1') . ';port=' . ($env[$exportConfig['prefix'] . '_DB_PORT'] ?? '3306') . ';dbname=' . $exportConfig['database'] . ';charset=utf8mb4', $env[$exportConfig['prefix'] . '_DB_USERNAME'] ?? '', $env[$exportConfig['prefix'] . '_DB_PASSWORD'] ?? '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
-        }
-    }
+$bancoExportacao = $tenantDatabase;
+if (strtoupper($exportConfig['prefix']) === 'GLEGISLACAO') {
+    $bancoExportacao = (string)(GreenPortalDatabase::env()['GLEGISLACAO_DB_DATABASE'] ?? ($exportConfig['database'] ?? 'glegislacao_dbp'));
+} elseif (strtoupper($exportConfig['prefix']) !== 'GPT') {
+    $exportConfig['prefix'] = 'GPT';
 }
+$bancoPedido = (string)($runtimeExportConfig['database'] ?? '');
+if ($exportConfig['prefix'] === 'GPT' && $bancoPedido !== '' && strcasecmp($bancoPedido, $tenantDatabase) !== 0) {
+    fwrite(STDERR, 'Exportação ' . $jobId . ': pedido citava o banco ' . $bancoPedido . '; usado o banco da empresa solicitante (' . $tenantDatabase . ').' . PHP_EOL);
+}
+$exportConfig['database'] = $bancoExportacao;
+$exportPdo = $bancoExportacao === $tenantDatabase ? $pdo : GreenPortalDatabase::connect(GreenPortalDatabase::env(), $bancoExportacao, strtoupper($exportConfig['prefix']));
 // Pesquisa de documentos (transação busca_documentos): os dados vêm de sp_busca_pesquisar com os parâmetros e as permissões
 // do usuário gravados no pedido (filtros), e não de uma view; mesma fila, alertas e planilha das outras exportações.
 if ((string)($job['transacao'] ?? '') === 'busca_documentos') {
@@ -213,9 +217,16 @@ if ((string)($job['transacao'] ?? '') === 'modulolegal_relatorio_atendimento') {
 $dir = $root . DIRECTORY_SEPARATOR . 'exports'; if (!is_dir($dir)) mkdir($dir, 0775, true);
 $userRows = workerCall($pdo, 'CALL sp_crud_select(:tabela, :filtros, NULL, 1, 0)', ['tabela' => 'vw_usuarios_grid', 'filtros' => json_encode(['codusuario' => (int)$job['codusuario']])]);
 $userName = (string)($userRows[0]['nome'] ?? $userRows[0]['userid'] ?? 'usuario_' . (int)$job['codusuario']);
+// 25/11/2026: nome da empresa que solicitou (a do banco do pedido) no cabeçalho e no nome do arquivo da planilha.
+$companyName = '';
+try {
+    require_once $root . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'LegislacaoEmpresas.php';
+    foreach (LegislacaoEmpresas::migradas() as $empresaMig) if (strcasecmp((string)$empresaMig['banco'], $tenantDatabase) === 0) { $companyName = trim((string)$empresaMig['nome']); break; }
+} catch (Throwable $e) { $companyName = ''; }
+if ($companyName === '') $companyName = preg_replace('/_dbp$/i', '', $tenantDatabase) ?? $tenantDatabase;
 $exportRequesterProfile = strtoupper(trim((string)($userRows[0]['perfil_codigo'] ?? '')));
 $functionalName = match ((string)$job['transacao']) { 'modulolegal_relatorio_atendimento' => 'Relatorio_atendimento_legal', 'modulolegal_requisitoslegais' => 'Requisitos_legais', 'manutencaolegal_licencas', 'minhas_licencas' => 'Licencas', default => filenamePart((string)($exportConfig['tipo'] ?? $exportConfig['base'] ?? 'Exportacao'), 'Exportacao') };
-$base = $functionalName . '_' . date('Ymd_His') . '_' . filenamePart($userName, 'usuario_' . (int)$job['codusuario']); $xlsx = $dir . DIRECTORY_SEPARATOR . $base . '.xlsx';
+$base = $functionalName . '_' . filenamePart($companyName, 'empresa') . '_' . date('Ymd_His') . '_' . filenamePart($userName, 'usuario_' . (int)$job['codusuario']); $xlsx = $dir . DIRECTORY_SEPARATOR . $base . '.xlsx';
 try {
     if (($exportConfig['special'] ?? '') === 'relatorio_legal') {
         require_once $root . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'RelatorioAtendimentoLegal.php';
@@ -224,14 +235,14 @@ try {
     }
     if (($exportConfig['special'] ?? '') === 'migracao_orfaos') {
         require_once $root . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'MigracaoOrfaosExportacao.php';
-        createProfessionalXlsx($xlsx, MigracaoOrfaosExportacao::linhas($env, $job), $userName, ExportacaoTextos::dataHora(), $exportConfig['tipo']);
+        createProfessionalXlsx($xlsx, MigracaoOrfaosExportacao::linhas($env, $job), $userName, ExportacaoTextos::dataHora(), $exportConfig['tipo'], $companyName);
         $generated = $xlsx;
         goto concluir;
     }
     if (in_array(($exportConfig['special'] ?? ''), ['painel_homologacao', 'documentos_fornecedor', 'relatorios_homologacao', 'consumo_ia'], true)) {
         $classeEspecial = match ($exportConfig['special']) { 'painel_homologacao' => 'HomologacaoPainelExportacao', 'relatorios_homologacao' => 'HomologacaoRelatoriosExportacao', 'consumo_ia' => 'IaConsumoExportacao', default => 'HomologacaoDocumentosExportacao' };
         require_once $root . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . $classeEspecial . '.php';
-        createProfessionalXlsx($xlsx, $classeEspecial::linhas($pdo, $job), $userName, ExportacaoTextos::dataHora(), $exportConfig['tipo']);
+        createProfessionalXlsx($xlsx, $classeEspecial::linhas($pdo, $job), $userName, ExportacaoTextos::dataHora(), $exportConfig['tipo'], $companyName);
         $generated = $xlsx;
         goto concluir;
     }
@@ -381,7 +392,7 @@ try {
             return $labeled;
         }, $rows);
     }
-    createProfessionalXlsx($xlsx, $rows, $userName, ExportacaoTextos::dataHora(), $exportConfig['tipo']);
+    createProfessionalXlsx($xlsx, $rows, $userName, ExportacaoTextos::dataHora(), $exportConfig['tipo'], $companyName);
     $generated = $xlsx;
     concluir:
     $finishedAt = date('Y-m-d H:i:s');

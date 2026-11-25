@@ -15,6 +15,10 @@ $types = [
     'treinamentos' => ['table' => 'ml_treinamentos', 'field' => 'CODTREINAMENTO', 'folder' => 'treinamentos'],
     'infraestrutura' => ['table' => 'ml_infraestrutura', 'field' => 'CODINFRAESTRUTURA', 'folder' => 'infraestrutura'],
     'planodeacao' => ['table' => 'li_planodeacao', 'field' => 'CODPLANOACAO', 'folder' => 'li_planodeacao'],
+    // Migração 410: certificados dos trabalhadores treinados
+    // Migração 412: evidências do plano de manutenção da infraestrutura
+    'infraestruturamanutencoes' => ['table' => 'ml_infraestrutura_manutencoes', 'field' => 'CODMANUTENCAO', 'folder' => 'ml_infraestrutura_manutencoes'],
+    'treinamentoparticipantes' => ['table' => 'ml_treinamentos_participantes', 'field' => 'CODPARTICIPANTE', 'folder' => 'ml_treinamentos_participantes'],
     'funcionarios' => ['table' => 'fo_funcionarios', 'field' => 'CODFUNCIONARIO', 'folder' => 'fo_funcionarios'],
     'fornecedorcriterios' => ['table' => 'fo_fornecedorxcriterios', 'field' => 'CODFORNECEDORXCRITERIOS', 'folder' => 'fo_fornecedorxcriterios'],
     'funcionariocriterios' => ['table' => 'fo_funcionarioxtiposxcriterios', 'field' => 'CODIGO', 'folder' => 'fo_funcionarioxtiposxcriterios'],

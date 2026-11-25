@@ -11,6 +11,7 @@ declare(strict_types=1);
  *   - Licenças: Tipo documental + unidade; Medição: Tipo de medição + unidade; Controles, Treinamentos e Infraestrutura: unidade;
  *   - 24/11/2026 (onda 2): Homologação de fornecedores por Tipo de fornecedor + unidade (migração 406);
  *     Requisitos legais por Categoria + unidade (migração 407);
+ *   - 24/11/2026 (onda 3, migração 408): Controles, Treinamentos e Infraestrutura também por Tipo (catálogos ml_tipos_*);
  *   - os avisos (prazos, atribuição, alteração) são escolhidos em cada regra.
  *
  * Tabelas (database/361_responsaveis_regras.sql): resp_regras (AREA, REGISTRO_ID opcional = regra de um registro só, CODTIPO,
@@ -65,28 +66,28 @@ final class ResponsaveisRegras
         ],
         'CONTROLES' => [
             'nome' => ['pt' => 'Controles', 'en' => 'Controls', 'es' => 'Controles'],
-            'tabela' => 'documentos', 'chave' => 'CODDOCUMENTO', 'descricao' => 'TITULO', 'unidade' => null, 'tipo' => null, 'tipo_rotulo' => null,
+            'tabela' => 'documentos', 'chave' => 'CODDOCUMENTO', 'descricao' => 'TITULO', 'unidade' => null, 'tipo' => ['CODTIPOCONTROLE', 'ml_tipos_controle', 'CODTIPOCONTROLE', 'DSCTIPOCONTROLE'], 'tipo_rotulo' => ['pt' => 'Tipo de controle', 'en' => 'Control type', 'es' => 'Tipo de control'],
             'menu' => 'CONTROLE_DOCUMENTOS', 'menu_minhas' => 'MEUS_CONTROLES', 'menu_regras' => 'RESP_REGRAS_CONTROLES',
             'grid' => 'vw_controle_documentos_grid', 'pagina' => '/principal/meus_controles.php', 'tela' => '/principal/responsaveis_regras_controles.php',
             'entidades' => ['documentos'], 'ligacoes' => [['documentosxunidades', 'CODDOCUMENTO', 'CODUNIDADE']],
-            'modulo_resp' => 'CONTROLE', 'prazos' => false, 'historico' => true, 'responsavel' => ['codusuario', 'codusuario_responsavel', 'codresponsavel'],
+            'modulo_resp' => 'CONTROLE', 'prazos' => true, 'historico' => true, 'responsavel' => ['codusuario', 'codusuario_responsavel', 'codresponsavel'],
         ],
         'TREINAMENTOS' => [
             'nome' => ['pt' => 'Treinamentos', 'en' => 'Training', 'es' => 'Capacitaciones'],
-            'tabela' => 'ml_treinamentos', 'chave' => 'CODTREINAMENTO', 'descricao' => 'DSCTREINAMENTO', 'unidade' => null, 'tipo' => null, 'tipo_rotulo' => null,
+            'tabela' => 'ml_treinamentos', 'chave' => 'CODTREINAMENTO', 'descricao' => 'DSCTREINAMENTO', 'unidade' => null, 'tipo' => ['CODTIPOTREINAMENTO', 'ml_tipos_treinamento', 'CODTIPOTREINAMENTO', 'DSCTIPOTREINAMENTO'], 'tipo_rotulo' => ['pt' => 'Tipo de treinamento', 'en' => 'Training type', 'es' => 'Tipo de capacitación'],
             'menu' => 'MODULOLEGAL_TREINAMENTOS', 'menu_minhas' => 'MEUS_TREINAMENTOS', 'menu_regras' => 'RESP_REGRAS_TREINAMENTOS',
             'grid' => 'vw_modulolegal_treinamentos_grid', 'pagina' => '/principal/meus_treinamentos.php', 'tela' => '/principal/responsaveis_regras_treinamentos.php',
-            'entidades' => ['ml_treinamentos'], 'ligacoes' => [['legislacaoxtreinamentos', 'CODTREINAMENTO', 'CODUNIDADE']],
-            'modulo_resp' => 'TREINAMENTO', 'prazos' => false, 'historico' => true, 'responsavel' => ['codusuario', 'codusuario_responsavel', 'codresponsavel'],
+            'entidades' => ['ml_treinamentos'], 'ligacoes' => [['ml_treinamentosxunidades', 'CODTREINAMENTO', 'CODUNIDADE'], ['legislacaoxtreinamentos', 'CODTREINAMENTO', 'CODUNIDADE']], // ml_treinamentosxunidades: migração 411
+            'modulo_resp' => 'TREINAMENTO', 'prazos' => true, 'historico' => true, 'responsavel' => ['codusuario', 'codusuario_responsavel', 'codresponsavel'],
         ],
         'INFRAESTRUTURA' => [
             'nome' => ['pt' => 'Infraestrutura', 'en' => 'Infrastructure', 'es' => 'Infraestructura'],
-            'tabela' => 'ml_infraestrutura', 'chave' => 'CODINFRAESTRUTURA', 'descricao' => 'DSCINFRAESTRUTURA', 'unidade' => null, 'tipo' => null, 'tipo_rotulo' => null,
+            'tabela' => 'ml_infraestrutura', 'chave' => 'CODINFRAESTRUTURA', 'descricao' => 'DSCINFRAESTRUTURA', 'unidade' => null, 'tipo' => ['CODTIPOINFRAESTRUTURA', 'ml_tipos_infraestrutura', 'CODTIPOINFRAESTRUTURA', 'DSCTIPOINFRAESTRUTURA'], 'tipo_rotulo' => ['pt' => 'Tipo de infraestrutura', 'en' => 'Infrastructure type', 'es' => 'Tipo de infraestructura'],
             'menu' => 'MODULOLEGAL_INFRAESTRUTURA', 'menu_minhas' => 'MINHAS_INFRAESTRUTURAS', 'menu_regras' => 'RESP_REGRAS_INFRAESTRUTURA',
             'grid' => 'vw_modulolegal_infraestrutura_grid', 'pagina' => '/principal/minhas_infraestruturas.php', 'tela' => '/principal/responsaveis_regras_infraestrutura.php',
             'entidades' => ['ml_infraestrutura', 'infraestrutura'],
-            'ligacoes' => [['infraestruturaxunidades', 'CODINFRAESTRUTURA', 'CODUNIDADE'], ['legislacaoxinfraestruturas', 'CODINFRAESTRUTURA', 'CODUNIDADE']],
-            'modulo_resp' => 'INFRAESTRUTURA', 'prazos' => false, 'historico' => true, 'responsavel' => ['codusuario', 'codusuario_responsavel', 'codresponsavel'],
+            'ligacoes' => [['ml_infraestruturaxunidades', 'CODINFRAESTRUTURA', 'CODUNIDADE'], ['infraestruturaxunidades', 'CODINFRAESTRUTURA', 'CODUNIDADE'], ['legislacaoxinfraestruturas', 'CODINFRAESTRUTURA', 'CODUNIDADE']],
+            'modulo_resp' => 'INFRAESTRUTURA', 'prazos' => true, 'historico' => true, 'responsavel' => ['codusuario', 'codusuario_responsavel', 'codresponsavel'],
         ],
         // Onda 2 da Revisão G (24/11/2026; HOM-132, HOM-138, HOM-140): fornecedores por Tipo de fornecedor (um fornecedor pode ter
         // vários tipos: fo_fornecedoresxtipofornecedores) + unidade. Só fornecedores ativados. As regras entram na
@@ -428,6 +429,41 @@ SELECT x.`CODLEGISLACAO`, x.`codunidade`, ru.`CODUSUARIO`
                 $p[] = $prazo('MEDICAO', 'REACAO', 'mm_monitoramento', 'CODMONITORAMENTO', $desc, 'DATA_REACAO', 'reação em', 'DATE(x.`DATA_REACAO`) BETWEEN CURDATE() - INTERVAL 7 DAY AND CURDATE()');
             if (isset($c['data_medicao']))
                 $p[] = $prazo('MEDICAO', 'MEDICAO', 'mm_monitoramento', 'CODMONITORAMENTO', $desc, 'DATA_MEDICAO', 'medição prevista em', 'DATE(x.`DATA_MEDICAO`) BETWEEN CURDATE() AND CURDATE() + INTERVAL 7 DAY');
+        }
+        // Migração 412 (onda 3, 25/11/2026): Controle — vencimento (409) em até 30 dias e reação (vencimento − dias de reação) nos últimos 7 dias
+        if (in_array('CONTROLES', $areas, true)) {
+            $c = self::colunas($pdo, 'documentos');
+            $desc = "COALESCE(NULLIF(TRIM(x.`TITULO`), ''), x.`CODIGO`, CONCAT('#', x.`CODDOCUMENTO`))";
+            if (isset($c['data_vencimento'])) {
+                $p[] = $prazo('CONTROLES', 'VENCIMENTO', 'documentos', 'CODDOCUMENTO', $desc, 'DATA_VENCIMENTO', 'vence em', 'x.`DATA_VENCIMENTO` BETWEEN CURDATE() AND CURDATE() + INTERVAL 30 DAY');
+                if (isset($c['dias_reacao']))
+                    $p[] = 'SELECT CAST(d.`CODUSUARIO` AS SIGNED) AS `CODUSUARIO`, ' . self::lit('CONTROLES') . ' AS `AREA`, CAST(d.`REGISTRO_ID` AS SIGNED) AS `REGISTRO_ID`, '
+                        . self::lit('REACAO') . ' AS `TIPO`, ' . self::txt("DATE_FORMAT(x.`DATA_VENCIMENTO` - INTERVAL x.`DIAS_REACAO` DAY, '%Y-%m-%d')", 40) . ' AS `CHAVE`, ' . self::txt($desc) . ' AS `DESCRICAO`, '
+                        . self::txt("CONCAT('reação em ', DATE_FORMAT(x.`DATA_VENCIMENTO` - INTERVAL x.`DIAS_REACAO` DAY, '%d/%m/%Y'), ' (vence em ', DATE_FORMAT(x.`DATA_VENCIMENTO`, '%d/%m/%Y'), ')')", 500) . " AS `DETALHE`
+  FROM " . $quem('CONTROLES') . " d JOIN `documentos` x ON x.`CODDOCUMENTO` = d.`REGISTRO_ID`
+ WHERE x.`DIAS_REACAO` > 0 AND x.`DATA_VENCIMENTO` - INTERVAL x.`DIAS_REACAO` DAY BETWEEN CURDATE() - INTERVAL 7 DAY AND CURDATE()";
+            }
+        }
+        // Migração 412: Treinamento — treinados (410) a vencer (reação atingida) e vencidos nos últimos 7 dias; um aviso por treinado e validade
+        if (in_array('TREINAMENTOS', $areas, true) && isset(self::colunas($pdo, 'vw_ml_treinamentos_participantes_grid')['status_treinado'])) {
+            $desc = "COALESCE(NULLIF(TRIM(x.`DSCTREINAMENTO`), ''), CONCAT('#', x.`CODTREINAMENTO`))";
+            foreach (['TREINADOS' => ["k.`STATUS_TREINADO` = 'A vencer'", "' vence em '"], 'TREINADOS_VENCIDOS' => ["k.`STATUS_TREINADO` = 'Vencido' AND k.`VALIDADE_TREINADO` >= CURDATE() - INTERVAL 7 DAY", "' venceu em '"]] as $tipo => [$cond, $verbo])
+                $p[] = 'SELECT CAST(d.`CODUSUARIO` AS SIGNED) AS `CODUSUARIO`, ' . self::lit('TREINAMENTOS') . ' AS `AREA`, CAST(d.`REGISTRO_ID` AS SIGNED) AS `REGISTRO_ID`, '
+                    . self::lit($tipo) . ' AS `TIPO`, ' . self::txt("CONCAT(k.`CODPARTICIPANTE`, '|', DATE_FORMAT(k.`VALIDADE_TREINADO`, '%Y-%m-%d'))", 40) . ' AS `CHAVE`, ' . self::txt($desc) . ' AS `DESCRICAO`, '
+                    . self::txt("CONCAT(COALESCE(NULLIF(TRIM(k.`NOME`), ''), 'treinado'), $verbo, DATE_FORMAT(k.`VALIDADE_TREINADO`, '%d/%m/%Y'))", 500) . " AS `DETALHE`
+  FROM " . $quem('TREINAMENTOS') . " d JOIN `ml_treinamentos` x ON x.`CODTREINAMENTO` = d.`REGISTRO_ID`
+  JOIN `vw_ml_treinamentos_participantes_grid` k ON k.`CODTREINAMENTO` = x.`CODTREINAMENTO`
+ WHERE $cond";
+        }
+        // Migração 412: Infraestrutura — manutenção do plano prevista em até 7 dias ou atrasada há até 7 dias, ainda não realizada
+        if (in_array('INFRAESTRUTURA', $areas, true) && isset(self::colunas($pdo, 'vw_ml_infraestrutura_manutencoes_grid')['status_manutencao'])) {
+            $desc = "COALESCE(NULLIF(TRIM(x.`dscinfraestrutura`), ''), CONCAT('#', x.`codinfraestrutura`))";
+            $p[] = 'SELECT CAST(d.`CODUSUARIO` AS SIGNED) AS `CODUSUARIO`, ' . self::lit('INFRAESTRUTURA') . ' AS `AREA`, CAST(d.`REGISTRO_ID` AS SIGNED) AS `REGISTRO_ID`, '
+                . self::lit('MANUTENCAO') . ' AS `TIPO`, ' . self::txt("CONCAT(k.`CODMANUTENCAO`, '|', DATE_FORMAT(k.`DATA_PREVISTA`, '%Y-%m-%d'))", 40) . ' AS `CHAVE`, ' . self::txt($desc) . ' AS `DESCRICAO`, '
+                . self::txt("CONCAT(COALESCE(NULLIF(TRIM(k.`ATIVIDADE`), ''), 'manutenção'), ' prevista para ', DATE_FORMAT(k.`DATA_PREVISTA`, '%d/%m/%Y'))", 500) . " AS `DETALHE`
+  FROM " . $quem('INFRAESTRUTURA') . " d JOIN `ml_infraestrutura` x ON x.`codinfraestrutura` = d.`REGISTRO_ID`
+  JOIN `vw_ml_infraestrutura_manutencoes_grid` k ON k.`CODINFRAESTRUTURA` = x.`codinfraestrutura`
+ WHERE k.`DATA_REALIZADA` IS NULL AND k.`DATA_PREVISTA` BETWEEN CURDATE() - INTERVAL 7 DAY AND CURDATE() + INTERVAL 7 DAY";
         }
         if (in_array('HOMOLOGACAO', $areas, true)) {
             $c = self::colunas($pdo, 'fo_fornecedores');

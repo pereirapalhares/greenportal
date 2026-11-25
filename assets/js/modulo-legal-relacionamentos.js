@@ -27,8 +27,8 @@
         }
         function render(data) {
             var rows = $modal.data('mlRelRows') || [], options = data.available || [], html = '';
-            $modal.find('[data-ml-rel-grid] thead').html(data.mode === 'attributes' ? '<tr><th>' + TH('descricao', 'Descrição') + '</th><th>' + TH('valor', 'Valor') + '</th></tr>' : '<tr><th>' + TH('palavra_chave', 'Palavra-chave') + '</th></tr>');
-            if (!rows.length) html = data.mode === 'attributes' ? '<tr><td colspan="2" class="text-muted small">' + TH('sem_atributos', 'Nenhum atributo cadastrado.') + '</td></tr>' : '<tr><td class="text-muted small">' + TH('sem_palavras', 'Nenhuma palavra-chave cadastrada.') + '</td></tr>';
+            $modal.find('[data-ml-rel-grid] thead').html(data.mode === 'attributes' ? '<tr><th>' + TH('descricao', 'Descrição') + '</th><th>' + TH('valor', 'Valor') + '</th></tr>' : '<tr><th>' + (data.column_label ? $('<div>').text(data.column_label).html() : TH('palavra_chave', 'Palavra-chave')) + '</th></tr>');
+            if (!rows.length) html = data.mode === 'attributes' ? '<tr><td colspan="2" class="text-muted small">' + TH('sem_atributos', 'Nenhum atributo cadastrado.') + '</td></tr>' : '<tr><td class="text-muted small">' + (data.empty_label ? $('<div>').text(data.empty_label).html() : TH('sem_palavras', 'Nenhuma palavra-chave cadastrada.')) + '</td></tr>';
             rows.forEach(function (row, index) {
                 var isNew = String(row.key).indexOf('novo_') === 0;
                 if (data.mode === 'attributes') html += '<tr data-ml-rel-row data-ml-rel-row-index="' + index + '"><td><input class="grid-input" data-ml-rel-field="descricao" value="' + esc(row.descricao || '') + '"' + (isNew ? '' : ' readonly') + '></td><td><input class="grid-input" data-ml-rel-field="valor" value="' + esc(row.valor || '') + '"' + (isNew ? '' : ' readonly') + '></td></tr>';

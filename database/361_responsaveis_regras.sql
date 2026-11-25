@@ -117,6 +117,9 @@ BEGIN
                         WHEN 'MEDICAO' THEN CONCAT(COUNT(*), ' medição(ões) prevista(s) em até 7 dias')
                         WHEN 'AVALIACAO' THEN CONCAT(COUNT(*), ' com a próxima avaliação em até 30 dias')
                         WHEN 'DOCUMENTOS' THEN CONCAT(COUNT(*), ' documento(s) vence(m) em até 30 dias')
+                        WHEN 'TREINADOS' THEN CONCAT(COUNT(*), ' treinado(s) com o treinamento a vencer')
+                        WHEN 'TREINADOS_VENCIDOS' THEN CONCAT(COUNT(*), ' treinado(s) com o treinamento vencido')
+                        WHEN 'MANUTENCAO' THEN CONCAT(COUNT(*), ' manutenção(ões) prevista(s) para os próximos 7 dias ou atrasada(s)')
                         ELSE CONCAT(COUNT(*), ' registro(s) alterado(s) por outra pessoa') END), 180),
                LEFT(CONCAT(GROUP_CONCAT(CONCAT('• ', COALESCE(NULLIF(TRIM(t.`DESCRICAO`), ''), CONCAT('#', t.`REGISTRO_ID`)),
                                                IF(COALESCE(t.`DETALHE`, '') = '', '', CONCAT(' — ', t.`DETALHE`)))
