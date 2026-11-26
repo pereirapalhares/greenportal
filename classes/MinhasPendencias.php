@@ -97,6 +97,38 @@ final class MinhasPendencias
         return $out;
     }
 
+    /**
+     * Revisão G item 5.3 (painel de bordo, 26/11/2026): pendências de cada usuário por pilar, com vencidas e a vencer em 30 dias.
+     * Mesma leitura em lote de contarPorUsuario. @return array<int, array<string, array{total:int, vencidas:int, avencer:int}>>
+     */
+    public static function detalhePorUsuario(PDO $pdo, array $uids): array
+    {
+        self::$lote = []; self::$memo = [];
+        $out = [];
+        try {
+            $pedidos = array_fill_keys(array_map('intval', $uids), true); $feitos = [];
+            $montar = static function (int $uid) use ($pdo, &$out, &$feitos): void {
+                $feitos[$uid] = true;
+                foreach ((new self($pdo, $uid))->itens(true) as $i) {
+                    $c = &$out[$uid][(string)$i['pilar']];
+                    $c ??= ['total' => 0, 'vencidas' => 0, 'avencer' => 0];
+                    $c['total']++;
+                    $sinal = self::sinal($i['prazo']);
+                    if ($sinal === 'vencido') $c['vencidas']++; elseif ($sinal === 'a-vencer') $c['avencer']++;
+                    unset($c);
+                }
+            };
+            if ($pedidos) $montar((int)array_key_first($pedidos));
+            do {
+                $antes = count(self::$lote);
+                $candidatos = [];
+                foreach (self::$lote as $idx) if (is_array($idx)) foreach ($idx as $uid => $_) if (isset($pedidos[$uid]) && !isset($feitos[$uid])) $candidatos[$uid] = true;
+                foreach (array_keys($candidatos) as $uid) $montar((int)$uid);
+            } while (count(self::$lote) > $antes);
+        } finally { self::$lote = null; self::$memo = []; }
+        return $out;
+    }
+
     /** Lote: lê a view inteira uma vez e indexa pelo usuário. */
     private function lerLote(string $view): ?array
     {
@@ -189,6 +221,7 @@ final class MinhasPendencias
         $this->pilares();
         $this->homologacao();
         $this->eficacia();
+        if (self::$lote === null) $this->usuariosValidade();
         usort($this->itens, static fn(array $a, array $b): int => [$a['prazo'] === null, $a['prazo']?->format('Y-m-d') ?? '', $a['pilar'], $a['titulo']] <=> [$b['prazo'] === null, $b['prazo']?->format('Y-m-d') ?? '', $b['pilar'], $b['titulo']]);
         if (!$todas && is_file(__DIR__ . '/PendenciasGestao.php')) {
             require_once __DIR__ . '/PendenciasGestao.php';
@@ -303,6 +336,20 @@ final class MinhasPendencias
             $motivo = $this->t('home.motivo.' . $pk . '.responsavel', $motivoTxt);
             foreach ($this->ler($view, 500) as $r) $this->add($pilar, (string)($r[$campoTitulo] ?? $pilar), $motivo, null, self::url($pagina, [$chave => (string)($r[$chave] ?? '')], true));
         }
+    }
+
+    /** Revisão G item 9 (migração 421): ADMINISTRADOR e ADM DA EMPRESA revisam os usuários sem acesso (ou sem a confirmação periódica). */
+    private function usuariosValidade(): void
+    {
+        if ($this->fornecedorExterno || $this->uid !== (int)($_SESSION['usuario']['codusuario'] ?? 0) || !self::pode('VALIDADE_USUARIOS')) return;
+        $perfil = strtoupper((string)preg_replace('/[\s_-]+/', ' ', (string)($_SESSION['usuario']['codigo_perfil'] ?? '')));
+        if (!in_array($perfil, ['ADMINISTRADOR', 'ADM DA EMPRESA', 'ADM EMPRESA'], true) || !is_file(__DIR__ . '/UsuarioValidade.php')) return;
+        require_once __DIR__ . '/UsuarioValidade.php';
+        $n = UsuarioValidade::aRevisar($this->pdo);
+        if ($n < 1) return;
+        $this->add($this->t('home.pilar.seguranca', ['pt' => 'Segurança', 'en' => 'Security', 'es' => 'Seguridad']), $this->t('home.titulo.usuarios_revisar', ['pt' => 'Usuários a revisar', 'en' => 'Users to review', 'es' => 'Usuarios a revisar']),
+            str_replace('{n}', (string)$n, $this->t('home.motivo.usuarios_revisar', ['pt' => '{n} usuário(s) ativo(s) sem acesso há muito tempo: confirmar que continuam na empresa ou inativar', 'en' => '{n} active user(s) without access for a long time: confirm they are still in the company or deactivate', 'es' => '{n} usuario(s) activo(s) sin acceso hace mucho: confirmar o inactivar'])),
+            null, 'seguranca_validade_usuarios.php');
     }
 
     /** Migração 362 (GER-5): ações concluídas em que o usuário é o avaliador da eficácia. */

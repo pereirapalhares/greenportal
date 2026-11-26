@@ -51,7 +51,7 @@ if ($perfilGestor) {
 // ---------------------------------------------------------------- auxiliares
 $T = static fn(string $chave, array $textos): string => IdiomaService::t('dashboard.' . $chave, $textos);
 $e = static fn(mixed $v): string => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
-$sel = static function (string $view, array $filtros = [], int $limite = 1000) use ($pdo): ?array {
+$selBase = static function (string $view, array $filtros = [], int $limite = 1000) use ($pdo): ?array {
     try {
         $linhas = [];
         for ($offset = 0; ; $offset += 1000) {
@@ -64,6 +64,38 @@ $sel = static function (string $view, array $filtros = [], int $limite = 1000) u
         return $linhas;
     } catch (Throwable) { return null; }
 };
+// Revisão G item 1 (26/11/2026): filtros da Home por unidade, responsável e período, aplicados às linhas de todas as abas
+// (cada linha que tem unidade, responsável ou data); totais sem esses campos não mudam.
+$fUn = trim((string)($_GET['f_un'] ?? '')); $fResp = (int)($_GET['f_resp'] ?? 0); $fPer = in_array((int)($_GET['f_per'] ?? 0), [30, 90, 180, 365], true) ? (int)$_GET['f_per'] : 0;
+$fCodUn = 0;
+if ($fUn !== '') foreach (($selBase('unidades', [], 5000) ?? []) as $u) if (strcasecmp(trim((string)($u['DSCUNIDADE'] ?? $u['dscunidade'] ?? '')), $fUn) === 0) $fCodUn = (int)($u['CODUNIDADE'] ?? $u['codunidade'] ?? 0);
+$filtrarLinhas = static function (array $rows) use ($fUn, $fCodUn, $fResp, $fPer): array {
+    if ($fUn === '' && !$fResp && !$fPer) return $rows;
+    $hoje = strtotime(date('Y-m-d'));
+    return array_values(array_filter($rows, static function (array $r) use ($fUn, $fCodUn, $fResp, $fPer, $hoje): bool {
+        $r = array_change_key_case($r, CASE_UPPER);
+        if ($fUn !== '') {
+            foreach (['UNIDADE', 'DSCUNIDADE', 'NOME_UNIDADE'] as $c) if (isset($r[$c]) && trim((string)$r[$c]) !== '' && strcasecmp(trim((string)$r[$c]), $fUn) !== 0) return false;
+            if ($fCodUn && isset($r['CODUNIDADE']) && (string)$r['CODUNIDADE'] !== '' && (int)$r['CODUNIDADE'] !== $fCodUn && !isset($r['UNIDADE'])) return false;
+        }
+        if ($fResp) {
+            if (isset($r['RESPONSAVEL_IDS'])) { if (!str_contains(',' . trim((string)$r['RESPONSAVEL_IDS'], ',') . ',', ',' . $fResp . ',')) return false; }
+            else foreach (['CODUSUARIO_RESPONSAVEL', 'CODUSUARIO', 'CODUSUARIO_ACESSO', 'CODUSUARIO_DONO'] as $c) if (isset($r[$c]) && (string)$r[$c] !== '') { if ((int)$r[$c] !== $fResp) return false; break; }
+        }
+        if ($fPer) foreach (['PROXIMO_VENCIMENTO', 'DATA_VALIDADE', 'VENCIMENTO', 'REACAO', 'FIM', 'DATA_OCORRENCIA', 'DESDE', 'DATA_EVENTO', 'DATA'] as $c) {
+            if (empty($r[$c]) || !($t = strtotime(substr((string)$r[$c], 0, 10)))) continue;
+            if (abs($t - $hoje) > $fPer * 86400) return false;
+            break;
+        }
+        return true;
+    }));
+};
+$sel = static function (string $view, array $filtros = [], int $limite = 1000) use ($selBase, $filtrarLinhas): ?array {
+    $r = $selBase($view, $filtros, $limite);
+    return $r === null ? null : $filtrarLinhas($r);
+};
+$filtroAtivo = $fUn !== '' || $fResp || $fPer;
+$fonteDash = 'dashboard_admin.php' . ($filtroAtivo ? '?' . http_build_query(array_filter(['f_un' => $fUn, 'f_resp' => $fResp ?: null, 'f_per' => $fPer ?: null])) : '');
 $pct = static fn(int $p, int $t): string => $t > 0 ? number_format(100 * $p / $t, 1, ',', '.') . '%' : '–';
 $semMigracao = static fn(string $m) => '<div class="alert alert-warning small mb-0"><i class="bi bi-info-circle me-1"></i>' . $e($T('aviso.migracao', ['pt' => 'Os indicadores desta aba ainda não estão disponíveis nesta empresa. Rode a migração', 'en' => 'The indicators of this tab are not available for this company yet. Run migration', 'es' => 'Los indicadores de esta pestaña aún no están disponibles en esta empresa. Ejecute la migración'])) . ' ' . $e($m) . '.</div>';
 $rotSit = ['S' => $T('sit.s', ['pt' => 'Atendido', 'en' => 'Compliant', 'es' => 'Atendido']), 'PA' => $T('sit.pa', ['pt' => 'Parcialmente atendido', 'en' => 'Partially compliant', 'es' => 'Parcialmente atendido']),
@@ -578,7 +610,7 @@ $perfilRotulo = $administrador ? $T('admin.perfil', ['pt' => 'ADMINISTRADOR', 'e
 <!doctype html><html lang="<?= IdiomaService::idioma() === 'pt' ? 'pt-BR' : IdiomaService::idioma() ?>"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><?= $e($T('admin.titulo', ['pt' => 'Dashboard da empresa', 'en' => 'Company dashboard', 'es' => 'Panel de la empresa'])) ?></title>
 <link rel="stylesheet" href="../assets/vendor/bootstrap/css/bootstrap.min.css?v=2"><link rel="stylesheet" href="../assets/vendor/bootstrap-icons/font/bootstrap-icons.min.css?v=2"><link rel="stylesheet" href="../assets/css/app.css?v=3"><link rel="stylesheet" href="../assets/css/main.css?v=15">
 <?php DashboardGrid::head(); ?><link rel="stylesheet" href="../assets/css/dashboard-abas.css?v=4"></head>
-<body><main class="admin-dashboard" data-dash-fonte="dashboard_admin.php" data-dash-chave="greenportal.dashboard.aba" data-dash-textos="<?= $e(json_encode([
+<body><main class="admin-dashboard" data-dash-fonte="<?= $e($fonteDash) ?>" data-dash-chave="greenportal.dashboard.aba" data-dash-textos="<?= $e(json_encode([
     'relatorio' => $T('legal.relatorio_titulo', ['pt' => 'Relatório de Atendimento Legal', 'en' => 'Legal Compliance Report', 'es' => 'Informe de Cumplimiento Legal']),
     'erro' => $T('legal.relatorio_erro', ['pt' => 'Não foi possível solicitar o relatório.', 'en' => 'The report could not be requested.', 'es' => 'No fue posible solicitar el informe.']),
     'erro_aba' => $T('erro_aba', ['pt' => 'Não foi possível carregar os indicadores desta aba.', 'en' => 'The indicators of this tab could not be loaded.', 'es' => 'No fue posible cargar los indicadores de esta pestaña.']),
@@ -587,6 +619,15 @@ $perfilRotulo = $administrador ? $T('admin.perfil', ['pt' => 'ADMINISTRADOR', 'e
     'limpar_filtro' => $T('limpar_filtro', ['pt' => 'Mostrar como antes', 'en' => 'Show as before', 'es' => 'Mostrar como antes']),
 ], JSON_UNESCAPED_UNICODE)) ?>">
 <header class="admin-head"><div><h2><i class="bi bi-speedometer2 me-2"></i><?= $e($T('admin.titulo', ['pt' => 'Dashboard da empresa', 'en' => 'Company dashboard', 'es' => 'Panel de la empresa'])) ?></h2><small><?= $e($T('admin.situacao_geral', ['pt' => 'Situação geral da empresa', 'en' => 'Overall status of company', 'es' => 'Situación general de la empresa'])) ?> <?= $e($companyName) ?></small></div><span class="admin-badge"><i class="bi bi-person-check me-1"></i><?= $e($perfilRotulo) ?></span></header>
+<?php // Revisão G item 1: barra de filtros (unidade, responsável, período)
+$listaUn = []; foreach (($selBase('unidades', [], 5000) ?? []) as $u) { $n = trim((string)($u['DSCUNIDADE'] ?? $u['dscunidade'] ?? '')); if ($n !== '') $listaUn[$n] = $n; } ksort($listaUn, SORT_NATURAL | SORT_FLAG_CASE);
+$listaResp = []; foreach (($selBase('usuarios', ['ativo' => 1], 20000) ?? []) as $u) { if ((int)($u['codfornecedor'] ?? 0) > 0) continue; $listaResp[(int)$u['codusuario']] = trim((string)($u['nome'] ?? '')) ?: (string)$u['userid']; } asort($listaResp, SORT_NATURAL | SORT_FLAG_CASE); ?>
+<form method="get" class="dash-filtros d-flex flex-wrap gap-2 align-items-center mb-2 small" data-sem-memoria><i class="bi bi-funnel"></i>
+<select name="f_un" class="form-select form-select-sm" style="width:auto;max-width:240px"><option value=""><?= $e($T('filtro.todas_unidades', ['pt' => 'Todas as unidades', 'en' => 'All units', 'es' => 'Todas las unidades'])) ?></option><?php foreach ($listaUn as $n): ?><option<?= $n === $fUn ? ' selected' : '' ?>><?= $e($n) ?></option><?php endforeach; ?></select>
+<select name="f_resp" class="form-select form-select-sm" style="width:auto;max-width:240px"><option value=""><?= $e($T('filtro.todos_resp', ['pt' => 'Todos os responsáveis', 'en' => 'All owners', 'es' => 'Todos los responsables'])) ?></option><?php foreach ($listaResp as $id => $n): ?><option value="<?= (int)$id ?>"<?= $id === $fResp ? ' selected' : '' ?>><?= $e($n) ?></option><?php endforeach; ?></select>
+<select name="f_per" class="form-select form-select-sm" style="width:auto"><option value=""><?= $e($T('filtro.todo_periodo', ['pt' => 'Qualquer data', 'en' => 'Any date', 'es' => 'Cualquier fecha'])) ?></option><?php foreach ([30, 90, 180, 365] as $d): ?><option value="<?= $d ?>"<?= $d === $fPer ? ' selected' : '' ?>><?= $e(str_replace('{n}', (string)$d, $T('filtro.periodo', ['pt' => 'Datas a até {n} dias de hoje', 'en' => 'Dates within {n} days of today', 'es' => 'Fechas a hasta {n} días de hoy']))) ?></option><?php endforeach; ?></select>
+<button class="btn btn-sm btn-primary" type="submit"><?= $e($T('filtro.aplicar', ['pt' => 'Filtrar', 'en' => 'Filter', 'es' => 'Filtrar'])) ?></button><?php if ($filtroAtivo): ?><a class="btn btn-sm btn-outline-secondary" href="dashboard_admin.php"><?= $e($T('filtro.limpar', ['pt' => 'Limpar', 'en' => 'Clear', 'es' => 'Limpiar'])) ?></a>
+<span class="text-muted"><?= $e($T('filtro.nota', ['pt' => 'Vale para as listas e quadros que têm unidade, responsável ou data; os totais gerais da empresa não mudam.', 'en' => 'Applies to lists and boxes with unit, owner or date; company-wide totals do not change.', 'es' => 'Vale para listas y cuadros con unidad, responsable o fecha; los totales generales no cambian.'])) ?></span><?php endif; ?></form>
 <ul class="nav dash-abas" role="tablist">
 <?php foreach ($abas as $id => [$ic, $rot]): ?><li class="nav-item" role="presentation"><button class="nav-link<?= $id === 'geral' ? ' active' : '' ?>" type="button" role="tab" data-aba="<?= $id ?>"><i class="bi <?= $ic ?> me-1"></i><?= $e($rot) ?></button></li><?php endforeach; ?>
 </ul>

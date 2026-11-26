@@ -46,6 +46,12 @@ $textos = [
     'c_situacao' => $L(adm_t('Situação'), 'Status', adm_t('Situación')),
     'publicado' => $L('Publicado', 'Published', 'Publicado'),
     'publicacao' => $L(adm_t('publicação'), 'publication', adm_t('publicación')),
+    // Revisão G item 17: tradução pela IA
+    'ia_botao' => $L(adm_t('Traduzir com IA'), 'Translate with AI', adm_t('Traducir con IA')),
+    'ia_dica' => $L(adm_t('A IA traduz para inglês e espanhol os textos visíveis que estão sem tradução; confira, salve e publique.'), 'AI translates the visible texts missing English or Spanish; review, save and publish.', adm_t('La IA traduce al inglés y español los textos visibles sin traducción; revise, guarde y publique.')),
+    'ia_nada' => $L(adm_t('Nenhum texto visível está sem inglês ou espanhol. Use o filtro "Faltando" ou escolha um grupo.'), 'No visible text is missing English or Spanish. Use the "Missing" filter or pick a group.', adm_t('Ningún texto visible está sin inglés o español. Use el filtro "Faltando" o elija un grupo.')),
+    'ia_andamento' => $L(adm_t('A IA está traduzindo… {f} de {t}'), 'AI is translating… {f} of {t}', adm_t('La IA está traduciendo… {f} de {t}')),
+    'ia_feito' => $L(adm_t('{n} tradução(ões) da IA na tela. Confira e clique em Salvar; depois em Publicar.'), '{n} AI translation(s) on screen. Review and click Save, then Publish.', adm_t('{n} traducción(es) de la IA en pantalla. Revise y haga clic en Guardar; después en Publicar.')),
     'por' => $L('por', 'by', 'por'),
     'nunca' => $L(adm_t('Nada publicado ainda'), adm_t('Nothing published yet'), adm_t('Nada publicado aún')),
     'st_igual' => $L(adm_t('Rascunho igual ao publicado'), adm_t('Draft matches what is published'), adm_t('Borrador igual al publicado')),
@@ -125,6 +131,7 @@ $e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
     <div class="ti-actions">
       <button type="button" class="btn btn-sm btn-success" data-acao="salvar" disabled title="<?= adm_a('Ctrl+S') ?>"><i class="bi bi-floppy me-1"></i><?= $e($ui['salvar']) ?></button>
       <button type="button" class="btn btn-sm btn-outline-success" data-acao="publicar"><i class="bi bi-cloud-arrow-up me-1"></i><?= $e($ui['publicar']) ?></button>
+      <button type="button" class="btn btn-sm btn-outline-primary" data-acao="traduzir-ia" title="<?= $e($ui['ia_dica']) ?>"><i class="bi bi-stars me-1"></i><?= $e($ui['ia_botao']) ?></button>
       <button type="button" class="btn btn-sm btn-outline-secondary" data-acao="historico"><i class="bi bi-clock-history me-1"></i><?= $e($ui['historico']) ?></button>
       <button type="button" class="btn btn-sm btn-outline-danger" data-acao="descartar"><i class="bi bi-arrow-counterclockwise me-1"></i><?= $e($ui['descartar']) ?></button>
       <button type="button" class="btn btn-sm btn-outline-info" data-acao="ajuda" data-open-transacao-ajuda data-help-transaction="administracao_idiomas" title="<?= $e($ui['ajuda_titulo']) ?>" aria-label="<?= $e($ui['ajuda']) ?>"><i class="bi bi-question-circle me-1"></i><?= $e($ui['ajuda']) ?></button>
@@ -206,6 +213,6 @@ $e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
 <script type="application/json" id="tiTextos"><?= json_encode($ui, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
 <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js?v=2"></script>
 <script src="../assets/js/ajuda-transacao.js?v=1"></script>
-<script src="../assets/js/administracao-idiomas.js?v=3"></script>
+<script src="../assets/js/administracao-idiomas.js?v=4"></script>
 </body>
 </html>

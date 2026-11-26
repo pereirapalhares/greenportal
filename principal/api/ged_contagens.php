@@ -19,6 +19,8 @@ $types = [
     // Migração 412: evidências do plano de manutenção da infraestrutura
     // 26/11/2026 Revisão G item 73: Evidência da medição (Plano de Medição e Monitoramento)
     'medicao' => ['table' => 'mm_monitoramento', 'field' => 'CODMONITORAMENTO', 'folder' => 'mm_monitoramento'],
+    // Revisão G itens 149/150: documentos dos veículos e equipamentos do fornecedor
+    'homativo' => ['table' => 'hom_ativo_doc', 'field' => 'CODATIVODOC', 'folder' => 'hom_ativo_doc'],
     'infraestruturamanutencoes' => ['table' => 'ml_infraestrutura_manutencoes', 'field' => 'CODMANUTENCAO', 'folder' => 'ml_infraestrutura_manutencoes'],
     'treinamentoparticipantes' => ['table' => 'ml_treinamentos_participantes', 'field' => 'CODPARTICIPANTE', 'folder' => 'ml_treinamentos_participantes'],
     'funcionarios' => ['table' => 'fo_funcionarios', 'field' => 'CODFUNCIONARIO', 'folder' => 'fo_funcionarios'],

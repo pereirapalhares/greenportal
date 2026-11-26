@@ -23,6 +23,8 @@ $actionLabels = [
 $esc = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 $licenseActions = '<button type="button" class="btn btn-sm btn-outline-success grid-crud-button" data-license-condicionantes title="' . $esc($actionLabels[0]) . '"><i class="bi bi-list-check"></i></button><button type="button" class="btn btn-sm btn-outline-success grid-crud-button" data-license-palavras-chave title="' . $esc($actionLabels[1]) . '"><i class="bi bi-tags"></i></button><button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-license-responsabilidades title="' . $esc($actionLabels[2]) . '" disabled><i class="bi bi-people"></i></button><button type="button" class="btn btn-sm btn-outline-info grid-crud-button" data-license-requisitos title="Requisitos e documentos" disabled><i class="bi bi-diagram-3"></i></button><button type="button" class="btn btn-sm btn-outline-secondary grid-crud-button" data-license-arquivos title="' . $esc($actionLabels[3]) . '" disabled><i class="bi bi-files"></i></button>';
 // Migração 344: taxas da licença (valor, vencimento, recorrência, pagamento e comprovante)
+// Revisão G item 63 (migração 421): campos personalizados da licença selecionada
+if (is_file(__DIR__ . '/licencas_campos.php')) $licenseActions .= '<button type="button" class="btn btn-sm btn-outline-success grid-crud-button" data-license-campos title="' . $esc(IdiomaService::t('manutencaolegal_licencas.botao.campos', ['pt' => 'Campos personalizados da licença', 'en' => 'License custom fields', 'es' => 'Campos personalizados de la licencia'])) . '" disabled><i class="bi bi-input-cursor-text"></i></button>';
 if (is_file(__DIR__ . '/manutencaolegal_licencas_taxas.php')) $licenseActions .= '<button type="button" class="btn btn-sm btn-outline-success grid-crud-button" data-license-taxas title="' . $esc(IdiomaService::t('manutencaolegal_licencas.botao.taxas', ['pt' => 'Taxas da licença (valor, vencimento, pagamento e comprovante)', 'en' => 'License fees (amount, due date, payment and receipt)', 'es' => 'Tasas de la licencia (valor, vencimiento, pago y comprobante)'])) . '" disabled><i class="bi bi-cash-coin"></i></button>';
 
 // Licenças em protocolo (migração 288): situação Válida / Válida (em protocolo) / Vencida e número do protocolo.
@@ -249,7 +251,7 @@ $toolbarGroups = [
     'rotuloOutros' => IdiomaService::t('comum.grupo.outros', ['pt' => 'Outros', 'en' => 'Others', 'es' => 'Otros']),
     'grupos' => [
         ['id' => 'operacoes', 'rotulo' => $toolbarGroupLabels[0], 'botoes' => ['[data-crud-action="save"]', '[data-crud-action="new"]', '[data-crud-action="duplicate"]', '[data-crud-action="delete"]', '[data-crud-action="reload"]', '[data-crud-action="export"]', '[data-crud-action="columns"]', '[data-open-transacao-ajuda]']],
-        ['id' => 'associacoes', 'rotulo' => $toolbarGroupLabels[1], 'botoes' => ['[data-license-condicionantes]', '[data-license-palavras-chave]', '[data-license-responsabilidades]', '[data-license-requisitos]', '[data-license-arquivos]', '[data-license-taxas]']],
+        ['id' => 'associacoes', 'rotulo' => $toolbarGroupLabels[1], 'botoes' => ['[data-license-condicionantes]', '[data-license-palavras-chave]', '[data-license-responsabilidades]', '[data-license-requisitos]', '[data-license-arquivos]', '[data-license-taxas]', '[data-license-campos]']],
         ['id' => 'avaliacao', 'rotulo' => $toolbarGroupLabels[2], 'botoes' => ['[data-context-id^="questionario-"]']],
     ],
 ];
@@ -263,9 +265,13 @@ $toolbarGroups = [
 <script>
 (function () {
     if (!window.jQuery) return;
-    var $ = window.jQuery, fragment = $('.licencas-grid-fragment').first(), button = fragment.find('[data-license-requisitos]'), taxas = fragment.find('[data-license-taxas]');
+    var $ = window.jQuery, fragment = $('.licencas-grid-fragment').first(), button = fragment.find('[data-license-requisitos]'), taxas = fragment.find('[data-license-taxas]'), campos = fragment.find('[data-license-campos]');
     function selectedId() { var row = fragment.find('table tbody tr.selected').first(); return row.length ? Number(row.attr('data-key') || 0) : 0; }
-    function refresh() { button.prop('disabled', !selectedId()); taxas.prop('disabled', !selectedId()); }
+    function refresh() { button.prop('disabled', !selectedId()); taxas.prop('disabled', !selectedId()); campos.prop('disabled', !selectedId()); }
+    // Revisão G item 63: campos personalizados da licença selecionada (popup)
+    campos.on('click', function () { var id = selectedId(); if (!id) return; var host = window.top || window, url = (host.greenPortalBaseUrl || '') + '/principal/licencas_campos.php?licenca=' + encodeURIComponent(id), titulo = campos.attr('title') || 'Campos personalizados';
+        if (host.GreenPortalPopups && host.jQuery) host.GreenPortalPopups.transacaoIndependente({ titulo: titulo, conteudo: host.jQuery('<iframe>', { src: url, style: 'width:100%;height:100%;border:0;display:block;' }), redimensionavel: true });
+        else if (host.greenPortalOpenTab) host.greenPortalOpenTab('licenca-campos-' + id, url, titulo); });
     // Migração 344: taxas da licença selecionada (ficam na licença original e valem para todas as versões)
     taxas.on('click', function () { var id = selectedId(); if (!id) return; var host = window.top || window, row = fragment.find('table tbody tr.selected').first(), nome = $.trim(row.find('[data-column="DSCLICENCA"]').find('textarea,input').first().val() || row.find('[data-column="DSCLICENCA"]').text() || ''), titulo = (window.greenT ? window.greenT('manutencaolegal_licencas.popup.taxas', 'Taxas da licença') : 'Taxas da licença') + (nome ? ' - ' + nome.substring(0, 70) : ''), url = (host.greenPortalBaseUrl || '') + '/principal/manutencaolegal_licencas_taxas.php?filtros=' + encodeURIComponent(JSON.stringify({ CODLICENCA: String(id) })); if (host.GreenPortalPopups && host.jQuery) { var frame = host.jQuery('<iframe>', { src: url, style: 'width:100%;height:100%;border:0;display:block;' }); host.GreenPortalPopups.transacaoIndependente({ titulo: titulo, conteudo: frame, amplo: true, redimensionavel: true }); } else if (host.greenPortalOpenTab) host.greenPortalOpenTab('licenca-taxas-' + id, url, titulo); });
     fragment.on('click', 'table tbody tr', refresh).on('gridPageLoaded', refresh);

@@ -34,6 +34,8 @@ if ($manager) $tabs[] = ['id'=>'dashboard-gestor','label'=>IdiomaService::t('hom
 if ($manager && is_file(__DIR__ . '/gestao_pendencias.php')) $tabs[] = ['id'=>'gestao-pendencias','label'=>IdiomaService::t('home.aba.gestao_pendencias', ['pt' => 'Gestão de pendências', 'en' => 'Pending items management', 'es' => 'Gestión de pendientes']),'icon'=>'bi-ui-checks-grid','src'=>'gestao_pendencias.php'];
 // Migração 380 (GER-8): Transferência de responsabilidades para ADM e gestores (a tela confere o escopo: ADM = todos; gestor = a equipe)
 if ($manager && is_file(__DIR__ . '/transferencia_responsabilidades.php')) $tabs[] = ['id'=>'transferencias','label'=>IdiomaService::t('home.aba.transferencias', ['pt' => 'Transferências', 'en' => 'Handovers', 'es' => 'Transferencias']),'icon'=>'bi-arrow-left-right','src'=>'transferencia_responsabilidades.php'];
+// Revisão G item 5.3: Painel de bordo (quem fez e quem não fez, por módulo, com bandeiras) para ADM e gestores (o gestor vê a equipe)
+if ($manager && is_file(__DIR__ . '/painel_bordo.php')) $tabs[] = ['id'=>'painel-bordo','label'=>IdiomaService::t('home.aba.painel_bordo', ['pt' => 'Painel de bordo', 'en' => 'Management dashboard', 'es' => 'Panel de control']),'icon'=>'bi-flag','src'=>'painel_bordo.php'];
 if ($admEmpresa) $tabs[] = ['id'=>'dashboard-geral','label'=>IdiomaService::t('home.aba.dashboard_empresa', ['pt' => 'Dashboard da empresa', 'en' => 'Company dashboard', 'es' => 'Panel de la empresa']),'icon'=>'bi-speedometer2','src'=>'dashboard_admin.php?home_gestor=1'];
 ?>
 <!doctype html><html lang="<?= $e($idioma) ?>"><head>

@@ -47,6 +47,8 @@ final class GedPermissaoTipo
         'licencataxas' => 'LICENCAS_TAXAS',
         // 26/11/2026 Revisão G item 73: Evidência da medição
         'medicao' => 'MM_PLANO_MEDICAO_MONITORAMENTO',
+        // Revisão G itens 149/150 (migração 421): documentos dos veículos e equipamentos do fornecedor
+        'homativo' => 'HOMOLOGACAO_FORNECEDOR_FORNECEDOR',
     ];
 
     /** Outras telas que também dão acesso aos anexos do tipo (mesmas regras de ver / enviar / excluir). */
@@ -171,6 +173,12 @@ final class GedPermissaoTipo
             } catch (Throwable) { return false; }
         }
         require_once __DIR__ . '/HomologacaoFornecedorAcesso.php';
+        // Revisão G itens 149/150: documento do veículo/equipamento segue o acesso ao fornecedor dono (externo e interno restrito)
+        if ($tipoNormal === 'homativo') {
+            try { $s = $pdo->prepare('SELECT CODFORNECEDOR FROM vw_hom_ativo_doc WHERE CODATIVODOC = ?'); $s->execute([$id]); $forn = (int)$s->fetchColumn(); $s->closeCursor(); } catch (Throwable) { return false; }
+            if ($forn < 1) return false;
+            return HomologacaoFornecedorAcesso::modoBanco($pdo) === 0 || HomologacaoFornecedorAcesso::pode($pdo, 'fornecedor', $forn);
+        }
         $tipoFornecedor = ['fornecedorcriterios' => 'documento', 'funcionarios' => 'funcionario', 'funcionariocriterios' => 'funcionariocriterio', 'funcionariotreinamentos' => 'funcionariotreinamento'][strtolower(trim($tipo))] ?? '';
         if (HomologacaoFornecedorAcesso::externo()) return $tipoFornecedor !== '' && HomologacaoFornecedorAcesso::pode($pdo, $tipoFornecedor, $id);
         // Migração 316: anexos da homologação seguem a mesma regra das telas — ADMINISTRADOR e ADM_DA_EMPRESA veem todos; o interno

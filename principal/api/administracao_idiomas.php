@@ -5,6 +5,8 @@ declare(strict_types=1);
  * API da transação Administração › Textos e idiomas (ADMINISTRACAO_IDIOMAS).
  * Leitura (GET): carregar, publicacoes, itens.
  * Gravação (POST): salvar, publicar, descartar, previa.
+ * Revisão G item 17 (26/11/2026): traduzir_ia (POST) — a IA traduz o PT para EN/ES; volta para a tela como edição (rascunho
+ * só depois de Salvar), para revisar antes de publicar.
  * Os textos valem para todas as empresas: alterações só pelo perfil ADMINISTRADOR, com CSRF e auditoria no tenant.
  */
 
@@ -15,6 +17,7 @@ require_once dirname(__DIR__, 2) . '/classes/PermissaoTransacao.php';
 require_once dirname(__DIR__, 2) . '/classes/AuditService.php';
 require_once dirname(__DIR__, 2) . '/classes/IdiomaService.php';
 require_once dirname(__DIR__, 2) . '/classes/IdiomaAdminService.php';
+require_once dirname(__DIR__, 2) . '/classes/InteligenciaArtificialDocumento.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
@@ -43,7 +46,7 @@ $service = new IdiomaAdminService($universal);
 
 $action = strtolower(trim((string)($_POST['action'] ?? $_GET['action'] ?? 'carregar')));
 $metodo = (string)($_SERVER['REQUEST_METHOD'] ?? 'GET');
-$mutacoes = ['salvar', 'publicar', 'descartar', 'previa'];
+$mutacoes = ['salvar', 'publicar', 'descartar', 'previa', 'traduzir_ia'];
 
 if (in_array($action, $mutacoes, true)) {
     if ($metodo !== 'POST') $json(['ok' => false, 'message' => 'Método não permitido.'], 405);
@@ -89,6 +92,37 @@ try {
         $qtd = $service->descartar($codtextos, $autor);
         AuditService::record($tenant, $transacao, 'DESCARTAR', 'SUCESSO', 'idioma_traducoes_rascunho', null, ['qtd' => $qtd, 'textos' => $codtextos ?? 'todos']);
         $json(['ok' => true, 'descartados' => $qtd, 'textos' => $service->textos(), 'situacao' => $service->situacao()]);
+    }
+    if ($action === 'traduzir_ia') {
+        $itens = json_decode((string)($_POST['itens'] ?? ''), true);
+        if (!is_array($itens) || !$itens) $json(['ok' => false, 'message' => 'Nada para traduzir.'], 422);
+        $lista = [];
+        foreach (array_slice($itens, 0, 40) as $i) {
+            $pt = trim((string)($i['pt'] ?? ''));
+            $alvo = array_values(array_intersect(['en', 'es'], (array)($i['idiomas'] ?? [])));
+            if ($pt === '' || !$alvo || (int)($i['codtexto'] ?? 0) <= 0) continue;
+            $lista[] = ['codtexto' => (int)$i['codtexto'], 'pt' => mb_substr($pt, 0, 600), 'idiomas' => $alvo, 'contexto' => mb_substr((string)($i['descricao'] ?? ''), 0, 120)];
+        }
+        if (!$lista) $json(['ok' => false, 'message' => 'Nada para traduzir.'], 422);
+        $prompt = 'Você traduz textos da interface de um software de gestão ambiental, de saúde e segurança e de requisitos legais (GreenSolutions). '
+            . 'Para cada item, traduza o texto "pt" (português do Brasil) para os idiomas pedidos em "idiomas" (en = inglês, es = espanhol). '
+            . 'Mantenha o sentido, o tom de interface (curto), maiúsculas iniciais, números, siglas (ISO, NR, RCL, GED, IA→AI em inglês) e marcadores como {n}, {t}, %s, %d exatamente como estão. '
+            . 'Não use os caracteres < e >. Retorne só JSON: {"traducoes":[{"codtexto":0,"en":"...","es":"..."}]} (só os idiomas pedidos).';
+        $r = InteligenciaArtificialDocumento::analisar(json_encode($lista, JSON_UNESCAPED_UNICODE), $prompt, 'pt');
+        $r = is_array($r['sugestao'] ?? null) ? $r['sugestao'] : $r;
+        $pedidos = [];
+        foreach ($lista as $i) $pedidos[$i['codtexto']] = $i['idiomas'];
+        $saida = [];
+        foreach ((array)($r['traducoes'] ?? []) as $t) {
+            $cod = (int)($t['codtexto'] ?? 0);
+            if (!isset($pedidos[$cod])) continue;
+            foreach ($pedidos[$cod] as $lg) {
+                $v = trim(str_replace(['<', '>'], '', (string)($t[$lg] ?? '')));
+                if ($v !== '') $saida[] = ['codtexto' => $cod, 'idioma' => $lg, 'texto' => mb_substr($v, 0, 2000)];
+            }
+        }
+        AuditService::record($tenant, $transacao, 'TRADUZIR_IA', 'SUCESSO', 'idioma_textos', null, ['pedidos' => count($lista), 'traduzidos' => count($saida)]);
+        $json(['ok' => true, 'traducoes' => $saida]);
     }
     if ($action === 'previa') {
         $_SESSION['idioma_previa_rascunho'] = ((string)($_POST['ativa'] ?? '0')) === '1';

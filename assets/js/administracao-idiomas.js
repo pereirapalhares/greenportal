@@ -27,7 +27,8 @@
         salvar: raiz.querySelector('[data-acao="salvar"]'),
         publicar: raiz.querySelector('[data-acao="publicar"]'),
         descartar: raiz.querySelector('[data-acao="descartar"]'),
-        historico: raiz.querySelector('[data-acao="historico"]')
+        historico: raiz.querySelector('[data-acao="historico"]'),
+        traduzir: raiz.querySelector('[data-acao="traduzir-ia"]')
     };
 
     // ---------- utilitários ----------
@@ -108,6 +109,7 @@
         el.salvar.disabled = !podeEditar || !sujos || estado.ocupado;
         el.publicar.disabled = !podeEditar || estado.ocupado;
         el.descartar.disabled = !podeEditar || !pend || estado.ocupado;
+        if (el.traduzir) el.traduzir.disabled = !podeEditar || estado.ocupado;
         var qtd = { sujo: 0, pendente: 0, faltando: 0 };
         visiveisPorGrupo().forEach(function (t) { if (linhaSuja(t)) qtd.sujo++; if (linhaPendente(t)) qtd.pendente++; if (linhaFaltando(t)) qtd.faltando++; });
         Object.keys(qtd).forEach(function (k) { var b = raiz.querySelector('[data-qtd="' + k + '"]'); if (b) b.textContent = qtd[k]; });
@@ -326,6 +328,38 @@
     }
 
     // ---------- eventos ----------
+    // Revisão G item 17: a IA traduz o PT dos textos visíveis que estão sem EN/ES; as traduções entram como edição (rascunho
+    // só ao Salvar), para revisar antes de publicar.
+    function traduzirIa() {
+        var lista = visiveis().map(function (t) {
+            var falta = ['en', 'es'].filter(function (i) { return String(valorAtual(t, i)).trim() === ''; });
+            return falta.length && String(valorAtual(t, 'pt')).trim() !== '' ? { codtexto: t.codtexto, pt: valorAtual(t, 'pt'), idiomas: falta, descricao: t.descricao || t.chave } : null;
+        }).filter(Boolean);
+        if (!lista.length) { alerta('info', UI.ia_nada || 'Nenhum texto visível está sem inglês ou espanhol. Use o filtro "Faltando" ou um grupo.'); return; }
+        var lotes = [], total = lista.length, feitos = 0, traduzidos = 0;
+        for (var i = 0; i < lista.length && i < 400; i += 40) lotes.push(lista.slice(i, i + 40));
+        ocupado(true);
+        var proximo = function () {
+            if (!lotes.length) {
+                ocupado(false); desenharTabela(); desenharStatus();
+                alerta('success', formatar(UI.ia_feito || '{n} tradução(ões) da IA na tela. Confira e clique em Salvar; depois Publicar.', { n: traduzidos }));
+                return;
+            }
+            var lote = lotes.shift();
+            alerta('info', formatar(UI.ia_andamento || 'A IA está traduzindo… {f} de {t}', { f: feitos, t: Math.min(total, 400) }));
+            chamar('traduzir_ia', { itens: JSON.stringify(lote) }, 'POST').then(function (r) {
+                (r.traducoes || []).forEach(function (x) {
+                    var t = textoPorCodigo(Number(x.codtexto)); if (!t) return;
+                    if (String(valorAtual(t, x.idioma)).trim() !== '') return;
+                    estado.edicoes[chaveEd(t.codtexto, x.idioma)] = x.texto; traduzidos++;
+                });
+                feitos += lote.length; proximo();
+            }).catch(function (e) { ocupado(false); desenharTabela(); desenharStatus(); alerta('error', e.message); });
+        };
+        proximo();
+    }
+    if (el.traduzir) el.traduzir.addEventListener('click', traduzirIa);
+
     el.linhas.addEventListener('input', function (ev) { if (ev.target.matches('textarea[data-campo]')) atualizarCelula(ev.target); });
     el.linhas.addEventListener('keydown', function (ev) { if (ev.target.matches('textarea[data-campo]') && ev.key === 'Enter') ev.preventDefault(); });
     el.linhas.addEventListener('click', function (ev) { var b = ev.target.closest('[data-desfazer]'); if (b) desfazerLinha(Number(b.getAttribute('data-desfazer'))); });
