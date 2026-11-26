@@ -23,11 +23,13 @@ final class GedAnaliseIaRegistro
         'fornecedorcriterios' => ['pt' => 'Documento do fornecedor', 'en' => 'Supplier document', 'es' => 'Documento del proveedor'],
         'funcionariocriterios' => ['pt' => 'Documento do funcionário', 'en' => 'Employee document', 'es' => 'Documento del empleado'],
         'planodeacao' => ['pt' => 'Plano de ação da condicionante', 'en' => 'Condition action plan', 'es' => 'Plan de acción de la condicionante'],
+        'medicao' => ['pt' => 'Evidência da medição', 'en' => 'Measurement evidence', 'es' => 'Evidencia de la medición'],
+        'ncocorrencia' => ['pt' => 'Não conformidade', 'en' => 'Nonconformity', 'es' => 'No conformidad'],
     ];
 
     /** Campos usados no resumo, na ordem em que aparecem. */
     private const CAMPOS_RESUMO = ['tipo_documento', 'aso_resultado', 'aso_data_exame', 'aso_validade', 'treinamento_nome', 'treinamento_validade',
-        'descricao', 'titulo', 'codigo', 'numero_licenca', 'numero_documento', 'orgao_emissor', 'data_validade', 'atividade', 'acao', 'data_final', 'status'];
+        'sumario', 'parametros', 'data_medicao', 'descricao', 'titulo', 'codigo', 'numero_licenca', 'numero_documento', 'orgao_emissor', 'data_validade', 'atividade', 'acao', 'data_final', 'status'];
 
     public function __construct(private readonly PDO $pdo, private readonly int $usuario) {}
 

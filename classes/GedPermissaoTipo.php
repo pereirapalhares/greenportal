@@ -45,6 +45,8 @@ final class GedPermissaoTipo
         'ncplano' => 'NAO_CONFORMIDADES_LISTA_OCORRENCIAS',
         // Migração 344: comprovante da taxa da licença (Taxas das licenças e o botão Taxas do cadastro de licenças)
         'licencataxas' => 'LICENCAS_TAXAS',
+        // 26/11/2026 Revisão G item 73: Evidência da medição
+        'medicao' => 'MM_PLANO_MEDICAO_MONITORAMENTO',
     ];
 
     /** Outras telas que também dão acesso aos anexos do tipo (mesmas regras de ver / enviar / excluir). */

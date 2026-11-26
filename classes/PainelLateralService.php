@@ -188,8 +188,49 @@ final class PainelLateralService
             if ($tx !== '' && !self::pode([$tx], $acao)) continue;
             $itens[] = $r + ['LINK' => self::link((string)$r['TIPO'], (string)$r['CODIGO'], (string)$r['CHAVE2'])];
         }
+        $itens = $this->aprovadoresDocumentos($itens);
         usort($itens, static fn($a, $b) => strcmp((string)($b['DESDE'] ?? ''), (string)($a['DESDE'] ?? '')));
         return $itens;
+    }
+
+    /**
+     * Migração 420 (Revisão G item 152): aprovação dos documentos de fornecedor por pessoas ou grupos. Com regras em
+     * vw_hom_documento_aprovador, cada documento "Pendente com a empresa" vai para quem aprova aquele documento exigido (ou
+     * todos os documentos); documento sem regra continua com o responsável pelo fornecedor. O ADMINISTRADOR vê todos.
+     */
+    private function aprovadoresDocumentos(array $itens): array
+    {
+        $regras = $this->linhas('vw_hom_documento_aprovador', ['ATIVO' => self::exato('S')]);
+        if (!$regras || !self::pode(['HOMOLOGACAO_FORNECEDOR_FORNECEDOR'])) return $itens;
+        $admin = (($_SESSION['usuario']['codigo_perfil'] ?? '') === 'ADMINISTRADOR');
+        $meusGrupos = [];
+        foreach ($this->linhas('vw_responsabilidade_grupoxusuario', ['CODUSUARIO' => self::exato((string)$this->usuario)]) as $g) $meusGrupos[(int)($g['CODGRUPO'] ?? $g['codgrupo'] ?? 0)] = true;
+        $col = static function (array $r, array $nomes) { foreach ($r as $k => $v) foreach ($nomes as $n) if (strcasecmp((string)$k, $n) === 0) return $v; return null; };
+        $porForn = []; $semRegra = [];
+        foreach ($this->linhas('fo_fornecedorxcriterios', ['SITUACAO' => self::exato('Pendente com a empresa')], 5) as $d) {
+            $crit = (int)$col($d, ['CODCRITERIOFORNECEDOR', 'CODCRITERIO']);
+            $aplicaveis = array_filter($regras, static fn($r) => (int)($r['CODCRITERIOFORNECEDOR'] ?? 0) === 0 || (int)$r['CODCRITERIOFORNECEDOR'] === $crit);
+            $forn = (int)$col($d, ['CODFORNECEDOR']);
+            if ($aplicaveis) {
+                $meu = $admin;
+                foreach ($aplicaveis as $r) if ((int)($r['CODUSUARIO'] ?? 0) === $this->usuario || isset($meusGrupos[(int)($r['CODGRUPO'] ?? 0)])) { $meu = true; break; }
+                if (!$meu) continue;
+                $porForn[$forn] = ($porForn[$forn] ?? 0) + 1;
+            } else $semRegra[$forn] = true; // sem regra: decide o responsável pelo fornecedor (linha original da view)
+        }
+        // Linhas originais (responsável pelo fornecedor) só ficam quando o fornecedor tem documento sem regra
+        $saida = [];
+        foreach ($itens as $i) {
+            if ((string)$i['TIPO'] !== 'FORNECEDOR_DOC' || isset($semRegra[(int)$i['CODIGO']])) $saida[] = $i;
+        }
+        foreach ($porForn as $f => $n) {
+            if ($n <= 0) continue;
+            $fr = array_change_key_case($this->linhas('fo_fornecedores', ['CODFORNECEDOR' => self::exato((string)$f)])[0] ?? [], CASE_UPPER);
+            $saida[] = ['CODUSUARIO' => $this->usuario, 'TIPO' => 'FORNECEDOR_DOC', 'CODIGO' => (string)$f, 'CHAVE2' => '', 'TITULO' => trim((string)($fr['RAZAOSOCIAL'] ?? '')) ?: '#' . $f,
+                'DETALHE' => $n . ($n === 1 ? ' documento para você aprovar' : ' documentos para você aprovar'), 'DESDE' => null, 'TRANSACAO' => 'HOMOLOGACAO_FORNECEDOR_FORNECEDOR', 'ACAO' => 'pode_visualizar',
+                'LINK' => self::link('FORNECEDOR_DOC', (string)$f, '')];
+        }
+        return $saida;
     }
 
     /** ADM DA EMPRESA (perfil do usuário logado) vê o calendário de todos os usuários da empresa */

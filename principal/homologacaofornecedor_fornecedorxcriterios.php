@@ -423,5 +423,6 @@ greenPortalCrudButtons(['transaction' => DOC_TRANSACAO, 'save' => false, 'new' =
 window.greenDocs = <?= json_encode($cfg, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
 </script>
 <script src="../assets/js/homologacao-documentos.js?v=5"></script>
+<script src="../assets/js/homologacao-chat.js?v=2"></script>
 </body>
 </html>

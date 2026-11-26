@@ -336,6 +336,7 @@ final class LegislacaoTextos
         'grid.col_data_atualizacao' => ['Data atualização', 'Update date', 'Fecha de actualización'],
         'grid.col_situacao' => ['Situação da lei', 'Law status', 'Situación de la ley'],
         'grid.col_devido' => ['Devido da lei', 'Law reason', 'Motivo de la ley'],
+        'grid.col_razao' => ['Razão para inclusão', 'Reason for inclusion', 'Razón de la inclusión'],
         'grid.sem_permissao' => ['Perfil sem permissão de acesso!', 'Profile does not have access permission!', '¡Perfil sin permiso de acceso!'],
         'grid.buscar' => ['Buscar no grid', 'Search the grid', 'Buscar en la cuadrícula'],
         'grid.buscar_coluna' => ['Buscar', 'Search', 'Buscar'],

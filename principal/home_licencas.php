@@ -89,6 +89,7 @@ $FAIXAS = [
     'EM_PROTOCOLO' => [$T('fx.protocolo', 'Válidas em protocolo', 'Valid, renewal filed', 'Válidas en protocolo'), 'bi-hourglass-split', 'blue'],
     'PROT_SEM_PRAZO' => [$T('fx.prot_sem', 'Em protocolo (prazo não informado)', 'Renewal filed (no deadline)', 'En protocolo (sin plazo)'), 'bi-hourglass-bottom', 'orange'],
     'SEM_VALIDADE' => [$T('fx.sem', 'Sem data de validade', 'No expiry date', 'Sin fecha de validez'), 'bi-question-circle', 'gray'],
+    'NAO_VENCE' => [$T('fx.nao_vence', 'Sem validade (não vencem)', 'No expiry (do not expire)', 'Sin validez (no vencen)'), 'bi-infinity', 'green'],
     'ENTREGA_ATRASADA' => [$T('fx.ent_atr', 'Entregas periódicas atrasadas', 'Overdue periodic submissions', 'Entregas periódicas atrasadas'), 'bi-send-x', 'red'],
     'ENTREGA_30' => [$T('fx.ent_30', 'Entregas em até 30 dias', 'Submissions due in 30 days', 'Entregas en hasta 30 días'), 'bi-send', 'orange'],
     'ENTREGA_EM_DIA' => [$T('fx.ent_dia', 'Entregas em dia', 'Submissions on schedule', 'Entregas al día'), 'bi-send-check', 'green'],
@@ -96,7 +97,7 @@ $FAIXAS = [
 $SIT = [
     'VALIDA' => [$T('sit.valida', 'Válida', 'Valid', 'Válida'), 'green'], 'PROTOCOLO' => [$T('sit.protocolo', 'Válida (em protocolo)', 'Valid (renewal filed)', 'Válida (en protocolo)'), 'blue'],
     'PROT_SEM_PRAZO' => [$T('sit.prot_sem', 'Em protocolo (sem prazo)', 'Renewal filed (no deadline)', 'En protocolo (sin plazo)'), 'orange'],
-    'VENCIDA' => [$T('sit.vencida', 'Vencida', 'Expired', 'Vencida'), 'red'], 'SEM_DATA' => [$T('sit.sem_data', 'Sem data de vencimento', 'No due date', 'Sin fecha de vencimiento'), 'gray'],
+    'VENCIDA' => [$T('sit.vencida', 'Vencida', 'Expired', 'Vencida'), 'red'], 'SEM_DATA' => [$T('sit.sem_data', 'Sem data de vencimento', 'No due date', 'Sin fecha de vencimiento'), 'gray'], 'NAO_VENCE' => [$T('sit.nao_vence', 'Sem validade (não vence)', 'No expiry', 'Sin validez'), 'green'],
     'ENTREGA' => [$T('sit.entrega', 'Entrega periódica', 'Periodic submission', 'Entrega periódica'), 'teal'],
 ];
 // categoria de prazo (cores das barras empilhadas)

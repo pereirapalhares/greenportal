@@ -151,6 +151,9 @@ if ($isAjax && ($_POST['action'] ?? '') === 'export_request' && !empty($gridPerm
     header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok' => $jobId > 0, 'message' => ExportacaoSolicitacao::mensagem()], JSON_UNESCAPED_UNICODE); exit;
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_preferences') { foreach ((array)json_decode((string)($_POST['preferences'] ?? '[]'), true) as $item) { $column = preg_replace('/[^a-zA-Z0-9_]/', '', (string)($item['coluna'] ?? '')); if ($column === '') continue; $old = $callTenant($tenantPdo, 'CALL sp_crud_select(:tabela,:filtros,NULL,1,0)', ['tabela' => 'vw_preferencias_grid', 'filtros' => $json(['codusuario' => $uid, 'transacao' => 'manutencaolegal_legislacao', 'coluna' => $column])]); $data = ['codusuario' => $uid, 'transacao' => 'manutencaolegal_legislacao', 'coluna' => $column, 'ordem' => (int)($item['ordem'] ?? 0), 'visivel' => (int)!empty($item['visivel']), 'largura' => max(60, (int)($item['largura'] ?? 140))]; if ($old) $callTenant($tenantPdo, 'CALL sp_crud_update(:tabela,:chave,:dados)', ['tabela' => 'preferencias_grid', 'chave' => $json(['codpreferenciagrid' => $old[0]['codpreferenciagrid']]), 'dados' => $json($data)]); else $callTenant($tenantPdo, 'CALL sp_crud_insert(:tabela,:dados)', ['tabela' => 'preferencias_grid', 'dados' => $json($data)]); } if ($isAjax) { header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok' => true]); exit; } }
+// Migração 416 (Revisão G item 38): "Razão para inclusão" da lei (legislacao.RAZAO_INCLUSAO), quando a coluna existe
+$temRazaoInclusao = false;
+try { $temRazaoInclusao = (int)($legislacao->call("SELECT COUNT(*) AS n FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'legislacao' AND COLUMN_NAME = 'RAZAO_INCLUSAO'")[0]['n'] ?? 0) > 0; } catch (Throwable) {}
 if ($isAjax && ($_POST['action'] ?? '') === 'save_rows') {
     $contextEmpresa = (int)preg_replace('/[^0-9]/', '', (string)($_POST['context_empresa'] ?? ''));
     $contextUnidade = (int)preg_replace('/[^0-9]/', '', (string)($_POST['context_unidade'] ?? ''));
@@ -176,7 +179,10 @@ if ($isAjax && ($_POST['action'] ?? '') === 'save_rows') {
     try {
         foreach ($rowsRequest as $key => $row) {
             $data = [];
-            foreach (['CODIGO','CODAMBITO','CODTIPO','NR','ANO','ARTIGOS','MEIO_AMBIENTE','SEGURANCA','QUALIDADE','RESPOSABILIDADE','PADRAO','data_atualizacao','situacao_da_lei','devido_da_lei'] as $field) {
+            $camposLei = ['CODIGO','CODAMBITO','CODTIPO','NR','ANO','ARTIGOS','MEIO_AMBIENTE','SEGURANCA','QUALIDADE','RESPOSABILIDADE','PADRAO','data_atualizacao','situacao_da_lei','devido_da_lei'];
+            if ($temRazaoInclusao) $camposLei[] = 'RAZAO_INCLUSAO';
+            foreach ($camposLei as $field) {
+                if ($field === 'RAZAO_INCLUSAO' && !array_key_exists($field, (array)$row)) continue; // não apaga a razão quando a linha não a enviou
                 $value = $row[$field] ?? null;
                 if ($field === 'PADRAO') $data[$field] = trim((string)$value);
                 elseif ($field === 'data_atualizacao') $data[$field] = $parseDate($value, $idioma);
@@ -213,6 +219,7 @@ $rows = $legislationQuery($filterParams, false, 25, $offset);
 $decodeLabel = static fn(string $value): string => html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 $C = static fn(string $k): string => LegislacaoTextos::t('grid.col_' . $k);
 $columns = ['CODLEGISLACAO' => $C('codigo'), 'CODIGO' => $C('codigo'), 'ASSUNTOS' => $C('assuntos'), 'CODAMBITO' => $C('ambito'), 'CODTIPO' => $C('tipo'), 'NR' => $C('numero'), 'ANO' => $C('ano'), 'ARTIGOS' => $C('artigos'), 'MEIO_AMBIENTE' => $C('meio_ambiente'), 'SEGURANCA' => $C('seguranca'), 'QUALIDADE' => $C('qualidade'), 'RESPOSABILIDADE' => $C('responsabilidade'), 'PADRAO' => $C('padrao'), 'data_atualizacao' => $C('data_atualizacao'), 'situacao_da_lei' => $C('situacao'), 'devido_da_lei' => $C('devido')];
+if ($temRazaoInclusao) $columns['RAZAO_INCLUSAO'] = $C('razao');
 // Grid via AJAX (paginação e filtros): devolve só o corpo da tabela, com o total quando pedido (contar=1), sem montar a página inteira
 if ($isAjax && $_SERVER['REQUEST_METHOD'] === 'GET') {
     $total = isset($_GET['contar']) ? (int)($legislationQuery($filterParams, true)[0]['total_registros'] ?? 0) : null;

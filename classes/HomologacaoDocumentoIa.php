@@ -46,6 +46,10 @@ final class HomologacaoDocumentoIa
         $s['confianca'] = $confianca;
         $codanalise = (int)(GreenPortalDatabase::call($pdo, 'CALL sp_docfornecedor_ia_gravar(?, ?, ?, ?, ?, ?, ?, ?)', [$codigo, $nomeArquivo, (string)($s['tipo_documento'] ?? ''), (string)($extracao['fonte'] ?? ''), (float)($extracao['confianca'] ?? 0), json_encode($s, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $confianca, $usuario])[0]['codanalise'] ?? 0);
         $ged->concluir($codGed, $s, $confianca, (string)($extracao['fonte'] ?? ''), $codanalise);
+                // Revisão G item 146 (migração 420): documento reprovado pela IA abre a conversa com o fornecedor
+        if ($s['corresponde_ao_exigido'] === 'NAO' || ($s['data_validade'] !== null && $s['data_validade'] < date('Y-m-d')) || !empty($s['modelo']['pendencias'])) {
+            require_once __DIR__ . '/HomologacaoChat.php'; HomologacaoChat::automatica($pdo, 'fornecedorcriterios', $codigo, $s['alertas'], $nomeArquivo);
+        }
         return ['codanalise' => $codanalise, 's' => $s, 'confianca' => $confianca];
     }
 
@@ -91,6 +95,10 @@ final class HomologacaoDocumentoIa
         $s['confianca'] = $confianca;
         $codanalise = (int)(GreenPortalDatabase::call($pdo, 'CALL sp_docfuncionario_ia_gravar(?, ?, ?, ?, ?, ?, ?, ?, ?)', [$codigo, $nomeArquivo, $s['tipo_documento'], (string)($extracao['fonte'] ?? ''), (float)($extracao['confianca'] ?? 0), $omitidas, json_encode($s, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $confianca, $usuario])[0]['codanalise'] ?? 0);
         $ged->concluir($codGed, $s, $confianca, (string)($extracao['fonte'] ?? ''), $codanalise);
+                // Revisão G item 147 (migração 420): documento do funcionário reprovado pela IA abre a conversa com o fornecedor
+        $reprovado = ($validade !== null && $validade < date('Y-m-d')) || !empty($s['modelo']['pendencias'])
+            || (bool)array_filter($s['alertas'], static fn($a) => (bool)preg_match('/não parece ser|diferente|does not seem|differs|no parece|diferente del/iu', (string)$a));
+        if ($reprovado) { require_once __DIR__ . '/HomologacaoChat.php'; HomologacaoChat::automatica($pdo, 'funcionariocriterios', $codigo, $s['alertas'], $nomeArquivo); }
         return ['codanalise' => $codanalise, 's' => $s, 'confianca' => $confianca];
     }
 

@@ -36,6 +36,15 @@ $abertas = HomeModulo::consultar($pdo, 'vw_dash_nc_abertas', ['CODOCORRENCIA', '
 if ($abertas === null) $sair(503, $T('sem_migracao', 'Os indicadores de não conformidades ainda não existem nesta empresa (migração 366).', 'Nonconformity indicators are not available for this company (migration 366).', 'Los indicadores de no conformidades no existen en esta empresa (migración 366).'));
 $acoes = HomeModulo::consultar($pdo, 'vw_nc_acoes_vencidas', ['CODPLANOACAO', 'CODOCORRENCIA', 'NUMERO', 'ACAO', 'CODUSUARIO', 'RESPONSAVEL', 'RESPONSAVEL_ATIVO', 'DATAFINAL', 'DIAS_ATRASO', 'STATUS', 'ETAPA']) ?? [];
 $mesesNc = HomeModulo::ler($pdo, 'vw_dash_nc_mes', [], 100) ?? [];
+// Revisão G item 158: lente de risco (Risco da ocorrência, preenchido pelo gestor; lido da Lista geral de ocorrências)
+$RISCOS = ['CRITICO' => [$T('r.critico', 'Crítico', 'Critical', 'Crítico'), 'red'], 'ALTO' => [$T('r.alto', 'Alto', 'High', 'Alto'), 'orange'],
+    'MODERADO' => [$T('r.moderado', 'Moderado', 'Moderate', 'Moderado'), 'yellow'], 'BAIXO' => [$T('r.baixo', 'Baixo', 'Low', 'Bajo'), 'green'],
+    'NA' => [$T('r.na', 'Risco não avaliado', 'Risk not assessed', 'Riesgo no evaluado'), 'gray']];
+$riscoDe = [];
+foreach (HomeModulo::consultar($pdo, 'vlistadeocorrenciasnc', ['CODOCORRENCIA', 'RISCO']) ?? [] as $x) {
+    $t = strtoupper(strtr(trim((string)($x['RISCO'] ?? '')), ['í' => 'I', 'Í' => 'I', 'é' => 'E', 'É' => 'E']));
+    $riscoDe[(int)$x['CODOCORRENCIA']] = str_starts_with($t, 'CRIT') ? 'CRITICO' : (str_starts_with($t, 'ALT') ? 'ALTO' : (str_starts_with($t, 'MOD') || str_starts_with($t, 'MED') ? 'MODERADO' : (str_starts_with($t, 'BAIX') ? 'BAIXO' : 'NA')));
+}
 $envolvido = static fn(array $r): bool => in_array($uid, [(int)$r['CODUSUARIO_EMISSOR'], (int)$r['CODUSUARIO_GESTOR'], (int)$r['CODUSUARIO_RESPONSAVEL'], (int)$r['CODUSUARIO_ACAO']], true);
 $aviso = '';
 if (!$total) {
@@ -82,13 +91,14 @@ $abrirNc = static function (array $r) use ($T, $faseDe): array {
     return ['url' => 'naoconformidades_ocorrencia.php?' . http_build_query(['codigo' => (int)$r['CODOCORRENCIA']] + ($aba ? ['aba' => $aba] : [])),
         'title' => $T('titulo_nc', 'Não conformidade', 'Nonconformity', 'No conformidad') . ' ' . $r['NUMERO']];
 };
-$cont = array_fill_keys(array_keys($FASES), 0); $contI = array_fill_keys(array_keys($IDADE), 0);
+$cont = array_fill_keys(array_keys($FASES), 0); $contI = array_fill_keys(array_keys($IDADE), 0); $contR = array_fill_keys(array_keys($RISCOS), 0);
 $atrasadas = 0; $paradas = 0; $novas = 0; $semPessoa = 0; $inativos = 0;
 $porTipo = []; $porUn = []; $porPessoa = []; $linhas = []; $eventos = []; $rowsCal = [];
 foreach ($lista as $r) {
     $fs = $faseDe($r); $id = (int)$r['CODOCORRENCIA']; $idade = (int)$r['IDADE_DIAS']; $fx = $faixa($idade);
     $cont[$fs]++; $contI[$fx]++;
     $g = ['F_' . $fs, 'I_' . $fx, HomeModulo::grupo('U', (int)$r['CODUNIDADE']), HomeModulo::grupo('T', md5((string)$r['TIPO'])), HomeModulo::grupo('P', (int)$r['CODUSUARIO_ACAO'])];
+    $rk = $riscoDe[$id] ?? 'NA'; $g[] = 'R_' . $rk; $contR[$rk]++;
     if ((int)$r['ATRASADA']) { $g[] = 'ATRASADA'; $atrasadas++; }
     if ((int)$r['DIAS_PARADA'] > 90) { $g[] = 'PARADA90'; $paradas++; }
     if ($idade <= 30) { $g[] = 'NOVA'; $novas++; }
@@ -171,6 +181,7 @@ $calendario = HomeModulo::calendario($mes, $eventos, 'hnCal', ['ant' => $url(['m
 $partes = static function (array $c) use ($FASES): array { $o = []; foreach ($FASES as $k => [$rot, $tom]) if (($c[$k] ?? 0) > 0) $o[] = ['n' => $c[$k], 'tom' => $tom, 'rotulo' => $rot]; return $o; };
 $barFase = []; foreach ($FASES as $k => [$rot, $tom]) $barFase[] = ['rotulo' => $rot, 'n' => $cont[$k], 'grupo' => 'F_' . $k, 'tom' => $tom];
 $barIdade = []; foreach ($IDADE as $k => [$rot, $tom]) $barIdade[] = ['rotulo' => $rot, 'n' => $contI[$k], 'grupo' => 'I_' . $k, 'tom' => $tom];
+$barRisco = []; foreach ($RISCOS as $k => [$rot, $tom]) $barRisco[] = ['rotulo' => $rot, 'n' => $contR[$k], 'grupo' => 'R_' . $k, 'tom' => $tom];
 uasort($porTipo, static fn($a, $b) => $b['n'] <=> $a['n']);
 $barTipo = []; foreach ($porTipo as $k => $c) $barTipo[] = ['rotulo' => (string)$k !== '' ? (string)$k : '–', 'n' => $c['n'], 'grupo' => HomeModulo::grupo('T', md5((string)$k)), 'partes' => $partes($c)];
 uasort($porUn, static fn($a, $b) => $b['n'] <=> $a['n']);
@@ -189,6 +200,8 @@ $graficos = '<div class="hm-graficos">'
     . HomeModulo::grafico($T('g.etapa', 'Abertas por etapa', 'Open by stage', 'Abiertas por etapa'), 'bi-signpost-split', HomeModulo::barras($G, $barFase),
         $T('g.dica', 'Clique numa barra para ver as ocorrências na Lista.', 'Click a bar to see the occurrences in the List.', 'Haga clic en una barra para ver las ocurrencias en la Lista.'))
     . HomeModulo::grafico($T('g.idade', 'Tempo em aberto', 'Time open', 'Tiempo abierta'), 'bi-hourglass-split', HomeModulo::barras($G, $barIdade))
+    . HomeModulo::grafico($T('g.risco', 'Por risco', 'By risk', 'Por riesgo'), 'bi-exclamation-diamond', HomeModulo::barras($G, $barRisco),
+        $T('g.risco_nota', 'Risco informado pelo gestor na ocorrência (aba Avaliação do gestor).', 'Risk set by the manager in the occurrence.', 'Riesgo informado por el gestor en la ocurrencia.'))
     . HomeModulo::grafico($T('g.tipo', 'Por tipo', 'By type', 'Por tipo'), 'bi-tags', HomeModulo::barras($G, $barTipo) . $leg)
     . HomeModulo::grafico($T('g.unidade', 'Por unidade', 'By unit', 'Por unidad'), 'bi-buildings', HomeModulo::barras($G, $barUn, 15) . $leg)
     . HomeModulo::grafico($T('g.pessoa', 'Com quem estão', 'Who holds them', 'Con quién están'), 'bi-person-exclamation', HomeModulo::barras($G, $barPessoa, 12) . $leg,

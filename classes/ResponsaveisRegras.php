@@ -417,10 +417,12 @@ SELECT x.`CODLEGISLACAO`, x.`codunidade`, ru.`CODUSUARIO`
         if (in_array('LICENCAS', $areas, true)) {
             $c = self::colunas($pdo, 'li_licencas');
             $desc = isset($c['dsclicenca']) ? 'x.`DSCLICENCA`' : "CONCAT('#', x.`CODLICENCA`)";
+            // Migração 415: licença arquivada ou sem validade (não vence) não gera aviso de prazo
+            $f415 = (isset($c['arquivada']) ? " AND COALESCE(x.`ARQUIVADA`, 'N') <> 'S'" : '') . (isset($c['validade_inexistente']) ? " AND COALESCE(x.`VALIDADE_INEXISTENTE`, 'N') <> 'S'" : '');
             if (isset($c['data_validade']))
-                $p[] = $prazo('LICENCAS', 'VENCIMENTO', 'li_licencas', 'CODLICENCA', $desc, 'DATA_VALIDADE', 'vence em', 'x.`DATA_VALIDADE` BETWEEN CURDATE() AND CURDATE() + INTERVAL 30 DAY');
+                $p[] = $prazo('LICENCAS', 'VENCIMENTO', 'li_licencas', 'CODLICENCA', $desc, 'DATA_VALIDADE', 'vence em', 'x.`DATA_VALIDADE` BETWEEN CURDATE() AND CURDATE() + INTERVAL 30 DAY' . $f415);
             if (isset($c['data_reacao']))
-                $p[] = $prazo('LICENCAS', 'REACAO', 'li_licencas', 'CODLICENCA', $desc, 'DATA_REACAO', 'reação em', 'DATE(x.`DATA_REACAO`) BETWEEN CURDATE() - INTERVAL 7 DAY AND CURDATE()');
+                $p[] = $prazo('LICENCAS', 'REACAO', 'li_licencas', 'CODLICENCA', $desc, 'DATA_REACAO', 'reação em', 'DATE(x.`DATA_REACAO`) BETWEEN CURDATE() - INTERVAL 7 DAY AND CURDATE()' . $f415);
         }
         if (in_array('MEDICAO', $areas, true)) {
             $c = self::colunas($pdo, 'mm_monitoramento');

@@ -45,6 +45,15 @@ final class ModuloLegalRequisitosGrid
         if ($codLicenca > 0) $filters['CODLICENCA'] = (string)$codLicenca;
         if (!isset($filters['LEI_REVOGADA']) || (string)$filters['LEI_REVOGADA'] === '') $filters['LEI_REVOGADA'] = 'NAO';
         if (!isset($filters['SEM_EVIDENCIA'])) $filters['SEM_EVIDENCIA'] = '';
+        // Migração 416 (Revisão G item 25): "Não avaliado" no filtro Atendido? = requisitos sem avaliação manual (AVALIACAO_LEGAL)
+        $temAvaliacaoLegal = false;
+        try { $temAvaliacaoLegal = array_key_exists('AVALIACAO_LEGAL', $call($pdo, 'CALL sp_crud_select(:tabela,:filtros,NULL,1,0)', ['tabela' => $fonte, 'filtros' => $json([])])[0] ?? []); } catch (Throwable) {}
+        $naoAvaliado = static function (array $f) use ($temAvaliacaoLegal): array {
+            $v = $f['ATENDIDO'] ?? null; if (is_array($v)) $v = $v['value'] ?? null;
+            if ($temAvaliacaoLegal && is_scalar($v) && trim((string)$v) === 'Não avaliado') { unset($f['ATENDIDO']); $f['AVALIACAO_LEGAL'] = ['value' => 'Não avaliado', 'exact' => true]; }
+            return $f;
+        };
+        $filters = $naoAvaliado($filters);
         $gridFilters = $filters;
         if ((string)($gridFilters['SEM_EVIDENCIA'] ?? '') === '') unset($gridFilters['SEM_EVIDENCIA']);
         $search = trim((string)($_GET['busca'] ?? '')); $page = max(1, (int)($_GET['pagina'] ?? 1));
@@ -68,10 +77,11 @@ final class ModuloLegalRequisitosGrid
             $values = [];
             foreach ($filterRows as $filterRow) { $value = $normalizeLegacyValue((string)($filterRow[$filterField] ?? '')); if ($value !== '') $values[$value] = $value; }
             uksort($values, static fn(string $a, string $b): int => strnatcasecmp($a, $b));
+            if ($filterField === 'ATENDIDO' && $temAvaliacaoLegal) { unset($values['Atendimento Indefinido!'], $values['Atendimento Indefinido']); $values['Não avaliado'] = 'Não avaliado'; }
             $filterOptions[$filterField] = $values;
         }
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && ($_POST['action'] ?? '') === 'count_rows') {
-            $f = json_decode((string)($_POST['filtros'] ?? '{}'), true); $f = is_array($f) ? $f : []; if ($codLicenca > 0) $f['CODLICENCA'] = (string)$codLicenca;
+            $f = json_decode((string)($_POST['filtros'] ?? '{}'), true); $f = is_array($f) ? $naoAvaliado($f) : []; if ($codLicenca > 0) $f['CODLICENCA'] = (string)$codLicenca;
             if ((string)($f['SEM_EVIDENCIA'] ?? '') === '') unset($f['SEM_EVIDENCIA']);
             $rows = $call($pdo, 'CALL sp_crud_count(:tabela,:filtros,:busca)', ['tabela' => $fonte, 'filtros' => $json($f), 'busca' => trim((string)($_POST['busca'] ?? ''))]);
             header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok' => true, 'total' => (int)($rows[0]['total_registros'] ?? 0)]); exit;
@@ -106,7 +116,11 @@ final class ModuloLegalRequisitosGrid
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && ($_POST['action'] ?? '') === 'save_control') {
             if (!$permission['pode_editar']) { http_response_code(403); header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok' => false, 'message' => IdiomaService::t('modulolegal_requisitoslegais.erro.permissao_nivel', ['pt' => 'Seu perfil não tem permissão para alterar o nível de controle.', 'en' => 'Your profile is not allowed to change the control level.', 'es' => 'Su perfil no tiene permiso para modificar el nivel de control.'])], JSON_UNESCAPED_UNICODE); exit; }
             $validPoderes = ['Conhecimento', 'Influência', 'Controle'];
-            $validPoderes = ['Conhecimento', 'Influência', 'Controle'];
+            // Migração 416 (Revisão G item 39): justificativa obrigatória e registro de quem mudou (legislacaoxpoder_historico)
+            $temHistPoder = true;
+            try { $call($pdo, 'CALL sp_crud_select(:tabela,:filtros,NULL,1,0)', ['tabela' => 'vw_legislacaoxpoder_historico', 'filtros' => $json([])]); } catch (Throwable) { $temHistPoder = false; }
+            $justificativaPoder = trim((string)($_POST['justificativa'] ?? ''));
+            if ($temHistPoder && mb_strlen($justificativaPoder) < 5) { http_response_code(422); header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok' => false, 'message' => IdiomaService::t('modulolegal_requisitoslegais.erro.justificativa_nivel', ['pt' => 'Informe a justificativa da mudança do nível de controle (mínimo de 5 caracteres).', 'en' => 'Enter the reason for the control level change (at least 5 characters).', 'es' => 'Informe la justificación del cambio del nivel de control (mínimo 5 caracteres).'])], JSON_UNESCAPED_UNICODE); exit; }
             try {
                 foreach ((array)($_POST['rows'] ?? []) as $row) {
                     $codLegislacao = (int)($row['CODLEGISLACAO'] ?? 0);
@@ -119,10 +133,95 @@ final class ModuloLegalRequisitosGrid
                     } else {
                         $call($pdo, 'CALL sp_crud_insert(:tabela,:dados)', ['tabela' => 'legislacaoxpoder', 'dados' => $json(['CODLEGISLACAO' => $codLegislacao, 'codunidade' => $codUnidade, 'poder' => $poderNovo])]);
                     }
+                    if ($temHistPoder) $call($pdo, 'CALL sp_crud_insert(:tabela,:dados)', ['tabela' => 'legislacaoxpoder_historico', 'dados' => $json(['CODLEGISLACAO' => $codLegislacao, 'CODUNIDADE' => $codUnidade, 'PODER_ANTERIOR' => $poderAnterior !== '' ? $poderAnterior : null, 'PODER_NOVO' => $poderNovo, 'JUSTIFICATIVA' => $justificativaPoder, 'CODUSUARIO' => (int)($_SESSION['usuario']['codusuario'] ?? 0) ?: null])]);
                 }
                 header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok' => true, 'message' => IdiomaService::t('modulolegal_requisitoslegais.msg.nivel_alterado', ['pt' => 'Nível de controle alterado com sucesso.', 'en' => 'Control level changed successfully.', 'es' => 'Nivel de control modificado correctamente.'])], JSON_UNESCAPED_UNICODE); exit;
             } catch (Throwable $exception) {
                 http_response_code(409); header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok' => false, 'message' => IdiomaService::t('modulolegal_requisitoslegais.erro.nivel', ['pt' => 'Não foi possível confirmar a alteração do nível de controle. Verifique se a combinação escolhida já existe.', 'en' => 'The control level change could not be confirmed. Check whether the chosen combination already exists.', 'es' => 'No fue posible confirmar el cambio del nivel de control. Verifique si la combinación elegida ya existe.'])], JSON_UNESCAPED_UNICODE); exit;
+            }
+        }
+        // ---------------------------------------------------------------- Migração 416 (Revisão G itens 39, 30, 32 e 40)
+        $acao416 = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' ? (string)($_POST['action'] ?? '') : '';
+        if (in_array($acao416, ['control_history', 'lote_listar', 'lote_aplicar', 'ultima_avaliacao'], true)) {
+            header('Content-Type: application/json; charset=utf-8');
+            $resp = static function (array $d, int $status = 200): never { http_response_code($status); echo json_encode($d, JSON_UNESCAPED_UNICODE); exit; };
+            $uid416 = (int)($_SESSION['usuario']['codusuario'] ?? 0);
+            $dataIso = static function (string $v): ?string {
+                $v = trim($v); if ($v === '') return null;
+                foreach (['!Y-m-d', '!d/m/Y', '!m/d/Y'] as $fmt) { $d = DateTime::createFromFormat($fmt, $v); if ($d && $d->format(ltrim($fmt, '!')) === $v) return $d->format('Y-m-d'); }
+                return null;
+            };
+            // avaliações de um requisito (lei × unidade), da mais nova para a mais antiga
+            $avaliacoes = static function (int $leg, int $unid) use ($call, $pdo, $json): array {
+                $r = $call($pdo, 'CALL sp_crud_select(:tabela,:filtros,NULL,1000,0)', ['tabela' => 'legislacaoxsituacao', 'filtros' => $json(['CODLEGISLACAO' => $leg, 'codunidade' => $unid])]);
+                usort($r, static fn(array $a, array $b): int => (int)$b['CODSITUACAO'] <=> (int)$a['CODSITUACAO']);
+                return $r;
+            };
+            try {
+                if ($acao416 === 'control_history') {
+                    $leg = (int)($_POST['codlegislacao'] ?? 0); $unid = (int)($_POST['codunidade'] ?? -1);
+                    $r = $call($pdo, 'CALL sp_crud_select(:tabela,:filtros,NULL,500,0)', ['tabela' => 'vw_legislacaoxpoder_historico', 'filtros' => $json(['CODLEGISLACAO' => $leg, 'CODUNIDADE' => $unid])]);
+                    usort($r, static fn(array $a, array $b): int => (int)$b['CODHISTORICO'] <=> (int)$a['CODHISTORICO']);
+                    $resp(['ok' => true, 'itens' => array_map(static fn(array $h): array => ['data' => (string)$h['DATA_ALTERACAO'], 'usuario' => (string)$h['USUARIO'], 'de' => (string)($h['PODER_ANTERIOR'] ?? ''), 'para' => (string)$h['PODER_NOVO'], 'justificativa' => (string)$h['JUSTIFICATIVA']], $r)]);
+                }
+                if ($acao416 === 'ultima_avaliacao') {
+                    $a = $avaliacoes((int)($_POST['codlegislacao'] ?? 0), (int)($_POST['codunidade'] ?? -1))[0] ?? null;
+                    $resp(['ok' => true, 'avaliacao' => $a ? ['atendido' => (string)($a['atendido'] ?? ''), 'dscsituacao' => (string)($a['dscsituacao'] ?? ''), 'OBS' => (string)($a['OBS'] ?? ''), 'CODUSUARIO' => (string)($a['CODUSUARIO'] ?? ''), 'data_de_avaliacao' => substr((string)($a['data_de_avaliacao'] ?? ''), 0, 10), 'data_de_vencimento_avaliacao' => substr((string)($a['data_de_vencimento_avaliacao'] ?? ''), 0, 10)] : null]);
+                }
+                if ($acao416 === 'lote_listar') {
+                    $f = json_decode((string)($_POST['filtros'] ?? '{}'), true); $f = is_array($f) ? $naoAvaliado($f) : []; if ($codLicenca > 0) $f['CODLICENCA'] = (string)$codLicenca;
+                    if ((string)($f['SEM_EVIDENCIA'] ?? '') === '') unset($f['SEM_EVIDENCIA']);
+                    if (!isset($f['LEI_REVOGADA']) || (string)$f['LEI_REVOGADA'] === '') $f['LEI_REVOGADA'] = 'NAO';
+                    $total = (int)($call($pdo, 'CALL sp_crud_count(:tabela,:filtros,:busca)', ['tabela' => $fonte, 'filtros' => $json($f), 'busca' => trim((string)($_POST['busca'] ?? ''))])[0]['total_registros'] ?? 0);
+                    $linhas = $total > 0 && $total <= 500 ? $call($pdo, 'CALL sp_crud_select(:tabela,:filtros,:busca,500,0)', ['tabela' => $fonte, 'filtros' => $json($f), 'busca' => trim((string)($_POST['busca'] ?? ''))]) : [];
+                    $resp(['ok' => true, 'total' => $total, 'limite' => 500, 'itens' => array_map(static fn(array $r): array => ['leg' => (int)$r['CODLEGISLACAO'], 'unid' => (int)$r['CODUNIDADE'], 'codigo' => (string)($r['CODIGO'] ?? ''), 'unidade' => (string)(($r['UNIDADE'] ?? '') ?: ($r['DSCUNIDADE'] ?? '')), 'atendido' => (string)($r['AVALIACAO_LEGAL'] ?? '') === 'Não avaliado' || trim((string)($r['ATENDIDO'] ?? '')) === '' ? 'Não avaliado' : (string)$r['ATENDIDO']], $linhas)]);
+                }
+                // lote_aplicar
+                $modo = (string)($_POST['modo'] ?? '');
+                if (!in_array($modo, ['nova', 'proxima'], true)) $resp(['ok' => false, 'message' => 'Modo inválido.'], 422);
+                if (!$permission['pode_editar'] || ($modo === 'nova' && !$permission['pode_incluir'])) $resp(['ok' => false, 'message' => IdiomaService::t('modulolegal_requisitoslegais.erro.lote_permissao', ['pt' => 'Seu perfil não pode alterar avaliações de requisitos.', 'en' => 'Your profile cannot change requirement assessments.', 'es' => 'Su perfil no puede modificar evaluaciones de requisitos.'])], 403);
+                $pares = json_decode((string)($_POST['itens'] ?? '[]'), true); $pares = is_array($pares) ? $pares : [];
+                $alvo = [];
+                foreach ($pares as $p) { $l = (int)($p['leg'] ?? 0); $u = (int)($p['unid'] ?? -1); if ($l > 0 && $u >= 0) $alvo[$l . ':' . $u] = [$l, $u]; }
+                if (!$alvo || count($alvo) > 500) $resp(['ok' => false, 'message' => IdiomaService::t('modulolegal_requisitoslegais.erro.lote_itens', ['pt' => 'Escolha de 1 a 500 requisitos.', 'en' => 'Choose 1 to 500 requirements.', 'es' => 'Elija de 1 a 500 requisitos.'])], 422);
+                $proxima = $dataIso((string)($_POST['data_de_vencimento_avaliacao'] ?? ''));
+                $feitos = 0; $semAvaliacao = 0;
+                if ($modo === 'proxima') {
+                    if ($proxima === null) $resp(['ok' => false, 'message' => IdiomaService::t('modulolegal_requisitoslegais.erro.lote_proxima', ['pt' => 'Informe a data da próxima avaliação.', 'en' => 'Enter the next assessment date.', 'es' => 'Informe la fecha de la próxima evaluación.'])], 422);
+                    foreach ($alvo as [$l, $u]) {
+                        $ult = $avaliacoes($l, $u)[0] ?? null;
+                        if (!$ult) { $semAvaliacao++; continue; }
+                        if (substr((string)($ult['data_de_vencimento_avaliacao'] ?? ''), 0, 10) === $proxima) { $feitos++; continue; }
+                        $call($pdo, 'CALL sp_crud_insert(:tabela,:dados)', ['tabela' => 'situacaoxhistorico', 'dados' => $json(['CODSITUACAO' => (int)$ult['CODSITUACAO'], 'DATAHISTORICO' => date('Y-m-d'), 'DESCRICAO' => (string)($ult['dscsituacao'] ?? ''), 'codusuario' => $uid416 ?: null, 'registroanterior' => $ult])]);
+                        $call($pdo, 'CALL sp_crud_update(:tabela,:chave,:dados)', ['tabela' => 'legislacaoxsituacao', 'chave' => $json(['CODSITUACAO' => (int)$ult['CODSITUACAO']]), 'dados' => $json(['data_de_vencimento_avaliacao' => $proxima])]);
+                        $feitos++;
+                    }
+                } else {
+                    $atendido = strtoupper(trim((string)($_POST['atendido'] ?? '')));
+                    if (!in_array($atendido, ['S', 'N', 'PA'], true)) $resp(['ok' => false, 'message' => IdiomaService::t('modulolegal_requisitoslegais.erro.lote_atendido', ['pt' => 'Escolha o atendimento (Sim, Não ou Parcialmente).', 'en' => 'Choose the compliance (Yes, No or Partially).', 'es' => 'Elija la atención (Sí, No o Parcialmente).'])], 422);
+                    $avaliadoEm = $dataIso((string)($_POST['data_de_avaliacao'] ?? '')) ?? date('Y-m-d');
+                    $resp416 = (int)($_POST['CODUSUARIO'] ?? 0);
+                    foreach ($alvo as [$l, $u]) {
+                        $ult = $avaliacoes($l, $u)[0] ?? null;
+                        $next = $call($pdo, 'CALL sp_crud_select(:tabela,:filtros,NULL,1,0)', ['tabela' => 'vw_modulolegal_situacao_proximo', 'filtros' => $json([])]);
+                        $cod = (int)($next[0]['PROXIMO_CODSITUACAO'] ?? 0);
+                        if ($cod <= 0) throw new RuntimeException('Não foi possível obter o próximo código de situação.');
+                        $call($pdo, 'CALL sp_crud_insert(:tabela,:dados)', ['tabela' => 'legislacaoxsituacao', 'dados' => $json([
+                            'CODSITUACAO' => $cod, 'CODLEGISLACAO' => $l, 'codunidade' => $u,
+                            // responsável: o escolhido no lote; sem escolha, o da última avaliação do requisito
+                            'CODUSUARIO' => $resp416 ?: ((int)($ult['CODUSUARIO'] ?? 0) ?: null),
+                            'dscsituacao' => trim((string)($_POST['dscsituacao'] ?? '')), 'atendido' => $atendido, 'OBS' => trim((string)($_POST['OBS'] ?? '')),
+                            'data_de_avaliacao' => $avaliadoEm, 'data_de_vencimento_avaliacao' => $proxima])]);
+                        $feitos++;
+                    }
+                }
+                try { $call($pdo, 'CALL sp_auditoria_registrar(:u,:t,:a,:en,:r,:res,:d)', ['u' => $uid416, 't' => 'modulolegal_requisitoslegais', 'a' => $modo === 'nova' ? 'AVALIACAO_EM_LOTE' : 'PROXIMA_AVALIACAO_EM_LOTE', 'en' => 'legislacaoxsituacao', 'r' => (string)count($alvo), 'res' => 'SUCESSO', 'd' => $json(['itens' => array_keys($alvo), 'feitos' => $feitos, 'sem_avaliacao' => $semAvaliacao])]); } catch (Throwable) {}
+                $msg = $modo === 'nova'
+                    ? str_replace('{n}', (string)$feitos, IdiomaService::t('modulolegal_requisitoslegais.msg.lote_nova', ['pt' => 'Avaliação registrada em {n} requisito(s).', 'en' => 'Assessment recorded in {n} requirement(s).', 'es' => 'Evaluación registrada en {n} requisito(s).']))
+                    : str_replace(['{n}', '{s}'], [(string)$feitos, (string)$semAvaliacao], IdiomaService::t('modulolegal_requisitoslegais.msg.lote_proxima', ['pt' => 'Próxima avaliação atualizada em {n} requisito(s); {s} sem avaliação anterior (use "Nova avaliação" neles).', 'en' => 'Next assessment updated in {n} requirement(s); {s} without a previous assessment.', 'es' => 'Próxima evaluación actualizada en {n} requisito(s); {s} sin evaluación anterior.']));
+                $resp(['ok' => true, 'message' => $msg, 'feitos' => $feitos, 'sem_avaliacao' => $semAvaliacao]);
+            } catch (Throwable $erro416) {
+                $resp(['ok' => false, 'message' => IdiomaService::t('modulolegal_requisitoslegais.erro.lote', ['pt' => 'Não foi possível concluir a operação.', 'en' => 'The operation could not be completed.', 'es' => 'No fue posible concluir la operación.']) . ' (' . mb_strimwidth($erro416->getMessage(), 0, 200, '…') . ')'], 500);
             }
         }
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && ($_POST['action'] ?? '') === 'ia_latest_request') {
@@ -196,7 +295,7 @@ final class ModuloLegalRequisitosGrid
             echo json_encode(['ok' => (bool)$ids, 'message' => $ids ? str_replace('{formatos}', strtoupper(implode(' + ', $formatos)), IdiomaService::t('modulolegal_requisitoslegais.msg.relatorio_solicitado', ['pt' => 'Relatório solicitado ({formatos}). Os arquivos chegam nos alertas em alguns minutos.', 'en' => 'Report requested ({formatos}). The files arrive in the alerts in a few minutes.', 'es' => 'Informe solicitado ({formatos}). Los archivos llegan en las alertas en algunos minutos.'])) : IdiomaService::t('modulolegal_requisitoslegais.erro.relatorio', ['pt' => 'Não foi possível solicitar o relatório.', 'en' => 'The report could not be requested.', 'es' => 'No fue posible solicitar el informe.'])], JSON_UNESCAPED_UNICODE); exit;
         }
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && ($_POST['action'] ?? '') === 'export_request' && $permission['pode_exportar_excel']) {
-            $f = json_decode((string)($_POST['filtros'] ?? '{}'), true); $f = is_array($f) ? $f : $filters; if ((string)($f['SEM_EVIDENCIA'] ?? '') === '') unset($f['SEM_EVIDENCIA']); if ($codLicenca > 0) $f['CODLICENCA'] = (string)$codLicenca; $b = trim((string)($_POST['busca'] ?? $search)); $uid = (int)$_SESSION['usuario']['codusuario'];
+            $f = json_decode((string)($_POST['filtros'] ?? '{}'), true); $f = is_array($f) ? $naoAvaliado($f) : $filters; if ((string)($f['SEM_EVIDENCIA'] ?? '') === '') unset($f['SEM_EVIDENCIA']); if ($codLicenca > 0) $f['CODLICENCA'] = (string)$codLicenca; $b = trim((string)($_POST['busca'] ?? $search)); $uid = (int)$_SESSION['usuario']['codusuario'];
             $exportColumns = [];
             foreach ($exportOrder as $exportColumn) {
                 if (in_array($exportColumn, $exportTechnical, true)) continue;
@@ -219,7 +318,7 @@ final class ModuloLegalRequisitosGrid
             'CODLEGISLACAO' => ['label' => ['pt' => 'Código da legislação', 'en' => 'Legislation code', 'es' => 'Código de legislación']],
             'CODIGO' => ['label' => ['pt' => 'Texto da Norma', 'en' => 'Standard text', 'es' => 'Texto de la norma']], 'UNIDADE' => ['label' => ['pt' => 'Unidade', 'en' => 'Unit', 'es' => 'Unidad']],
             'PODER' => ['label' => ['pt' => 'Nível de controle', 'en' => 'Control level', 'es' => 'Nivel de control'], 'options' => ['' => '', 'Controle' => 'Controle', 'Conhecimento' => 'Conhecimento', 'Influência' => 'Influência']],
-            'ATENDIDO' => ['label' => ['pt' => 'Atendido?', 'en' => 'Compliant?', 'es' => '¿Atendido?'], 'options' => ['' => '', 'Sim' => 'Sim', 'Não' => 'Não', 'Parcialmente Atendido' => 'Parcialmente Atendido', 'Atendimento Indefinido!' => 'Atendimento Indefinido!']],
+            'ATENDIDO' => ['label' => ['pt' => 'Atendido?', 'en' => 'Compliant?', 'es' => '¿Atendido?'], 'options' => ['' => '', 'Sim' => 'Sim', 'Não' => 'Não', 'Parcialmente Atendido' => 'Parcialmente Atendido'] + ($temAvaliacaoLegal ? ['Não avaliado' => 'Não avaliado'] : ['Atendimento Indefinido!' => 'Atendimento Indefinido!'])],
             'DSCAMBITO' => ['label' => ['pt' => 'Âmbito', 'en' => 'Scope', 'es' => 'Ámbito']], 'DSCTIPO' => ['label' => ['pt' => 'Tipo', 'en' => 'Type', 'es' => 'Tipo']], 'NR' => ['label' => ['pt' => 'Número', 'en' => 'Number', 'es' => 'Número']], 'ANO' => ['label' => ['pt' => 'Ano', 'en' => 'Year', 'es' => 'Año']],
             'DSCASSUNTO' => ['label' => ['pt' => 'Assuntos agrupados', 'en' => 'Grouped subjects', 'es' => 'Asuntos agrupados']], 'ARTIGOS' => ['label' => ['pt' => 'Artigos', 'en' => 'Articles', 'es' => 'Artículos']], 'MEIO_AMBIENTE' => ['label' => ['pt' => 'Meio ambiente', 'en' => 'Environment', 'es' => 'Medio ambiente']], 'SEGURANCA' => ['label' => ['pt' => 'Segurança', 'en' => 'Safety', 'es' => 'Seguridad']], 'QUALIDADE' => ['label' => ['pt' => 'Qualidade', 'en' => 'Quality', 'es' => 'Calidad']], 'RESPOSABILIDADE' => ['label' => ['pt' => 'Responsabilidade', 'en' => 'Responsibility', 'es' => 'Responsabilidad']],
             'CODLEGISLACAXEMPRESA' => ['label' => ['pt' => 'Código da relação', 'en' => 'Relation code', 'es' => 'Código de relación']], 'CODUNIDADE' => ['label' => ['pt' => 'Código da unidade', 'en' => 'Unit code', 'es' => 'Código de unidad']], 'CODTIPO' => ['label' => ['pt' => 'Código do tipo', 'en' => 'Type code', 'es' => 'Código de tipo']], 'CODAMBITO' => ['label' => ['pt' => 'Código do Âmbito', 'en' => 'Scope code', 'es' => 'Código de ámbito']], 'CODEMPRESA' => ['label' => ['pt' => 'Código da empresa', 'en' => 'Company code', 'es' => 'Código de empresa']],
@@ -277,6 +376,7 @@ final class ModuloLegalRequisitosGrid
         foreach ($rows as &$row) {
             if (trim((string)($row['UNIDADE'] ?? '')) === '' && trim((string)($row['DSCUNIDADE'] ?? '')) !== '') $row['UNIDADE'] = $row['DSCUNIDADE'];
             foreach (['ATENDIDO', 'MEIO_AMBIENTE', 'SEGURANCA', 'QUALIDADE', 'RESPOSABILIDADE'] as $field) if (array_key_exists($field, $row)) $row[$field] = $normalizeLegacyValue((string)$row[$field]);
+            if ($temAvaliacaoLegal && (string)($row['AVALIACAO_LEGAL'] ?? '') === 'Não avaliado') $row['ATENDIDO'] = 'Não avaliado'; // item 25 (sem avaliação ou Atendimento Indefinido!)
         }
         unset($row);
         $prefsRows = $call($pdo, 'CALL sp_crud_select(:tabela,:filtros,NULL,100,0)', ['tabela' => 'vw_preferencias_grid', 'filtros' => $json(['codusuario' => (int)$_SESSION['usuario']['codusuario'], 'transacao' => 'modulolegal_requisitoslegais'])]); $prefs = []; foreach ($prefsRows as $pref) if ((string)($pref['transacao'] ?? '') === 'modulolegal_requisitoslegais') $prefs[(string)$pref['coluna']] = $pref;
@@ -320,7 +420,8 @@ final class ModuloLegalRequisitosGrid
                     <button data-req-slot="operacoes-04" class="btn btn-sm btn-outline-secondary" type="button" data-columns title="<?= $e($T('comum.botao.colunas', ['pt' => 'Colunas', 'en' => 'Columns', 'es' => 'Columnas'])) ?>"><i class="bi bi-layout-three-columns"></i></button>
                     <button data-req-slot="operacoes-05" class="btn btn-sm btn-outline-info grid-crud-button" type="button" data-open-guide-requisitos title="Guia interativo - Requisitos Legais" aria-label="Guia interativo - Requisitos Legais"><i class="bi bi-question-circle"></i></button>
                     <?php if ($temInativacao): ?><button data-req-slot="operacoes-07" class="btn btn-sm btn-outline-danger grid-crud-button" type="button" data-inativar-requisito disabled<?= $podeInativar ? '' : ' data-permission-locked="1"' ?> title="<?= $podeInativar ? $e($T('modulolegal_requisitoslegais.botao.inativar', ['pt' => 'Inativar requisito nesta unidade', 'en' => 'Deactivate requirement for this unit', 'es' => 'Inactivar requisito en esta unidad'])) : $e($permissionTitle) ?>" aria-label="<?= $e($T('modulolegal_requisitoslegais.botao.inativar', ['pt' => 'Inativar requisito nesta unidade', 'en' => 'Deactivate requirement for this unit', 'es' => 'Inactivar requisito en esta unidad'])) ?>"><i class="bi bi-archive"></i></button>
-                    <button data-req-slot="operacoes-08" class="btn btn-sm btn-outline-secondary grid-crud-button" type="button" data-requisitos-inativados title="<?= $e($T('modulolegal_requisitoslegais.botao.inativados', ['pt' => 'Requisitos inativados', 'en' => 'Deactivated requirements', 'es' => 'Requisitos inactivados'])) ?>" aria-label="<?= $e($T('modulolegal_requisitoslegais.botao.inativados', ['pt' => 'Requisitos inactivados', 'en' => 'Deactivated requirements', 'es' => 'Requisitos inactivados'])) ?>"><i class="bi bi-archive-fill"></i></button><?php endif; ?>
+                    <button data-req-slot="operacoes-08" class="btn btn-sm btn-outline-secondary grid-crud-button" type="button" data-requisitos-inativados title="<?= $e($T('modulolegal_requisitoslegais.botao.inativados', ['pt' => 'Requisitos inativados', 'en' => 'Deactivated requirements', 'es' => 'Requisitos inactivados'])) ?>" aria-label="<?= $e($T('modulolegal_requisitoslegais.botao.inativados', ['pt' => 'Requisitos inactivados', 'en' => 'Deactivated requirements', 'es' => 'Requisitos inactivados'])) ?>"><i class="bi bi-archive-fill"></i></button>
+                    <button data-req-slot="operacoes-09" class="btn btn-sm btn-outline-secondary grid-crud-button" type="button" data-poder-historico disabled title="<?= $e($T('modulolegal_requisitoslegais.botao.historico_nivel', ['pt' => 'Histórico do nível de controle (quem mudou e por quê)', 'en' => 'Control level history (who changed it and why)', 'es' => 'Historial del nivel de control (quién lo cambió y por qué)'])) ?>"><i class="bi bi-clock-history"></i></button><?php endif; ?>
                 </div>
             </div>
             <div class="req-grupo req-grupo-correlacionamentos" role="group" aria-labelledby="reqGrupo_correlacionamentos" data-req-grupo="correlacionamentos">
@@ -343,6 +444,7 @@ final class ModuloLegalRequisitosGrid
                     <button data-req-slot="avaliacao-04" class="btn btn-sm btn-outline-success" type="button" data-open-questionnaire data-questionnaire-context="LEGAL" <?= !$permission['pode_visualizar'] ? 'disabled' : '' ?> title="<?= $e($T('modulolegal_requisitoslegais.botao.questionario', ['pt' => 'Questionário Legal', 'en' => 'Legal questionnaire', 'es' => 'Cuestionario Legal'])) ?>" aria-label="<?= $e($T('modulolegal_requisitoslegais.botao.questionario', ['pt' => 'Questionário Legal', 'en' => 'Legal questionnaire', 'es' => 'Cuestionario Legal'])) ?>"><i class="bi bi-ui-checks-grid"></i></button>
                     <button data-req-slot="avaliacao-05" class="btn btn-sm btn-outline-warning" type="button" data-request-ia-analysis <?= !$permission['pode_visualizar'] ? 'disabled' : '' ?> title="<?= $e($T('modulolegal_requisitoslegais.botao.analise_ia', ['pt' => 'Solicitar análise de IA', 'en' => 'Request AI analysis', 'es' => 'Solicitar análisis de IA'])) ?>" aria-label="<?= $e($T('modulolegal_requisitoslegais.botao.analise_ia', ['pt' => 'Solicitar análise de IA', 'en' => 'Request AI analysis', 'es' => 'Solicitar análisis de IA'])) ?>"><i class="bi bi-stars"></i></button>
                     <?php if ($colunasSituacao): ?><button data-req-slot="avaliacao-06" class="btn btn-sm btn-outline-primary" type="button" data-relatorio-atendimento <?= empty($permission['pode_gerar_pdf']) && empty($permission['pode_exportar_excel']) ? 'disabled data-permission-locked="1"' : '' ?> title="<?= $e($T('modulolegal_requisitoslegais.botao.relatorio_atendimento', ['pt' => 'Relatório de Atendimento Legal (PDF e Excel, com os filtros do grid)', 'en' => 'Legal Compliance Report (PDF and Excel, with the grid filters)', 'es' => 'Informe de Cumplimiento Legal (PDF y Excel, con los filtros del grid)'])) ?>" aria-label="<?= $e($T('modulolegal_requisitoslegais.botao.relatorio_atendimento', ['pt' => 'Relatório de Atendimento Legal (PDF e Excel, com os filtros do grid)', 'en' => 'Legal Compliance Report (PDF and Excel, with the grid filters)', 'es' => 'Informe de Cumplimiento Legal (PDF y Excel, con los filtros del grid)'])) ?>"><i class="bi bi-file-earmark-bar-graph"></i></button><?php endif; ?>
+                    <button data-req-slot="avaliacao-07" class="btn btn-sm btn-outline-primary grid-crud-button" type="button" data-avaliacao-lote <?= !$permission['pode_editar'] ? 'disabled data-permission-locked="1"' : '' ?> data-responsaveis="<?= $e($json(array_map(static fn(array $r): array => ['id' => (string)($r['CODUSUARIO'] ?? ''), 'nome' => trim((string)($r['NOME'] ?? '')) ?: (string)($r['USERID'] ?? '')], $responsaveisRows))) ?>" title="<?= $e($T('modulolegal_requisitoslegais.botao.avaliacao_lote', ['pt' => 'Avaliação em lote: aplicar a mesma avaliação ou a próxima data de avaliação aos requisitos filtrados (ex.: a mesma lei em outras unidades)', 'en' => 'Batch assessment: apply the same assessment or next assessment date to the filtered requirements', 'es' => 'Evaluación en lote: aplicar la misma evaluación o la próxima fecha a los requisitos filtrados'])) ?>"><i class="bi bi-ui-checks-grid"></i></button>
                 </div>
             </div>
         </div>
@@ -420,7 +522,7 @@ final class ModuloLegalRequisitosGrid
     'comum.msg.exportacao_solicitada' => ['pt' => 'Exportação solicitada; acompanhe os alertas.', 'en' => 'Export requested; follow the alerts.', 'es' => 'Exportación solicitada; siga las alertas.'],
     'modulolegal_requisitoslegais.erro.solicitar_analise_ia' => ['pt' => 'Não foi possível solicitar a análise de IA.', 'en' => 'The AI analysis could not be requested.', 'es' => 'No fue posible solicitar el análisis de IA.'],
 ]) ?>
-<script src="../assets/vendor/jquery/jquery-3.7.1.min.js?v=2"></script><script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js?v=2"></script><script src="../assets/js/visualizador-pdf.js?v=6"></script><script src="../assets/js/requisitos-colunas-fix.js?v=3"></script><script src="../assets/js/modulo-legal-requisitos.js?v=18"></script><script src="../assets/js/requisitos-relacionamentos-extra.js?v=3"></script><script src="../assets/js/associacoes-contagem.js?v=6"></script><script src="../assets/js/grid-sort.js?v=2"></script><script src="../assets/js/grid-pagination.js?v=20"></script><script src="../assets/js/grid-column-filters.js?v=4"></script><script src="../assets/js/grid-loading.js?v=5"></script><script src="../assets/js/requisitos-toolbar-grupos.js?v=1"></script>
+<script src="../assets/vendor/jquery/jquery-3.7.1.min.js?v=2"></script><script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js?v=2"></script><script src="../assets/js/visualizador-pdf.js?v=6"></script><script src="../assets/js/requisitos-colunas-fix.js?v=3"></script><script src="../assets/js/modulo-legal-requisitos.js?v=19"></script><script src="../assets/js/requisitos-lote.js?v=1"></script><script src="../assets/js/legislacao-grupos.js?v=2"></script><script src="../assets/js/requisitos-relacionamentos-extra.js?v=3"></script><script src="../assets/js/associacoes-contagem.js?v=6"></script><script src="../assets/js/grid-sort.js?v=2"></script><script src="../assets/js/grid-pagination.js?v=20"></script><script src="../assets/js/grid-column-filters.js?v=4"></script><script src="../assets/js/grid-loading.js?v=5"></script><script src="../assets/js/requisitos-toolbar-grupos.js?v=1"></script>
 <script>
 (function ($) {
     $(document).on('click', '.modulo-legal-requisitos-fragment [data-open-guide-requisitos]', function () {

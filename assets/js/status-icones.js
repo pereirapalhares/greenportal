@@ -26,7 +26,7 @@
 
     var TX = {
         pt: { ok: 'Em dia', atencao: 'Em aten\u00e7\u00e3o', vencido: 'Vencido', critico: 'Cr\u00edtico', andamento: 'Em andamento', nao_avaliado: 'N\u00e3o avaliado / sem data', inativo: 'Inativo',
-            lic_ok: 'V\u00e1lida', lic_atencao: 'Em aten\u00e7\u00e3o (prazo de rea\u00e7\u00e3o atingido)', lic_vencido: 'Vencida', lic_protocolo: 'V\u00e1lida (em protocolo): renova\u00e7\u00e3o protocolada no prazo', lic_prot_sem: 'Em protocolo (prazo n\u00e3o informado)', lic_sem: 'Sem data de vencimento', lic_entrega: 'Entrega peri\u00f3dica',
+            lic_ok: 'V\u00e1lida', lic_nao_vence: 'Sem validade (n\u00e3o vence)', lic_arquivada: 'Arquivada (fora dos indicadores e avisos)', lic_atencao: 'Em aten\u00e7\u00e3o (prazo de rea\u00e7\u00e3o atingido)', lic_vencido: 'Vencida', lic_protocolo: 'V\u00e1lida (em protocolo): renova\u00e7\u00e3o protocolada no prazo', lic_prot_sem: 'Em protocolo (prazo n\u00e3o informado)', lic_sem: 'Sem data de vencimento', lic_entrega: 'Entrega peri\u00f3dica',
             leg_ok: 'Atendido', leg_atencao: 'Parcialmente atendido', leg_critico: 'N\u00e3o atendido', leg_na: 'N\u00e3o avaliado (indefinido)',
             med_ok: 'Medi\u00e7\u00e3o em dia', med_atencao: 'Prazo de rea\u00e7\u00e3o atingido', med_vencido: 'Data da medi\u00e7\u00e3o vencida', med_na: 'Sem data da medi\u00e7\u00e3o',
             nc_ok: 'Encerrada', nc_andamento: 'Em andamento no prazo', nc_vencido: 'Prazo vencido', nc_critico: 'Risco alto',
@@ -35,7 +35,7 @@
             pi_ok: 'Requisitos legais atendidos', pi_atencao: 'Aten\u00e7\u00e3o em algum requisito legal', pi_vencido: 'Vencido em algum requisito legal', pi_critico: 'Falha em algum requisito legal', pi_na: 'Sem requisito legal vinculado',
             legenda: 'Legenda dos \u00edcones de status' },
         en: { ok: 'Up to date', atencao: 'Attention', vencido: 'Expired', critico: 'Critical', andamento: 'In progress', nao_avaliado: 'Not assessed / no date', inativo: 'Inactive',
-            lic_ok: 'Valid', lic_atencao: 'Attention (reaction date reached)', lic_vencido: 'Expired', lic_protocolo: 'Valid (renewal filed on time)', lic_prot_sem: 'Renewal filed (deadline not informed)', lic_sem: 'No due date', lic_entrega: 'Periodic submission',
+            lic_ok: 'Valid', lic_nao_vence: 'No expiry (does not expire)', lic_arquivada: 'Archived (out of indicators and notices)', lic_atencao: 'Attention (reaction date reached)', lic_vencido: 'Expired', lic_protocolo: 'Valid (renewal filed on time)', lic_prot_sem: 'Renewal filed (deadline not informed)', lic_sem: 'No due date', lic_entrega: 'Periodic submission',
             leg_ok: 'Met', leg_atencao: 'Partially met', leg_critico: 'Not met', leg_na: 'Not assessed (undefined)',
             med_ok: 'Measurement up to date', med_atencao: 'Reaction date reached', med_vencido: 'Measurement date expired', med_na: 'No measurement date',
             nc_ok: 'Closed', nc_andamento: 'In progress, on time', nc_vencido: 'Deadline expired', nc_critico: 'High risk',
@@ -44,7 +44,7 @@
             pi_ok: 'Legal requirements met', pi_atencao: 'Attention in a legal requirement', pi_vencido: 'Expired in a legal requirement', pi_critico: 'Failure in a legal requirement', pi_na: 'No linked legal requirement',
             legenda: 'Status icon legend' },
         es: { ok: 'Al d\u00eda', atencao: 'En atenci\u00f3n', vencido: 'Vencido', critico: 'Cr\u00edtico', andamento: 'En curso', nao_avaliado: 'No evaluado / sin fecha', inativo: 'Inactivo',
-            lic_ok: 'V\u00e1lida', lic_atencao: 'En atenci\u00f3n (fecha de reacci\u00f3n alcanzada)', lic_vencido: 'Vencida', lic_protocolo: 'V\u00e1lida (en protocolo)', lic_prot_sem: 'En protocolo (plazo no informado)', lic_sem: 'Sin fecha de vencimiento', lic_entrega: 'Entrega peri\u00f3dica',
+            lic_ok: 'V\u00e1lida', lic_nao_vence: 'Sin validez (no vence)', lic_arquivada: 'Archivada (fuera de indicadores y avisos)', lic_atencao: 'En atenci\u00f3n (fecha de reacci\u00f3n alcanzada)', lic_vencido: 'Vencida', lic_protocolo: 'V\u00e1lida (en protocolo)', lic_prot_sem: 'En protocolo (plazo no informado)', lic_sem: 'Sin fecha de vencimiento', lic_entrega: 'Entrega peri\u00f3dica',
             leg_ok: 'Cumplido', leg_atencao: 'Parcialmente cumplido', leg_critico: 'No cumplido', leg_na: 'No evaluado (indefinido)',
             med_ok: 'Medici\u00f3n al d\u00eda', med_atencao: 'Fecha de reacci\u00f3n alcanzada', med_vencido: 'Fecha de medici\u00f3n vencida', med_na: 'Sin fecha de medici\u00f3n',
             nc_ok: 'Cerrada', nc_andamento: 'En curso, en plazo', nc_vencido: 'Plazo vencido', nc_critico: 'Riesgo alto',
@@ -125,6 +125,9 @@
                 if (sit === 'PROTOCOLO') return ['andamento', 'lic_protocolo'];
                 if (sit === 'PROT_SEM_PRAZO') return ['atencao', 'lic_prot_sem'];
                 if (sit === 'SEM_DATA') return ['nao_avaliado', 'lic_sem'];
+                if (sit === 'NAO_VENCE') return ['ok', 'lic_nao_vence'];          // migração 415
+                if (sit === 'ARQUIVADA') return ['nao_avaliado', 'lic_arquivada'];
+                if (sit === 'VALIDA' && venc && venc < h && data(tr, 'PROXIMO_VENCIMENTO')) return ['ok', 'lic_ok']; // recorrente: ciclo seguinte
                 if (sit === 'ENTREGA') return reacao && reacao <= h ? ['atencao', 'lic_entrega'] : ['ok', 'lic_entrega'];
                 if (sit === 'VALIDA') return reacao && reacao <= h ? ['atencao', 'lic_atencao'] : ['ok', 'lic_ok'];
                 // Sem a coluna calculada: pelas datas da linha.

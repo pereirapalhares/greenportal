@@ -231,7 +231,11 @@ final class MinhasPendencias
         if (self::pode('LICENCAS')) {
             $pilar = $this->t('home.pilar.licencas', ['pt' => 'Licenças', 'en' => 'Licenses', 'es' => 'Licencias']);
             foreach ($this->ler('vw_minhas_licencas_grid', 500) as $r) {
-                $validade = self::data($r['DATA_VALIDADE'] ?? ''); $reacao = self::data($r['DATA_REACAO'] ?? '');
+                // Migração 415: arquivada ou sem validade (não vence) não é pendência; recorrente usa o próximo ciclo
+                $sit415 = strtoupper(trim((string)($r['SITUACAO_LICENCA'] ?? '')));
+                if ($sit415 === 'ARQUIVADA' || $sit415 === 'NAO_VENCE') continue;
+                $validade = self::data(($r['PROXIMO_VENCIMENTO'] ?? '') ?: ($r['DATA_VALIDADE'] ?? '')); $reacao = self::data($r['DATA_REACAO'] ?? '');
+                if (!empty($r['PROXIMO_VENCIMENTO']) && substr((string)$r['PROXIMO_VENCIMENTO'], 0, 10) !== substr((string)($r['DATA_VALIDADE'] ?? ''), 0, 10)) $reacao = null;
                 if (in_array(strtoupper(trim((string)($r['EMPROTOCOLO'] ?? ''))), ['S', 'SIM', '1'], true)) $motivo = $this->t('home.motivo.licenca.protocolo', ['pt' => 'Renovação em protocolo no órgão: acompanhar a emissão', 'en' => 'Renewal filed with the agency: follow up on issuance', 'es' => 'Renovación en protocolo: acompañar la emisión']);
                 elseif ($validade && $this->dias($validade) < 0) $motivo = $this->t('home.motivo.licenca.vencida', ['pt' => 'Licença vencida em {data}', 'en' => 'License expired on {data}', 'es' => 'Licencia vencida el {data}'], ['{data}' => self::formatar($validade)]);
                 elseif ($reacao && $this->dias($reacao) <= 0) $motivo = $this->t('home.motivo.licenca.reacao', ['pt' => 'Prazo para iniciar a renovação passou em {data}', 'en' => 'Deadline to start the renewal passed on {data}', 'es' => 'El plazo para iniciar la renovación venció el {data}'], ['{data}' => self::formatar($reacao)]);
@@ -268,6 +272,24 @@ final class MinhasPendencias
                     ['pt' => 'Responsável pelo monitoramento (próximo em {data})', 'en' => 'Responsible for the monitoring (next on {data})', 'es' => 'Responsable del monitoreo (próximo el {data})'],
                     ['pt' => 'Monitoramento sem data de reação: definir a data', 'en' => 'Monitoring without a reaction date: set the date', 'es' => 'Monitoreo sin fecha de reacción: definir la fecha']);
                 $this->add($pilar, (string)($r['PARAMETROS'] ?? $pilar), $motivo, $reacao, self::url('medicaoemonitoramento_mm_monitoramento.php', ['CODMONITORAMENTO' => (string)($r['CODMONITORAMENTO'] ?? '')], true));
+            }
+        }
+        // Migração 416 (Revisão G item 25): leis não analisadas (requisito sem avaliação manual) de que o usuário é responsável,
+        // uma pendência por unidade, que abre os Requisitos legais filtrados em "Não avaliado" na unidade
+        if (self::pode('REQUISITOS_LEGAIS')) {
+            $porUnidade = [];
+            foreach ($this->ler('vw_minhas_leis_nao_avaliadas', 1000) as $r) {
+                $u = (string)($r['CODUNIDADE'] ?? '');
+                $porUnidade[$u]['n'] = ($porUnidade[$u]['n'] ?? 0) + 1;
+                $porUnidade[$u]['nome'] = trim((string)($r['UNIDADE'] ?? '')) ?: ('#' . $u);
+            }
+            if ($porUnidade) {
+                $pilar = $this->t('home.pilar.legal', ['pt' => 'Requisitos legais', 'en' => 'Legal requirements', 'es' => 'Requisitos legales']);
+                foreach ($porUnidade as $u => $x) {
+                    $titulo = $this->t('home.titulo.leis_nao_analisadas', ['pt' => 'Leis não analisadas', 'en' => 'Laws not analyzed', 'es' => 'Leyes no analizadas']) . ' - ' . $x['nome'];
+                    $motivo = str_replace('{n}', (string)$x['n'], $this->t('home.motivo.leis_nao_analisadas', ['pt' => '{n} lei(s) sem avaliação: avaliar o atendimento (há Avaliação em lote nos Requisitos legais)', 'en' => '{n} law(s) without assessment: assess the compliance (batch assessment available in Legal requirements)', 'es' => '{n} ley(es) sin evaluación: evaluar la atención (hay evaluación en lote en Requisitos legales)']));
+                    $this->add($pilar, $titulo, $motivo, null, self::url('modulolegal_requisitoslegais.php', ['CODUNIDADE' => (string)$u, 'ATENDIDO' => 'Não avaliado']));
+                }
             }
         }
         // Treinamentos, infraestrutura e controles (sem data: a pendência é a responsabilidade)

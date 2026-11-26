@@ -34,7 +34,18 @@ try {
         AND ((TABLE_NAME = 'li_licencas' AND COLUMN_NAME = 'NUMERO_PROTOCOLO') OR (TABLE_NAME = " . $licencaPdo->quote($pendingMode ? 'vw_minhas_licencas_grid' : 'vw_licencas_grid') . " AND COLUMN_NAME = 'SITUACAO_LICENCA'))")->fetchColumn() === 2;
     $licencaPdo = null;
 } catch (Throwable $e) { $licencaSituacao = false; }
-$licencaCampos = static function (array $campos) use ($licencaSituacao): array {
+// Migração 415 (Revisão G itens 48, 55 e 56): Arquivar licença?, Validade inexistente e Validade recorrente (meses)
+$licenca415 = false;
+if ($licencaSituacao) {
+    try {
+        $licencaPdo = TenantContext::connect(GreenPortalDatabase::env(), $_SESSION);
+        $licenca415 = (int)$licencaPdo->query("SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = "
+            . $licencaPdo->quote($pendingMode ? 'vw_minhas_licencas_grid' : 'vw_licencas_grid') . " AND COLUMN_NAME IN ('ARQUIVADA', 'VALIDADE_INEXISTENTE', 'VALIDADE_RECORRENTE', 'RECORRENCIA_MESES', 'PROXIMO_VENCIMENTO')")->fetchColumn() === 5;
+        $licencaPdo = null;
+    } catch (Throwable $e) { $licenca415 = false; }
+}
+$simNao = ['N' => ['pt' => 'Não', 'en' => 'No', 'es' => 'No'], 'S' => ['pt' => 'Sim', 'en' => 'Yes', 'es' => 'Sí']];
+$licencaCampos = static function (array $campos) use ($licencaSituacao, $licenca415, $simNao): array {
     if (!$licencaSituacao) return $campos;
     $opcoes = [];
     foreach (LicencaSituacao::CODIGOS as $codigo) $opcoes[$codigo] = LicencaSituacao::ROTULOS[$codigo];
@@ -46,14 +57,27 @@ $licencaCampos = static function (array $campos) use ($licencaSituacao): array {
             $novo['MOTIVO_SITUACAO'] = ['label' => ['pt' => 'Motivo da situação', 'en' => 'Status reason', 'es' => 'Motivo de la situación'], 'readonly' => true, 'filter' => 'text', 'width' => 300];
         }
         if ($chave === 'PROTOCOLADO_EM') $novo['NUMERO_PROTOCOLO'] = ['label' => ['pt' => 'Número do protocolo', 'en' => 'Protocol number', 'es' => 'Número de protocolo'], 'filter' => 'text', 'width' => 160];
+        if ($licenca415 && $chave === 'DATA_VALIDADE') {
+            $novo['VALIDADE_INEXISTENTE'] = ['label' => ['pt' => 'Validade inexistente?', 'en' => 'No expiry?', 'es' => '¿Sin validez?'], 'options' => $simNao, 'default_new' => 'N', 'insert_value' => 'N', 'filter' => 'select', 'width' => 130,
+                'tooltip' => ['pt' => 'Sim = a licença não tem validade (não vence). Diferente de deixar a Data de Vencimento em branco, que aparece como "Sem data de vencimento" (não preenchida).', 'en' => 'Yes = the license has no expiry date (does not expire). Different from leaving the due date blank (not filled).', 'es' => 'Sí = la licencia no tiene validez (no vence). Diferente de dejar la fecha en blanco (no completada).']];
+            $novo['VALIDADE_RECORRENTE'] = ['label' => ['pt' => 'Validade recorrente?', 'en' => 'Recurring validity?', 'es' => '¿Validez recurrente?'], 'options' => $simNao, 'default_new' => 'N', 'insert_value' => 'N', 'filter' => 'select', 'width' => 130,
+                'tooltip' => ['pt' => 'Sim = a validade se renova sozinha a cada "Recorrência (meses)" a partir da Data de Vencimento: depois do vencimento vale o próximo ciclo, mostrado em "Próximo vencimento".', 'en' => 'Yes = the validity renews itself every "Recurrence (months)" from the due date.', 'es' => 'Sí = la validez se renueva sola cada "Recurrencia (meses)" desde la fecha de vencimiento.']];
+            $novo['RECORRENCIA_MESES'] = ['label' => ['pt' => 'Recorrência (meses)', 'en' => 'Recurrence (months)', 'es' => 'Recurrencia (meses)'], 'type' => 'number', 'filter' => 'text', 'width' => 120];
+            $novo['PROXIMO_VENCIMENTO'] = ['label' => ['pt' => 'Próximo vencimento', 'en' => 'Next due date', 'es' => 'Próximo vencimiento'], 'type' => 'date', 'readonly' => true, 'filter' => 'text', 'width' => 130];
+        }
+        if ($licenca415 && $chave === 'CODSTATUS')
+            $novo['ARQUIVADA'] = ['label' => ['pt' => 'Arquivar licença?', 'en' => 'Archive license?', 'es' => '¿Archivar licencia?'], 'options' => $simNao, 'default_new' => 'N', 'insert_value' => 'N', 'filter' => 'select', 'width' => 130,
+                'tooltip' => ['pt' => 'Sim = licença arquivada: continua no grid (situação "Arquivada"), mas sai dos indicadores, da Home, das pendências e dos avisos de prazo.', 'en' => 'Yes = archived license: stays in the grid but leaves indicators, Home, pending items and deadline notices.', 'es' => 'Sí = licencia archivada: sigue en la grilla, pero sale de los indicadores, la Home, los pendientes y los avisos de plazo.']];
     }
     return $novo;
 };
-$licencaOrdem = static function (array $ordem) use ($licencaSituacao): array {
+$licencaOrdem = static function (array $ordem) use ($licencaSituacao, $licenca415): array {
     if (!$licencaSituacao) return $ordem;
     $novo = [];
     foreach ($ordem as $c) {
         $novo[] = $c;
+        if ($licenca415 && $c === 'DATA_VALIDADE') array_push($novo, 'VALIDADE_INEXISTENTE', 'VALIDADE_RECORRENTE', 'RECORRENCIA_MESES', 'PROXIMO_VENCIMENTO');
+        if ($licenca415 && $c === 'CODSTATUS') $novo[] = 'ARQUIVADA';
         if ($c === 'DSCLICENCA') { $novo[] = 'SITUACAO_LICENCA'; $novo[] = 'MOTIVO_SITUACAO'; }
         if ($c === 'PROTOCOLADO_EM') $novo[] = 'NUMERO_PROTOCOLO';
     }
@@ -87,9 +111,9 @@ ManutencaoLegalCadastroGrid::render([
         'CODUSUARIO' => ['label' => ['pt' => 'Responsável', 'en' => 'Responsible', 'es' => 'Responsable'], 'display_from' => 'RESPONSAVEL', 'foreign' => ['view' => 'vw_usuarios_grid', 'value' => 'codusuario', 'label' => 'nome', 'filters' => ['ativo' => 1], 'description' => 'nome'], 'lazy_foreign' => true, 'allow_empty' => true, 'filter' => 'text', 'width' => 180],
         'ARQUIVOS' => ['label' => ['pt' => 'Arquivos', 'en' => 'Files', 'es' => 'Archivos'], 'readonly' => true, 'filter' => 'text', 'width' => 100],
         'CODLISTA' => ['label' => ['pt' => 'Lista de distribuição', 'en' => 'Distribution list', 'es' => 'Lista de distribución'], 'filter' => 'text', 'width' => 300],
-        'EMPROTOCOLO' => ['label' => ['pt' => 'Em protocolo?', 'en' => 'On protocol?', 'es' => '¿En protocolo?'], 'options' => ['S' => ['pt' => 'Sim', 'en' => 'Yes', 'es' => 'Sí'], 'N' => ['pt' => 'Não', 'en' => 'No', 'es' => 'No']], 'filter' => 'select', 'width' => 100],
+        'EMPROTOCOLO' => ['label' => ['pt' => 'Em protocolo?', 'en' => 'On protocol?', 'es' => '¿En protocolo?'], 'options' => ['' => '', 'S' => ['pt' => 'Sim', 'en' => 'Yes', 'es' => 'Sí'], 'N' => ['pt' => 'Não', 'en' => 'No', 'es' => 'No']], 'filter' => 'select', 'width' => 100],
         'PROTOCOLADO_EM' => ['label' => ['pt' => 'Protocolado em', 'en' => 'Protocolized on', 'es' => 'Protocolizado en'], 'type' => 'date', 'filter' => 'text', 'width' => 130],
-        'PROTOCOLADO_NO_PRAZO' => ['label' => ['pt' => 'Protocolado no prazo?', 'en' => 'Protocolized on time?', 'es' => '¿Protocolizado en plazo?'], 'options' => ['S' => ['pt' => 'Sim', 'en' => 'Yes', 'es' => 'Sí'], 'N' => ['pt' => 'Não', 'en' => 'No', 'es' => 'No']], 'filter' => 'select', 'width' => 130],
+        'PROTOCOLADO_NO_PRAZO' => ['label' => ['pt' => 'Protocolado no prazo?', 'en' => 'Protocolized on time?', 'es' => '¿Protocolizado en plazo?'], 'options' => ['' => '', 'S' => ['pt' => 'Sim', 'en' => 'Yes', 'es' => 'Sí'], 'N' => ['pt' => 'Não', 'en' => 'No', 'es' => 'No']], 'filter' => 'select', 'width' => 130],
         'QTD_DIAS_EM_PROTOCOLO' => ['label' => ['pt' => 'Dias em protocolo', 'en' => 'Days under protocol', 'es' => 'Días en protocolo'], 'readonly' => true, 'filter' => 'text', 'width' => 120],
         'CODSTATUS' => ['label' => ['pt' => 'Status do protocolo', 'en' => 'Protocol status', 'es' => 'Estado del protocolo'], 'foreign' => ['view' => 'li_status_protocolo', 'value' => 'CODSTATUS', 'label' => 'DSCSTATUS', 'description' => 'DSCSTATUS'], 'filter' => 'select', 'width' => 150],
         'OBSERVACAO' => ['label' => ['pt' => 'Observação', 'en' => 'Notes', 'es' => 'Observación'], 'type' => 'textarea', 'filter' => 'text', 'width' => 220],
@@ -144,7 +168,11 @@ ManutencaoLegalCadastroGrid::render([
             });
             $.ajax({ url: window.location.href, method: 'POST', data: $.param(data), dataType: 'html' })
                 .done(function (html) {
-                    var $newBody = $(html).find(gridId + ' tbody').first();
+                    // 26/11/2026: o servidor devolve a página com o aviso de erro (ex.: referência inválida); antes a tela
+                    // mostrava "Licença salva com sucesso" mesmo quando nada era gravado.
+                    var $resp = $(html), $erro = $resp.find('.alert-danger, .alert-warning').filter(function () { return !$(this).is('[data-license-save-message]'); }).first();
+                    if ($erro.length) { showMessage($.trim($erro.text()), 'danger'); return; }
+                    var $newBody = $resp.find(gridId + ' tbody').first();
                     if (!$newBody.length) { showMessage(window.greenT ? window.greenT('manutencaolegal_licencas.msg.erro_atualizar', 'Não foi possível atualizar o grid.') : 'Não foi possível atualizar o grid.', 'danger'); return; }
                     $fragment.find(gridId + ' tbody').replaceWith($newBody);
                     $fragment.trigger('gridPageLoaded');

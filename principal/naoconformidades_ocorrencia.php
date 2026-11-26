@@ -49,6 +49,13 @@ if ($codigo) {
     if (($externo && $tipoNovo !== 6) || !in_array($tipoNovo, $tiposComFluxo, true) || $menuNova === '' || empty($permissoes[$menuNova]['pode_incluir'])) $W::falhar(403, ncT('oc.nao_inclui_tipo'));
 }
 $R = array_change_key_case($row, CASE_UPPER);
+// Revisão G item 148: nova ocorrência aberta de outra tela (ex.: plano de ação do fornecedor na Homologação) chega com campos
+// preenchidos; só estes campos, e só na inclusão. Nada é gravado até o usuário salvar.
+if (!$codigo && isset($_GET['prefill'])) {
+    $pf = json_decode((string)$_GET['prefill'], true);
+    if (is_array($pf)) foreach (['CODFORNECEDOR' => 20, 'IDENTIFICACAO' => 500, 'DESCRICAO' => 5000, 'CODUNIDADE' => 20, 'PRODUTO' => 500] as $k => $max)
+        if (isset($pf[$k]) && is_scalar($pf[$k]) && trim((string)$pf[$k]) !== '') $R[$k] = mb_substr(trim((string)$pf[$k]), 0, $max);
+}
 $tipo = $codigo ? (int)($R['CODTIPONAOCONFORMIDADE'] ?? 0) : $tipoNovo;
 $etapa = (string)($R['ETAPA'] ?? '');
 $comFluxo = in_array($tipo, $tiposComFluxo, true) && $podeGravar;
@@ -468,6 +475,8 @@ body{background:var(--bs-body-bg,#fff)}.nc-main{padding:.75rem 1rem}.nc-cab{disp
         <?= $campoHtml('ANALISE_DA_PROVIDENCIA', [ncT('campo.analise_da_providencia'), 'textarea', null], $v('ANALISE_DA_PROVIDENCIA'), $pode['gestor']) ?>
         <?= $campoHtml('ANALISE_ABRANGENCIA', [ncT('campo.analise_abrangencia'), 'textarea', null], $v('ANALISE_ABRANGENCIA'), $pode['gestor']) ?>
         <?= $campoHtml('ATUALIZAR_RISCOS', [ncT('campo.atualizar_riscos'), 'select', $simNao], $v('ATUALIZAR_RELACAO_DE_RISCOS_E_OPORTUNIDADES'), $pode['gestor']) ?>
+        <?php // Revisão G item 158 (migração 417): Risco da ocorrência, avaliado pelo gestor (alimenta a lente de risco da Home de NC)
+        if ($tem('RISCO') || array_key_exists('RISCO', (array)$R)) echo $campoHtml('RISCO', [IdiomaService::t('nc.campo.risco', ['pt' => 'Risco da ocorrência', 'en' => 'Occurrence risk', 'es' => 'Riesgo de la ocurrencia']), 'select', ['Baixo' => IdiomaService::t('nc.risco.baixo', ['pt' => 'Baixo', 'en' => 'Low', 'es' => 'Bajo']), 'Moderado' => IdiomaService::t('nc.risco.moderado', ['pt' => 'Moderado', 'en' => 'Moderate', 'es' => 'Moderado']), 'Alto' => IdiomaService::t('nc.risco.alto', ['pt' => 'Alto', 'en' => 'High', 'es' => 'Alto']), 'Crítico' => IdiomaService::t('nc.risco.critico', ['pt' => 'Crítico', 'en' => 'Critical', 'es' => 'Crítico'])]], $v('RISCO'), $pode['gestor']); ?>
         <?= $campoHtml('ABRIR_MUDANCA', [ncT('campo.abrir_mudanca'), 'select', $simNao], $v('ABRIR_NOVA_AVALIACAO_DE_MUDANCA'), $pode['gestor']) ?>
         <?php if ($tem('IMPROCEDENTE')) echo $campoHtml('IMPROCEDENTE', [ncT('campo.improcedente'), 'select', $simNaoLongo], $v('IMPROCEDENTE'), $pode['gestor']); ?>
         <?= $campoHtml('CODUSUARIO_RESPONSAVEL', [ncT('campo.codusuario_responsavel'), 'select', $usuarios], $v('CODUSUARIO_RESPONSAVEL'), $pode['gestor']) ?>

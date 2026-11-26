@@ -77,7 +77,10 @@ foreach ($bancos as $banco) {
 SELECT l.`CODLICENCA`, " . $c('codunidade', '0') . " AS `CODUNIDADE`, {$s['validade']} AS `DATA_VALIDADE`,
        {$s['situacao']} AS `SITUACAO_LICENCA`, {$s['rotulo']} AS `SITUACAO_LICENCA_DESC`, {$s['motivo']} AS `MOTIVO_SITUACAO`,
        IF({$s['em_protocolo']}, 'S', 'N') AS `EM_PROTOCOLO`, {$s['protocolado_em']} AS `PROTOCOLADO_EM`,
-       {$s['no_prazo']} AS `PROTOCOLO_NO_PRAZO`, {$s['numero']} AS `NUMERO_PROTOCOLO`
+       {$s['no_prazo']} AS `PROTOCOLO_NO_PRAZO`, {$s['numero']} AS `NUMERO_PROTOCOLO`" . ($tem('li_licencas', 'ARQUIVADA', 'VALIDADE_INEXISTENTE', 'VALIDADE_RECORRENTE', 'RECORRENCIA_MESES') ? ",
+       IF({$s['arquivada']}, 'S', 'N') AS `ARQUIVADA`, IF({$s['nao_vence']}, 'S', 'N') AS `VALIDADE_INEXISTENTE`,
+       IF(UPPER(TRIM(COALESCE(l.`VALIDADE_RECORRENTE`, ''))) IN ('S', 'SIM', '1', 'Y', 'YES', 'X'), 'S', 'N') AS `VALIDADE_RECORRENTE`, l.`RECORRENCIA_MESES` AS `RECORRENCIA_MESES`,
+       IF({$s['recorrente']}, {$s['validade']}, NULL) AS `PROXIMO_VENCIMENTO`" : '') . "
   FROM `li_licencas` l$joinTipo";
         if (!$simular) $pdo->exec($ddl);
 
@@ -103,7 +106,10 @@ SELECT l.`CODLICENCA`, " . $c('codunidade', '0') . " AS `CODUNIDADE`, {$s['valid
             }
             if (!isset($colsBase['codlicenca'])) throw new RuntimeException("$v sem a coluna CODLICENCA");
             $extra = [];
-            foreach (['SITUACAO_LICENCA', 'SITUACAO_LICENCA_DESC', 'MOTIVO_SITUACAO', 'NUMERO_PROTOCOLO'] as $col)
+            // Migração 415: Arquivar licença?, Validade inexistente, Validade recorrente (meses) e Próximo vencimento
+            $novas415 = $tem('li_licencas', 'ARQUIVADA', 'VALIDADE_INEXISTENTE', 'VALIDADE_RECORRENTE', 'RECORRENCIA_MESES')
+                ? ['ARQUIVADA', 'VALIDADE_INEXISTENTE', 'VALIDADE_RECORRENTE', 'RECORRENCIA_MESES', 'PROXIMO_VENCIMENTO'] : [];
+            foreach (array_merge(['SITUACAO_LICENCA', 'SITUACAO_LICENCA_DESC', 'MOTIVO_SITUACAO', 'NUMERO_PROTOCOLO'], $novas415) as $col)
                 if (!isset($colsBase[strtolower($col)])) $extra[] = "s.`$col`";
             if (!$simular) $pdo->exec("CREATE OR REPLACE VIEW `$v` AS SELECT b.*" . ($extra ? ', ' . implode(', ', $extra) : '') . "
   FROM `$base` b LEFT JOIN `vw_licencas_situacao` s ON s.`CODLICENCA` = b.`CODLICENCA`");

@@ -8,6 +8,7 @@ require_once __DIR__ . '/TenantContext.php';
 require_once __DIR__ . '/IdiomaService.php';
 require_once __DIR__ . '/RequisitoRisco.php';
 require_once __DIR__ . '/RequisitoRiscoIa.php';
+require_once __DIR__ . '/InteligenciaArtificialDocumento.php';
 require_once dirname(__DIR__) . '/components/botoes_crud.php';
 
 final class ModuloLegalSituacaoGrid
@@ -84,6 +85,46 @@ final class ModuloLegalSituacaoGrid
                 $mensagem = $erroNa instanceof PDOException && isset($erroNa->errorInfo[2]) ? (string)$erroNa->errorInfo[2] : 'Não foi possível gravar o "não se aplica".';
                 $voltar('&erro_decisao=' . rawurlencode($mensagem));
             }
+        }
+        // Migração 418 (Revisão G item 31): a IA sugere a situação de atendimento a partir das evidências; o responsável aceita
+        // (podendo alterar) e a sugestão vira uma avaliação, ou ignora. A avaliação continua sendo do responsável.
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && in_array(($_POST['action'] ?? ''), ['ia_sugerir_situacao', 'ia_aceitar_situacao'], true)) {
+            header('Content-Type: application/json; charset=utf-8');
+            $saida = static function (array $d, int $st = 200): never { http_response_code($st); echo json_encode($d, JSON_UNESCAPED_UNICODE); exit; };
+            if (!$permission['pode_editar'] && !$permission['pode_incluir']) $saida(['ok' => false, 'message' => 'Perfil sem permissão para alterar situações.'], 403);
+            try {
+                if ($_POST['action'] === 'ia_aceitar_situacao') {
+                    $at = strtoupper(trim((string)($_POST['atendido'] ?? '')));
+                    if (!in_array($at, ['S', 'N', 'PA'], true)) $saida(['ok' => false, 'message' => 'Escolha Sim, Não ou Parcialmente.'], 422);
+                    $next = $call($pdo, 'CALL sp_crud_select(:tabela,:filtros,NULL,1,0)', ['tabela' => 'vw_modulolegal_situacao_proximo', 'filtros' => $json([])]);
+                    $cod = (int)($next[0]['PROXIMO_CODSITUACAO'] ?? 0);
+                    if ($cod <= 0) throw new RuntimeException('Sem próximo código de situação.');
+                    $call($pdo, 'CALL sp_crud_insert(:tabela,:dados)', ['tabela' => 'legislacaoxsituacao', 'dados' => $json(['CODSITUACAO' => $cod, 'CODLEGISLACAO' => $leg, 'codunidade' => $unit,
+                        'CODUSUARIO' => $loggedUser ?: null, 'dscsituacao' => mb_substr(trim((string)($_POST['dscsituacao'] ?? '')), 0, 5000), 'atendido' => $at,
+                        'OBS' => IdiomaService::t('situacao.ia.obs_aceita', ['pt' => 'Avaliação a partir da sugestão da IA (revisada pelo responsável).', 'en' => 'Assessment from the AI suggestion (reviewed by the owner).', 'es' => 'Evaluación a partir de la sugerencia de la IA (revisada por el responsable).']),
+                        'data_de_avaliacao' => date('Y-m-d'), 'data_de_vencimento_avaliacao' => null])]);
+                    try { $call($pdo, 'CALL sp_auditoria_registrar(:u,:t,:a,:en,:r,:res,:d)', ['u' => $loggedUser, 't' => 'manutencaolegalrequisitoslegais_situacao', 'a' => 'IA_SITUACAO_ACEITA', 'en' => 'legislacaoxsituacao', 'r' => $leg . ':' . $unit, 'res' => 'SUCESSO', 'd' => $json(['atendido' => $at, 'sugerido' => (string)($_POST['sugerido'] ?? '')])]); } catch (Throwable) {}
+                    $saida(['ok' => true]);
+                }
+                $sitIa = $call($pdo, 'CALL sp_crud_select(:tabela,:filtros,NULL,1,0)', ['tabela' => 'vw_situacao_legal_grid', 'filtros' => $json(['CODLEGISLACAO' => $leg, 'CODUNIDADE' => $unit])])[0] ?? [];
+                $itensIa = $call($pdo, 'CALL sp_crud_select(:tabela,:filtros,NULL,200,0)', ['tabela' => 'vw_situacao_legal_itens', 'filtros' => $json(['CODLEGISLACAO' => $leg, 'CODUNIDADE' => $unit])]);
+                $lei = $lawRows[0] ?? [];
+                $ctx = "LEI: " . trim((string)($lei['CODIGO'] ?? '')) . "\nARTIGOS: " . trim((string)($lei['ARTIGOS'] ?? '')) . "\nREQUISITO (o que a empresa deve cumprir): " . mb_substr(trim((string)($lei['PADRAO'] ?? '')), 0, 4000)
+                    . "\nSITUAÇÃO CALCULADA PELO SISTEMA: " . (string)($sitIa['SITUACAO_CALCULADA'] ?? 'AI') . ' — ' . (string)($sitIa['MOTIVO'] ?? '')
+                    . "\nEVIDÊNCIAS VINCULADAS (área | item | status | motivo):\n";
+                foreach ($itensIa as $it) $ctx .= '- ' . implode(' | ', array_map(static fn($k) => mb_substr(trim((string)($it[$k] ?? '')), 0, 300), ['AREA', 'ITEM', 'STATUS', 'MOTIVO'])) . "\n";
+                if (!$itensIa) $ctx .= "- (nenhuma evidência vinculada a este requisito na unidade)\n";
+                $prompt = '';
+                try { $prompt = trim((string)($call($pdo, 'CALL sp_ia_prompt_obter(:c,:i)', ['c' => 'SITUACAO_LEGAL_SUGESTAO', 'i' => (string)($_SESSION['idioma'] ?? 'pt')])[0]['prompt'] ?? '')); } catch (Throwable) {}
+                if ($prompt === '') $prompt = 'Você é um auditor de conformidade legal. Com base no requisito da lei e nas evidências vinculadas (licenças, medições, treinamentos, infraestrutura, controles e fornecedores, com o status de cada uma), '
+                    . 'sugira a situação de atendimento do requisito na unidade. Retorne exclusivamente JSON válido: {"atendido":"S"|"N"|"PA","descricao":"texto curto da situação, citando as evidências que sustentam","faltas":["o que falta para atender"],"confianca":0}. '
+                    . 'Use "S" só quando as evidências cobrem o requisito e estão em dia; "PA" quando há evidência mas com falhas ou incompleta; "N" quando não há evidência ou ela está vencida/crítica. Não invente evidências.';
+                $r = InteligenciaArtificialDocumento::analisar($ctx, $prompt, (string)($_SESSION['idioma'] ?? 'pt'));
+                $r = is_array($r['sugestao'] ?? null) ? $r['sugestao'] : $r;
+                $at = strtoupper(trim((string)($r['atendido'] ?? '')));
+                if (!in_array($at, ['S', 'N', 'PA'], true)) $at = '';
+                $saida(['ok' => true, 'atendido' => $at, 'descricao' => trim((string)($r['descricao'] ?? '')), 'faltas' => array_values(array_filter(array_map('strval', (array)($r['faltas'] ?? [])))), 'confianca' => (float)($r['confianca'] ?? 0)]);
+            } catch (Throwable $erroIa) { $saida(['ok' => false, 'message' => $erroIa->getMessage()], 500); }
         }
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && ($_POST['action'] ?? '') === 'save_rows') {
             if (!$permission['pode_editar'] && !$permission['pode_incluir']) { http_response_code(403); exit('Perfil sem permissão para alterar situações.'); }
@@ -172,6 +213,24 @@ final class ModuloLegalSituacaoGrid
             . ((int)$sit['DIVERGENTE'] === 1 ? '<span class="badge text-bg-warning"><i class="bi bi-exclamation-triangle me-1"></i>' . $e($tr(['pt' => 'Divergente', 'en' => 'Divergent', 'es' => 'Divergente'])) . '</span>' : '')
             . '<small class="sl-rotulo ms-auto">' . $e($tr(['pt' => 'Calculado em', 'en' => 'Calculated at', 'es' => 'Calculado en'])) . ' ' . $e($data((string)$sit['CALCULADO_EM'])) . '</small></div>';
         $h .= '<div class="sl-motivo">' . $e((string)$sit['MOTIVO']) . '</div>';
+        if ($podeEditar) $h .= '<div class="mt-2"><button type="button" class="btn btn-sm btn-outline-success" data-ia-sugerir-situacao><i class="bi bi-stars me-1"></i>'
+            . $e($tr(['pt' => 'Sugerir a situação com IA', 'en' => 'Suggest the status with AI', 'es' => 'Sugerir la situación con IA'])) . '</button> <small class="sl-rotulo">'
+            . $e($tr(['pt' => 'a IA lê o requisito e as evidências; você aceita, altera ou ignora', 'en' => 'AI reads the requirement and evidence; you accept, change or ignore', 'es' => 'la IA lee el requisito y las evidencias; usted acepta, cambia o ignora'])) . '</small></div>'
+            . '<script>window.addEventListener(\'load\',function(){var b=document.querySelector(\'[data-ia-sugerir-situacao]\');if(!b||!window.bootstrap)return;var T=function(k,p){return typeof window.greenT===\'function\'?window.greenT(k,p):p;};var esc=function(v){var d=document.createElement(\'div\');d.textContent=v==null?\'\':String(v);return d.innerHTML;};
+b.addEventListener(\'click\',function(){b.disabled=true;var o=b.innerHTML;b.innerHTML=\'<span class="spinner-border spinner-border-sm me-1"></span>\'+esc(T(\'situacao.ia.analisando\',\'A IA está analisando...\'));
+fetch(location.href,{method:\'POST\',credentials:\'same-origin\',body:new URLSearchParams({action:\'ia_sugerir_situacao\'})}).then(function(r){return r.json();}).then(function(r){b.disabled=false;b.innerHTML=o;
+var id=\'gpIaSituacao\',old=document.getElementById(id);if(old)old.remove();var corpo;
+if(!r.ok){corpo=\'<div class="alert alert-danger mb-0">\'+esc(r.message||\'Erro\')+\'</div>\';}
+else{corpo=\'<div class="alert alert-info py-2 small">\'+esc(T(\'situacao.ia.aviso\',\'Sugestão da IA a partir do requisito e das evidências vinculadas. Confira antes de aceitar: a avaliação fica registrada em seu nome.\'))+\'</div>\'
++\'<label class="form-label small mb-0">\'+esc(T(\'situacao.ia.atendido\',\'Atendido\'))+\'</label><select class="form-select form-select-sm mb-2" data-ia-at><option value=""></option><option value="S">\'+esc(T(\'comum.sim\',\'Sim\'))+\'</option><option value="N">\'+esc(T(\'comum.nao\',\'Não\'))+\'</option><option value="PA">\'+esc(T(\'situacao.ia.parcial\',\'Parcialmente\'))+\'</option></select>\'
++\'<label class="form-label small mb-0">\'+esc(T(\'situacao.ia.descricao\',\'Descrição da situação\'))+\'</label><textarea class="form-control form-control-sm" rows="5" data-ia-dsc></textarea>\'
++((r.faltas&&r.faltas.length)?\'<div class="small mt-2"><b>\'+esc(T(\'situacao.ia.faltas\',\'O que falta, segundo a IA\'))+\':</b><ul class="mb-0">\'+r.faltas.map(function(f){return \'<li>\'+esc(f)+\'</li>\';}).join(\'\')+\'</ul></div>\':\'\')
++\'<div class="small text-muted mt-1">\'+esc(T(\'situacao.ia.confianca\',\'Confiança\'))+\': \'+esc(Math.round((r.confianca>0&&r.confianca<=1?r.confianca*100:r.confianca)||0))+\'%</div><div class="alert alert-danger py-1 mt-2 mb-0 small d-none" data-ia-erro></div>\';}
+document.body.insertAdjacentHTML(\'beforeend\',\'<div class="modal fade" id="\'+id+\'" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content"><div class="modal-header py-2"><h5 class="modal-title"><i class="bi bi-stars me-1"></i>\'+esc(T(\'situacao.ia.titulo\',\'Sugestão de situação pela IA\'))+\'</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">\'+corpo+\'</div><div class="modal-footer py-2"><button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">\'+esc(T(\'situacao.ia.ignorar\',\'Ignorar\'))+\'</button>\'+(r.ok?\'<button type="button" class="btn btn-sm btn-success" data-ia-aceitar><i class="bi bi-check2 me-1"></i>\'+esc(T(\'situacao.ia.aceitar\',\'Aceitar como avaliação\'))+\'</button>\':\'\')+\'</div></div></div></div>\');
+var m=document.getElementById(id);if(r.ok){m.querySelector(\'[data-ia-at]\').value=r.atendido||\'\';m.querySelector(\'[data-ia-dsc]\').value=r.descricao||\'\';
+m.querySelector(\'[data-ia-aceitar]\').addEventListener(\'click\',function(){var at=m.querySelector(\'[data-ia-at]\').value,er=m.querySelector(\'[data-ia-erro]\');if(!at){er.classList.remove(\'d-none\');er.textContent=T(\'situacao.ia.escolha\',\'Escolha o atendimento.\');return;}this.disabled=true;
+fetch(location.href,{method:\'POST\',credentials:\'same-origin\',body:new URLSearchParams({action:\'ia_aceitar_situacao\',atendido:at,sugerido:r.atendido||\'\',dscsituacao:m.querySelector(\'[data-ia-dsc]\').value})}).then(function(x){return x.json();}).then(function(x){if(x.ok){location.href=location.pathname+location.search.replace(/&?salvo=1/,\'\')+(location.search?\'&\':\'?\')+\'salvo=1\';}else{er.classList.remove(\'d-none\');er.textContent=x.message||\'Erro\';}});});}
+bootstrap.Modal.getOrCreateInstance(m).show();}).catch(function(){b.disabled=false;b.innerHTML=o;});});});</script>';
         // Migração 341: % de atendimento e risco (duas dimensões independentes) e a conta item a item
         $com341 = array_key_exists('PCT_ATENDIMENTO', $sit);
         if ($com341) $h .= self::linhaAtendimentoRisco($sit, $tr, $e);

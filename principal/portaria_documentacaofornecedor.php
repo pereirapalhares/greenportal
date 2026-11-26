@@ -81,3 +81,4 @@ $pdfSituacoes = [
 <link rel="stylesheet" href="../assets/css/portaria-documentacao-fornecedor.css?v=6">
 <script src="../assets/js/modulo-legal-arquivos.js?v=12"></script>
 <script src="../assets/js/portaria-documentacao-fornecedor.js?v=7"></script>
+<script src="../assets/js/homologacao-chat.js?v=2"></script>

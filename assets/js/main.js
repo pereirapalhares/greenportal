@@ -6,7 +6,16 @@
     var portalTheme = (document.body.className.match(/theme-(verde|azul|cinza)/) || [])[1] || 'verde';
     var toast = bootstrap.Toast.getOrCreateInstance(document.getElementById('constructionToast'), { delay: 3200 });
     var idleTimeoutSeconds = Math.max(60, Number(window.greenPortalTimeoutSeconds || 1800)), idleTimer = null;
-    function resetIdleTimer() { if (window.gpMarcarUsoSessao) window.gpMarcarUsoSessao(); window.clearTimeout(idleTimer); idleTimer = window.setTimeout(function () { window.location.href = (window.greenPortalBaseUrl || '') + '/credenciais/sair.php?motivo=inatividade'; }, idleTimeoutSeconds * 1000); }
+    // 26/11/2026: o uso de qualquer aba do portal conta (todas as abas usam a mesma sessão): uma aba parada não encerra
+    // mais a sessão enquanto outra aba está em uso — antes, a aba esquecida derrubava a sessão de todas.
+    function usoCompartilhado(gravar) { try { if (gravar) { var agora = Date.now(), antes = Number(window.localStorage.getItem('gpUltimoUsoPortal') || 0); if (agora - antes > 5000) window.localStorage.setItem('gpUltimoUsoPortal', String(agora)); return agora; } return Number(window.localStorage.getItem('gpUltimoUsoPortal') || 0); } catch (e) { return gravar ? Date.now() : 0; } }
+    function venceuOuAgenda() {
+        var parado = Date.now() - Math.max(usoCompartilhado(false), ultimoUsoLocal);
+        if (parado >= idleTimeoutSeconds * 1000) { window.location.href = (window.greenPortalBaseUrl || '') + '/credenciais/sair.php?motivo=inatividade'; return; }
+        idleTimer = window.setTimeout(venceuOuAgenda, Math.max(5000, idleTimeoutSeconds * 1000 - parado));
+    }
+    var ultimoUsoLocal = Date.now();
+    function resetIdleTimer() { if (window.gpMarcarUsoSessao) window.gpMarcarUsoSessao(); ultimoUsoLocal = usoCompartilhado(true); window.clearTimeout(idleTimer); idleTimer = window.setTimeout(venceuOuAgenda, idleTimeoutSeconds * 1000); }
     // c571 (16/11/2026): pedido do usuário — sem balões de dica (tooltip do Bootstrap, fundo branco com seta) na aplicação.
     // Eles ficavam presos na tela quando a aba ou o popup fechava com o balão aberto. Fica só a dica simples do navegador
     // (atributo title); balões criados antes por outro script são desfeitos e o title original volta.

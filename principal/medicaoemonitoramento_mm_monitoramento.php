@@ -18,12 +18,12 @@ ManutencaoLegalCadastroGrid::render([
     'user_scope_field' => 'CODUSUARIO', 'force_user_scope' => $pendingMode,
     // Migração 361: botão Responsáveis (registro selecionado; resolve o grupo na Medição); Minhas medições = Responsável + atribuições + regras
     'resp_area' => 'MEDICAO', 'resp_minhas' => $pendingMode ? 'MEDICAO' : '',
-    'legacy_order' => ['CODUNIDADE','CODMEDICAO','CODEQUIPAMENTO','CODAREA','CODASPECTO','CODPERIGO','PARAMETROS','DATA_MEDICAO','DATA_REACAO','CODUSUARIO','cronograma','OBS','CODMONITORAMENTO'],
-    'legacy_search' => ['#select_filter','#select_filter','#select_filter','#select_filter','#select_filter','#select_filter','#text_filter','#text_filter','#text_filter','#select_filter','','#text_filter',''],
-    'legacy_labels' => ['Unidade','Tipo de Medição','Equipamento de Medição','Área','Aspecto','Perigo','Parâmetros','Data da Medição','Data de Reação','Responsável','Cronograma','Observações','Código'],
-    'legacy_widths' => [190,220,220,190,210,210,240,160,160,200,120,300,0],
-    'legacy_sort' => ['strc','strc','strc','strc','strc','strc','str','str','str','strc','str','str','str'],
-    'legacy_types' => ['coro','coro','coro','coro','coro','coro','txt','ed','ed','coro','ro','txt','cntr'],
+    'legacy_order' => ['CODUNIDADE','CODMEDICAO','CODEQUIPAMENTO','CODAREA','CODASPECTO','CODPERIGO','PARAMETROS','DATA_MEDICAO','DATA_REACAO','CODUSUARIO','cronograma','EVIDENCIA','OBS','CODMONITORAMENTO'],
+    'legacy_search' => ['#select_filter','#select_filter','#select_filter','#select_filter','#select_filter','#select_filter','#text_filter','#text_filter','#text_filter','#select_filter','','','#text_filter',''],
+    'legacy_labels' => ['Unidade','Tipo de Medição','Equipamento de Medição','Área','Aspecto','Perigo','Parâmetros','Data da Medição','Data de Reação','Responsável','Cronograma','Evidência da medição','Observações','Código'],
+    'legacy_widths' => [190,220,220,190,210,210,240,160,160,200,120,120,300,0],
+    'legacy_sort' => ['strc','strc','strc','strc','strc','strc','str','str','str','strc','str','str','str','str'],
+    'legacy_types' => ['coro','coro','coro','coro','coro','coro','txt','ed','ed','coro','ro','ro','txt','cntr'],
     'legacy_fixed' => true,
     'row_enricher' => static function (array $rows, PDO $pdo): array {
         $ids = [];
@@ -49,8 +49,8 @@ ManutencaoLegalCadastroGrid::render([
         'CODMEDICAO' => ['label'=>['pt'=>'Tipo de medição','en'=>'Measurement type','es'=>'Tipo de medición'],'filter'=>'select','width'=>220,'lazy_foreign'=>false,'foreign'=>['view'=>'mm_medicao','value'=>'codmedicao','label'=>'dscmedicao','description'=>'DSCMEDICAO']],
         'CODEQUIPAMENTO' => ['label'=>['pt'=>'Equipamento de medição','en'=>'Measuring equipment','es'=>'Equipo de medición'],'filter'=>'select','width'=>220,'lazy_foreign'=>false,'foreign'=>['view'=>'mm_equipamento','value'=>'CODEQUIPAMENTO','label'=>'DSCEQUIPAMENTO','description'=>'DSCEQUIPAMENTO']],
         'CODAREA' => ['label'=>['pt'=>'Área','en'=>'Area','es'=>'Área'],'filter'=>'select','width'=>190,'lazy_foreign'=>false,'foreign'=>['view'=>'vw_areas_grid','value'=>'CODAREA','label'=>'DSCAREA','description'=>'DSCAREA']],
-        'CODASPECTO' => ['label'=>['pt'=>'Aspecto','en'=>'Aspect','es'=>'Aspecto'],'filter'=>'select','width'=>210,'lazy_foreign'=>false,'foreign'=>['view'=>'vw_aspectos_grid','value'=>'CODASPECTO','label'=>'DSCASPECTO','description'=>'DSCASPECTO']],
-        'CODPERIGO' => ['label'=>['pt'=>'Perigo','en'=>'Hazard','es'=>'Peligro'],'filter'=>'select','width'=>210,'lazy_foreign'=>false,'foreign'=>['view'=>'vw_perigos_grid','value'=>'CODPERIGO','label'=>'DSCPERIGO','description'=>'DSCPERIGO']],
+        'CODASPECTO' => ['label'=>['pt'=>'Aspecto','en'=>'Aspect','es'=>'Aspecto'],'hidden'=>true,'export'=>false /* 26/11/2026 item 74: retirados da tela a pedido do cliente (os dados continuam gravados) */,'filter'=>'select','width'=>210,'lazy_foreign'=>false,'foreign'=>['view'=>'vw_aspectos_grid','value'=>'CODASPECTO','label'=>'DSCASPECTO','description'=>'DSCASPECTO']],
+        'CODPERIGO' => ['label'=>['pt'=>'Perigo','en'=>'Hazard','es'=>'Peligro'],'hidden'=>true,'export'=>false /* 26/11/2026 item 74: retirados da tela a pedido do cliente (os dados continuam gravados) */,'filter'=>'select','width'=>210,'lazy_foreign'=>false,'foreign'=>['view'=>'vw_perigos_grid','value'=>'CODPERIGO','label'=>'DSCPERIGO','description'=>'DSCPERIGO']],
         'PARAMETROS' => ['label'=>['pt'=>'Parâmetros','en'=>'Parameters','es'=>'Parámetros'],'type'=>'textarea','filter'=>'text','width'=>240],
         'DATA_MEDICAO' => ['label'=>['pt'=>'Data da medição','en'=>'Measurement date','es'=>'Fecha de medición'],'type'=>'date','display_format'=>'date','filter'=>'text','width'=>160],
         'DATA_REACAO' => ['label'=>['pt'=>'Data de reação','en'=>'Reaction date','es'=>'Fecha de reacción'],'type'=>'date','display_format'=>'date','filter'=>'text','width'=>160],
@@ -58,5 +58,8 @@ ManutencaoLegalCadastroGrid::render([
         'cronograma' => ['label'=>['pt'=>'Cronograma','en'=>'Schedule','es'=>'Cronograma'],'virtual'=>true,'count_field'=>'cronograma_eventos_pendentes','count_label'=>['pt'=>'Eventos ainda não vencidos','en'=>'Events not yet expired','es'=>'Eventos aún vigentes'],'action_key'=>'cronograma','action_label'=>['pt'=>'Abrir cronograma','en'=>'Open schedule','es'=>'Abrir cronograma'],'action_icon'=>'bi-calendar3','filter'=>'none','width'=>120],
         'OBS' => ['label'=>['pt'=>'Observações','en'=>'Notes','es'=>'Observaciones'],'type'=>'textarea','filter'=>'text','width'=>300],
         'CODMONITORAMENTO' => ['label'=>['pt'=>'Código','en'=>'Code','es'=>'Código'],'hidden'=>true,'readonly'=>true,'filter'=>'none'],
+        // 26/11/2026 Revisão G item 73: Evidência da medição (laudos, relatórios, fotos) pelo GED, com a quantidade de arquivos
+        'EVIDENCIA' => ['label'=>['pt'=>'Evidência da medição','en'=>'Measurement evidence','es'=>'Evidencia de la medición'],'virtual'=>true,'readonly'=>true,'export'=>false,'filter'=>'none','width'=>120],
     ],
 ]);
+echo '<script src="../assets/js/modulo-legal-arquivos.js?v=15"></script>';

@@ -109,12 +109,16 @@ final class M285Views
             $respNome = $joinResp ? "COALESCE(NULLIF(TRIM(r.`nome`), ''), r.`userid`, '')" : "''";
             $onde = $tem('li_licencas', 'STATUS_VERSAO') ? "\n WHERE COALESCE(l.`STATUS_VERSAO`, 'ATIVA') = 'ATIVA'" : '';
             $sit = LicencaSituacao::sql($c, $periodico);
+            // Migração 415: validade recorrente (próximo ciclo), "Validade inexistente" e licenças arquivadas (fora do painel)
+            $V = $sit['validade'];
+            $onde = ($onde ? $onde . ' AND ' : "\n WHERE ") . "NOT {$sit['arquivada']}";
             $faixa = "CASE WHEN $periodico THEN
                     CASE WHEN $V IS NULL THEN 'ENTREGA_SEM_PRAZO'
                          WHEN $V < CURDATE() AND $PE IS NULL THEN 'ENTREGA_ATRASADA'
                          WHEN $V < CURDATE() THEN 'ENTREGA_REALIZADA'
                          WHEN $V <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) THEN 'ENTREGA_30'
                          ELSE 'ENTREGA_EM_DIA' END
+                 WHEN {$sit['nao_vence']} THEN 'NAO_VENCE'
                  WHEN $V IS NULL THEN 'SEM_VALIDADE'
                  WHEN $V < CURDATE() AND {$sit['situacao']} = 'PROTOCOLO' THEN 'EM_PROTOCOLO'
                  WHEN $V < CURDATE() AND {$sit['situacao']} = 'PROT_SEM_PRAZO' THEN 'PROT_SEM_PRAZO'

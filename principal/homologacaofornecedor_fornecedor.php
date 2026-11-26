@@ -34,6 +34,8 @@ $relationButtons = $relationButton('contatos', 'homologacaofornecedor_fornecedor
     . str_replace('btn-outline-secondary', 'btn-outline-primary', $relationButton('responsabilidades', 'fornecedor_responsabilidades.php', $tb('responsabilidades', ['pt' => 'Responsabilidades', 'en' => 'Responsibilities', 'es' => 'Responsabilidades']), 'bi-people'))
     . $relationButton('certificados', 'homologacaofornecedor_fornecedorxcertificados.php', $tb('certificados', ['pt' => 'Certificados', 'en' => 'Certificates', 'es' => 'Certificados']), 'bi-patch-check')
     . $relationButton('auditoria', 'homologacaofornecedor_fornecedorxauditoria.php', $tb('auditoria', ['pt' => 'Auditoria de homologação', 'en' => 'Approval audit', 'es' => 'Auditoría de homologación']), 'bi-clipboard-check')
+    // Revisão G item 131: relatório de atendimento legal do fornecedor (leis vinculadas e situação de cada requisito)
+    . str_replace('btn-outline-secondary', 'btn-outline-success', $relationButton('atendimento_legal', 'homologacao_atendimento_legal.php', $tb('atendimento_legal', ['pt' => 'Atendimento legal do fornecedor', 'en' => 'Supplier legal compliance', 'es' => 'Atención legal del proveedor']), 'bi-journal-check'))
     // Migração 293: Tipos do fornecedor (duas listas; vincular cria os documentos) e Documentos (aba completa, com cores, histórico e copiar/colar)
     . $relationButton('tipos', 'homologacaofornecedor_fornecedorxtipos.php', $tb('tipos', ['pt' => 'Tipos do fornecedor', 'en' => 'Supplier types', 'es' => 'Tipos del proveedor']), 'bi-diagram-3')
     . $relationButton('criterios', 'homologacaofornecedor_fornecedorxcriterios.php', $tb('documentos', ['pt' => 'Documentos', 'en' => 'Documents', 'es' => 'Documentos']), 'bi-file-earmark-check')
@@ -45,7 +47,7 @@ $relationButtons = $relationButton('contatos', 'homologacaofornecedor_fornecedor
     . ($externo ? '' : str_replace('btn-outline-secondary', 'btn-outline-primary', $relationButton('usuarios', 'homologacaofornecedor_fornecedorxusuarios.php', $tb('usuarios', ['pt' => 'Usuários do fornecedor', 'en' => 'Supplier users', 'es' => 'Usuarios del proveedor']), 'bi-person-badge')));
 if ($fornecedorComum) {
     // Perfil FORNECEDOR: sem Certificados, Auditoria, Produtos químicos, Equipamentos e Plano de ação (também bloqueados no servidor).
-    foreach (['certificados', 'auditoria', 'produtos', 'equipamentos', 'plano'] as $oculta)
+    foreach (['certificados', 'auditoria', 'produtos', 'equipamentos', 'plano', 'atendimento_legal'] as $oculta)
         $relationButtons = (string)preg_replace('#<button[^>]*data-context-id="' . $oculta . '"[^>]*>.*?</button>#s', '', $relationButtons);
 }
 
@@ -218,7 +220,7 @@ if ($rankingNoGrid): ?>
 require_once dirname(__DIR__) . '/components/toolbar_grupos.php';
 greenPortalToolbarGrupos('.homologacao-fornecedor-grid-fragment', [
     'correlacionamentos' => ['[data-context-id="usuarios"]', '[data-context-id="contatos"]', '[data-context-id="certificados"]', '[data-context-id="tipos"]', '[data-context-id="criterios"]', '[data-context-id="funcionarios"]', '[data-context-id="produtos"]', '[data-context-id="equipamentos"]', '[data-context-id="responsabilidades"]'],
-    'avaliacao' => ['[data-context-id="questionario"]', '[data-context-id="auditoria"]', '[data-context-id="plano"]', '[data-context-id^="questionario-"]'],
+    'avaliacao' => ['[data-context-id="questionario"]', '[data-context-id="auditoria"]', '[data-context-id="plano"]', '[data-context-id="atendimento_legal"]', '[data-context-id^="questionario-"]'],
 ]);
 ?>
 <script src="../assets/js/associacoes-contagem.js?v=6"></script>

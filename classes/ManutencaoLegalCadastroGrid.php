@@ -657,6 +657,14 @@ final class ManutencaoLegalCadastroGrid
                         'tabela' => $foreignView,
                         'filtros' => $json([$foreignValueField => $foreignValue]),
                     ]);
+                    // 26/11/2026: valor herdado do legado que já está gravado no registro (ex.: Classificação 3 ou Frequência 7
+                    // de licenças, sem cadastro na tabela de apoio) não impede salvar as outras colunas da linha: só é recusada a
+                    // referência inexistente que o usuário escolheu agora.
+                    if (!$referenceRows && !str_starts_with((string)$key, 'novo_') && (int)$key > 0) {
+                        $atual = $call($target, 'CALL sp_crud_select(:tabela,:filtros,NULL,2,0)', ['tabela' => $cfg['table'], 'filtros' => $json([(string)$cfg['primary'] => (int)$key])]);
+                        $colunaAtual = (string)($foreignConfig['db_column'] ?? $foreignField);
+                        if ($atual && trim((string)($atual[0][$colunaAtual] ?? '')) === $foreignValue) continue;
+                    }
                     if (!$referenceRows) {
                         $label = is_array($foreignConfig['label'] ?? null) ? $translate($foreignConfig['label']) : (string)($foreignConfig['label'] ?? $foreignField);
                         throw new RuntimeException('Referência inválida: ' . $label . ' não foi encontrada no cadastro de origem.');

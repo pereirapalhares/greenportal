@@ -93,5 +93,11 @@ final class HomologacaoFornecedorRelacionamentoGrid
         ManutencaoLegalCadastroGrid::render($base + $cfg);
         // Botão de arquivos (GED) nas abas com anexos: Critérios (evidências) e, desde a migração 300, Certificados, Químicos, Equipamentos, Plano de ação e Auditoria.
         if (!empty($cfg['fragment_class'])) echo '<script src="../assets/js/modulo-legal-arquivos.js?v=14"></script>';
+        // Revisão G item 148 (26/11/2026): abrir a RNC do fornecedor a partir da ação do plano (se a empresa usa o módulo de NC)
+        if ($relation === 'planodeacao') {
+            $podeRnc = false;
+            try { require_once __DIR__ . '/PermissaoTransacao.php'; $podeRnc = !empty(PermissaoTransacao::obter('NAO_CONFORMIDADES_NOVA_OCORRENCIA_FORNECEDOR')['pode_incluir']); } catch (Throwable) {}
+            if ($podeRnc) echo '<script src="../assets/js/homologacao-plano-rnc.js?v=1"></script>';
+        }
     }
 }

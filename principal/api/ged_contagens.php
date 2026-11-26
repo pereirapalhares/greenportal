@@ -17,6 +17,8 @@ $types = [
     'planodeacao' => ['table' => 'li_planodeacao', 'field' => 'CODPLANOACAO', 'folder' => 'li_planodeacao'],
     // Migração 410: certificados dos trabalhadores treinados
     // Migração 412: evidências do plano de manutenção da infraestrutura
+    // 26/11/2026 Revisão G item 73: Evidência da medição (Plano de Medição e Monitoramento)
+    'medicao' => ['table' => 'mm_monitoramento', 'field' => 'CODMONITORAMENTO', 'folder' => 'mm_monitoramento'],
     'infraestruturamanutencoes' => ['table' => 'ml_infraestrutura_manutencoes', 'field' => 'CODMANUTENCAO', 'folder' => 'ml_infraestrutura_manutencoes'],
     'treinamentoparticipantes' => ['table' => 'ml_treinamentos_participantes', 'field' => 'CODPARTICIPANTE', 'folder' => 'ml_treinamentos_participantes'],
     'funcionarios' => ['table' => 'fo_funcionarios', 'field' => 'CODFUNCIONARIO', 'folder' => 'fo_funcionarios'],

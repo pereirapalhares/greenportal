@@ -22,6 +22,8 @@ $u = static fn(string $s): string => (string)json_decode('"' . $s . '"');
 $modeloBotao = is_file(__DIR__ . '/homologacaofornecedores_modelo_documento.php')
     ? '<button type="button" class="btn btn-sm btn-outline-success grid-crud-button" data-criterio-modelo disabled title="' . htmlspecialchars(IdiomaService::t('homologacao_criterios.botao.modelo', ['pt' => 'Modelo do documento (o que ele precisa ter; validação automática pela IA)', 'en' => 'Document template (what it must contain; automatic AI validation)', 'es' => 'Modelo del documento (lo que debe tener; validación automática por la IA)']), ENT_QUOTES, 'UTF-8') . '"><i class="bi bi-file-earmark-check"></i></button>'
     : '';
+// Revisão G item 152 (migração 420): quem aprova cada documento exigido (pessoa ou grupo) no painel de Aprovações
+if (is_file(__DIR__ . '/homologacaofornecedores_aprovadores_documentos.php')) $modeloBotao .= '<button type="button" class="btn btn-sm btn-outline-primary grid-crud-button" data-criterio-aprovadores title="' . htmlspecialchars(IdiomaService::t('homologacao_criterios.botao.aprovadores', ['pt' => 'Aprovadores dos documentos (pessoa ou grupo que aprova cada documento)', 'en' => 'Document approvers (person or group approving each document)', 'es' => 'Aprobadores de los documentos (persona o grupo que aprueba cada documento)']), ENT_QUOTES, 'UTF-8') . '"><i class="bi bi-person-check"></i></button>';
 
 ManutencaoLegalCadastroGrid::render([
     'menu' => 'HOMOLOGACAO_CRITERIOS_FORNECEDORES',
@@ -42,7 +44,7 @@ ManutencaoLegalCadastroGrid::render([
 ]);
 
 require_once dirname(__DIR__) . '/components/toolbar_grupos.php';
-greenPortalToolbarGrupos('.homologacao-criterios-fornecedores-grid-fragment', ['associacoes' => ['[data-criterio-modelo]']]);
+greenPortalToolbarGrupos('.homologacao-criterios-fornecedores-grid-fragment', ['associacoes' => ['[data-criterio-modelo]', '[data-criterio-aprovadores]']]);
 ?>
 <script>
 (function () {
@@ -63,5 +65,11 @@ greenPortalToolbarGrupos('.homologacao-criterios-fornecedores-grid-fragment', ['
         else if (host.greenPortalOpenTab) host.greenPortalOpenTab('criterio-modelo-fornecedor-' + id, url, titulo);
     });
     atualizar();
+    fragment.find('[data-criterio-aprovadores]').on('click', function () {
+        var host = window.top || window, titulo = window.greenT ? window.greenT('homologacao_criterios.popup.aprovadores', 'Aprovadores dos documentos') : 'Aprovadores dos documentos',
+            url = (host.greenPortalBaseUrl || '') + '/principal/homologacaofornecedores_aprovadores_documentos.php';
+        if (host.GreenPortalPopups && host.jQuery) host.GreenPortalPopups.transacaoIndependente({ titulo: titulo, conteudo: host.jQuery('<iframe>', { src: url, style: 'width:100%;height:100%;border:0;display:block;' }), amplo: true, redimensionavel: true });
+        else if (host.greenPortalOpenTab) host.greenPortalOpenTab('criterio-aprovadores', url, titulo);
+    });
 }());
 </script>
