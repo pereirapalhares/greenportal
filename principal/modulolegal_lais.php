@@ -59,3 +59,5 @@ greenPortalToolbarGrupos('.modulo-lais-grid-fragment', [
     'correlacionamentos' => ['[data-context-id="lais-requisitos"]', '[data-context-id="lais-controles"]'],
     'avaliacao' => ['[data-context-id="lais-objetivos"]', '[data-context-id^="questionario-"]'],
 ]);
+?>
+<script src="../assets/js/associacoes-contagem.js?v=6"></script>

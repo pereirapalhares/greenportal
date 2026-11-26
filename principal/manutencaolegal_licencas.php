@@ -231,6 +231,7 @@ $toolbarGroups = [
 <script src="../assets/js/toolbar-grupos.js?v=8"></script>
 <link href="../assets/css/licencas-vencimento.css?v=3" rel="stylesheet">
 <script src="../assets/js/licencas-vencimento.js?v=5"></script>
+<script src="../assets/js/associacoes-contagem.js?v=6"></script>
 <script>
 (function () {
     if (!window.jQuery) return;

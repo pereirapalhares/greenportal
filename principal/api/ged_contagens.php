@@ -45,5 +45,7 @@ $db = (string)($_SESSION['tenant']['banco_dados'] ?? '');
 require_once dirname(__DIR__, 2) . '/classes/GedStorageService.php';
 $storage = new GedStorageService($tenant, $env, $_SESSION);
 $root = $storage->legacyRoot() . DIRECTORY_SEPARATOR . $storage->legacyDatabase() . DIRECTORY_SEPARATOR . $cfg['folder']; $call = static fn(string $procedure, array $params = []): array => GreenPortalDatabase::call($tenant, $procedure, $params); $counts = [];
-foreach ($ids as $value) { $id = max(0, (int)$value); if ($id < 1) continue; if (!$call('CALL sp_crud_select(:tabela,:filtros,NULL,1,0)', ['tabela' => $cfg['table'], 'filtros' => json_encode([$cfg['field'] => $id])])) continue; if (!GedPermissaoTipo::registroPermitido($tenant, $type, $id)) continue; $dir = $root . DIRECTORY_SEPARATOR . $id; $count = 0; if (is_dir($dir)) foreach (new DirectoryIterator($dir) as $file) if (!$file->isDot() && $file->isFile()) $count++; $counts[(string)$id] = $count; }
+foreach ($ids as $value) { $id = max(0, (int)$value); if ($id < 1) continue; if (!$call('CALL sp_crud_select(:tabela,:filtros,NULL,1,0)', ['tabela' => $cfg['table'], 'filtros' => json_encode([$cfg['field'] => $id])])) continue; if (!GedPermissaoTipo::registroPermitido($tenant, $type, $id)) continue; // 26/11/2026: conta pelas mesmas pastas da lista de arquivos (GED novo + pasta do legado), sem repetir nome — antes só a
+    // pasta do legado era contada e a coluna Arquivos mostrava 0 para arquivos enviados pelo portal.
+    $counts[(string)$id] = count($storage->list($cfg['folder'], $id, '')); }
 $json(['ok' => true, 'counts' => $counts]);

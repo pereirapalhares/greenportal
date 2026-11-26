@@ -18,4 +18,7 @@ ErrorDocument 503 /greenportal/erro.php?status=503
     php_value post_max_size 110M
     php_value max_input_time 600
     php_value max_execution_time 600
+    # 26/11/2026: sessão do servidor dura 1 h sem uso (o portal encerra por inatividade aos 30 min, Configurações › Main).
+    # O padrão do PHP (24 min) derrubava a sessão antes dos 30 min e o usuário voltava para o login.
+    php_value session.gc_maxlifetime 3600
 </IfModule>

@@ -62,12 +62,17 @@ try {
             require_once dirname(__DIR__, 2) . '/classes/GedStorageService.php';
             if (empty(GedPermissaoTipo::obter($tipo)['pode_visualizar'])) return null;
             $st = new GedStorageService($pdo, $env, $_SESSION);
-            $dir = $st->legacyRoot() . DIRECTORY_SEPARATOR . $st->legacyDatabase() . DIRECTORY_SEPARATOR . $pasta . DIRECTORY_SEPARATOR . $registro;
-            if (!is_dir($dir)) return 0;
-            $n = 0;
-            foreach (new DirectoryIterator($dir) as $a) if (!$a->isDot() && $a->isFile()) $n++;
-            return $n;
+            // 26/11/2026: mesmas pastas da lista de arquivos (GED novo + legado) — antes só a pasta do legado era contada.
+            return count($st->list($pasta, $registro, ''));
         } catch (Throwable) { return null; }
+    };
+    /** Pessoas responsáveis pelo registro (no registro, por atribuição e por regra — vw_resp_acesso_<área>); null sem a view. */
+    $responsaveis = static function (string $area, int $item) use ($ler, $col): ?int {
+        $r = $ler('vw_resp_acesso_' . strtolower($area), ['REGISTRO_ID' => $item], 2000);
+        if ($r === null) return null;
+        $u = [];
+        foreach ($r as $l) { $c = (int)$col($l, 'CODUSUARIO_ACESSO'); if ($c > 0) $u[$c] = true; }
+        return count($u);
     };
     $risco = static function (string $area, int $item) use ($ler, $col): ?string {
         $r = $ler('vw_ml_risco_itens', ['AREA' => $area, 'ITEM_ID' => $item], 5);
@@ -137,16 +142,19 @@ try {
             $ged = $arquivos('controles', 'documentos', $id);
             $f['arquivos'] = $ged === null && $d === null ? null : (int)$ged + ($d !== null && !$vazio($col($d, 'ARQUIVO')) ? 1 : 0);
             $f['risco'] = $risco('CONTROLES', $id);
+            $f['responsaveis'] = $responsaveis('CONTROLES', $id);
             break;
 
         case 'treinamentos':
             $f['arquivos'] = $arquivos('treinamentos', 'treinamentos', $id);
             $f['risco'] = $risco('TREINAMENTOS', $id);
+            $f['responsaveis'] = $responsaveis('TREINAMENTOS', $id);
             break;
 
         case 'infraestrutura':
             $f['arquivos'] = $arquivos('infraestrutura', 'infraestrutura', $id);
             $f['risco'] = $risco('INFRAESTRUTURA', $id);
+            $f['responsaveis'] = $responsaveis('INFRAESTRUTURA', $id);
             break;
 
         case 'fornecedor':

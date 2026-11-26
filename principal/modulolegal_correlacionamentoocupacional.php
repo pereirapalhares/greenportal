@@ -39,3 +39,5 @@ ManutencaoLegalCadastroGrid::render([
         'CODUNIDADE'=>['label'=>['pt'=>'Código da unidade','en'=>'Unit code','es'=>'Código de unidad'],'readonly'=>true,'hidden'=>true,'filter'=>'none'],
     ],
 ]);
+?>
+<script src="../assets/js/associacoes-contagem.js?v=6"></script>

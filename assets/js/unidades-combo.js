@@ -129,17 +129,8 @@
             }).fail(function (x) { erro(((x && x.responseJSON) || {}).message || TX.erro); });
         })();
     }
-    document.addEventListener('click', function (e) {
-        var b = e.target && e.target.closest ? e.target.closest('#greenPortalCadastroConfirm [data-confirmar]') : null;
-        if (!b || !pendentes().length) return;
-        e.preventDefault(); e.stopImmediatePropagation();
-        b.disabled = true;
-        gravarPendentes(function () { b.disabled = false; b.click(); }, function (m) {
-            b.disabled = false;
-            var corpo = document.querySelector('#greenPortalCadastroConfirm .modal-body');
-            if (corpo) $('<div class="text-danger small mt-2">').text(m).appendTo(corpo);
-        });
-    }, true);
+    // Chamado pela confirmação do Salvar (cadastro-legal-fixes.js), que agora aparece na janela principal do portal.
+    window.gpAntesDeGravarConfirmado = function (ok, erro) { if (!pendentes().length) { ok(); return; } gravarPendentes(ok, erro); };
 
     function preparar(raiz) {
         $(raiz).find('td[data-column="UNIDADES"] input[name$="[UNIDADES]"]').each(function () {

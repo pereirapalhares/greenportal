@@ -16,6 +16,13 @@ require_once dirname(__DIR__) . '/classes/TenantContext.php';
  * conferidas no servidor da mesma forma.
  */
 if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+// 26/11/2026: Gestão de Fornecedores › Funcionários (homologacaofornecedor_fornecedorxfuncionarios.php) usa esta mesma tela,
+// só com os funcionários do fornecedor escolhido (filtros={"CODFORNECEDOR":n} na URL, como as outras janelas do fornecedor).
+$fuFornecedorFixo = 0;
+if (defined('GP_FUNCIONARIOS_DO_FORNECEDOR')) {
+    $fuFiltrosUrl = json_decode((string)($_GET['filtros'] ?? '{}'), true);
+    foreach ((array)$fuFiltrosUrl as $fuCampoUrl => $fuValorUrl) if (strcasecmp((string)$fuCampoUrl, 'CODFORNECEDOR') === 0) $fuFornecedorFixo = max(0, (int)$fuValorUrl);
+}
 $fuExterno = HomologacaoFornecedorAcesso::externo();
 $fuComum = HomologacaoFornecedorAcesso::comum();
 $fuUsuario = (int)($_SESSION['usuario']['codusuario'] ?? 0);
@@ -42,7 +49,7 @@ if (($fuExterno || $fuUnidade) && !empty($_SESSION['autenticado'])) {
         foreach ((array)($_POST['rows'] ?? []) as $fuChave => $fuLinha) {
             $fuNovo = str_starts_with((string)$fuChave, 'novo_');
             if (!$fuNovo && !HomologacaoFornecedorAcesso::pode($fuAcessoPdo, 'funcionario', (int)$fuChave)) $fuNegar(HomologacaoFornecedorAcesso::mensagemNegado());
-            $fuForn = is_array($fuLinha) ? trim((string)($fuLinha['CODFORNECEDOR'] ?? '')) : '';
+            $fuForn = is_array($fuLinha) ? trim((string)($fuLinha['CODFORNECEDOR'] ?? '')) : ''; if ($fuForn === '' && $fuFornecedorFixo > 0) $fuForn = (string)$fuFornecedorFixo;
             if (($fuNovo || $fuForn !== '') && !HomologacaoFornecedorAcesso::pode($fuAcessoPdo, 'fornecedor', (int)$fuForn)) $fuNegar(HomologacaoFornecedorAcesso::mensagemNegado());
         }
     }
@@ -80,7 +87,11 @@ if ($fuComum) $fuExtra['button_options'] = ['save' => true, 'new' => true, 'dupl
 $fuMeus = defined('GP_MEUS_FUNCIONARIOS') && !$fuExterno;
 if ($fuMeus) $fuExtra = ['user_scope_field' => 'CODUSUARIO_ACESSO', 'force_user_scope' => true,
     'button_options' => ['save' => true, 'new' => false, 'duplicate' => false, 'delete' => false, 'reload' => true, 'export' => true, 'columns' => true]];
-ManutencaoLegalCadastroGrid::render($fuExtra + [
+if ($fuFornecedorFixo > 0) {
+    // Fornecedor fixo: a coluna Fornecedor some (é o filtro da janela) e o funcionário novo já entra nesse fornecedor.
+    $fuExtra['context_fields'] = ['CODFORNECEDOR'];
+}
+$fuGrid = $fuExtra + [
     'menu' => 'HOMOLOGACAO_FORNECEDOR_FUNCIONARIO',
     'title' => $fuMeus ? ['pt' => $u('Funcion\u00e1rios de fornecedores'), 'en' => 'Supplier employees', 'es' => 'Empleados de proveedores'] : ['pt' => $u('Gest\u00e3o de Funcion\u00e1rios'), 'en' => 'Employee Management', 'es' => $u('Gesti\u00f3n de Empleados')],
     'transaction' => 'homologacaofornecedor_funcionario', 'database' => 'gmodelo_dbp', 'prefix' => 'GPT',
@@ -129,7 +140,12 @@ ManutencaoLegalCadastroGrid::render($fuExtra + [
         'DATA_VALIDADE' => ['label' => ['pt' => $u('Data de Realiza\u00e7\u00e3o da Integra\u00e7\u00e3o'), 'en' => 'Integration Date', 'es' => $u('Fecha de Integraci\u00f3n')], 'export_date' => true, 'filter' => 'text', 'width' => 180],
         'DATA_DE_INICIO' => ['label' => ['pt' => $u('Data de In\u00edcio'), 'en' => 'Start Date', 'es' => 'Fecha de Inicio'], 'export_date' => true, 'filter' => 'text', 'width' => 120],
     ]),
-]);
+];
+if ($fuFornecedorFixo > 0) {
+    $fuGrid['fields']['CODFORNECEDOR']['insert_value'] = (string)$fuFornecedorFixo;
+    $fuGrid['fields']['CODFORNECEDOR']['default_new'] = (string)$fuFornecedorFixo;
+}
+ManutencaoLegalCadastroGrid::render($fuGrid);
 
 // Filtro Unidade / Fornecedor, à esquerda da busca do grid. As listas vêm dos próprios funcionários
 // exibidos (vw_homologacao_funcionarios_grid), então só aparecem unidades e fornecedores com funcionários.
@@ -164,7 +180,7 @@ $fuFiltrosAtuais = is_array($fuFiltrosAtuais) ? $fuFiltrosAtuais : [];
 $fuValor = static function (string $campo) use ($fuFiltrosAtuais): string { $v = $fuFiltrosAtuais[$campo] ?? ''; return (string)(is_array($v) ? ($v['value'] ?? '') : $v); };
 $fuH = static fn(string $s): string => htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
 $fuT = static fn(string $chave, array $padrao): string => IdiomaService::t('homologacaofornecedor_funcionario.filtro.' . $chave, $padrao);
-if ($fuFiltroLinhas):
+if ($fuFiltroLinhas && $fuFornecedorFixo < 1):
 ?>
 <div class="fu-filtro-contexto" data-fu-filtro hidden>
     <select class="form-select form-select-sm" id="fuFiltroUnidade" data-grid-filter="CODUNIDADE" title="<?= $fuH($fuT('unidade', ['pt' => 'Unidade', 'en' => 'Unit', 'es' => 'Unidad'])) ?>" aria-label="<?= $fuH($fuT('unidade', ['pt' => 'Unidade', 'en' => 'Unit', 'es' => 'Unidad'])) ?>">
@@ -228,3 +244,5 @@ greenPortalToolbarGrupos('.homologacao-funcionario-grid-fragment', [
     'correlacionamentos' => ['[data-context-id="criterios"]', '[data-context-id="treinamentos"]', '[data-context-id="responsabilidades"]'],
     'avaliacao' => ['[data-context-id^="questionario-"]'],
 ]);
+?>
+<script src="../assets/js/associacoes-contagem.js?v=6"></script>

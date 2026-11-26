@@ -220,3 +220,5 @@ greenPortalToolbarGrupos('.homologacao-fornecedor-grid-fragment', [
     'correlacionamentos' => ['[data-context-id="usuarios"]', '[data-context-id="contatos"]', '[data-context-id="certificados"]', '[data-context-id="tipos"]', '[data-context-id="criterios"]', '[data-context-id="funcionarios"]', '[data-context-id="produtos"]', '[data-context-id="equipamentos"]', '[data-context-id="responsabilidades"]'],
     'avaliacao' => ['[data-context-id="questionario"]', '[data-context-id="auditoria"]', '[data-context-id="plano"]', '[data-context-id^="questionario-"]'],
 ]);
+?>
+<script src="../assets/js/associacoes-contagem.js?v=6"></script>

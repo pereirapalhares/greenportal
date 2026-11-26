@@ -26,6 +26,18 @@ ManutencaoLegalCadastroGrid::render([
     'fragment_class' => 'modulo-legal-treinamentos-grid-fragment',
     'relacionamentos_endpoint' => 'api/modulo_legal_relacionamentos.php',
     'extras' => $relacionamentos,
+    // 25/11/2026: grade enxuta + ficha do registro em grupos (botão Detalhes, duplo clique ou ao incluir).
+    'columns_version' => 20261125,
+    'default_visible' => ['UNIDADES', 'DSCTREINAMENTO', 'CODTIPOTREINAMENTO', 'CARGA_HORARIA', 'PERIODO_RECICLAGEM', 'TREINADOS', 'TREINADOS_A_VENCER', 'TREINADOS_VENCIDOS', 'ARQUIVO', 'RISCO_CLASSE'],
+    'ficha' => [
+        'grupos' => [
+            ['titulo' => ['pt' => 'Identificação', 'en' => 'Identification', 'es' => 'Identificación'], 'campos' => ['DSCTREINAMENTO', 'CODTIPOTREINAMENTO', 'CARGA_HORARIA', 'PERIODO_RECICLAGEM', 'ARQUIVO']],
+            ['titulo' => ['pt' => 'Treinados', 'en' => 'Trainees', 'es' => 'Capacitados'], 'campos' => ['TREINADOS', 'TREINADOS_A_VENCER', 'TREINADOS_VENCIDOS']],
+            ['titulo' => ['pt' => 'Aplicação e risco', 'en' => 'Scope and risk', 'es' => 'Aplicación y riesgo'], 'campos' => ['UNIDADES', ['botao' => '[data-resp-registro]', 'rotulo' => ['pt' => 'Responsáveis', 'en' => 'Responsible parties', 'es' => 'Responsables'], 'acao' => ['pt' => 'Ver e associar responsáveis', 'en' => 'View and assign', 'es' => 'Ver y asociar'], 'dica' => ['pt' => 'Um ou mais responsáveis.', 'en' => 'One or more people.', 'es' => 'Uno o más responsables.']], 'CONTROLE_INFLUENCIA', 'RISCO_SEVERIDADE', 'RISCO_PROBABILIDADE', 'RISCO_CLASSE']],
+            ['titulo' => ['pt' => 'Observação', 'en' => 'Notes', 'es' => 'Observación'], 'campos' => ['OBSERVACAO']],
+        ],
+        'condicoes' => [],
+    ],
     'legacy_order' => ['CODTREINAMENTO', 'DSCTREINAMENTO', 'CODTIPOTREINAMENTO', 'UNIDADES', 'CARGA_HORARIA', 'PERIODO_RECICLAGEM', 'CONTROLE_INFLUENCIA', 'OBSERVACAO', 'TREINADOS', 'TREINADOS_A_VENCER', 'TREINADOS_VENCIDOS', 'PALAVRAS_CHAVE'],
     'user_scope_field' => 'CODUSUARIO', 'force_user_scope' => $pendingMode,
     // Migração 361: botão Responsáveis (registro selecionado); telas Minhas = Responsável + atribuições + regras do módulo
@@ -57,4 +69,4 @@ ManutencaoLegalCadastroGrid::render([
 
 echo '' . IdiomaService::script([], require dirname(__DIR__) . '/components/textos_relacionamentos.php') . '<script src="../assets/js/modulo-legal-relacionamentos.js?v=3"></script>';
 echo '<script src="../assets/js/modulo-legal-arquivos.js?v=12"></script>';
-echo '<script src="../assets/js/unidades-combo.js?v=4"></script>';
+echo '<script src="../assets/js/unidades-combo.js?v=5"></script><script src="../assets/js/ficha-registro.js?v=3"></script><script src="../assets/js/associacoes-contagem.js?v=6"></script>';

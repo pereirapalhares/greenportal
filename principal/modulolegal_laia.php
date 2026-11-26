@@ -54,3 +54,5 @@ greenPortalToolbarGrupos('.modulo-laia-grid-fragment', [
     'correlacionamentos' => ['[data-context-url$="modulolegal_laiarequisitoslegais.php"]', '[data-context-url$="modulolegal_controles.php"]', '[data-context-url$="modulolegallaia_inventario.php"]'],
     'avaliacao' => ['[data-context-url$="modulolegal_objetivosmetas.php"]', '[data-context-id^="questionario-"]'],
 ]);
+?>
+<script src="../assets/js/associacoes-contagem.js?v=6"></script>

@@ -68,3 +68,5 @@ greenPortalToolbarGrupos('.modulo-lpro-grid-fragment', [
     'correlacionamentos' => ['[data-context-id="lpro-requisitos"]', '[data-context-id="lpro-controles"]', '[data-context-id="lpro-infraestrutura"]', '[data-context-id="lpro-controles-adm"]', '[data-context-id="lpro-epis"]'],
     'avaliacao' => ['[data-context-id="lpro-objetivos"]', '[data-context-id^="questionario-"]'],
 ]);
+?>
+<script src="../assets/js/associacoes-contagem.js?v=6"></script>

@@ -58,3 +58,5 @@ ManutencaoLegalCadastroGrid::render([
 require_once dirname(__DIR__) . '/components/toolbar_grupos.php';
 // Barra de botões: Operações (padrão do grid) | Associações (Critérios, Palavras-chave).
 greenPortalToolbarGrupos('.homologacao-tipos-fornecedores-grid-fragment', ['associacoes' => ['[data-context-id^="tipofornecedor-"]']]);
+?>
+<script src="../assets/js/associacoes-contagem.js?v=6"></script>

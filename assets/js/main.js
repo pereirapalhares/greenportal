@@ -6,7 +6,7 @@
     var portalTheme = (document.body.className.match(/theme-(verde|azul|cinza)/) || [])[1] || 'verde';
     var toast = bootstrap.Toast.getOrCreateInstance(document.getElementById('constructionToast'), { delay: 3200 });
     var idleTimeoutSeconds = Math.max(60, Number(window.greenPortalTimeoutSeconds || 1800)), idleTimer = null;
-    function resetIdleTimer() { window.clearTimeout(idleTimer); idleTimer = window.setTimeout(function () { window.location.href = (window.greenPortalBaseUrl || '') + '/credenciais/sair.php?motivo=inatividade'; }, idleTimeoutSeconds * 1000); }
+    function resetIdleTimer() { if (window.gpMarcarUsoSessao) window.gpMarcarUsoSessao(); window.clearTimeout(idleTimer); idleTimer = window.setTimeout(function () { window.location.href = (window.greenPortalBaseUrl || '') + '/credenciais/sair.php?motivo=inatividade'; }, idleTimeoutSeconds * 1000); }
     // c571 (16/11/2026): pedido do usuário — sem balões de dica (tooltip do Bootstrap, fundo branco com seta) na aplicação.
     // Eles ficavam presos na tela quando a aba ou o popup fechava com o balão aberto. Fica só a dica simples do navegador
     // (atributo title); balões criados antes por outro script são desfeitos e o title original volta.
@@ -27,6 +27,19 @@
     if (window.MutationObserver) new MutationObserver(function (mutations) { mutations.forEach(function (mutation) { $(mutation.addedNodes).each(function () { if (this.nodeType === 1) { initializeTooltips(this); initializeCalendars(this); } }); }); }).observe(document.body, { childList: true, subtree: true });
     $(document).on('mousemove mousedown keydown click scroll touchstart', resetIdleTimer);
     resetIdleTimer();
+    // 26/11/2026: enquanto o usuário mexe na tela (digitando um formulário longo, por exemplo, sem salvar), avisa o
+    // servidor a cada 4 min para a sessão não vencer antes do tempo de inatividade do portal (30 min).
+    (function () {
+        var ultimoUso = Date.now(), ultimoAviso = Date.now();
+        var marcar = function () { ultimoUso = Date.now(); };
+        $(document).on('mousemove mousedown keydown click scroll touchstart', marcar);
+        window.gpMarcarUsoSessao = marcar;
+        window.setInterval(function () {
+            if (ultimoUso <= ultimoAviso) return;
+            ultimoAviso = Date.now();
+            try { fetch((window.greenPortalBaseUrl || '') + '/principal/api/sessao_ping.php', { credentials: 'same-origin', cache: 'no-store' }); } catch (e) { /* sem rede */ }
+        }, 240000);
+    })();
 
     var menuStateKey = 'greenportal.menu.expanded.v2';
     function readExpandedMenus() {
