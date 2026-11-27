@@ -11,7 +11,8 @@ final class SincronismoLegado
     public const TABELAS_LEGAL = ['unidades', 'areas', 'atividades', 'aspectos', 'impactos', 'destinos', 'perigos', 'riscos', 'legislacaoxempresa', 'legislacaoxunidade', 'legislacaoxaspecto', 'legislacaoxatividade', 'legislacaoximpacto', 'legislacaoxperigo', 'legislacaoxrisco', 'legislacaoxpoder', 'legislacaoxsituacao', 'legislacaoxchecklist', 'legislacaoxdocumentos', 'legislacaoxinfraestruturas', 'infraestrutura', 'infraestruturaxunidades', 'legislacaoxtreinamentos', 'legislacaoxfornecedores', 'legislacaoxlicencas', 'mm_monitoramento', 'mm_monitoramentoxlegislacao', 'mm_medicaoxlegislacao', 'atividadesxinfraestrutura', 'laia', 'laia_inventario', 'lais', 'lais_aspectossociais', 'lais_documentosxaspectos', 'lais_documentosximpactos', 'lais_impactossociais', 'lais_legislacaoxaspectossociais', 'lais_legislacaoximpactossociais', 'lais_partes_interessadas', 'lais_revisao', 'lpro', 'lpro_abrangencia', 'lpro_natureza_do_perigo', 'lpro_situacao', 'lpro_tipo_de_atividade', 'li_licencas', 'li_licencasxgrupos', 'li_licencasxpalavraschave', 'li_condicionantes', 'li_planodeacao', 'licencasxcondicionantes', 'licencasxresponsaveis'];
 
     /** Prefixos de tabelas sincronizadas legado -> novo (tabelas que existem nos dois bancos). */
-    public const PREFIXOS = ['fo_', 'nc_'];
+    // Migração 423 (27/11/2026): auditoria_ (Módulo de Auditoria do Green 3; decisão do usuário: sincronizar todo dia)
+    public const PREFIXOS = ['fo_', 'nc_', 'auditoria_'];
 
     /**
      * Tabelas do legado DESCONSIDERADAS (não são migradas, nem criadas, nem sincronizadas).
@@ -85,6 +86,12 @@ final class SincronismoLegado
         'nc_listadistribuicao' => ['codlista', 50001],
         'nc_listadistribuicaoxusuarios' => ['codlistaxusuarios', 50001],
         'nc_listadistribuicaoxcategoria' => ['codlistacategoria', 50001],
+        // Migração 423 (27/11/2026): auditorias criadas no greenportal (AUTO_INCREMENT a partir de 50001)
+        'auditoria_planejamento' => ['codauditoria', 50001],
+        'auditoria_planejamentoxavaliacao' => ['codavaliacao', 50001],
+        'auditoria_planejamentoxexecucao' => ['codexecucao', 50001],
+        'auditoria_planodeacao' => ['codplanoacao', 50001],
+        'auditoria_workflow' => ['codworkflow', 50001],
     ];
 
     /** [coluna, primeiro código] da faixa do greenportal na tabela, ou null. */

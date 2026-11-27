@@ -108,7 +108,8 @@ if ($ajax) {
                     if (!in_array((int)$l['CODAMBITO'], $amb, true) || isset($ja[$leg]) || ($decididas[$leg] ?? '') === 'RECUSADA') continue;
                     if (preg_match('/revogad/i', (string)($l['SITUACAO_LEI'] ?? ''))) continue;
                     $leis[$leg] ??= ['leg' => $leg, 'codigo' => (string)$l['CODIGO'], 'ambito' => (string)($l['DSCAMBITO'] ?? ''), 'padrao' => mb_strimwidth(trim((string)($l['PADRAO'] ?? '')), 0, 220, '…'), 'palavras' => []];
-                    $leis[$leg]['palavras'][] = $pal[$cod]['palavra'] ?? ('#' . $cod);
+                    $pw = $pal[$cod]['palavra'] ?? ('#' . $cod);
+                    if (!in_array($pw, $leis[$leg]['palavras'], true)) $leis[$leg]['palavras'][] = $pw;   // a view repete a lei por âmbito/tipo
                 }
             }
             $leis = array_values($leis);

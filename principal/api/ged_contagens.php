@@ -21,6 +21,7 @@ $types = [
     'medicao' => ['table' => 'mm_monitoramento', 'field' => 'CODMONITORAMENTO', 'folder' => 'mm_monitoramento'],
     // Revisão G itens 149/150: documentos dos veículos e equipamentos do fornecedor
     'homativo' => ['table' => 'hom_ativo_doc', 'field' => 'CODATIVODOC', 'folder' => 'hom_ativo_doc'],
+    'auditoria' => ['table' => 'auditoria_planejamento', 'field' => 'CODAUDITORIA', 'folder' => 'auditoria'], // migração 423
     'infraestruturamanutencoes' => ['table' => 'ml_infraestrutura_manutencoes', 'field' => 'CODMANUTENCAO', 'folder' => 'ml_infraestrutura_manutencoes'],
     'treinamentoparticipantes' => ['table' => 'ml_treinamentos_participantes', 'field' => 'CODPARTICIPANTE', 'folder' => 'ml_treinamentos_participantes'],
     'funcionarios' => ['table' => 'fo_funcionarios', 'field' => 'CODFUNCIONARIO', 'folder' => 'fo_funcionarios'],

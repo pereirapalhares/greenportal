@@ -221,6 +221,7 @@ final class MinhasPendencias
         $this->pilares();
         $this->homologacao();
         $this->eficacia();
+        $this->auditorias();
         if (self::$lote === null) $this->usuariosValidade();
         usort($this->itens, static fn(array $a, array $b): int => [$a['prazo'] === null, $a['prazo']?->format('Y-m-d') ?? '', $a['pilar'], $a['titulo']] <=> [$b['prazo'] === null, $b['prazo']?->format('Y-m-d') ?? '', $b['pilar'], $b['titulo']]);
         if (!$todas && is_file(__DIR__ . '/PendenciasGestao.php')) {
@@ -350,6 +351,32 @@ final class MinhasPendencias
         $this->add($this->t('home.pilar.seguranca', ['pt' => 'Segurança', 'en' => 'Security', 'es' => 'Seguridad']), $this->t('home.titulo.usuarios_revisar', ['pt' => 'Usuários a revisar', 'en' => 'Users to review', 'es' => 'Usuarios a revisar']),
             str_replace('{n}', (string)$n, $this->t('home.motivo.usuarios_revisar', ['pt' => '{n} usuário(s) ativo(s) sem acesso há muito tempo: confirmar que continuam na empresa ou inativar', 'en' => '{n} active user(s) without access for a long time: confirm they are still in the company or deactivate', 'es' => '{n} usuario(s) activo(s) sin acceso hace mucho: confirmar o inactivar'])),
             null, 'seguranca_validade_usuarios.php');
+    }
+
+    /** Migração 423 (Revisão G item 172): auditorias a planejar/enviar, a avaliar (avaliador ou grupo) e a executar/encerrar (auditor ou grupo). */
+    private function auditorias(): void
+    {
+        if ($this->fornecedorExterno) return;
+        $todas = self::pode('AUDITORIA_GESTAO');
+        if (!$todas && !self::pode('MINHAS_AUDITORIAS')) return;
+        $pilar = $this->t('home.pilar.auditoria', ['pt' => 'Auditoria', 'en' => 'Audit', 'es' => 'Auditoría']);
+        foreach ($this->ler('vw_aud_pendencias') as $r) {
+            $papel = (string)($r['PAPEL'] ?? ''); $cod = (int)($r['CODAUDITORIA'] ?? 0);
+            if (!$cod) continue;
+            $ini = self::data($r['DATADEINICIO'] ?? ''); $fim = self::data($r['DATADEFIM'] ?? '');
+            [$motivo, $prazo] = match ($papel) {
+                'PLANO' => [(string)($r['STATUS'] ?? '') === 'R'
+                    ? $this->t('home.motivo.aud.recusada', ['pt' => 'Plano de auditoria recusado: ajustar e enviar de novo para avaliação', 'en' => 'Audit plan rejected: adjust and send for review again', 'es' => 'Plan de auditoría rechazado: ajustar y enviar de nuevo a evaluación'])
+                    : $this->t('home.motivo.aud.planejar', ['pt' => 'Planejamento de auditoria: completar e enviar para avaliação', 'en' => 'Audit plan: complete and send for review', 'es' => 'Plan de auditoría: completar y enviar a evaluación']), $ini],
+                'AVALIAR' => [$this->t('home.motivo.aud.avaliar', ['pt' => 'Avaliar o plano de auditoria (aprovar ou recusar)', 'en' => 'Review the audit plan (approve or reject)', 'es' => 'Evaluar el plan de auditoría (aprobar o rechazar)']), $ini],
+                'EXECUTAR' => [(int)($r['QTD_RNC_ABERTAS'] ?? 0) > 0
+                    ? $this->t('home.motivo.aud.followup', ['pt' => 'Auditoria em execução: acompanhar as RNCs abertas e encerrar', 'en' => 'Audit in progress: follow up the open NCRs and close', 'es' => 'Auditoría en ejecución: seguir las RNC abiertas y cerrar'])
+                    : $this->t('home.motivo.aud.executar', ['pt' => 'Executar a auditoria: checklist, constatações e RNCs', 'en' => 'Carry out the audit: checklist, findings and NCRs', 'es' => 'Ejecutar la auditoría: checklist, hallazgos y RNC']), $fim ?? $ini],
+                default => ['', null],
+            };
+            if ($motivo === '') continue;
+            $this->add($pilar, '#' . $cod . ' - ' . mb_strimwidth(trim((string)($r['DSCAUDITORIA'] ?? '')), 0, 120, '…'), $motivo, $prazo, ($todas ? 'auditoria_gestao.php' : 'minhas_auditorias.php') . '?id=' . $cod);
+        }
     }
 
     /** Migração 362 (GER-5): ações concluídas em que o usuário é o avaliador da eficácia. */

@@ -141,7 +141,12 @@ foreach ($cat->empresas() as $banco => $pdo) {
         $faltam = array_values(array_filter(['documentos', 'usuarios', 'perfis', 'li_licencas', 'fo_fornecedores'], static fn($t) => !MigracaoCrud::existe($pdo, $t)));
         if ($faltam) $info['aviso'] = 'sem ' . implode(', ', $faltam) . ' (objetos que dependem deles serão pulados)';
         $feitos = 0; $pulados = [];
+        $colsUsuarios = MigracaoCrud::existe($pdo, 'usuarios') ? array_map('strtolower', MigracaoCrud::colunas($pdo, 'usuarios')) : [];
         foreach ($ddl($leg, $uni) as $i => $sql) {
+            // vw_usuarios_validade: coluna de usuarios que a empresa não tem (ex.: gmodelo2 sem codfornecedor) entra como NULL
+            if (str_contains($sql, '`vw_usuarios_validade`') && $colsUsuarios) {
+                $sql = preg_replace_callback('/u\.`([a-z_]+)`/', static fn($m) => in_array($m[1], $colsUsuarios, true) ? $m[0] : 'NULL', $sql);
+            }
             if ($simular) { $feitos++; continue; }
             try { $pdo->exec($sql); $feitos++; }
             catch (Throwable $e) { $nome = preg_match('/`([a-z_]+)`/', $sql, $m) ? $m[1] : ('#' . $i); $pulados[$nome] = mb_substr($e->getMessage(), 0, 160); }
@@ -160,6 +165,20 @@ foreach ($cat->empresas() as $banco => $pdo) {
                 . ($colUsu ? " LEFT JOIN `usuarios` u ON u.`codusuario` = t.`$colUsu`" : '');
             if (!$simular) $pdo->exec($sql);
             $info['logs'][$view] = ($simular ? 'a criar' : 'ok') . " (data: $colData" . ($colUsu ? ", usuário: $colUsu" : '') . ')';
+        }
+        // E 9: usuarios.ultimo_acesso só é gravado no login desde 19/11/2026; preenche o vazio (ou mais antigo) com a última
+        // ação do usuário nos logs, para a Validade dos usuários e o Painel de bordo não mostrarem "Nunca entrou" para quem usa
+        if (MigracaoCrud::existe($pdo, 'logs_auditoria') && in_array('ultimo_acesso', array_map('strtolower', MigracaoCrud::colunas($pdo, 'usuarios')), true)
+            && in_array('codusuario', $colsLog = array_map('strtolower', MigracaoCrud::colunas($pdo, 'logs_auditoria')), true) && in_array('criado_em', $colsLog, true)) {
+            $s = $pdo->query("SELECT l.`codusuario` AS U, MAX(l.`criado_em`) AS M, MAX(u.`ultimo_acesso`) AS A FROM `logs_auditoria` l JOIN `usuarios` u ON u.`codusuario` = l.`codusuario`
+                               GROUP BY l.`codusuario` HAVING A IS NULL OR A < M");
+            $lista = $s->fetchAll(PDO::FETCH_ASSOC); $s->closeCursor();
+            if (!$simular) foreach ($lista as $r) {
+                $c = $pdo->prepare('CALL sp_crud_update(?, ?, ?)');
+                $c->execute(['usuarios', json_encode(['codusuario' => (int)$r['U']]), json_encode(['ultimo_acesso' => $r['M']])]);
+                $c->closeCursor();
+            }
+            $info['ultimo_acesso_pelos_logs'] = count($lista) . ($simular ? ' a preencher' : ' preenchido(s)');
         }
         if (!$simular && MigracaoCrud::existe($pdo, 'legislacaoxrevisoes')) $info['colunas_legislacaoxrevisoes'] = implode(',', MigracaoCrud::colunas($pdo, 'legislacaoxrevisoes'));
     } catch (Throwable $e) { $rel['ok'] = false; $info['erro'] = $e->getMessage(); }

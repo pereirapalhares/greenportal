@@ -45,6 +45,8 @@ $relationButtons = $relationButton('contatos', 'homologacaofornecedor_fornecedor
     // Revisão G itens 149/150: veículos e equipamentos (documentos para a prestação do serviço)
     . (is_file(__DIR__ . '/homologacao_fornecedor_ativos.php') ? str_replace('btn-outline-secondary', 'btn-outline-primary', $relationButton('ativos', 'homologacao_fornecedor_ativos.php', $tb('ativos', ['pt' => 'Veículos e equipamentos (documentos para a prestação do serviço)', 'en' => 'Vehicles and equipment (service documents)', 'es' => 'Vehículos y equipos (documentos para el servicio)']), 'bi-truck')) : '')
     . $relationButton('plano', 'homologacaofornecedor_fornecedorxplanodeacao.php', $tb('plano', ['pt' => 'Plano de ação', 'en' => 'Action plan', 'es' => 'Plan de acción']), 'bi-list-check')
+    // Revisão G item 177 (migração 423): auditorias do Módulo de Auditoria feitas no fornecedor (tipo De fornecedor)
+    . (!$externo && is_file(__DIR__ . '/auditoria_gestao.php') ? str_replace('btn-outline-secondary', 'btn-outline-primary', $relationButton('auditorias_modulo', 'auditoria_gestao.php', $tb('auditorias_modulo', ['pt' => 'Auditorias (módulo de Auditoria)', 'en' => 'Audits (Audit module)', 'es' => 'Auditorías (módulo de Auditoría)']), 'bi-clipboard2-check')) : '')
     // Migração 296: Fornecedor x Usuários (quem responde pelo fornecedor; só para a empresa)
     . ($externo ? '' : str_replace('btn-outline-secondary', 'btn-outline-primary', $relationButton('usuarios', 'homologacaofornecedor_fornecedorxusuarios.php', $tb('usuarios', ['pt' => 'Usuários do fornecedor', 'en' => 'Supplier users', 'es' => 'Usuarios del proveedor']), 'bi-person-badge')));
 if ($fornecedorComum) {
@@ -222,7 +224,7 @@ if ($rankingNoGrid): ?>
 require_once dirname(__DIR__) . '/components/toolbar_grupos.php';
 greenPortalToolbarGrupos('.homologacao-fornecedor-grid-fragment', [
     'correlacionamentos' => ['[data-context-id="usuarios"]', '[data-context-id="contatos"]', '[data-context-id="certificados"]', '[data-context-id="tipos"]', '[data-context-id="criterios"]', '[data-context-id="funcionarios"]', '[data-context-id="produtos"]', '[data-context-id="equipamentos"]', '[data-context-id="ativos"]', '[data-context-id="responsabilidades"]'],
-    'avaliacao' => ['[data-context-id="questionario"]', '[data-context-id="auditoria"]', '[data-context-id="plano"]', '[data-context-id="atendimento_legal"]', '[data-context-id^="questionario-"]'],
+    'avaliacao' => ['[data-context-id="questionario"]', '[data-context-id="auditoria"]', '[data-context-id="auditorias_modulo"]', '[data-context-id="plano"]', '[data-context-id="atendimento_legal"]', '[data-context-id^="questionario-"]'],
 ]);
 ?>
 <script src="../assets/js/associacoes-contagem.js?v=6"></script>

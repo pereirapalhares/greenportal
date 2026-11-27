@@ -20,6 +20,7 @@ $gestor = P::pode('editar') || in_array($perfil, ['ADMINISTRADOR', 'ADM DA EMPRE
 $revisoes = P::existe('legislacaoxrevisoes') ? P::sel('legislacaoxrevisoes', [], 2000) : [];
 $pk = '';
 foreach (array_keys($revisoes[0] ?? []) as $k) if (str_starts_with($k, 'COD')) { $pk = $k; break; }
+if ($pk === '') foreach (['CHAVE', 'ID'] as $k) if (array_key_exists($k, $revisoes[0] ?? [])) { $pk = $k; break; }   // legado: chave
 $data = static fn(array $r): string => (string)($r['DATA'] ?? $r['DATA_REVISAO'] ?? '');
 usort($revisoes, static fn($a, $b) => [$data($b), (int)($b[$pk] ?? 0)] <=> [$data($a), (int)($a[$pk] ?? 0)]);
 $revisoes = array_slice($revisoes, 0, 300);

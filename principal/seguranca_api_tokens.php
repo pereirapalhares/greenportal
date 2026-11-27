@@ -33,6 +33,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             P::ins('api_token', ['NOME' => $nome, 'PREFIXO' => substr($novo, 0, strlen('gp_' . $empresa . '_') + 6), 'HASH' => hash('sha256', $novo), 'ESCOPOS' => implode(',', $esc), 'VALIDO_ATE' => $ate, 'CODUSUARIO' => P::$uid ?: null]);
             AuditService::record(P::$pdo, 'seguranca_api_tokens', 'CRIAR', 'SUCESSO', 'api_token', null, ['nome' => $nome, 'escopos' => $esc, 'valido_ate' => $ate]);
         }
+    } elseif (($_POST['acao'] ?? '') === 'excluir') {
+        // só token já revogado sai da lista (o uso continua nos logs do sistema)
+        if (!P::pode('excluir')) P::sair(403, P::L('Seu perfil não pode excluir tokens.', 'Your profile cannot delete tokens.', 'Su perfil no puede eliminar tokens.'));
+        $id = (int)($_POST['id'] ?? 0);
+        $t = P::sel('api_token', ['CODTOKEN' => $id], 1)[0] ?? null;
+        if ($t && !empty($t['REVOGADO_EM'])) { P::del('api_token', ['CODTOKEN' => $id]); $msg = P::L('Token excluído da lista.', 'Token removed from the list.', 'Token eliminado de la lista.'); AuditService::record(P::$pdo, 'seguranca_api_tokens', 'EXCLUIR', 'SUCESSO', 'api_token', (string)$id, ['nome' => (string)$t['NOME']]); }
     } elseif (($_POST['acao'] ?? '') === 'revogar') {
         if (!P::pode('excluir')) P::sair(403, P::L('Seu perfil não pode revogar tokens.', 'Your profile cannot revoke tokens.', 'Su perfil no puede revocar tokens.'));
         $id = (int)($_POST['id'] ?? 0);
@@ -62,7 +68,7 @@ P::cabecalho(P::L('Tokens da API', 'API tokens', 'Tokens de la API'), 'bi-key', 
 <tr><td><?= P::e($t['NOME']) ?></td><td class="font-monospace small"><?= P::e($t['PREFIXO']) ?>…</td><td class="small"><?= P::e(implode(', ', array_map(static fn($e) => $REC[$e] ?? $e, explode(',', (string)$t['ESCOPOS'])))) ?></td>
 <td class="small"><?= P::e(substr((string)$t['VALIDO_ATE'], 0, 10)) ?></td><td class="small"><?= P::e($fmt($t['CRIADO_EM']) . ' · ' . $t['USUARIO']) ?></td><td class="small"><?= P::e($fmt($t['ULTIMO_USO_EM'])) ?></td><td class="text-end small"><?= (int)$t['USOS'] ?></td>
 <td><?= $rev ? '<span class="badge text-bg-secondary">' . P::e(P::L('Revogado', 'Revoked', 'Revocado')) . '</span>' : ($venc ? '<span class="badge text-bg-warning">' . P::e(P::L('Vencido', 'Expired', 'Vencido')) . '</span>' : '<span class="badge text-bg-success">' . P::e(P::L('Ativo', 'Active', 'Activo')) . '</span>') ?></td>
-<td><?php if (!$rev && P::pode('excluir')): ?><form method="post" class="d-inline"><input type="hidden" name="csrf" value="<?= P::e($csrf) ?>"><input type="hidden" name="acao" value="revogar"><input type="hidden" name="id" value="<?= (int)$t['CODTOKEN'] ?>"><button class="btn btn-sm btn-outline-danger" type="submit"><?= P::e(P::L('Revogar', 'Revoke', 'Revocar')) ?></button></form><?php endif; ?></td></tr>
+<td><?php if ($rev && P::pode('excluir')): ?><form method="post" class="d-inline"><input type="hidden" name="csrf" value="<?= P::e($csrf) ?>"><input type="hidden" name="acao" value="excluir"><input type="hidden" name="id" value="<?= (int)$t['CODTOKEN'] ?>"><button class="btn btn-sm btn-outline-secondary" type="submit" title="<?= P::e(P::L('Tira o token revogado da lista', 'Removes the revoked token from the list', 'Quita el token revocado de la lista')) ?>"><i class="bi bi-trash"></i></button></form><?php endif; ?><?php if (!$rev && P::pode('excluir')): ?><form method="post" class="d-inline"><input type="hidden" name="csrf" value="<?= P::e($csrf) ?>"><input type="hidden" name="acao" value="revogar"><input type="hidden" name="id" value="<?= (int)$t['CODTOKEN'] ?>"><button class="btn btn-sm btn-outline-danger" type="submit"><?= P::e(P::L('Revogar', 'Revoke', 'Revocar')) ?></button></form><?php endif; ?></td></tr>
 <?php endforeach; if (!$lista): ?><tr><td colspan="9" class="text-muted"><?= P::e(P::L('Nenhum token criado.', 'No token created.', 'Ningún token creado.')) ?></td></tr><?php endif; ?></tbody></table></div>
 <p class="small text-muted mt-2"><?= P::e(P::L('Endereço da API', 'API address', 'Dirección de la API')) ?>: <span class="font-monospace"><?= P::e($base) ?>?recurso=requisitos|licencas|fornecedores&amp;pagina=1&amp;por_pagina=200&amp;unidade=&lt;código&gt;</span></p>
 <?php P::rodape(); ?>

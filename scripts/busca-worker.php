@@ -51,12 +51,14 @@ foreach ($bancos as $db) {
             // Migração 346: vetores da busca pelo sentido (itens novos ou alterados) e reavaliação das leis alteradas;
             // empresa sem a 346 é ignorada; erro aqui não interrompe a indexação por palavra
             if (BuscaSemantica::disponivel($p)) {
-                try { $r['semantica'] = (new BuscaSemantica($p, $env))->indexar(max(50, (int)($env['BUSCA_SEMANTICA_LOTE'] ?? 1000) ?: 1000)); }
+                $tx = microtime(true); try { $r['semantica'] = (new BuscaSemantica($p, $env))->indexar(max(50, (int)($env['BUSCA_SEMANTICA_LOTE'] ?? 1000) ?: 1000)); }
                 catch (Throwable $e) { $r['semantica'] = ['erro' => $e->getMessage()]; error_log('[busca semântica] ' . $db . ': ' . $e->getMessage()); }
+                $r['tempos_seg']['semantica'] = round(microtime(true) - $tx, 2);
             }
             if (LeiReavaliacao::disponivel($p)) {
-                try { $r['reavaliacao_leis'] = (new LeiReavaliacao($p, $env))->processar(); }
+                $tx = microtime(true); try { $r['reavaliacao_leis'] = (new LeiReavaliacao($p, $env))->processar(); }
                 catch (Throwable $e) { $r['reavaliacao_leis'] = ['erro' => $e->getMessage()]; error_log('[reavaliação de leis] ' . $db . ': ' . $e->getMessage()); }
+                $r['tempos_seg']['reavaliacao_leis'] = round(microtime(true) - $tx, 2);
             }
             $detalhe = $r;
             return (int)$r['total'] + (int)($r['semantica']['vetorizados'] ?? 0) + (int)($r['reavaliacao_leis']['alteracoes'] ?? 0);

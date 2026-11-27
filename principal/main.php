@@ -334,7 +334,7 @@ if ($assistenteLiberado && empty($_SESSION['assistente_ia_csrf'])) $_SESSION['as
 <script src="<?php echo $baseUrl; ?>/assets/js/filtro-atraso.js?v=2"></script>
 <script>window.greenPortalFiltroChave = <?php echo json_encode(substr(md5((string)$tenantDatabase . ':' . (int)($usuario['codusuario'] ?? 0)), 0, 12)); ?>;</script>
 <script src="<?php echo $baseUrl; ?>/assets/js/filtro-memoria.js?v=1"></script>
-<script src="<?php echo $baseUrl; ?>/assets/js/filtros-favoritos.js?v=1"></script>
+<script src="<?php echo $baseUrl; ?>/assets/js/filtros-favoritos.js?v=2"></script>
 <script src="<?php echo $baseUrl; ?>/assets/js/status-icones.js?v=6"></script>
 <script src="<?php echo $baseUrl; ?>/assets/js/fluxo-etapas.js?v=6"></script>
 <script src="<?php echo $baseUrl; ?>/assets/js/legislacao-categorias.js?v=1"></script>

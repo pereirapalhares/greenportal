@@ -633,6 +633,7 @@ $listaResp = []; foreach (($selBase('usuarios', ['ativo' => 1], 20000) ?? []) as
 </ul>
 <section data-painel="geral">
 <?php if ($vg === null): ?><?= $semMigracao('285') ?><?php else: ?>
+<?php if ($filtroAtivo): ?><div class="small text-muted mb-1"><i class="bi bi-info-circle me-1"></i><?= $e($T('filtro.cartoes_empresa', ['pt' => 'Os cartões abaixo são da empresa toda; os filtros valem nos resumos e nas abas.', 'en' => 'The cards below cover the whole company; the filters apply to the summaries and tabs.', 'es' => 'Las tarjetas de abajo son de toda la empresa; los filtros valen en los resúmenes y las pestañas.'])) ?></div><?php endif; ?>
 <div class="admin-cards">
 <?= $cartao($e($T('card.usuarios', ['pt' => 'Usuários ativos', 'en' => 'Active users', 'es' => 'Usuarios activos'])), (int)$vg['USUARIOS_ATIVOS'], 'bi-people', 'green', '', 'equipe') ?>
 <?= $cartao($e($T('card.unidades', ['pt' => 'Unidades', 'en' => 'Units', 'es' => 'Unidades'])), (int)$vg['UNIDADES'], 'bi-buildings', 'blue', '', '', $abrir('administracao_unidades.php', [], $T('card.unidades', ['pt' => 'Unidades', 'en' => 'Units', 'es' => 'Unidades']))) ?>

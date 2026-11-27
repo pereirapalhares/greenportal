@@ -53,7 +53,8 @@ $R = array_change_key_case($row, CASE_UPPER);
 // preenchidos; só estes campos, e só na inclusão. Nada é gravado até o usuário salvar.
 if (!$codigo && isset($_GET['prefill'])) {
     $pf = json_decode((string)$_GET['prefill'], true);
-    if (is_array($pf)) foreach (['CODFORNECEDOR' => 20, 'IDENTIFICACAO' => 500, 'DESCRICAO' => 5000, 'CODUNIDADE' => 20, 'PRODUTO' => 500] as $k => $max)
+    // Migração 423: constatação de auditoria abre a RNC já ligada à auditoria (CODAUDITORIA) e com a origem escolhida na auditoria
+    if (is_array($pf)) foreach (['CODFORNECEDOR' => 20, 'IDENTIFICACAO' => 500, 'DESCRICAO' => 5000, 'CODUNIDADE' => 20, 'PRODUTO' => 500, 'CODAUDITORIA' => 11, 'CODORIGEMACAO' => 11] as $k => $max)
         if (isset($pf[$k]) && is_scalar($pf[$k]) && trim((string)$pf[$k]) !== '') $R[$k] = mb_substr(trim((string)$pf[$k]), 0, $max);
 }
 $tipo = $codigo ? (int)($R['CODTIPONAOCONFORMIDADE'] ?? 0) : $tipoNovo;
@@ -455,7 +456,14 @@ body{background:var(--bs-body-bg,#fff)}.nc-main{padding:.75rem 1rem}.nc-cab{disp
             if (!$def[3] && !$tem($depende ?? $nome) && !($planejamento && $nome === 'PASS_PELA_NANALISE_EFICACIA')) continue;
             if ($tipo === 2 && $nome === 'PARADANALINHA') continue; // não usado no Cliente (0 de 2.401 no legado)
             echo $campoHtml($nome, $def, $valorCampo($nome), $pode['ocorrencia']);
-        } ?>
+        }
+        // Migração 423: RNC aberta pela auditoria — a ligação vai junto no envio (sp_nc_ocorrencia_salvar grava CODAUDITORIA)
+        if (!$codigo && (int)($R['CODAUDITORIA'] ?? 0) > 0) {
+            echo '<input type="hidden" name="CODAUDITORIA" value="' . (int)$R['CODAUDITORIA'] . '">';
+            if ((int)($R['CODORIGEMACAO'] ?? 0) > 0 && !$tem('CODORIGEMACAO') && empty($camposOcorrencia['CODORIGEMACAO'][3])) echo '<input type="hidden" name="CODORIGEMACAO" value="' . (int)$R['CODORIGEMACAO'] . '">';
+        }
+        if ((int)($R['CODAUDITORIA'] ?? 0) > 0) echo '<div class="col-12 small"><i class="bi bi-clipboard2-check me-1"></i>' . $e(IdiomaService::t('nc.oc.da_auditoria', ['pt' => 'Aberta pela auditoria', 'en' => 'Opened by audit', 'es' => 'Abierta por la auditoría'])) . ' <a href="auditoria_gestao.php?id=' . (int)$R['CODAUDITORIA'] . '&aba=constatacoes" target="_blank">#' . (int)$R['CODAUDITORIA'] . '</a></div>';
+        ?>
       </form>
       <?php if ($v('RECUSA_DO_GESTOR') !== '' && $etapa === 'Recusado pelo Gestor'): ?><div class="alert alert-warning py-2 mt-2 small"><b><?= $e(ncT('oc.motivo_recusa_gestor')) ?></b> <?= nl2br($e($v('RECUSA_DO_GESTOR'))) ?></div><?php endif; ?>
     </section>

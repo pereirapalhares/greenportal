@@ -7,6 +7,8 @@ require_once __DIR__ . '/UsuarioSessao.php';
 require_once __DIR__ . '/PermissaoTransacao.php';
 require_once __DIR__ . '/AuditService.php';
 
+date_default_timezone_set('America/Sao_Paulo');   // datas gravadas pelo PHP (revogado em, lida em…) no horário de Brasília, como o MySQL
+
 /**
  * Apoio às telas simples da Revisão G (migração 421): sessão, permissão do menu, leitura por sp_crud_select (em lotes, chaves em
  * MAIÚSCULAS), gravação por sp_crud_insert / sp_crud_update / sp_crud_delete, CSRF da tela e o cabeçalho/rodapé padrão.

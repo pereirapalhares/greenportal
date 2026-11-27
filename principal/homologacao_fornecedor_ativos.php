@@ -20,6 +20,7 @@ if (!P::existe('hom_ativo')) P::sair(503, P::L('Veículos e equipamentos ainda n
 $forn = (int)($_POST['fornecedor'] ?? 0) ?: HomologacaoFornecedorAcesso::fornecedorDaRequisicao();
 if ($forn <= 0) P::sair(400, P::L('Escolha o fornecedor no grid.', 'Choose the supplier in the grid.', 'Elija el proveedor en la grilla.'));
 HomologacaoFornecedorAcesso::exigirFornecedor(P::$pdo, $forn);
+if (!P::sel('fo_fornecedores', ['codfornecedor' => $forn], 1)) P::sair(404, P::L('Fornecedor não encontrado.', 'Supplier not found.', 'Proveedor no encontrado.'));
 $externo = HomologacaoFornecedorAcesso::externo();
 $csrf = P::csrf('hom_ativos_csrf');
 $CAT = ['VEICULO' => P::L('Veículo', 'Vehicle', 'Vehículo'), 'EQUIPAMENTO' => P::L('Equipamento', 'Equipment', 'Equipo')];
@@ -109,7 +110,7 @@ if ($sel) {
     $docs = P::sel('vw_hom_ativo_doc', ['CODATIVO' => $ativoSel], 500);
     usort($docs, static fn($a, $b) => strnatcasecmp((string)$a['DOCUMENTO'], (string)$b['DOCUMENTO']));
 }
-$fr = P::sel('fo_fornecedores', ['CODFORNECEDOR' => $forn], 1)[0] ?? [];
+$fr = P::sel('fo_fornecedores', ['codfornecedor' => $forn], 1)[0] ?? [];   // colunas de fo_fornecedores em minúsculas
 session_write_close();
 $pode = P::pode('incluir') || P::pode('editar') || P::pode('excluir');
 $linha = static function (string $k, array $a) use ($opTipos, $pode, $resumo, $forn): string {
@@ -124,7 +125,7 @@ $linha = static function (string $k, array $a) use ($opTipos, $pode, $resumo, $f
         . '<td class="small">' . $st . '</td><td class="text-nowrap">' . ($id ? '<a class="btn btn-sm btn-outline-primary" href="?CODFORNECEDOR=' . $forn . '&ativo=' . $id . '#docs"><i class="bi bi-file-earmark-check me-1"></i>' . P::e(P::L('Documentos', 'Documents', 'Documentos')) . '</a> ' : '')
         . ($pode ? '<button type="button" class="btn btn-sm btn-outline-danger js-excluir"><i class="bi bi-trash"></i></button>' : '') . '</td></tr>';
 };
-P::cabecalho(P::L('Veículos e equipamentos do fornecedor', 'Supplier vehicles and equipment', 'Vehículos y equipos del proveedor') . ' — ' . trim((string)($fr['RAZAOSOCIAL'] ?? '#' . $forn)), 'bi-truck', 'homologacao_fornecedor_ativos', '.ps table input.form-control,.ps table select{min-width:130px}');
+P::cabecalho(P::L('Veículos e equipamentos do fornecedor', 'Supplier vehicles and equipment', 'Vehículos y equipos del proveedor') . ' — ' . trim((string)($fr['RAZAOSOCIAL'] ?? $fr['NOMEFANTASIA'] ?? '#' . $forn)), 'bi-truck', 'homologacao_fornecedor_ativos', '.ps table input.form-control,.ps table select{min-width:130px}');
 ?>
 <p class="ps-ajuda small mb-2"><?= P::e(P::L('Documentos para a prestação do serviço (entrar na empresa), separados da homologação: cadastre cada veículo ou equipamento com o tipo; os documentos exigidos do tipo aparecem em Documentos, com situação, validade e arquivos.', 'Documents for service delivery (entering the company), separate from approval: register each vehicle or equipment with its type; the required documents of the type appear in Documents, with status, validity and files.', 'Documentos para la prestación del servicio, separados de la homologación: registre cada vehículo o equipo con su tipo; los documentos exigidos aparecen en Documentos, con situación, validez y archivos.')) ?></p>
 <?php if (!$opTipos): ?><div class="alert alert-warning py-2"><?= P::e(P::L('Nenhum tipo de veículo ou equipamento cadastrado: cadastre em Homologação › Tipos de veículo e equipamento.', 'No vehicle or equipment type yet: register them in Approval › Vehicle and equipment types.', 'Ningún tipo registrado: regístrelos en Homologación › Tipos de vehículo y equipo.')) ?></div><?php endif; ?>

@@ -9,6 +9,7 @@ final class ModuloEmpresaService
     public const MODULO_LEGAL = 'MODULO_LEGAL';
     public const HOMOLOGACAO = 'HOMOLOGACAO_FORNECEDORES';
     public const NAO_CONFORMIDADES = 'NAO_CONFORMIDADES';
+    public const AUDITORIA = 'AUDITORIA';   // migração 423 (27/11/2026)
 
     public static function catalogo(): array
     {
@@ -16,6 +17,7 @@ final class ModuloEmpresaService
             self::MODULO_LEGAL => ['pt' => 'Módulo Legal / Gestão Ambiental', 'en' => 'Legal Module / Environmental Management', 'es' => 'Módulo Legal / Gestión Ambiental'],
             self::HOMOLOGACAO => ['pt' => 'Homologação de Fornecedores', 'en' => 'Supplier Homologation', 'es' => 'Homologación de Proveedores'],
             self::NAO_CONFORMIDADES => ['pt' => 'Não Conformidades', 'en' => 'Nonconformities', 'es' => 'No conformidades'],
+            self::AUDITORIA => ['pt' => 'Auditoria', 'en' => 'Audit', 'es' => 'Auditoría'],
         ];
     }
 
@@ -43,6 +45,7 @@ final class ModuloEmpresaService
                 if ($root === self::MODULO_LEGAL || $root === 'MANUTENCAO_LEGAL') return self::MODULO_LEGAL;
                 if ($root === self::HOMOLOGACAO) return self::HOMOLOGACAO;
                 if ($root === self::NAO_CONFORMIDADES) return self::NAO_CONFORMIDADES;
+                if ($root === self::AUDITORIA) return self::AUDITORIA;
                 $current = $byId[(int)($current['codmenu_pai'] ?? 0)] ?? null;
             }
         } catch (Throwable) {

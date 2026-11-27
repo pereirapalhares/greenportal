@@ -14,6 +14,7 @@ declare(strict_types=1);
  *   GET api/v1.php                                                               escopos do token
  * Resposta JSON: {ok, recurso, pagina, por_pagina, total_pagina, dados:[...]}. Erros: {ok:false, erro}.
  */
+date_default_timezone_set('America/Sao_Paulo');
 require_once dirname(__DIR__) . '/classes/GreenPortalDatabase.php';
 require_once dirname(__DIR__) . '/classes/LegislacaoEmpresas.php';
 
@@ -26,7 +27,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') $fim(405, ['ok' => false, '
 // recurso => [view, colunas entregues, coluna da unidade]
 const RECURSOS = [
     'requisitos' => ['vw_modulolegal_requisitos_situacao_grid', ['CODLEGISLACAO', 'CODIGO', 'CODUNIDADE', 'UNIDADE', 'PADRAO', 'ATENDIDO', 'SITUACAO_CONSOLIDADA', 'PCT_ATENDIMENTO', 'RISCO_REQUISITO', 'AVALIACAO_LEGAL'], 'CODUNIDADE'],
-    'licencas' => ['vw_licencas_situacao', ['CODLICENCA', 'DSCLICENCA', 'CODUNIDADE', 'DATA_VALIDADE', 'PROXIMO_VENCIMENTO', 'SITUACAO', 'MOTIVO', 'ARQUIVADA'], 'CODUNIDADE'],
+    // grid das licenças (descrição + situação da migração 288); sem ele, a view só de situação
+    'licencas' => [['vw_licencas_grid', 'vw_licencas_situacao'], ['CODLICENCA', 'DSCLICENCA', 'CODUNIDADE', 'NOMEUNIDADE', 'DSCUNIDADE', 'DATA_VALIDADE', 'PROXIMO_VENCIMENTO',
+        'SITUACAO_LICENCA', 'SITUACAO_LICENCA_DESC', 'MOTIVO_SITUACAO', 'NUMERO_PROTOCOLO', 'ARQUIVADA'], 'CODUNIDADE'],
     'fornecedores' => ['fo_fornecedores', ['CODFORNECEDOR', 'RAZAOSOCIAL', 'NOMEFANTASIA', 'CNPJ', 'CODUNIDADE', 'ATIVADO', 'BLOQUEADO'], 'CODUNIDADE'],
 ];
 
@@ -66,8 +69,11 @@ $pagina = max(1, (int)($_GET['pagina'] ?? 1));
 $porPagina = min(1000, max(1, (int)($_GET['por_pagina'] ?? 200)));
 $filtros = [];
 if ((int)($_GET['unidade'] ?? 0) > 0) $filtros[$colUnidade] = ['value' => (string)(int)$_GET['unidade'], 'exact' => true];
-try { $rows = $sel($view, $filtros, $porPagina, ($pagina - 1) * $porPagina); }
-catch (Throwable) { $fim(503, ['ok' => false, 'erro' => 'Recurso indisponível nesta empresa.']); }
+$rows = null;
+foreach ((array)$view as $v) {
+    try { $rows = $sel($v, $filtros, $porPagina, ($pagina - 1) * $porPagina); break; } catch (Throwable) {}
+}
+if ($rows === null) $fim(503, ['ok' => false, 'erro' => 'Recurso indisponível nesta empresa.']);
 $dados = [];
 foreach ($rows as $r) {
     $r = array_change_key_case($r, CASE_UPPER); $o = [];

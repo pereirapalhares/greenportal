@@ -24,11 +24,13 @@ P::abrir('DASHBOARD', false, in_array($perfil, ['ADMINISTRADOR', 'ADM DA EMPRESA
 @set_time_limit(180);
 $equipe = (new PainelLateralService(P::$pdo, P::$uid))->equipe();
 $pessoas = [];
-foreach (P::sel('vw_usuarios_validade', ['ATIVO' => 1], 20000) as $u) if ((int)($u['CODFORNECEDOR'] ?? 0) === 0) $pessoas[(int)$u['CODUSUARIO']] = $u;
+// sem a migração 421 (vw_usuarios_validade), lê a tabela de usuários
+if (P::existe('vw_usuarios_validade')) { foreach (P::sel('vw_usuarios_validade', ['ATIVO' => 1], 20000) as $u) if ((int)($u['CODFORNECEDOR'] ?? 0) === 0) $pessoas[(int)$u['CODUSUARIO']] = $u; }
+else foreach (P::sel('usuarios', ['ativo' => 1], 20000) as $u) if ((int)($u['CODFORNECEDOR'] ?? 0) === 0 && (int)($u['ATIVO'] ?? 0) === 1) $pessoas[(int)$u['CODUSUARIO']] = ['CODUSUARIO' => (int)$u['CODUSUARIO'], 'NOME' => trim((string)($u['NOME'] ?? '')) ?: (string)($u['USERID'] ?? ''), 'PERFIL' => '', 'ULTIMO_ACESSO' => $u['ULTIMO_ACESSO'] ?? null];
 if (!$adm) $pessoas = array_intersect_key($pessoas, $equipe);
 $det = MinhasPendencias::detalhePorUsuario(P::$pdo, array_keys($pessoas));
 $acoes = [];
-try {
+if (!P::existe('vw_logs_acoes')) $acoes = null; else try {
     $s = P::$pdo->prepare("SELECT `codusuario` AS U, COUNT(*) AS N FROM `vw_logs_acoes` WHERE `DATA_EVENTO` >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND UPPER(COALESCE(`acao`, '')) NOT IN ('ACESSAR', 'VISUALIZAR', 'LER', 'LISTAR', 'NEGADO', 'DOWNLOAD') GROUP BY `codusuario`");
     $s->execute(); foreach ($s->fetchAll(PDO::FETCH_ASSOC) as $r) $acoes[(int)$r['U']] = (int)$r['N']; $s->closeCursor();
 } catch (Throwable) { $acoes = null; }

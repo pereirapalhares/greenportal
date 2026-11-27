@@ -39,7 +39,8 @@ if ($licenca > 0) {
             if ($v === '' && (string)$c['OBRIGATORIO'] === 'S') { $erros[] = $c['NOME'] . ': ' . P::L('obrigatório.', 'required.', 'obligatorio.'); continue; }
             $atual = $valores[$cod] ?? null;
             if ((string)($atual['VALOR'] ?? '') === $v) continue;
-            if ($atual) P::upd('lic_campo_valor', ['CODVALOR' => (int)$atual['CODVALOR']], ['VALOR' => mb_substr($v, 0, 2000), 'CODUSUARIO' => P::$uid ?: null]);
+            if ($atual && $v === '') P::del('lic_campo_valor', ['CODVALOR' => (int)$atual['CODVALOR']]);   // apagado: o campo deixa de estar "em uso" nesta licença
+            elseif ($atual) P::upd('lic_campo_valor', ['CODVALOR' => (int)$atual['CODVALOR']], ['VALOR' => mb_substr($v, 0, 2000), 'CODUSUARIO' => P::$uid ?: null]);
             else P::ins('lic_campo_valor', ['CODLICENCA' => $base, 'CODCAMPO' => $cod, 'VALOR' => mb_substr($v, 0, 2000), 'CODUSUARIO' => P::$uid ?: null]);
             $n++;
         }

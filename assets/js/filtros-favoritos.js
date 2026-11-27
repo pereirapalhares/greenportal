@@ -136,8 +136,12 @@
         // a barra dos grids é montada pelos scripts da tela: tenta ao carregar e quando o DOM muda
         var t = 0;
         function agendar() { win.clearTimeout(t); t = win.setTimeout(botao, 300); }
-        if (doc.readyState === 'complete') agendar(); else win.addEventListener('load', agendar);
-        if (win.MutationObserver) win.addEventListener('load', function () { new win.MutationObserver(function () { if (!doc.querySelector('[data-gp-fav]')) agendar(); }).observe(doc.documentElement, { childList: true, subtree: true }); });
+        // 27/11/2026: quando a tela já estava carregada (aba aberta pelo menu), o observador nunca era ligado e a estrela não aparecia
+        function observar() {
+            agendar();
+            if (win.MutationObserver) new win.MutationObserver(function () { if (!doc.querySelector('[data-gp-fav]')) agendar(); }).observe(doc.documentElement, { childList: true, subtree: true });
+        }
+        if (doc.readyState === 'complete') observar(); else win.addEventListener('load', observar);
         doc.addEventListener('load', function (ev) { var f = ev.target; if (f && f.tagName === 'IFRAME') { try { instalar(f.contentWindow); } catch (e) { } } }, true);
         Array.prototype.forEach.call(doc.querySelectorAll('iframe'), function (f) { try { instalar(f.contentWindow); } catch (e) { } });
     }

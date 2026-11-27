@@ -68,6 +68,15 @@ final class ResponsibilityAgendaService
                 continue;
             }
 
+            // Migração 422 (performance): eventos já gravados deste pilar; só grava quando algo mudou (antes, todo
+            // evento era regravado a cada rodada: milhões de INSERT ... ON DUPLICATE KEY UPDATE por empresa).
+            $existentes = [];
+            try {
+                $st = $this->pdo->prepare('SELECT chave_idempotencia, codusuario_responsavel, titulo, descricao, inicio, status, origem_transacao, origem_entidade, origem_id FROM agenda_eventos WHERE chave_idempotencia LIKE :prefix');
+                $st->execute(['prefix' => $prefix . '%']);
+                foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $e) $existentes[(string)$e['chave_idempotencia']] = $e;
+            } catch (Throwable) { $existentes = []; }
+
             foreach ($rows as $row) {
                 $recordId = (int)($row[$definition['key']] ?? 0);
                 $userId = (int)($row['CODUSUARIO'] ?? 0);
@@ -80,6 +89,18 @@ final class ResponsibilityAgendaService
                 if ($title === '') $title = $definition['label'] . ' #' . $recordId;
                 $description = 'Responsabilidade de ' . $definition['label'] . ': ' . $title;
 
+                $atual = $existentes[$sourceKey] ?? null;
+                if ($atual !== null && ((string)$atual['status'] === 'CONCLUIDO' || (
+                    (string)$atual['status'] === 'ATIVO'
+                    && (int)$atual['codusuario_responsavel'] === $userId
+                    && (string)$atual['titulo'] === substr(mb_substr($definition['label'] . ': ' . $title, 0, 180), 0, 180)
+                    && (string)$atual['descricao'] === $description
+                    && substr((string)$atual['inicio'], 0, 19) === $start
+                    && (string)$atual['origem_transacao'] === $definition['transaction']
+                    && (string)$atual['origem_entidade'] === $definition['entity']
+                    && (string)$atual['origem_id'] === (string)$recordId))) {
+                    continue;   // igual ao que já está na agenda (ou concluído, que não é alterado)
+                }
                 try {
                     $this->agenda->syncSource($sourceKey, [
                         'codusuario_responsavel' => $userId,
